@@ -1,0 +1,18 @@
+package ${namespace};
+
+import gaarason.database.eloquent.Column;
+import gaarason.database.eloquent.Primary;
+import gaarason.database.eloquent.Table;
+import lombok.Data;
+
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.util.Date;
+
+@Data
+@Table(name = "${table}")
+public class ${pojo_name} implements Serializable {
+
+${static_fields}
+${fields}
+}
