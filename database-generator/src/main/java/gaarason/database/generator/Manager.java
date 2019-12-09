@@ -43,6 +43,9 @@ abstract public class Manager {
     private String baseDaoName = "BaseModel";
 
     @Setter
+    private Boolean isSpringBoot = false;
+
+    @Setter
     private Boolean staticField = false;
 
     private String[] disInsertable = {};
@@ -135,6 +138,8 @@ abstract public class Manager {
         parameterMap.put("${pojo_namespace}", pojoNamespace);
         parameterMap.put("${pojo_name}", pojoName);
         parameterMap.put("${dao_name}", daoName);
+        parameterMap.put("${is_spring_boot}", isSpringBoot ? "import org.springframework.stereotype.Component;" +
+            "\n\n@Component" : "");
 
         return fillTemplate(daoTemplateStr, parameterMap);
     }
@@ -307,7 +312,7 @@ abstract public class Manager {
 
     private static String getAbsoluteReadFileName(String name) {
         return Thread.currentThread().getStackTrace()[1].getClass().getResource("/").toString().replace(
-            "file:", "") + "../../src" +
+            "file:", "") + "../../../database-generator/src" +
             "/main/java/gaarason/database/generator/template/" + name;
     }
 
@@ -315,7 +320,7 @@ abstract public class Manager {
         return Thread.currentThread().getStackTrace()[1].getClass()
             .getResource("/")
             .toString()
-            .replace("file:", "") + "../../src/test/java/" + namespace2dir(namespace) + '/';
+            .replace("file:", "") + "../../../database-generator-test/src/test/java/" + namespace2dir(namespace) + '/';
     }
 
     private static String fileGetContent(String fileName) {

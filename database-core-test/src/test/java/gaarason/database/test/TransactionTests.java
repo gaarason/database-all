@@ -36,9 +36,9 @@ public class TransactionTests extends BaseTests {
     }
 
 
-    @Test
+    @Test(expected = NestedTransactionException.class)
     public void 事物_单个数据连接不可嵌套事物() {
-        thrown.expect(NestedTransactionException.class);
+//        thrown.expect(NestedTransactionException.class);
         // 1层事物
         studentModel.newQuery().transaction(() -> {
             // 2层事物

@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class JavaElement {
+class JavaElement {
 
     private List<String>   javaDocLines;
     private JavaVisibility visibility;
