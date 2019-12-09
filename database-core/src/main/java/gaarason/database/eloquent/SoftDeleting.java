@@ -1,11 +1,6 @@
 package gaarason.database.eloquent;
 
 import gaarason.database.query.Builder;
-import gaarason.database.utils.EntityUtil;
-import lombok.Getter;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
 
 abstract class SoftDeleting<T> extends Initializing<T> {
 
@@ -43,7 +38,7 @@ abstract class SoftDeleting<T> extends Initializing<T> {
     }
 
     /**
-     * 软删除查询作用域(反)
+     * 软删除查询作用域(全)
      * @param builder 查询构造器
      */
     protected void scopeSoftDeleteWithTrashed(Builder<T> builder) {

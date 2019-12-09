@@ -1,7 +1,5 @@
 package gaarason.database.test.parent;
 
-import gaarason.database.connections.ProxyDataSource;
-import gaarason.database.test.models.StudentModel;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.*;
 import org.junit.runners.MethodSorters;
@@ -17,11 +15,10 @@ import java.util.List;
 
 @FixMethodOrder(MethodSorters.JVM)
 @Slf4j
-public class BaseTests {
+abstract public class BaseTests {
 
     private static String initSql = "";
 
-    protected static StudentModel studentModel = new StudentModel();
 
     @BeforeClass
     public static void beforeClass() throws IOException {
@@ -38,10 +35,7 @@ public class BaseTests {
         log.debug("数据库重新初始化完成");
     }
 
-    private List<DataSource> getDataSourceList() {
-        ProxyDataSource proxyDataSource = studentModel.getProxyDataSource();
-        return proxyDataSource.getMasterDataSourceList();
-    }
+    abstract protected List<DataSource> getDataSourceList();
 
     // 初始化数据库连接列表
     private void initDataSourceList(List<DataSource> dataSourceList) throws SQLException {

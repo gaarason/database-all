@@ -73,14 +73,32 @@ abstract public class Model<T> extends Eventing<T> {
         return new Record<>(entityClass, this);
     }
 
+    /**
+     * 查询全部
+     * @param column
+     * @return
+     * @throws SQLRuntimeException
+     */
     public RecordList<T> all(String... column) throws SQLRuntimeException {
         return newQuery().select(column).get();
     }
 
+    /**
+     * 单个查询
+     * @param id
+     * @return
+     * @throws EntityNotFoundException
+     * @throws SQLRuntimeException
+     */
     public Record<T> findOrFail(String id) throws EntityNotFoundException, SQLRuntimeException {
         return newQuery().where(PrimaryKeyName, id).firstOrFail();
     }
 
+    /**
+     * 单个查询
+     * @param id
+     * @return
+     */
     @Nullable
     public Record<T> find(String id) {
         return newQuery().where(PrimaryKeyName, id).first();

@@ -1,5 +1,6 @@
 package gaarason.database.test;
 
+import gaarason.database.connections.ProxyDataSource;
 import gaarason.database.eloquent.OrderBy;
 import gaarason.database.eloquent.Paginate;
 import gaarason.database.eloquent.Record;
@@ -19,6 +20,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
 
+import javax.sql.DataSource;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -28,6 +30,13 @@ import java.util.concurrent.CountDownLatch;
 public class QueryBuilderTests extends BaseTests {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
+
+    private static StudentModel studentModel = new StudentModel();
+
+    protected List<DataSource> getDataSourceList() {
+        ProxyDataSource proxyDataSource = studentModel.getProxyDataSource();
+        return proxyDataSource.getMasterDataSourceList();
+    }
 
     @Test
     public void 新增_多线程_非entity方式() throws InterruptedException {
@@ -209,30 +218,17 @@ public class QueryBuilderTests extends BaseTests {
         studentModel.newQuery().update(entity1);
     }
 
-//    @Test
-//    public void 删除_硬() {
-//        int id = student5Model.newQuery().where("id", "3").forceDelete();
-//        Assert.assertEquals(id, 1);
-//
-//        Record<StudentModel.Entity> id1 = studentModel.newQuery().where("id", "3").first();
-//        Assert.assertNull(id1);
-//
-//        thrown.expect(ConfirmOperationException.class);
-//        studentModel.newQuery().delete();
-//
-//    }
-//
-//    @Test
-//    public void 删除_软() {
-//        int id = student5Model.newQuery().where("id", "3").delete();
-//        Assert.assertEquals(id, 1);
-//
-//        Record<StudentSingle5Model.Entity> id1 = student5Model.newQuery().where("id", "3").first();
-//        Assert.assertNull(id1);
-//
-//        // 强行查询所有
-//
-//    }
+    @Test
+    public void 删除_硬() {
+        int id = studentModel.newQuery().where("id", "3").forceDelete();
+        Assert.assertEquals(id, 1);
+
+        Record<StudentModel.Entity> id1 = studentModel.newQuery().where("id", "3").first();
+        Assert.assertNull(id1);
+
+        thrown.expect(ConfirmOperationException.class);
+        studentModel.newQuery().delete();
+    }
 
     @Test
     public void 查询_单条记录() {
@@ -920,182 +916,6 @@ public class QueryBuilderTests extends BaseTests {
         StudentModel.Entity entity = studentModel.newQuery().where("id", "1").firstOrFail().toObject();
         Assert.assertNotEquals(entity.getName(), "dddddd");
     }
-
-
-//    @Test
-//    public void 事物_多线程下_多个数据连接嵌套事物2() throws InterruptedException {
-//        int            count          = 100;
-//        CountDownLatch countDownLatch = new CountDownLatch(count);
-//        for (int i = 0; i < count; i++) {
-//            new Thread(() -> {
-//                try {
-//                    // 1层事物
-//                    studentModel.newQuery().transaction(() -> {
-//                        studentModel.newQuery().data("name", "testttt").where("id", "9").update();
-//                        // 2层事物
-//                        student2Model.newQuery().transaction(() -> {
-//                            student2Model.newQuery().data("name", "testttt").where("id", "4").update();
-//                            try {
-//                                // 3层事物
-//                                student3Model.newQuery().transaction(() -> {
-//                                    student3Model.newQuery().where("id", "1").data("name", "dddddd").update();
-//                                    StudentSingle3Model.Entity entity = student3Model.newQuery()
-//                                        .where("id", "1")
-//                                        .firstOrFail()
-//                                        .toObject();
-//                                    throw new RuntimeException("业务上抛了个异常");
-//                                }, 1);
-//                            } catch (RuntimeException e) {
-//                                log.info("student3Model 业务上抛了个异常, 成功捕获, 所以student3Model上的事物回滚");
-//                            }
-//                            // student3Model 回滚
-//                            StudentSingle3Model.Entity entity = student3Model.newQuery()
-//                                .where("id", "1")
-//                                .firstOrFail()
-//                                .toObject();
-//                            // student2Model 不受影响
-//                            StudentSingle2Model.Entity id = student2Model.newQuery()
-//                                .where("id", "4")
-//                                .firstOrFail().toObject();
-//                        }, 1);
-//                        StudentModel.Entity id = studentModel.newQuery()
-//                            .where("id", "9")
-//                            .firstOrFail().toObject();
-//                    }, 3);
-//                }
-//                finally {
-//                    countDownLatch.countDown();
-//                    System.out.println("子线程结束");
-//                }
-//            }).start();
-//            System.out.println("开启线程: " + i);
-//        }
-//        countDownLatch.await();
-//        System.out.println("所有线程结束");
-//    }
-//
-//    @Test
-//    public void 事物_多个数据连接嵌套事物() {
-//        // 1层事物
-//        studentModel.newQuery().transaction(() -> {
-//            System.out.println("studentModel 1层事物中");
-//            studentModel.newQuery().data("name", "testttt").where("id", "9").update();
-//            // 2层事物
-//            student2Model.newQuery().transaction(() -> {
-//                System.out.println("student2Model 1层事物中 studentModel 2层事物中");
-//                student2Model.newQuery().data("name", "testttt").where("id", "4").update();
-//
-//                // 3层事物
-//                student3Model.newQuery().transaction(() -> {
-//                    StudentSingle3Model.Entity entity = student3Model.newQuery()
-//                        .where("id", "1")
-//                        .firstOrFail()
-//                        .toObject();
-//                }, 1);
-//
-//                try {
-//                    // 3层事物
-//                    student3Model.newQuery().transaction(() -> {
-//                        System.out.println("student3Model 1层事物中 student2Model 2层事物中 studentModel 3层事物中");
-//                        student3Model.newQuery().where("id", "1").data("name", "ddddddxx").update();
-//                        StudentSingle3Model.Entity entity = student3Model.newQuery()
-//                            .where("id", "1")
-//                            .firstOrFail()
-//                            .toObject();
-//                        Assert.assertEquals(entity.getName(), "ddddddxx");
-//                        throw new RuntimeException("业务上抛了个异常");
-//                    }, 1);
-//                } catch (RuntimeException e) {
-//                    log.info("student3Model 业务上抛了个异常, 成功捕获, 所以student3Model上的事物回滚");
-//                }
-//                // student3Model 回滚
-//                StudentSingle3Model.Entity entity = student3Model.newQuery().where("id", "1").firstOrFail().toObject();
-//                Assert.assertNotEquals(entity.getName(), "ddddddxx");
-//
-//                // student2Model 不受影响
-//                StudentSingle2Model.Entity id = student2Model.newQuery()
-//                    .where("id", "4")
-//                    .firstOrFail().toObject();
-//                Assert.assertEquals(id.getName(), "testttt");
-//
-//            }, 1);
-//            StudentModel.Entity id = studentModel.newQuery()
-//                .where("id", "9")
-//                .firstOrFail().toObject();
-//            Assert.assertEquals(id.getName(), "testttt");
-//        }, 3);
-//
-//        // 事物结束后
-//        StudentModel.Entity id = studentModel.newQuery()
-//            .where("id", "9")
-//            .firstOrFail().toObject();
-//        Assert.assertEquals(id.getName(), "testttt");
-//
-//        StudentSingle2Model.Entity id2 = student2Model.newQuery()
-//            .where("id", "4")
-//            .firstOrFail().toObject();
-//        Assert.assertEquals(id2.getName(), "testttt");
-//
-//        StudentSingle3Model.Entity entity = student3Model.newQuery().where("id", "1").firstOrFail().toObject();
-//        Assert.assertNotEquals(entity.getName(), "ddddddxx");
-//
-//    }
-//
-//    @Test
-//    public void 事物_多线程下_多个数据连接嵌套事物() throws InterruptedException {
-//        int            count          = 100;
-//        CountDownLatch countDownLatch = new CountDownLatch(count);
-//        for (int i = 0; i < count; i++) {
-//            new Thread(() -> {
-//                // 1层事物
-//                studentModel.newQuery().transaction(() -> {
-//                    studentModel.newQuery().data("name", "testttt").where("id", "9").update();
-//                    // 2层事物
-//                    student2Model.newQuery().transaction(() -> {
-//                        student2Model.newQuery().data("name", "testttt").where("id", "4").update();
-//                        try {
-//                            // 3层事物
-//                            student3Model.newQuery().transaction(() -> {
-//                                student3Model.newQuery().where("id", "1").data("name", "dddddd").update();
-//                                StudentSingle3Model.Entity entity = student3Model.newQuery()
-//                                    .where("id", "1")
-//                                    .firstOrFail()
-//                                    .toObject();
-////                                Assert.assertEquals(entity.getName(), "dddddd");
-//                                throw new RuntimeException("业务上抛了个异常");
-//                            }, 1);
-//                        } catch (RuntimeException e) {
-//                            log.info("student3Model 业务上抛了个异常, 成功捕获, 所以student3Model上的事物回滚");
-//                        }
-//                        // student3Model 回滚
-//                        StudentSingle3Model.Entity entity = student3Model.newQuery()
-//                            .where("id", "1")
-//                            .firstOrFail()
-//                            .toObject();
-////                        Assert.assertNotEquals(entity.getName(), "dddddd");
-//
-//                        // student2Model 不受影响
-//                        StudentSingle2Model.Entity id = student2Model.newQuery()
-//                            .where("id", "4")
-//                            .firstOrFail().toObject();
-////                        Assert.assertEquals(id.getName(), "testttt");
-//
-//                    }, 1);
-//                    StudentModel.Entity id = studentModel.newQuery()
-//                        .where("id", "9")
-//                        .firstOrFail().toObject();
-////                    Assert.assertEquals(id.getName(), "testttt");
-//                }, 3);
-//
-//                countDownLatch.countDown();
-//                System.out.println("子线程结束");
-//            }).start();
-//            System.out.println("开启线程: " + i);
-//        }
-//        countDownLatch.await();
-//        System.out.println("所有线程结束");
-//    }
-
 
     @Test
     public void 事物_单个数据连接不可嵌套事物() {
