@@ -40,7 +40,7 @@ public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 新增_多线程_非entity方式() throws InterruptedException {
-        int            count          = 5;
+        int            count          = 1000;
         CountDownLatch countDownLatch = new CountDownLatch(count);
         for (int i = 0; i < count; i++) {
             new Thread(() -> {

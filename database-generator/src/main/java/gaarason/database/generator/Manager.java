@@ -16,7 +16,10 @@ import java.util.*;
 abstract public class Manager {
 
     @Setter
-    private String namespace = "temp";
+    private String outputDir = "./";
+
+    @Setter
+    private String namespace = "data";
 
     @Setter
     private String pojoDir = "pojo";
@@ -317,10 +320,12 @@ abstract public class Manager {
     }
 
     private String getAbsoluteWriteFilePath(String namespace) {
-        return Thread.currentThread().getStackTrace()[1].getClass()
-            .getResource("/")
-            .toString()
-            .replace("file:", "") + "../../../database-generator-test/src/test/java/" + namespace2dir(namespace) + '/';
+        return StringUtil.rtrim(outputDir, "/") + "/" + namespace2dir(namespace) + '/';
+
+//        return Thread.currentThread().getStackTrace()[1].getClass()
+//            .getResource("/")
+//            .toString()
+//            .replace("file:", "") + "../../../database-generator-test/src/test/java/" + namespace2dir(namespace) + '/';
     }
 
     private static String fileGetContent(String fileName) {

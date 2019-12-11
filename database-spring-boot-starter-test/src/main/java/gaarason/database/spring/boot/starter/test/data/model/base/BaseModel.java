@@ -1,4 +1,4 @@
-package ${namespace};
+package gaarason.database.spring.boot.starter.test.data.model.base;
 
 import gaarason.database.connections.ProxyDataSource;
 import gaarason.database.eloquent.Model;
@@ -8,10 +8,9 @@ import javax.annotation.Resource;
 import java.util.Collection;
 
 @Slf4j
-abstract public class ${dao_name}<T> extends Model<T> {
+abstract public class BaseModel<T> extends Model<T> {
 
-    // todo
-    @Resource(name = "proxyDataSource")
+    @Resource
     protected ProxyDataSource proxyDataSource;
 
     @Override

@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 @Data
 public class Field extends JavaElement {
 
-    final private static Pattern tinyintPattern = Pattern.compile("tinyint(\\d)");
+    final private static Pattern tinyintPattern = Pattern.compile("tinyint\\((\\d)\\)");
 
     private String dataType;
 

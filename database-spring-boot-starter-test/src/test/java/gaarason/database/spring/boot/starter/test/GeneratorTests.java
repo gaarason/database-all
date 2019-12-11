@@ -1,4 +1,4 @@
-package gaarason.database.generator.test;
+package gaarason.database.spring.boot.starter.test;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import gaarason.database.connections.ProxyDataSource;
@@ -12,8 +12,6 @@ import org.junit.runners.MethodSorters;
 import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 @Slf4j
@@ -21,17 +19,17 @@ import java.util.regex.Pattern;
 public class GeneratorTests {
 
     @Test
-    public void run2() {
+    public void run() {
         ProxyDataSource proxyDataSource = proxyDataSource();
 
         ToolModel toolModel = new ToolModel(proxyDataSource);
 
         AutoGenerator autoGenerator = new AutoGenerator(toolModel);
 
-        // set
+        // 设置
         autoGenerator.setStaticField(true);
         autoGenerator.setIsSpringBoot(true);
-        autoGenerator.setOutputDir("./");
+        autoGenerator.setOutputDir("./src/main/java/");
         autoGenerator.setNamespace("gaarason.database.spring.boot.starter.test.data");
         String[] disableCreate = {"created_at", "updated_at"};
         autoGenerator.setDisInsertable(disableCreate);
@@ -39,20 +37,6 @@ public class GeneratorTests {
         autoGenerator.setDisUpdatable(disableUpdate);
 
         autoGenerator.run();
-    }
-
-    @Test
-    public void eee(){
-        String columnType = "tinyint(1) unsigned";
-
-        Pattern tinyintPattern = Pattern.compile("tinyint\\((\\d)\\)");
-        Matcher matcher        = tinyintPattern.matcher(columnType);
-        if (matcher.find()) {
-            Integer length = new Integer(matcher.group(1));
-            if (length.equals(1)) {
-                System.out.println("tinyint(1)");
-            }
-        }
     }
 
     private DataSource dataSourceMaster0() {
