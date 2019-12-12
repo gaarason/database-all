@@ -203,10 +203,6 @@ int update = studentModel.newQuery().dataDecrement("age", 2).whereRaw("id=4").up
 int update2 = studentModel.newQuery().dataIncrement("age", 4).whereRaw("id=4").update();
 ```
 
-## 随机获取
-
-略
-
 ## select
 ```java
 Record<Student> record = studentModel.newQuery().select("name").select("id").select("id").first();

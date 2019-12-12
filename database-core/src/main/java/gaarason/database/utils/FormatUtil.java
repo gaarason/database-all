@@ -34,7 +34,7 @@ public class FormatUtil {
         for (String value : somethingList) {
             StringBuilder.append(FormatUtil.column(value)).append(',');
         }
-        return StringBuilder.substring(0, StringBuilder.length() - 1);
+        return StringUtil.rtrim(StringBuilder.toString(), ",");
     }
 
     /**
@@ -67,7 +67,7 @@ public class FormatUtil {
         for (Object value : somethingList) {
             StringBuilder.append(FormatUtil.value(value.toString(), grammar)).append(',');
         }
-        return StringBuilder.substring(0, StringBuilder.length() - 1);
+        return StringUtil.rtrim(StringBuilder.toString(), ",");
     }
 
     /**

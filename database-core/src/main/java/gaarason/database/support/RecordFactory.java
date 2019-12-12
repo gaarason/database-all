@@ -1,6 +1,5 @@
 package gaarason.database.support;
 
-import gaarason.database.contracts.function.Chunk;
 import gaarason.database.eloquent.Model;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;

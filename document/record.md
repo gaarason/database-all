@@ -8,6 +8,7 @@ Eloquent ORM for Java
     * [总览](#总览)
     * [普通java对象](#普通java对象)
     * [通用map对象](#通用map对象)
+    * [自定list对象](#自定list对象)
     * [ORM](#ORM)
         * [查询](#查询)
         * [更新](#更新)
@@ -34,6 +35,15 @@ Eloquent ORM for Java
 `gaarason.database.eloquent.Record<T>`通过`toMap`可以转化为`Map<String, Object>`  
 `gaarason.database.eloquent.RecordList<T>`通过`toMapList`可以转化`List<Map<String, Object>>`  
 
+## 自定list对象
+
+`gaarason.database.eloquent.RecordList<T>`通过`toList`可以转化为`List<Object>`  
+```$xslt
+// 返回由id组成的列表
+List<Object> list = studentModel.newQuery().get().toList(
+    theRecord -> theRecord.toObject().getId();
+)
+```
 ## ORM
 
 对于`gaarason.database.eloquent.Record<T>`对象提供ORM相关的能力  

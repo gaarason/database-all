@@ -9,7 +9,8 @@ Eloquent ORM for Java
 * [反向生成代码](/document/generate.md)
 
 
-- 如果希望以如下的方式在程序中查询数据, 那么这个项目不会让你失望 !
+- 以如下的方式在程序中查询数据
+
 ```java
 // 查询id为4的一条数据
 Student student = studentModel.find("4").toObject();
