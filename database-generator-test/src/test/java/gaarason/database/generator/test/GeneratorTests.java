@@ -15,17 +15,14 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
 public class GeneratorTests {
 
     @Test
-    public void run2() {
+    public void run() {
         ProxyDataSource proxyDataSource = proxyDataSource();
-
         ToolModel toolModel = new ToolModel(proxyDataSource);
-
         AutoGenerator autoGenerator = new AutoGenerator(toolModel);
 
         // set
@@ -39,20 +36,6 @@ public class GeneratorTests {
         autoGenerator.setDisUpdatable(disableUpdate);
 
         autoGenerator.run();
-    }
-
-    @Test
-    public void eee(){
-        String columnType = "tinyint(1) unsigned";
-
-        Pattern tinyintPattern = Pattern.compile("tinyint\\((\\d)\\)");
-        Matcher matcher        = tinyintPattern.matcher(columnType);
-        if (matcher.find()) {
-            Integer length = new Integer(matcher.group(1));
-            if (length.equals(1)) {
-                System.out.println("tinyint(1)");
-            }
-        }
     }
 
     private DataSource dataSourceMaster0() {
@@ -78,35 +61,25 @@ public class GeneratorTests {
     }
 
     public static class ToolModel extends Model<ToolModel.Inner> {
-
         private ProxyDataSource proxyDataSource;
-
         public ToolModel(ProxyDataSource dataSource) {
             proxyDataSource = dataSource;
         }
-
         public ProxyDataSource getProxyDataSource() {
             return proxyDataSource;
         }
-
         public static class Inner {
-
         }
     }
 
     public class AutoGenerator extends Manager {
-
         private Model toolModel;
-
         public AutoGenerator(Model model) {
             toolModel = model;
         }
-
         public Model getModel() {
             return toolModel;
         }
 
     }
-
-
 }

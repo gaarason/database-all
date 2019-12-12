@@ -10,10 +10,6 @@ Eloquent ORM for Java
     * [总览](#总览)
     * [非spring](#非spring)
     * [spring](#spring)
-        * [定义ProxyDataSource](#定义ProxyDataSource)
-        * [定义ToolModel](#定义ToolModel)
-        * [定义Manager](#定义Manager)
-        * [使用](#使用)
 ## 总览
 
 通过数据库连接,生成模板代码
@@ -21,40 +17,42 @@ Eloquent ORM for Java
 ## 非spring
 
 ```java
-package gaarason.database;
+package gaarason.database.generator.test;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import gaarason.database.connections.ProxyDataSource;
 import gaarason.database.eloquent.Model;
 import gaarason.database.generator.Manager;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@FixMethodOrder(MethodSorters.JVM)
 @Slf4j
+@FixMethodOrder(MethodSorters.JVM)
 public class GeneratorTests {
+
     @Test
     public void run() {
         ProxyDataSource proxyDataSource = proxyDataSource();
-
         ToolModel toolModel = new ToolModel(proxyDataSource);
-
         AutoGenerator autoGenerator = new AutoGenerator(toolModel);
-        
-        // 详细设置
-        autoGenerator.setNamespace("temp");
-        autoGenerator.setDisInsertable("created_at", "updated_at", "created_on", "updated_on");
-        autoGenerator.setDisUpdatable("created_at", "updated_at", "created_on", "updated_on");
+
+        // set
+        autoGenerator.setStaticField(true);
+        autoGenerator.setIsSpringBoot(true);
+        autoGenerator.setOutputDir("./");
+        autoGenerator.setNamespace("gaarason.database.spring.boot.starter.test.data");
+        String[] disableCreate = {"created_at", "updated_at"};
+        autoGenerator.setDisInsertable(disableCreate);
+        String[] disableUpdate = {"created_at", "updated_at"};
+        autoGenerator.setDisUpdatable(disableUpdate);
 
         autoGenerator.run();
     }
@@ -83,28 +81,21 @@ public class GeneratorTests {
 
     public static class ToolModel extends Model<ToolModel.Inner> {
         private ProxyDataSource proxyDataSource;
-
         public ToolModel(ProxyDataSource dataSource) {
             proxyDataSource = dataSource;
         }
-
         public ProxyDataSource getProxyDataSource() {
             return proxyDataSource;
         }
-
         public static class Inner {
-
         }
     }
 
     public class AutoGenerator extends Manager {
-
         private Model toolModel;
-
         public AutoGenerator(Model model) {
             toolModel = model;
         }
-
         public Model getModel() {
             return toolModel;
         }
@@ -116,70 +107,22 @@ public class GeneratorTests {
 
 ## spring
 
-### 定义ProxyDataSource
-
-参考[注册bean](/document/bean.md)中,声明`ProxyDataSource`的实现
-
-### 定义ToolModel
-
-```java
-package gaarason.database.tool;
-
-import gaarason.database.connections.ProxyDataSource;
-import gaarason.database.eloquent.Model;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
-
-@Component
-public class ToolModel extends Model<ToolModel.Inner> {
-    // 定义ProxyDataSource
-    @Resource(name = "proxyDataSourceSingle")
-    protected ProxyDataSource dataSource;
-
-    public ProxyDataSource getProxyDataSource() {
-        return dataSource;
-    }
-
-
-    public static class Inner {
-
-
-    }
-}
+#### 引入依赖 pom.xml
+```$xslt
+<dependency>
+    <groupId>gaarason</groupId>
+    <artifactId>database-spring-boot-starter-test</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+</dependency>
 ```
-### 定义Manager
-
-继承`gaarason.database.tool.Manager`
-
+#### 编写单元测试
 ```java
-package gaarason.database.tool;
+package gaarason.database.spring.boot.starter.test;
 
-import gaarason.database.eloquent.Model;
-import gaarason.database.generator.Manager;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
-
-@Component
-public class Generator extends Manager {
-
-    // 定义ToolModel
-    @Resource
-    ToolModel toolModel;
-
-    @Override
-    public Model getModel() {
-        return toolModel;
-    }
-}
-
-```
-### 使用
-```java
-package gaarason.database;
-
-import gaarason.database.tool.Generator;
+import gaarason.database.eloquent.GeneralModel;
+import gaarason.database.eloquent.Record;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -188,21 +131,31 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import java.util.Map;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @FixMethodOrder(MethodSorters.JVM)
-public class GeneratorTests {
-    @Resource
-    Generator generator;
+@Slf4j
+public class TestApplicationTests {
 
+    @Resource
+    GeneralGenerator generalGenerator;
+
+    // 执行此方法即可生成    
     @Test
-    public void run() {
-        // 设置属性
-        generator.setNamespace("temp");
-        generator.setDisInsertable("created_at", "updated_at", "created_on", "updated_on");
-        generator.setDisUpdatable("created_at", "updated_at", "created_on", "updated_on");
-        generator.run();
+    public void 生成代码() {
+        // 设置
+        generalGenerator.setStaticField(true);
+        generalGenerator.setIsSpringBoot(true);
+        generalGenerator.setOutputDir("./src/main/java/");
+        generalGenerator.setNamespace("gaarason.database.spring.boot.starter.test.data");
+        String[] disableCreate = {"created_at", "updated_at"};
+        generalGenerator.setDisInsertable(disableCreate);
+        String[] disableUpdate = {"created_at", "updated_at"};
+        generalGenerator.setDisUpdatable(disableUpdate);
+
+        generalGenerator.run();
     }
 }
 ```
