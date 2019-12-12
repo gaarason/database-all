@@ -1,5 +1,6 @@
 package gaarason.database.spring.boot.starter.test;
 
+import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.eloquent.Record;
 import gaarason.database.spring.boot.starter.test.data.model.StudentModel;
 import gaarason.database.spring.boot.starter.test.data.pojo.Student;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import java.util.Map;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -21,14 +23,19 @@ import javax.annotation.Resource;
 public class TestApplicationTests {
 
     @Resource
+    GeneralModel generalModel;
+
+    @Resource
     StudentModel studentModel;
 
     @Test
     public void 简单查询() {
-        Record<Student> first = studentModel.newQuery().where(Student.ID, "3").first();
+        Record<GeneralModel.Table> first = generalModel.newQuery().from("student").where(Student.ID, "3").first();
+//        Record<Student> first = studentModel.newQuery().where(Student.ID, "3").first();
         Assert.assertNotNull(first);
-        Student student = first.toObject();
-        Assert.assertEquals(3, (long) student.getId());
+        Map<String, Object> stringObjectMap = first.toMap();
+        Assert.assertEquals((long) stringObjectMap.get("id"), 3);
+        System.out.println(stringObjectMap);
     }
 
 }

@@ -45,7 +45,6 @@ public class ProxyDataSource implements DataSource {
     }
 
     public void setOutTransaction() {
-//        inTransaction.set(false);
         inTransaction.remove();
     }
 
