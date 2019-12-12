@@ -2,8 +2,6 @@ package gaarason.database.spring.boot.starter.test;
 
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.eloquent.Record;
-import gaarason.database.spring.boot.starter.test.data.model.StudentModel;
-import gaarason.database.spring.boot.starter.test.data.pojo.Student;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -23,15 +21,29 @@ import java.util.Map;
 public class TestApplicationTests {
 
     @Resource
-    GeneralModel generalModel;
+    GeneralGenerator generalGenerator;
 
     @Resource
-    StudentModel studentModel;
+    GeneralModel generalModel;
+
+    @Test
+    public void 生成代码() {
+        // 设置
+        generalGenerator.setStaticField(true);
+        generalGenerator.setIsSpringBoot(true);
+        generalGenerator.setOutputDir("./src/main/java/");
+        generalGenerator.setNamespace("gaarason.database.spring.boot.starter.test.data");
+        String[] disableCreate = {"created_at", "updated_at"};
+        generalGenerator.setDisInsertable(disableCreate);
+        String[] disableUpdate = {"created_at", "updated_at"};
+        generalGenerator.setDisUpdatable(disableUpdate);
+
+        generalGenerator.run();
+    }
 
     @Test
     public void 简单查询() {
-        Record<GeneralModel.Table> first = generalModel.newQuery().from("student").where(Student.ID, "3").first();
-//        Record<Student> first = studentModel.newQuery().where(Student.ID, "3").first();
+        Record<GeneralModel.Table> first = generalModel.newQuery().from("student").where("id", "3").first();
         Assert.assertNotNull(first);
         Map<String, Object> stringObjectMap = first.toMap();
         Assert.assertEquals((long) stringObjectMap.get("id"), 3);
