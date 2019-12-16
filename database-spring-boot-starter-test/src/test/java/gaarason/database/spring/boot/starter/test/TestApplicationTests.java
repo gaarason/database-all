@@ -30,9 +30,9 @@ public class TestApplicationTests {
     public void 生成代码() {
         // 设置
         generalGenerator.setStaticField(true);
-        generalGenerator.setIsSpringBoot(true);
+        generalGenerator.setIsSpringBoot(false);
         generalGenerator.setOutputDir("./src/main/java/");
-        generalGenerator.setNamespace("gaarason.database.spring.boot.starter.test.data");
+        generalGenerator.setNamespace("gaarason.database.test.relation.data");
         String[] disableCreate = {"created_at", "updated_at"};
         generalGenerator.setDisInsertable(disableCreate);
         String[] disableUpdate = {"created_at", "updated_at"};
