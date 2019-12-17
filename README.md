@@ -1,4 +1,6 @@
 # database
+[![](https://jitpack.io/v/gaarason/database-all.svg)](https://jitpack.io/#gaarason/database-all)  
+
 Eloquent ORM for Java
 ## 目录
 * [注册bean](/document/bean.md)
