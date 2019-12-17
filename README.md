@@ -24,15 +24,22 @@ List<Student> Students = studentModel.newQuery().where("id", "3").orWhere(
 ```
 ## spring boot 快速开始
 
-1. 引入依赖 pom.xml
+1. 引入仓库 pom.xml
+```$xslt
+<repository>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
+</repository>
+```
+2. 引入依赖 pom.xml
 ```$xslt
 <dependency>
-    <groupId>gaarason</groupId>
+    <groupId>com.github.gaarason.database-all</groupId>
     <artifactId>database-spring-boot-starter</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
 </dependency>
 ```
-2. 配置连接 application.properties
+3. 配置连接 application.properties
 ```$xslt
 spring.datasource.druid.url=jdbc:mysql://sakya.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai
 spring.datasource.druid.username=root
@@ -40,7 +47,7 @@ spring.datasource.druid.password=root
 spring.datasource.druid.driver-class-name=com.mysql.cj.jdbc.Driver
 spring.datasource.druid.db-type=com.alibaba.druid.pool.DruidDataSource
 ```
-3. 快速开始 
+4. 快速开始 
 ```java
 package gaarason.database.spring.boot.starter.test;
 
