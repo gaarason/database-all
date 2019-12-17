@@ -14,6 +14,7 @@
     <artifactId>database-all</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
+
     <description>Eloquent ORM</description>
     <properties>
         <java.version>1.8</java.version>
