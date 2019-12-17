@@ -11,7 +11,7 @@
         <module>database-generator-test</module>
     </modules>
     <groupId>com.github.gaarason</groupId>
-    <artifactId>database-all</artifactId>
+    <artifactId>database</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>Eloquent ORM</description>
