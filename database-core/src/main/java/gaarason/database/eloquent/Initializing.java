@@ -1,5 +1,6 @@
 package gaarason.database.eloquent;
 
+import gaarason.database.eloquent.annotations.Primary;
 import gaarason.database.utils.EntityUtil;
 import lombok.Getter;
 

@@ -1,9 +1,0 @@
-package ${namespace};
-
-import ${base_dao_namespace}.${base_dao_name};
-import ${pojo_namespace}.${pojo_name};
-${is_spring_boot}
-public class ${dao_name} extends ${base_dao_name}<${pojo_name}> {
-
-}
-

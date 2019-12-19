@@ -1,6 +1,6 @@
 package gaarason.database.contracts;
 
-import gaarason.database.eloquent.SqlType;
+import gaarason.database.eloquent.enums.SqlType;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 
 import java.util.List;

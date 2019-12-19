@@ -22,28 +22,28 @@ abstract public class Manager {
     private String namespace = "data";
 
     @Setter
-    private String pojoDir = "pojo";
+    private String entityDir = "entity";
 
     @Setter
-    private String pojoPrefix = "";
+    private String entityPrefix = "";
 
     @Setter
-    private String pojoSuffix = "";
+    private String entitySuffix = "";
 
     @Setter
-    private String daoDir = "model";
+    private String modelDir = "model";
 
     @Setter
-    private String daoPrefix = "";
+    private String modelPrefix = "";
 
     @Setter
-    private String daoSuffix = "Model";
+    private String modelSuffix = "Model";
 
     @Setter
-    private String baseDaoDir = "base";
+    private String baseModelDir = "base";
 
     @Setter
-    private String baseDaoName = "BaseModel";
+    private String baseModelName = "BaseModel";
 
     @Setter
     private Boolean isSpringBoot = false;
@@ -55,19 +55,19 @@ abstract public class Manager {
 
     private String[] disUpdatable = {};
 
-    final private static String pojoTemplateStr = fileGetContent(getAbsoluteReadFileName("pojo"));
+    final private static String entityTemplateStr = fileGetContent(getAbsoluteReadFileName("entity"));
 
     final private static String fieldTemplateStr = fileGetContent(getAbsoluteReadFileName("field"));
 
-    final private static String baseDaoTemplateStr = fileGetContent(getAbsoluteReadFileName("baseDao"));
+    final private static String baseModelTemplateStr = fileGetContent(getAbsoluteReadFileName("baseModel"));
 
-    final private static String daoTemplateStr = fileGetContent(getAbsoluteReadFileName("dao"));
+    final private static String modelTemplateStr = fileGetContent(getAbsoluteReadFileName("model"));
 
-    private String baseDaoNamespace;
+    private String baseModelNamespace;
 
-    private String daoNamespace;
+    private String modelNamespace;
 
-    private String pojoNamespace;
+    private String entityNamespace;
 
     /**
      * @return 数据库操作model
@@ -75,10 +75,10 @@ abstract public class Manager {
     abstract public Model getModel();
 
     private void init() {
-        baseDaoNamespace = namespace + ("".equals(daoDir) ? "" : ("." + daoDir)) + ("".equals(
-            baseDaoDir) ? "" : ("." + baseDaoDir));
-        daoNamespace = namespace + ("".equals(daoDir) ? "" : ("." + daoDir));
-        pojoNamespace = namespace + ("".equals(pojoDir) ? "" : ("." + pojoDir));
+        baseModelNamespace = namespace + ("".equals(modelDir) ? "" : ("." + modelDir)) + ("".equals(
+            baseModelDir) ? "" : ("." + baseModelDir));
+        modelNamespace = namespace + ("".equals(modelDir) ? "" : ("." + modelDir));
+        entityNamespace = namespace + ("".equals(entityDir) ? "" : ("." + entityDir));
     }
 
     public void run() {
@@ -86,10 +86,10 @@ abstract public class Manager {
         init();
         // 表信息
         List<Map<String, Object>> tables = showTables();
-        // baseDao 文件内容
-        String baseDaoTemplateStrReplace = fillBaseDaoTemplate();
-        // baseDao 写入文件
-        filePutContent(getAbsoluteWriteFilePath(baseDaoNamespace), baseDaoName, baseDaoTemplateStrReplace);
+        // baseModel 文件内容
+        String baseDaoTemplateStrReplace = fillBaseModelTemplate();
+        // baseModel 写入文件
+        filePutContent(getAbsoluteWriteFilePath(baseModelNamespace), baseModelName, baseDaoTemplateStrReplace);
 
         for (Map<String, Object> table : tables) {
             // 单个表
@@ -98,70 +98,70 @@ abstract public class Manager {
                 String tableName = table.get(key).toString();
 
                 // pojo文件名
-                String pojoName = pojoName(tableName);
+                String pojoName = entityName(tableName);
                 // pojo文件内容
                 String pojoTemplateStrReplace = fillPojoTemplate(tableName, pojoName);
                 // pojo写入文件
-                filePutContent(getAbsoluteWriteFilePath(pojoNamespace), pojoName, pojoTemplateStrReplace);
+                filePutContent(getAbsoluteWriteFilePath(entityNamespace), pojoName, pojoTemplateStrReplace);
 
                 // dao文件名
-                String daoName = daoName(tableName);
+                String daoName = modelName(tableName);
                 // dao文件内容
-                String daoTemplateStrReplace = fillDaoTemplate(tableName, daoName, pojoName);
+                String daoTemplateStrReplace = fillModelTemplate(tableName, daoName, pojoName);
                 // dao写入文件
-                filePutContent(getAbsoluteWriteFilePath(daoNamespace), daoName, daoTemplateStrReplace);
+                filePutContent(getAbsoluteWriteFilePath(modelNamespace), daoName, daoTemplateStrReplace);
             }
         }
     }
 
     /**
-     * 填充baseDao模板内容
+     * 填充baseModel模板内容
      * @return 内容
      */
-    private String fillBaseDaoTemplate() {
+    private String fillBaseModelTemplate() {
         Map<String, String> parameterMap = new HashMap<>();
-        parameterMap.put("${namespace}", baseDaoNamespace);
-        parameterMap.put("${dao_name}", baseDaoName);
+        parameterMap.put("${namespace}", baseModelNamespace);
+        parameterMap.put("${model_name}", baseModelName);
 
-        return fillTemplate(baseDaoTemplateStr, parameterMap);
+        return fillTemplate(baseModelTemplateStr, parameterMap);
     }
 
     /**
-     * 填充dao模板内容
-     * @param tableName 表名
-     * @param daoName   dao对象名
-     * @param pojoName  pojo对象名
+     * 填充model模板内容
+     * @param tableName  表名
+     * @param modelName  dao对象名
+     * @param entityName pojo对象名
      * @return 内容
      */
-    private String fillDaoTemplate(String tableName, String daoName, String pojoName) {
+    private String fillModelTemplate(String tableName, String modelName, String entityName) {
         Map<String, String> parameterMap = new HashMap<>();
-        parameterMap.put("${namespace}", daoNamespace);
-        parameterMap.put("${base_dao_namespace}", baseDaoNamespace);
-        parameterMap.put("${base_dao_name}", baseDaoName);
-        parameterMap.put("${pojo_namespace}", pojoNamespace);
-        parameterMap.put("${pojo_name}", pojoName);
-        parameterMap.put("${dao_name}", daoName);
+        parameterMap.put("${namespace}", modelNamespace);
+        parameterMap.put("${base_model_namespace}", baseModelNamespace);
+        parameterMap.put("${base_model_name}", baseModelName);
+        parameterMap.put("${entity_namespace}", entityNamespace);
+        parameterMap.put("${entity_name}", entityName);
+        parameterMap.put("${model_name}", modelName);
         parameterMap.put("${is_spring_boot}", isSpringBoot ? "import org.springframework.stereotype.Component;" +
             "\n\n@Component" : "");
 
-        return fillTemplate(daoTemplateStr, parameterMap);
+        return fillTemplate(modelTemplateStr, parameterMap);
     }
 
     /**
-     * 填充pojo模板内容
-     * @param tableName 表名
-     * @param pojoName  对象名
+     * 填充entity模板内容
+     * @param tableName  表名
+     * @param entityName 对象名
      * @return 内容
      */
-    private String fillPojoTemplate(String tableName, String pojoName) {
+    private String fillPojoTemplate(String tableName, String entityName) {
         Map<String, String> parameterMap = new HashMap<>();
-        parameterMap.put("${namespace}", pojoNamespace);
-        parameterMap.put("${pojo_name}", pojoName);
+        parameterMap.put("${namespace}", entityNamespace);
+        parameterMap.put("${entity_name}", entityName);
         parameterMap.put("${table}", tableName);
         parameterMap.put("${static_fields}", staticField ? fillStaticFieldsTemplate(tableName) : "");
         parameterMap.put("${fields}", fillFieldsTemplate(tableName));
 
-        return fillTemplate(pojoTemplateStr, parameterMap);
+        return fillTemplate(entityTemplateStr, parameterMap);
     }
 
     /**
@@ -241,12 +241,12 @@ abstract public class Manager {
         return fillTemplate(fieldTemplateStr, parameterMap);
     }
 
-    private String pojoName(String tableName) {
-        return pojoPrefix + StringUtil.lineToHump(tableName, true) + pojoSuffix;
+    private String entityName(String tableName) {
+        return entityPrefix + StringUtil.lineToHump(tableName, true) + entitySuffix;
     }
 
-    private String daoName(String tableName) {
-        return daoPrefix + StringUtil.lineToHump(tableName, true) + daoSuffix;
+    private String modelName(String tableName) {
+        return modelPrefix + StringUtil.lineToHump(tableName, true) + modelSuffix;
     }
 
     @SuppressWarnings("unchecked")
@@ -321,11 +321,6 @@ abstract public class Manager {
 
     private String getAbsoluteWriteFilePath(String namespace) {
         return StringUtil.rtrim(outputDir, "/") + "/" + namespace2dir(namespace) + '/';
-
-//        return Thread.currentThread().getStackTrace()[1].getClass()
-//            .getResource("/")
-//            .toString()
-//            .replace("file:", "") + "../../../database-generator-test/src/test/java/" + namespace2dir(namespace) + '/';
     }
 
     private static String fileGetContent(String fileName) {

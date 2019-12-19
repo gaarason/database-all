@@ -3,6 +3,8 @@ package gaarason.database.eloquent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gaarason.database.core.lang.Nullable;
+import gaarason.database.eloquent.annotations.*;
+import gaarason.database.eloquent.relations.SubQuery;
 import gaarason.database.exception.EntityNewInstanceException;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.TypeNotSupportedException;
@@ -88,7 +90,7 @@ public class Record<T> implements Serializable {
      */
     private void init(Map<String, Column> stringColumnMap) {
         this.metadataMap = stringColumnMap;
-        entity = originalEntity = toObject();
+        entity = originalEntity = toObjectWithoutRelationship();
         if (!stringColumnMap.isEmpty()) {
             hasBind = true;
             // aop通知
@@ -96,15 +98,18 @@ public class Record<T> implements Serializable {
         } else {
             hasBind = false;
         }
-
     }
 
     /**
-     * 元数据
-     * @return map
+     * 将元数据map转化为普通map
+     * @return 普通map
      */
     public Map<String, Object> toMap() {
-        return toMap(metadataMap);
+        Map<String, Object> map = new HashMap<>();
+        for (Column value : metadataMap.values()) {
+            map.put(value.getName(), value.getValue());
+        }
+        return map;
     }
 
     /**
@@ -141,7 +146,15 @@ public class Record<T> implements Serializable {
      * @return 实体对象
      */
     public T toObject() {
-        return toObject(entityClass, metadataMap);
+        return toObject(entityClass, metadataMap, true);
+    }
+
+    /**
+     * 元数据转实体对象
+     * @return 实体对象
+     */
+    public T toObjectWithoutRelationship() {
+        return toObject(entityClass, metadataMap, false);
     }
 
     /**
@@ -149,34 +162,27 @@ public class Record<T> implements Serializable {
      * @return 指定实体对象
      */
     public <V> V toObject(Class<V> entityClassCustom) {
-        return toObject(entityClassCustom, metadataMap);
-    }
-
-    /**
-     * 将元数据map转化为普通map
-     * @param stringColumnMap 元数据
-     * @return 普通map
-     */
-    private static Map<String, Object> toMap(Map<String, Column> stringColumnMap) {
-        Map<String, Object> map = new HashMap<>();
-        for (Column value : stringColumnMap.values()) {
-            map.put(value.getName(), value.getValue());
-        }
-        return map;
+        return toObject(entityClassCustom, metadataMap, true);
     }
 
     /**
      * 将元数据map赋值给实体对象
-     * @param entityClass     实体类
-     * @param stringColumnMap 元数据map
+     * @param entityClass          实体类
+     * @param stringColumnMap      元数据map
+     * @param attachedRelationship 是否查询关联关系
      * @return 实体对象
      */
-    private <V> V toObject(Class<V> entityClass, Map<String, Column> stringColumnMap)
+    private <V> V toObject(Class<V> entityClass, Map<String, Column> stringColumnMap, boolean attachedRelationship)
         throws EntityNewInstanceException {
         Field[] fields = entityClass.getDeclaredFields();
         try {
             V entity = entityClass.newInstance();
+            // 普通字段赋值
             fieldAssignment(fields, stringColumnMap, entity);
+            // 关联关系查询&赋值
+            if (attachedRelationship) {
+                fieldRelationAssignment(fields, stringColumnMap, entity);
+            }
             return entity;
         } catch (InstantiationException | IllegalAccessException e) {
             throw new EntityNewInstanceException(e.getMessage());
@@ -189,10 +195,9 @@ public class Record<T> implements Serializable {
      * @param stringColumnMap 元数据map
      * @param entity          数据表实体对象
      */
-    private void fieldAssignment(Field[] fields, Map<String, Column> stringColumnMap, Object entity)
+    private <V> void fieldAssignment(Field[] fields, Map<String, Column> stringColumnMap, V entity)
         throws TypeNotSupportedException {
         for (Field field : fields) {
-
             String columnName = EntityUtil.columnName(field);
             Column column     = stringColumnMap.get(columnName);
             if (column == null) {
@@ -206,6 +211,39 @@ public class Record<T> implements Serializable {
                 if (field.isAnnotationPresent(Primary.class)) {
                     originalPrimaryKeyValue = value;
                 }
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+                throw new TypeNotSupportedException(e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * 将关联关系的数据库查询结果赋值给entity的field
+     * @param fields          属性
+     * @param stringColumnMap 元数据map
+     * @param entity          数据表实体对象
+     */
+    private <V> void fieldRelationAssignment(Field[] fields, Map<String, Column> stringColumnMap, V entity)
+        throws TypeNotSupportedException {
+        for (Field field : fields) {
+            field.setAccessible(true);
+            Object relationshipEntity;
+            // 关联关系查询&赋值
+            if (field.isAnnotationPresent(HasOne.class)) {
+                relationshipEntity = SubQuery.dealHasOne(field, stringColumnMap);
+            } else if (field.isAnnotationPresent(HasMany.class)) {
+                relationshipEntity = SubQuery.dealHasMany(field, stringColumnMap);
+            } else if (field.isAnnotationPresent(BelongsToMany.class)) {
+                relationshipEntity = SubQuery.dealBelongsToMany(field, stringColumnMap);
+            }
+//            else if (field.isAnnotationPresent(ManyToMany.class)) {
+//                relationshipEntity = SubQuery.dealManyToMany(field, stringColumnMap);
+//            }
+            else {
+                continue;
+            }
+            try {
+                field.set(entity, relationshipEntity);
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 throw new TypeNotSupportedException(e.getMessage());
             }
@@ -272,7 +310,7 @@ public class Record<T> implements Serializable {
         // 成功删除后后,刷新自身属性
         if (success) {
             this.metadataMap = new HashMap<>();
-            entity = originalEntity = toObject();
+            entity = originalEntity = toObjectWithoutRelationship();
             hasBind = false;
             // aop通知
             model.deleted(this);
@@ -389,7 +427,7 @@ public class Record<T> implements Serializable {
      */
     private void selfUpdate(T entity, boolean insertType) {
         selfUpdateMetadataMap(entity, insertType);
-        this.entity = originalEntity = toObject();
+        this.entity = originalEntity = toObjectWithoutRelationship();
     }
 
     /**
@@ -419,7 +457,7 @@ public class Record<T> implements Serializable {
      * 转字符
      * @return 字符
      */
-    public String toString() {
-        return entity.toString();
-    }
+//    public String toString() {
+//        return entity.toString();
+//    }
 }

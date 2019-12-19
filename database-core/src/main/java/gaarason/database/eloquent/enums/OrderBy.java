@@ -1,4 +1,4 @@
-package gaarason.database.eloquent;
+package gaarason.database.eloquent.enums;
 
 import lombok.Getter;
 

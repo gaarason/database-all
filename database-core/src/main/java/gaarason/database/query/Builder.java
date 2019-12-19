@@ -2,12 +2,15 @@ package gaarason.database.query;
 
 import gaarason.database.connections.ProxyDataSource;
 import gaarason.database.contracts.Grammar;
-import gaarason.database.contracts.builder.OrderBy;
 import gaarason.database.contracts.builder.*;
 import gaarason.database.contracts.function.Chunk;
 import gaarason.database.contracts.function.GenerateSqlPart;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.*;
+import gaarason.database.eloquent.Model;
+import gaarason.database.eloquent.Paginate;
+import gaarason.database.eloquent.Record;
+import gaarason.database.eloquent.RecordList;
+import gaarason.database.eloquent.enums.SqlType;
 import gaarason.database.exception.*;
 import gaarason.database.support.RecordFactory;
 import gaarason.database.utils.ExceptionUtil;

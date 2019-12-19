@@ -2,7 +2,7 @@ package gaarason.database.query.grammars;
 
 import gaarason.database.contracts.Grammar;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.SqlType;
+import gaarason.database.eloquent.enums.SqlType;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.InvalidSQLTypeException;
 import gaarason.database.utils.FormatUtil;

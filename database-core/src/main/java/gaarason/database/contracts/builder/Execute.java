@@ -4,7 +4,7 @@ import gaarason.database.contracts.function.Chunk;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
-import gaarason.database.eloquent.SqlType;
+import gaarason.database.eloquent.enums.SqlType;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 

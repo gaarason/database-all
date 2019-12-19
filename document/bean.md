@@ -388,10 +388,10 @@ application.properties 省略
 package gaarason.database.models;
 
 import gaarason.database.connections.ProxyDataSource;
-import gaarason.database.eloquent.Column;
+import gaarason.database.eloquent.annotations.Column;
 import gaarason.database.eloquent.Model;
-import gaarason.database.eloquent.Primary;
-import gaarason.database.eloquent.Table;
+import gaarason.database.eloquent.annotations.Primary;
+import gaarason.database.eloquent.annotations.Table;
 import lombok.Data;
 import org.springframework.stereotype.Component;
 

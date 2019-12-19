@@ -1,0 +1,21 @@
+package ${namespace};
+
+import gaarason.database.eloquent.annotations.Column;
+import gaarason.database.eloquent.annotations.Primary;
+import gaarason.database.eloquent.annotations.Table;
+import lombok.Data;
+
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.util.Date;
+
+@Data
+@Table(name = "${table}")
+public class ${entity_name} implements Serializable {
+
+    /** auto generator start **/
+
+${static_fields}
+${fields}
+    /** auto generator end **/
+}

@@ -1,7 +1,7 @@
 package gaarason.database.test;
 
 import gaarason.database.connections.ProxyDataSource;
-import gaarason.database.eloquent.OrderBy;
+import gaarason.database.eloquent.enums.OrderBy;
 import gaarason.database.eloquent.Paginate;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
@@ -278,7 +278,7 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(first5.getId().intValue(), 1);
         Assert.assertEquals(first5.getName(), "小明");
         Assert.assertEquals(first5.getAge().intValue(), 6);
-        Assert.assertEquals(first5.getTeacherId().intValue(), 0);
+        Assert.assertEquals(first5.getTeacherId().intValue(), 6);
         Assert.assertEquals(first5.getCreatedAt().toString(), "2009-03-14 17:15:23.0");
         Assert.assertEquals(first5.getUpdatedAt().toString(), "2010-04-24 22:11:03.0");
 
@@ -304,7 +304,7 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(entity2.getId().intValue(), 1);
         Assert.assertEquals(entity2.getName(), "小明");
         Assert.assertEquals(entity2.getAge().intValue(), 6);
-        Assert.assertEquals(entity2.getTeacherId().intValue(), 0);
+        Assert.assertEquals(entity2.getTeacherId().intValue(), 6);
         Assert.assertEquals(entity2.getCreatedAt().toString(), "2009-03-14 17:15:23.0");
         Assert.assertEquals(entity2.getUpdatedAt().toString(), "2010-04-24 22:11:03.0");
     }
@@ -409,7 +409,7 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(first.getId().intValue(), 3);
         Assert.assertEquals(first.getName(), "小腾");
         Assert.assertEquals(first.getAge().intValue(), 16);
-        Assert.assertEquals(first.getTeacherId().intValue(), 0);
+        Assert.assertEquals(first.getTeacherId().intValue(), 6);
         Assert.assertEquals(first.getCreatedAt().toString(), "2009-03-14 15:11:23.0");
         Assert.assertEquals(first.getUpdatedAt().toString(), "2010-04-24 22:11:03.0");
 
@@ -422,7 +422,7 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(first2.getId().intValue(), 2);
         Assert.assertEquals(first2.getName(), "小张");
         Assert.assertEquals(first2.getAge().intValue(), 11);
-        Assert.assertEquals(first2.getTeacherId().intValue(), 0);
+        Assert.assertEquals(first2.getTeacherId().intValue(), 6);
         Assert.assertEquals(first2.getCreatedAt().toString(), "2009-03-14 15:15:23.0");
         Assert.assertEquals(first2.getUpdatedAt().toString(), "2010-04-24 22:11:03.0");
     }
@@ -437,7 +437,7 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(first.getId().intValue(), 3);
         Assert.assertEquals(first.getName(), "小腾");
         Assert.assertEquals(first.getAge().intValue(), 16);
-        Assert.assertEquals(first.getTeacherId().intValue(), 0);
+        Assert.assertEquals(first.getTeacherId().intValue(), 6);
         Assert.assertEquals(first.getCreatedAt().toString(), "2009-03-14 15:11:23.0");
         Assert.assertEquals(first.getUpdatedAt().toString(), "2010-04-24 22:11:03.0");
 

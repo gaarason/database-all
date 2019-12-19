@@ -1,8 +1,8 @@
 package gaarason.database.utils;
 
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.Column;
-import gaarason.database.eloquent.Table;
+import gaarason.database.eloquent.annotations.Column;
+import gaarason.database.eloquent.annotations.Table;
 
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;

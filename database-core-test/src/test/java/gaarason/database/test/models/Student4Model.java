@@ -3,16 +3,25 @@ package gaarason.database.test.models;
 import gaarason.database.eloquent.annotations.Column;
 import gaarason.database.eloquent.annotations.Primary;
 import gaarason.database.eloquent.annotations.Table;
-import gaarason.database.test.models.base.Single2Model;
+import gaarason.database.test.models.base.SingleModel;
 import lombok.Data;
 
 import java.util.Date;
 
-public class Student2Model extends Single2Model<Student2Model.Entity> {
+public class Student4Model extends SingleModel<Student4Model.Entity> {
 
     @Data
     @Table(name = "student")
     public static class Entity {
+        final public static String ID = "id";
+        final public static String NAME = "name";
+        final public static String AGE = "age";
+        final public static String SEX = "sex";
+        final public static String TEACHER_ID = "teacher_id";
+        final public static String IS_DELETED = "is_deleted";
+        final public static String CREATED_AT = "created_at";
+        final public static String UPDATED_AT = "updated_at";
+
         @Primary
         private Integer id;
 
@@ -32,20 +41,4 @@ public class Student2Model extends Single2Model<Student2Model.Entity> {
         @Column(name = "updated_at", insertable = false, updatable = false)
         private Date updatedAt;
     }
-
-    final public static String id        = "id";
-
-    final public static String name      = "name";
-
-    final public static String age       = "age";
-
-    final public static String sex       = "sex";
-
-    final public static String teacherId = "teacher_id";
-
-    final public static String isDeleted = "is_deleted";
-
-    final public static String createdAt = "created_at";
-
-    final public static String updatedAt = "updated_at";
 }
