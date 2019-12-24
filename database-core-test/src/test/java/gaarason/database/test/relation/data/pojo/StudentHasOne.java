@@ -1,6 +1,7 @@
 package gaarason.database.test.relation.data.pojo;
 
 import gaarason.database.eloquent.annotations.*;
+import gaarason.database.test.relation.data.model.TeacherHasManyModel;
 import gaarason.database.test.relation.data.model.TeacherModel;
 import lombok.Data;
 
@@ -45,7 +46,7 @@ public class StudentHasOne implements Serializable {
     @Column(name = "updated_at", insertable = false, updatable = false, comment = "更新时间")
     private Date updatedAt;
 
-    @HasOne(targetModel = TeacherModel.class, foreignKey = "teacher_id")
-    private Teacher teacher;
+    @HasOne(targetModel = TeacherHasManyModel.class, foreignKey = "teacher_id")
+    private TeacherHasMany teacher;
 
 }

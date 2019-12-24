@@ -11,19 +11,19 @@ import java.lang.annotation.*;
 public @interface BelongsTo {
 
     /**
-     * 关联model
+     * 所属的上级model
      * @return
      */
-    Class<? extends Model> targetModel();
+    Class<? extends Model> parentModel();
 
     /**
-     * model的关联id, 一般为model外键
+     * 本model的外键(指向上级model)
      * @return
      */
     String foreignKey();
 
     /**
-     * targetModel的关联id, 一般为targetModel主键
+     * parentModel的关联id, 一般为parentModel主键
      * @return
      */
     String localKey() default "";

@@ -235,11 +235,9 @@ public class Record<T> implements Serializable {
                 relationshipEntity = SubQuery.dealHasMany(field, stringColumnMap);
             } else if (field.isAnnotationPresent(BelongsToMany.class)) {
                 relationshipEntity = SubQuery.dealBelongsToMany(field, stringColumnMap);
-            }
-//            else if (field.isAnnotationPresent(ManyToMany.class)) {
-//                relationshipEntity = SubQuery.dealManyToMany(field, stringColumnMap);
-//            }
-            else {
+            } else if (field.isAnnotationPresent(BelongsTo.class)) {
+                relationshipEntity = SubQuery.dealBelongsTo(field, stringColumnMap);
+            } else {
                 continue;
             }
             try {

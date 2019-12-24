@@ -9,6 +9,10 @@ Eloquent ORM for Java
         * [Table](#Table)
         * [Primary](#Primary)
         * [Column](#Column)
+        * [BelongsTo](#BelongsTo)
+        * [BelongsToMany](#BelongsToMany)
+        * [HasMany](#HasMany)
+        * [HasOne](#HasOne)
 * [数据模型](/document/model.md)
 * [查询结果集](/document/record.md)
 * [查询构造器](/document/query.md)
@@ -84,6 +88,22 @@ public class Student implements Serializable {
 - `gaarason.database.eloquent.annotations.Column` 用于确定每个数据字段的具体属性
 - 当`insertable`以及`updatable`为`false`时, 对应字段的`ORM`操作将被忽略 
 - 如果某个数据对象没有`Primary`注解, 则大多数`ORM`操作将被禁用
+
+### BelongsTo
+
+- 一对一关系
+
+### BelongsToMany
+
+- 多对多关系
+
+### HasMany
+
+- 一对多关系
+
+### HasOne
+
+- 一对一关系
 
 
 

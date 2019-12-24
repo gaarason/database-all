@@ -3,10 +3,8 @@ package gaarason.database.test;
 import gaarason.database.connections.ProxyDataSource;
 import gaarason.database.eloquent.Record;
 import gaarason.database.test.parent.BaseTests;
-import gaarason.database.test.relation.data.model.StudentBelongsToManyModel;
-import gaarason.database.test.relation.data.model.StudentHasOneModel;
-import gaarason.database.test.relation.data.model.StudentModel;
-import gaarason.database.test.relation.data.model.TeacherHasManyModel;
+import gaarason.database.test.relation.data.model.*;
+import gaarason.database.test.relation.data.pojo.StudentBelongsTo;
 import gaarason.database.test.relation.data.pojo.StudentBelongsToMany;
 import gaarason.database.test.relation.data.pojo.StudentHasOne;
 import gaarason.database.test.relation.data.pojo.TeacherHasMany;
@@ -34,6 +32,8 @@ public class RelationTests extends BaseTests {
     private static TeacherHasManyModel teacherHasManyModel = new TeacherHasManyModel();
 
     private static StudentBelongsToManyModel studentBelongsToManyModel = new StudentBelongsToManyModel();
+
+    private static StudentBelongsToModel studentBelongsToModel = new StudentBelongsToModel();
 
     protected List<DataSource> getDataSourceList() {
         ProxyDataSource proxyDataSource = studentModel.getProxyDataSource();
@@ -66,5 +66,13 @@ public class RelationTests extends BaseTests {
         System.out.println(studentBelongsToMany);
         Assert.assertEquals(studentBelongsToMany.getTeachers().size(), 2);
 
+    }
+
+    @Test
+    public void 反一对一关系() {
+        StudentBelongsTo studentBelongsTo = studentBelongsToModel.newQuery().firstOrFail().toObject();
+        System.out.println(studentBelongsTo);
+        System.out.println(studentBelongsTo.getTeacher());
+        Assert.assertEquals((long) studentBelongsTo.getTeacher().getId(), 6);
     }
 }

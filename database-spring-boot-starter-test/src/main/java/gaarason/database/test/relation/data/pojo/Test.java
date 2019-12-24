@@ -1,17 +1,15 @@
 package gaarason.database.test.relation.data.pojo;
 
-import gaarason.database.eloquent.annotations.*;
-import gaarason.database.test.relation.data.model.StudentHasOneModel;
-import gaarason.database.test.relation.data.model.StudentModel;
+import gaarason.database.eloquent.annotations.Column;
+import gaarason.database.eloquent.annotations.Table;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 @Data
-@Table(name = "teacher")
-public class TeacherHasMany implements Serializable {
+@Table(name = "test")
+public class Test implements Serializable {
 
     final public static String ID = "id";
     final public static String NAME = "name";
@@ -21,9 +19,9 @@ public class TeacherHasMany implements Serializable {
     final public static String CREATED_AT = "created_at";
     final public static String UPDATED_AT = "updated_at";
 
-    @Primary()
-    @Column(name = "id")
-    private Integer id;
+    
+    @Column(name = "id", length = 12)
+    private String id;
     
     @Column(name = "name", length = 20, comment = "姓名")
     private String name;
@@ -42,8 +40,5 @@ public class TeacherHasMany implements Serializable {
     
     @Column(name = "updated_at", insertable = false, updatable = false, comment = "更新时间")
     private Date updatedAt;
-
-    @HasMany(targetModel = StudentHasOneModel.class, foreignKey = "teacher_id")
-    private List<StudentHasOne> students;
 
 }

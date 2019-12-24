@@ -19,6 +19,18 @@ public class RecordList<T> extends ArrayList<Record<T>> {
     }
 
     /**
+     * 转化为对象列表(不查询关联关系)
+     * @return 对象列表
+     */
+    public List<T> toObjectWithoutRelationship() {
+        List<T> list = new ArrayList<>();
+        for (Record<T> record : this) {
+            list.add(record.toObjectWithoutRelationship());
+        }
+        return list;
+    }
+
+    /**
      * 转化为map list
      * @return mapList
      */
