@@ -110,9 +110,9 @@ public class GeneratorTests {
 #### 引入依赖 pom.xml
 ```$xslt
 <dependency>
-    <groupId>gaarason</groupId>
+    <groupId>com.github.gaarason.database-all</groupId>
     <artifactId>database-spring-boot-starter-test</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.3</version>
 </dependency>
 ```
 #### 编写单元测试

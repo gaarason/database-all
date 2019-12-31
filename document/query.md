@@ -380,8 +380,6 @@ RecordList<Student> records = studentModel.newQuery()
 `隔离级别`设置在[注册bean](/document/bean.md)的`SESSION SQL_MODE`,默认可重复读   
 `传播性`为同数据库连接不可嵌套, 不同的数据库连接可以任意嵌套  
 
-**后续有**
-
 ### 手动事物
 ```java
 // 开启事物
