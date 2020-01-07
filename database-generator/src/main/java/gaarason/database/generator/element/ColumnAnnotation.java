@@ -17,7 +17,7 @@ public class ColumnAnnotation {
 
     private Boolean updatable = true;
 
-    private Integer length;
+    private Long length;
 
     private String comment = "";
 

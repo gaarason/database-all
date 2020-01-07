@@ -94,18 +94,18 @@ abstract public class Generator {
                 // 表名
                 String tableName = table.get(key).toString();
 
-                // pojo文件名
+                // entity文件名
                 String pojoName = entityName(tableName);
-                // pojo文件内容
+                // entity文件内容
                 String pojoTemplateStrReplace = fillPojoTemplate(tableName, pojoName);
-                // pojo写入文件
+                // entity写入文件
                 filePutContent(getAbsoluteWriteFilePath(entityNamespace), pojoName, pojoTemplateStrReplace);
 
-                // dao文件名
+                // model文件名
                 String daoName = modelName(tableName);
-                // dao文件内容
+                // model文件内容
                 String daoTemplateStrReplace = fillModelTemplate(tableName, daoName, pojoName);
-                // dao写入文件
+                // model写入文件
                 filePutContent(getAbsoluteWriteFilePath(modelNamespace), daoName, daoTemplateStrReplace);
             }
         }
@@ -223,7 +223,7 @@ abstract public class Generator {
         columnAnnotation.setInsertable(!Arrays.asList(disInsertable).contains(field.get("COLUMN_NAME").toString()));
         columnAnnotation.setUpdatable(!Arrays.asList(disUpdatable).contains(field.get("COLUMN_NAME").toString()));
         if (field.get("CHARACTER_MAXIMUM_LENGTH") != null) {
-            columnAnnotation.setLength(Integer.valueOf(field.get("CHARACTER_MAXIMUM_LENGTH").toString()));
+            columnAnnotation.setLength(Long.valueOf(field.get("CHARACTER_MAXIMUM_LENGTH").toString()));
         }
         columnAnnotation.setComment(field.get("COLUMN_COMMENT").toString());
 
