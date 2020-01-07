@@ -1,4 +1,4 @@
-package gaarason.database.test.relation.data.pojo;
+package gaarason.database.test.relation.data.entity;
 
 import gaarason.database.eloquent.annotations.Column;
 import gaarason.database.eloquent.annotations.Primary;
@@ -6,11 +6,14 @@ import gaarason.database.eloquent.annotations.Table;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.Date;
 
 @Data
 @Table(name = "data_type")
 public class DataType implements Serializable {
+
+    /** auto generator start **/
 
     final public static String ID = "id";
     final public static String NAME = "name";
@@ -110,4 +113,5 @@ public class DataType implements Serializable {
     @Column(name = "text", length = 65535)
     private String text;
 
+    /** auto generator end **/
 }

@@ -1,15 +1,19 @@
-package gaarason.database.test.relation.data.pojo;
+package gaarason.database.test.relation.data.entity;
 
 import gaarason.database.eloquent.annotations.Column;
+import gaarason.database.eloquent.annotations.Primary;
 import gaarason.database.eloquent.annotations.Table;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.Date;
 
 @Data
-@Table(name = "test")
-public class Test implements Serializable {
+@Table(name = "teacher")
+public class Teacher implements Serializable {
+
+    /** auto generator start **/
 
     final public static String ID = "id";
     final public static String NAME = "name";
@@ -19,9 +23,9 @@ public class Test implements Serializable {
     final public static String CREATED_AT = "created_at";
     final public static String UPDATED_AT = "updated_at";
 
-    
-    @Column(name = "id", length = 12)
-    private String id;
+    @Primary()
+    @Column(name = "id")
+    private Integer id;
     
     @Column(name = "name", length = 20, comment = "姓名")
     private String name;
@@ -41,4 +45,5 @@ public class Test implements Serializable {
     @Column(name = "updated_at", insertable = false, updatable = false, comment = "更新时间")
     private Date updatedAt;
 
+    /** auto generator end **/
 }

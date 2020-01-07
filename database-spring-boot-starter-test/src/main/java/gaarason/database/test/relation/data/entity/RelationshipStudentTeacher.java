@@ -1,4 +1,4 @@
-package gaarason.database.test.relation.data.pojo;
+package gaarason.database.test.relation.data.entity;
 
 import gaarason.database.eloquent.annotations.Column;
 import gaarason.database.eloquent.annotations.Primary;
@@ -6,11 +6,14 @@ import gaarason.database.eloquent.annotations.Table;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.Date;
 
 @Data
 @Table(name = "relationship_student_teacher")
 public class RelationshipStudentTeacher implements Serializable {
+
+    /** auto generator start **/
 
     final public static String ID = "id";
     final public static String STUDENT_ID = "student_id";
@@ -34,4 +37,5 @@ public class RelationshipStudentTeacher implements Serializable {
     @Column(name = "updated_at", insertable = false, updatable = false, comment = "更新时间")
     private Date updatedAt;
 
+    /** auto generator end **/
 }
