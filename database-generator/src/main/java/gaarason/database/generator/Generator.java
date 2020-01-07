@@ -109,6 +109,7 @@ abstract public class Generator {
                 filePutContent(getAbsoluteWriteFilePath(modelNamespace), daoName, daoTemplateStrReplace);
             }
         }
+        consoleLog("全部生成完毕");
     }
 
     /**
@@ -167,6 +168,8 @@ abstract public class Generator {
      * @return 内容
      */
     private String fillFieldsTemplate(String tableName) {
+        consoleLog("处理表 : " + tableName);
+
         StringBuilder str = new StringBuilder();
         // 字段信息
         List<Map<String, Object>> fields = descTable(tableName);
@@ -202,6 +205,9 @@ abstract public class Generator {
      * @return 内容
      */
     private String fillFieldTemplate(Map<String, Object> field) {
+
+        consoleLog("处理字段 : " + field);
+
         // field
         Field fieldInfo = new Field();
         fieldInfo.setName(StringUtil.lineToHump(field.get("COLUMN_NAME").toString()));
@@ -227,7 +233,6 @@ abstract public class Generator {
             primaryAnnotation = new PrimaryAnnotation();
             primaryAnnotation.setIncrement(field.get("EXTRA").toString().equals("auto_increment"));
         }
-
 
         // 模板替换参数
         Map<String, String> parameterMap = new HashMap<>();
@@ -294,7 +299,6 @@ abstract public class Generator {
         disUpdatable = column;
     }
 
-
     /**
      * 填充模板
      * @param template     模板内容
@@ -309,13 +313,8 @@ abstract public class Generator {
         return template;
     }
 
-
     private static String getAbsoluteReadFileName(String name) {
-//        return Thread.currentThread().getStackTrace()[1].getClass().getResource("/").toString().replace(
-//            "file:", "") + "../../../database-generator/src" +
-//            "/main/java/gaarason/database/generator/template/" + name;
         return "/template/" + name;
-//        return Generator.class.getResource("/template/" + name).getPath();
     }
 
     private String getAbsoluteWriteFilePath(String namespace) {
@@ -332,24 +331,10 @@ abstract public class Generator {
                 configContentStr.append(s);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         return configContentStr.toString();
-
-
-//        try {
-//            String          encoding    = "UTF-8";
-//            File            file        = new File(fileName);
-//            Long            filelength  = file.length();
-//            byte[]          filecontent = new byte[filelength.intValue()];
-//            FileInputStream in          = new FileInputStream(file);
-//            in.read(filecontent);
-//            in.close();
-//            return new String(filecontent, encoding);
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
     }
 
     private static void filePutContent(String path, String fileName, String content) {
@@ -359,7 +344,7 @@ abstract public class Generator {
                 file.mkdirs();
             }
             FileWriter writer = new FileWriter(path + fileName + ".java", false);
-            writer.write(content.replaceAll("\\\\n","\n"));
+            writer.write(content.replaceAll("\\\\n", "\n"));
             writer.flush();
             writer.close();
             // 控制台输出
