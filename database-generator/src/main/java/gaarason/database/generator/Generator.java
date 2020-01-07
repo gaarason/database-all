@@ -7,10 +7,7 @@ import gaarason.database.generator.element.PrimaryAnnotation;
 import gaarason.database.utils.StringUtil;
 import lombok.Setter;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 abstract public class Generator {
@@ -317,7 +314,8 @@ abstract public class Generator {
 //        return Thread.currentThread().getStackTrace()[1].getClass().getResource("/").toString().replace(
 //            "file:", "") + "../../../database-generator/src" +
 //            "/main/java/gaarason/database/generator/template/" + name;
-        return Generator.class.getResource("/template/" + name).getPath();
+        return "/template/" + name;
+//        return Generator.class.getResource("/template/" + name).getPath();
     }
 
     private String getAbsoluteWriteFilePath(String namespace) {
@@ -325,18 +323,33 @@ abstract public class Generator {
     }
 
     private static String fileGetContent(String fileName) {
+        InputStream    is               = Generator.class.getResourceAsStream(fileName);
+        BufferedReader br               = new BufferedReader(new InputStreamReader(is));
+        String         s;
+        StringBuilder  configContentStr = new StringBuilder();
         try {
-            String          encoding    = "UTF-8";
-            File            file        = new File(fileName);
-            Long            filelength  = file.length();
-            byte[]          filecontent = new byte[filelength.intValue()];
-            FileInputStream in          = new FileInputStream(file);
-            in.read(filecontent);
-            in.close();
-            return new String(filecontent, encoding);
+            while ((s = br.readLine()) != null) {
+                configContentStr.append(s);
+            }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
+
+        return configContentStr.toString();
+
+
+//        try {
+//            String          encoding    = "UTF-8";
+//            File            file        = new File(fileName);
+//            Long            filelength  = file.length();
+//            byte[]          filecontent = new byte[filelength.intValue()];
+//            FileInputStream in          = new FileInputStream(file);
+//            in.read(filecontent);
+//            in.close();
+//            return new String(filecontent, encoding);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     private static void filePutContent(String path, String fileName, String content) {
@@ -346,7 +359,7 @@ abstract public class Generator {
                 file.mkdirs();
             }
             FileWriter writer = new FileWriter(path + fileName + ".java", false);
-            writer.write(content);
+            writer.write(content.replaceAll("\\\\n","\n"));
             writer.flush();
             writer.close();
             // 控制台输出

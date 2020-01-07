@@ -6,4 +6,3 @@ import gaarason.database.test.relation.data.entity.DataType;
 public class DataTypeModel extends BaseModel<DataType> {
 
 }
-

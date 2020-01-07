@@ -1,32 +1,32 @@
-package ${namespace};
-
-import gaarason.database.connections.ProxyDataSource;
-import gaarason.database.eloquent.Model;
-import lombok.extern.slf4j.Slf4j;
-
-import javax.annotation.Resource;
-import java.util.Collection;
-
-@Slf4j
-abstract public class ${model_name}<T> extends Model<T> {
-
-    // todo
-    @Resource(name = "proxyDataSource")
-    protected ProxyDataSource proxyDataSource;
-
-    @Override
-    public ProxyDataSource getProxyDataSource(){
-        return proxyDataSource;
-    }
-
-    /**
-     * sql日志记录
-     * @param sql           带占位符的sql
-     * @param parameterList 参数
-     */
-    public void log(String sql, Collection<String> parameterList) {
-        String format = String.format(sql.replace(" ? ", "\"%s\""), parameterList.toArray());
-        log.debug("SQL complete : {}", format);
-    }
-
+package ${namespace};\n
+\n
+import gaarason.database.connections.ProxyDataSource;\n
+import gaarason.database.eloquent.Model;\n
+import lombok.extern.slf4j.Slf4j;\n
+\n
+import javax.annotation.Resource;\n
+import java.util.Collection;\n
+\n
+@Slf4j\n
+abstract public class ${model_name}<T> extends Model<T> {\n
+\n
+    // todo\n
+    @Resource(name = "proxyDataSource")\n
+    protected ProxyDataSource proxyDataSource;\n
+\n
+    @Override\n
+    public ProxyDataSource getProxyDataSource(){\n
+        return proxyDataSource;\n
+    }\n
+\n
+    /**\n
+     * sql日志记录\n
+     * @param sql           带占位符的sql\n
+     * @param parameterList 参数\n
+     */\n
+    public void log(String sql, Collection<String> parameterList) {\n
+        String format = String.format(sql.replace(" ? ", "\"%s\""), parameterList.toArray());\n
+        log.debug("SQL complete : {}", format);\n
+    }\n
+\n
 }

@@ -6,4 +6,3 @@ import gaarason.database.test.relation.data.entity.RelationshipStudentTeacher;
 public class RelationshipStudentTeacherModel extends BaseModel<RelationshipStudentTeacher> {
 
 }
-
