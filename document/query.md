@@ -46,7 +46,7 @@ Eloquent ORM for Java
         * [总数分页](#总数分页)
     * [功能](#功能)
         * [随机抽样](#随机抽样)
-* [反向生成代码](/document/generate.md)
+* [生成代码](/document/generate.md)
 
 ## 总览
 

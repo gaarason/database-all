@@ -4,6 +4,7 @@ import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
 import gaarason.database.connections.ProxyDataSource;
 import gaarason.database.eloquent.GeneralModel;
+import gaarason.database.generator.GeneralGenerator;
 import gaarason.database.spring.boot.starter.properties.DefaultProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -23,7 +24,7 @@ import java.util.List;
 @Configuration
 @AutoConfigureBefore(DruidDataSourceAutoConfigure.class)
 @EnableConfigurationProperties({DefaultProperties.class})
-@Import(GeneralModel.class)
+@Import({GeneralModel.class, GeneralGenerator.class})
 public class ProxyDataSourceConfiguration {
 
     @Primary

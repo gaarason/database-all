@@ -8,7 +8,7 @@ Eloquent ORM for Java
 * [数据模型](/document/model.md)
 * [查询结果集](/document/record.md)
 * [查询构造器](/document/query.md)
-* [反向生成代码](/document/generate.md)
+* [生成代码](/document/generate.md)
 
 
 - 以如下的方式在程序中查询数据
@@ -26,22 +26,22 @@ List<Student> Students = studentModel.newQuery().where("id", "3").orWhere(
 ```
 ## spring boot 快速开始
 
-1. 引入仓库 pom.xml
+1.引入仓库 pom.xml  
 ```$xslt
 <repository>
     <id>jitpack.io</id>
     <url>https://jitpack.io</url>
 </repository>
 ```
-2. 引入依赖 pom.xml
+2.引入依赖 pom.xml  
 ```$xslt
 <dependency>
     <groupId>com.github.gaarason.database-all</groupId>
     <artifactId>database-spring-boot-starter</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.5</version>
 </dependency>
 ```
-3. 配置连接 application.properties
+3.配置连接 application.properties  
 ```$xslt
 spring.datasource.druid.url=jdbc:mysql://sakya.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai
 spring.datasource.druid.username=root
@@ -49,7 +49,7 @@ spring.datasource.druid.password=root
 spring.datasource.druid.driver-class-name=com.mysql.cj.jdbc.Driver
 spring.datasource.druid.db-type=com.alibaba.druid.pool.DruidDataSource
 ```
-4. 快速开始 
+4.快速开始  
 ```java
 package gaarason.database.spring.boot.starter.test;
 

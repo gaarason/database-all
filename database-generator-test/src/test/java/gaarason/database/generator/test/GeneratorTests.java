@@ -3,7 +3,7 @@ package gaarason.database.generator.test;
 import com.alibaba.druid.pool.DruidDataSource;
 import gaarason.database.connections.ProxyDataSource;
 import gaarason.database.eloquent.Model;
-import gaarason.database.generator.Manager;
+import gaarason.database.generator.Generator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -12,8 +12,6 @@ import org.junit.runners.MethodSorters;
 import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
@@ -72,7 +70,7 @@ public class GeneratorTests {
         }
     }
 
-    public class AutoGenerator extends Manager {
+    public class AutoGenerator extends Generator {
         private Model toolModel;
         public AutoGenerator(Model model) {
             toolModel = model;

@@ -16,7 +16,7 @@ Eloquent ORM for Java
 * [数据模型](/document/model.md)
 * [查询结果集](/document/record.md)
 * [查询构造器](/document/query.md)
-* [反向生成代码](/document/generate.md)
+* [生成代码](/document/generate.md)
 ## 总览
 
 数据映射是用将数据库字段与java对象进行相互转换的必要手段, 理解为`数据`  

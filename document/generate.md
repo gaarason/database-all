@@ -6,23 +6,39 @@ Eloquent ORM for Java
 * [数据模型](/document/model.md)
 * [查询结果集](/document/record.md)
 * [查询构造器](/document/query.md)
-* [反向生成代码](/document/generate.md)
+* [生成代码](/document/generate.md)
     * [总览](#总览)
     * [非spring](#非spring)
     * [spring](#spring)
 ## 总览
 
-通过数据库连接,生成模板代码
+通过数据库连接信息, 自动生成代码(`entity`,`model`) 
 
 ## 非spring
 
+1.引入仓库 pom.xml  
+```$xslt
+<repository>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
+</repository>
+```
+2.引入依赖 pom.xml  
+```$xslt
+<dependency>
+    <groupId>com.github.gaarason.database-all</groupId>
+    <artifactId>database-generator</artifactId>
+    <version>1.0.5</version>
+</dependency>
+```
+3.编写单元测试  
 ```java
 package gaarason.database.generator.test;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import gaarason.database.connections.ProxyDataSource;
 import gaarason.database.eloquent.Model;
-import gaarason.database.generator.Manager;
+import gaarason.database.generator.Generator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -107,21 +123,35 @@ public class GeneratorTests {
 
 ## spring
 
-#### 引入依赖 pom.xml
+1.引入仓库 pom.xml  
+```$xslt
+<repository>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
+</repository>
+```
+2.引入依赖 pom.xml  
 ```$xslt
 <dependency>
     <groupId>com.github.gaarason.database-all</groupId>
-    <artifactId>database-spring-boot-starter-test</artifactId>
-    <version>1.0.3</version>
+    <artifactId>database-spring-boot-starter</artifactId>
+    <version>1.0.5</version>
 </dependency>
 ```
-#### 编写单元测试
+3.配置连接 application.properties  
+```$xslt
+spring.datasource.druid.url=jdbc:mysql://sakya.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai
+spring.datasource.druid.username=root
+spring.datasource.druid.password=root
+spring.datasource.druid.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.druid.db-type=com.alibaba.druid.pool.DruidDataSource
+```
+4.编写单元测试  
 ```java
 package gaarason.database.spring.boot.starter.test;
 
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.eloquent.Record;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -136,7 +166,6 @@ import java.util.Map;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @FixMethodOrder(MethodSorters.JVM)
-@Slf4j
 public class TestApplicationTests {
 
     @Resource

@@ -13,7 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-abstract public class Manager {
+abstract public class Generator {
 
     @Setter
     private String outputDir = "./";
@@ -314,9 +314,10 @@ abstract public class Manager {
 
 
     private static String getAbsoluteReadFileName(String name) {
-        return Thread.currentThread().getStackTrace()[1].getClass().getResource("/").toString().replace(
-            "file:", "") + "../../../database-generator/src" +
-            "/main/java/gaarason/database/generator/template/" + name;
+//        return Thread.currentThread().getStackTrace()[1].getClass().getResource("/").toString().replace(
+//            "file:", "") + "../../../database-generator/src" +
+//            "/main/java/gaarason/database/generator/template/" + name;
+        return Generator.class.getResource("/template/" + name).getPath();
     }
 
     private String getAbsoluteWriteFilePath(String namespace) {
@@ -348,8 +349,14 @@ abstract public class Manager {
             writer.write(content);
             writer.flush();
             writer.close();
+            // 控制台输出
+            consoleLog(fileName + " 生成完毕, 路径 : " + path);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static void consoleLog(String str) {
+        System.out.println(str);
     }
 }

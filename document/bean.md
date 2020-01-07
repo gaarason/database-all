@@ -13,7 +13,7 @@ Eloquent ORM for Java
 * [数据模型](/document/model.md)
 * [查询结果集](/document/record.md)
 * [查询构造器](/document/query.md)
-* [反向生成代码](/document/generate.md)
+* [生成代码](/document/generate.md)
 ## spring
 
 使用 spring boot 管理 bean

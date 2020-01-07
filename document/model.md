@@ -12,7 +12,7 @@ Eloquent ORM for Java
         * [软删除](#软删除)
 * [查询结果集](/document/record.md)
 * [查询构造器](/document/query.md)
-* [反向生成代码](/document/generate.md)
+* [生成代码](/document/generate.md)
 ## 总览
 
 数据模型是将数据库操作集中声明的对象, 理解为`表`  

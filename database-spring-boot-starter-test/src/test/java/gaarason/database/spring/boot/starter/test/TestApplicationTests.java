@@ -2,6 +2,7 @@ package gaarason.database.spring.boot.starter.test;
 
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.eloquent.Record;
+import gaarason.database.generator.GeneralGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
