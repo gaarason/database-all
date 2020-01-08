@@ -28,10 +28,8 @@ public class GeneratorTests {
         autoGenerator.setCorePoolSize(20);
         autoGenerator.setOutputDir("./src/test/java/");
         autoGenerator.setNamespace("test.data");
-        String[] disableCreate = {"created_at", "updated_at"};
-        autoGenerator.setDisInsertable(disableCreate);
-        String[] disableUpdate = {"created_at", "updated_at"};
-        autoGenerator.setDisUpdatable(disableUpdate);
+        autoGenerator.setDisInsertable("created_at", "updated_at");
+        autoGenerator.setDisUpdatable("created_at", "updated_at");
 
         autoGenerator.run();
     }
@@ -42,7 +40,6 @@ public class GeneratorTests {
             "jdbc:mysql://sakya.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
         druidDataSource.setUsername("root");
         druidDataSource.setPassword("root");
-
 
 //        druidDataSource.setUrl(
 //            "jdbc:mysql://116.62.120.228:5588/rental_jq?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");

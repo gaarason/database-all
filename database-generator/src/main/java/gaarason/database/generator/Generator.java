@@ -16,47 +16,92 @@ import java.util.concurrent.TimeUnit;
 
 abstract public class Generator {
 
+    /**
+     * 输出目录
+     */
     @Setter
     private String outputDir = "./";
 
+    /**
+     * 命名空间
+     */
     @Setter
     private String namespace = "data";
 
+    /**
+     * entity目录
+     */
     @Setter
     private String entityDir = "entity";
 
+    /**
+     * entity前缀
+     */
     @Setter
     private String entityPrefix = "";
 
+    /**
+     * entity后缀
+     */
     @Setter
     private String entitySuffix = "";
 
+    /**
+     * model目录
+     */
     @Setter
     private String modelDir = "model";
 
+    /**
+     * model前缀
+     */
     @Setter
     private String modelPrefix = "";
 
+    /**
+     * model后缀
+     */
     @Setter
     private String modelSuffix = "Model";
 
+    /**
+     * baseModel目录
+     */
     @Setter
     private String baseModelDir = "base";
 
+    /**
+     * baseModel类名
+     */
     @Setter
     private String baseModelName = "BaseModel";
 
+    /**
+     * 是否使用spring boot注解
+     */
     @Setter
     private Boolean isSpringBoot = false;
 
+    /**
+     * 是否生成静态字段名
+     */
     @Setter
     private Boolean staticField = false;
 
+    /**
+     * 生成并发线程数
+     */
     @Setter
-    private int corePoolSize = 5;
+    private int corePoolSize = 20;
 
+    /**
+     * 新增时,不可通过代码更改的字段
+     */
     private String[] disInsertable = {};
 
+    /**
+     * 更新时,不可通过代码更改的字段
+     */
     private String[] disUpdatable = {};
 
     final private static String entityTemplateStr = fileGetContent(getAbsoluteReadFileName("entity"));
@@ -211,8 +256,9 @@ abstract public class Generator {
         for (Map<String, Object> field : fields) {
             String columnName = field.get("COLUMN_NAME").toString();
             // 每个字段的填充
-            String fieldTemplateStrReplace = "    final public static String " + columnName.toUpperCase() +
-                " = \"" + columnName + "\";\n";
+            String fieldTemplateStrReplace =
+                "    final public static String " + nameConverter(columnName).toUpperCase() +
+                    " = \"" + columnName + "\";\n";
             // 追加
             str.append(fieldTemplateStrReplace);
         }
@@ -230,7 +276,7 @@ abstract public class Generator {
 
         // field
         Field fieldInfo = new Field();
-        fieldInfo.setName(StringUtil.lineToHump(field.get("COLUMN_NAME").toString()));
+        fieldInfo.setName(nameConverter(StringUtil.lineToHump(field.get("COLUMN_NAME").toString())));
         fieldInfo.setDataType(field.get("DATA_TYPE").toString());
         fieldInfo.setColumnType(field.get("COLUMN_TYPE").toString());
 
@@ -245,9 +291,12 @@ abstract public class Generator {
         if (field.get("CHARACTER_MAXIMUM_LENGTH") != null) {
             columnAnnotation.setLength(Long.valueOf(field.get("CHARACTER_MAXIMUM_LENGTH").toString()));
         }
-
         columnAnnotation.setComment(
             field.get("COLUMN_COMMENT").toString()
+                .replace("\\\r\\\n", "")
+                .replace("\\r\\n", "")
+                .replace("\r\n", "")
+                .replace("\\\n", "")
                 .replace("\\n", "")
                 .replace("\n", "")
                 .replace("\"", "\\\"")
@@ -270,11 +319,13 @@ abstract public class Generator {
     }
 
     private String entityName(String tableName) {
-        return entityPrefix + StringUtil.lineToHump(tableName, true) + entitySuffix;
+        String name = entityPrefix + StringUtil.lineToHump(tableName, true) + entitySuffix;
+        return nameConverter(name);
     }
 
     private String modelName(String tableName) {
-        return modelPrefix + StringUtil.lineToHump(tableName, true) + modelSuffix;
+        String name = modelPrefix + StringUtil.lineToHump(tableName, true) + modelSuffix;
+        return nameConverter(name);
     }
 
     @SuppressWarnings("unchecked")
@@ -378,6 +429,10 @@ abstract public class Generator {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static String nameConverter(String name) {
+        return StringUtil.isJavaIdentifier(name) ? name : "a" + StringUtil.md5(name);
     }
 
     private static void consoleLog(String str) {
