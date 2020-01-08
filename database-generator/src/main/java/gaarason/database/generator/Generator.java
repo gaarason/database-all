@@ -9,6 +9,10 @@ import lombok.Setter;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 abstract public class Generator {
 
@@ -47,6 +51,9 @@ abstract public class Generator {
 
     @Setter
     private Boolean staticField = false;
+
+    @Setter
+    private int corePoolSize = 5;
 
     private String[] disInsertable = {};
 
@@ -88,26 +95,39 @@ abstract public class Generator {
         // baseModel 写入文件
         filePutContent(getAbsoluteWriteFilePath(baseModelNamespace), baseModelName, baseDaoTemplateStrReplace);
 
+        ThreadPoolExecutor threadPool = new ThreadPoolExecutor(corePoolSize, corePoolSize + 1, 1,
+            TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(65535));
+
+        CountDownLatch countDownLatch = new CountDownLatch(tables.size());
+
         for (Map<String, Object> table : tables) {
-            // 单个表
-            for (String key : table.keySet()) {
-                // 表名
-                String tableName = table.get(key).toString();
+            threadPool.execute(() -> {
+                // 单个表
+                for (String key : table.keySet()) {
+                    // 表名
+                    String tableName = table.get(key).toString();
 
-                // entity文件名
-                String pojoName = entityName(tableName);
-                // entity文件内容
-                String pojoTemplateStrReplace = fillPojoTemplate(tableName, pojoName);
-                // entity写入文件
-                filePutContent(getAbsoluteWriteFilePath(entityNamespace), pojoName, pojoTemplateStrReplace);
+                    // entity文件名
+                    String entityName = entityName(tableName);
+                    // entity文件内容
+                    String entityTemplateStrReplace = fillPojoTemplate(tableName, entityName);
+                    // entity写入文件
+                    filePutContent(getAbsoluteWriteFilePath(entityNamespace), entityName, entityTemplateStrReplace);
 
-                // model文件名
-                String daoName = modelName(tableName);
-                // model文件内容
-                String daoTemplateStrReplace = fillModelTemplate(tableName, daoName, pojoName);
-                // model写入文件
-                filePutContent(getAbsoluteWriteFilePath(modelNamespace), daoName, daoTemplateStrReplace);
-            }
+                    // model文件名
+                    String modelName = modelName(tableName);
+                    // model文件内容
+                    String modelTemplateStrReplace = fillModelTemplate(tableName, modelName, entityName);
+                    // model写入文件
+                    filePutContent(getAbsoluteWriteFilePath(modelNamespace), modelName, modelTemplateStrReplace);
+                }
+                countDownLatch.countDown();
+            });
+        }
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
         consoleLog("全部生成完毕");
     }
@@ -206,7 +226,7 @@ abstract public class Generator {
      */
     private String fillFieldTemplate(Map<String, Object> field) {
 
-        consoleLog("处理字段 : " + field);
+//        consoleLog("处理字段 : " + field);
 
         // field
         Field fieldInfo = new Field();
