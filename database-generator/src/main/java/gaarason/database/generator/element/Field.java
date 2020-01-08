@@ -40,20 +40,17 @@ public class Field extends JavaElement {
                 return dataTypeBigint();
             case "datetime":
             case "timestamp":
-                return cutClassName(Date.class);
             case "year":
             case "date":
-                return cutClassName(java.sql.Date.class);
             case "time":
-                return cutClassName(Time.class);
+                return cutClassName(Date.class);
             case "blob":
                 return "Byte[]";
+            case "bit":
+                return cutClassName(Boolean.class);
             case "char":
             case "varchar":
             case "text":
-                return cutClassName(String.class);
-            case "bit":
-                return cutClassName(Boolean.class);
             default:
                 return cutClassName(String.class);
         }
