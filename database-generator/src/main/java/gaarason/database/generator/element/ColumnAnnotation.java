@@ -31,7 +31,7 @@ public class ColumnAnnotation {
             (nullable ? ", nullable = " + nullable : "") +
             (!insertable ? ", insertable = " + insertable : "") +
             (!updatable ? ", updatable = " + updatable : "") +
-            (length != null && length != 255 ? ", length = " + length : "L") +
+            (length != null && length != 255 ? ", length = " + length + "L" : "") +
             (!"".equals(comment) ? ", comment = \"" + comment + "\"" : "") +
 
             ")";
