@@ -25,8 +25,8 @@ abstract public class ${model_name}<T> extends Model<T> {\n
      * @param parameterList 参数\n
      */\n
     public void log(String sql, Collection<String> parameterList) {\n
-        String format = String.format(sql.replace(" ? ", "\"%s\""), parameterList.toArray());\n
-        log.debug("SQL complete : {}", format);\n
+        // String format = String.format(sql.replace(" ? ", "\"%s\""), parameterList.toArray());\n
+        // log.debug("SQL complete : {}", format);\n
     }\n
 \n
 }

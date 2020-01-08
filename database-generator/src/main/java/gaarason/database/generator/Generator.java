@@ -254,10 +254,14 @@ abstract public class Generator {
         List<Map<String, Object>> fields = descTable(tableName);
 
         for (Map<String, Object> field : fields) {
+            // 原字段名
             String columnName = field.get("COLUMN_NAME").toString();
+            // 静态字段名
+            String staticName = nameConverter(columnName).toUpperCase();
+
             // 每个字段的填充
             String fieldTemplateStrReplace =
-                "    final public static String " + nameConverter(columnName).toUpperCase() +
+                "    final public static String " + (staticName.equals(columnName) ? "$" : "") + staticName +
                     " = \"" + columnName + "\";\n";
             // 追加
             str.append(fieldTemplateStrReplace);
