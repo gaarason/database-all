@@ -26,7 +26,7 @@ CREATE TABLE `data_type`
   `point`        point               NOT NULL,
   `linestring`   linestring          NOT NULL,
   `geometry`     geometry            NOT NULL,
-  `text`         text                NOT NULL,
+  `text`         text                NOT NULL COMMENT '问题状态\r\n现"场检"查 enum(''''待提交'''',''''待整改'''',''''待复验'''',''''已通过'''',''''已作废'''',''''已关闭'''')\r\n实测实量一级问题 enum(''''检查中'''',''''待整改'''',''''已整改'''')\r\n实测实量二级问题 enum(''''检查中'''',''''检查完毕'''', ''''已整改'''')',
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='test';

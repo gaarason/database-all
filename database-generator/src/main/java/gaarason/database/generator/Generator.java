@@ -245,7 +245,13 @@ abstract public class Generator {
         if (field.get("CHARACTER_MAXIMUM_LENGTH") != null) {
             columnAnnotation.setLength(Long.valueOf(field.get("CHARACTER_MAXIMUM_LENGTH").toString()));
         }
-        columnAnnotation.setComment(field.get("COLUMN_COMMENT").toString());
+
+        columnAnnotation.setComment(
+            field.get("COLUMN_COMMENT").toString()
+                .replace("\\n", "")
+                .replace("\n", "")
+                .replace("\"", "\\\"")
+        );
 
         // @primary
         PrimaryAnnotation primaryAnnotation = null;

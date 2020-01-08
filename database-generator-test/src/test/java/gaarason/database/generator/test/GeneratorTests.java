@@ -25,9 +25,9 @@ public class GeneratorTests {
         // set
         autoGenerator.setStaticField(true);
         autoGenerator.setIsSpringBoot(true);
-        autoGenerator.setCorePoolSize(200);
-        autoGenerator.setOutputDir("./");
-        autoGenerator.setNamespace("gaarason.database.spring.boot.starter.test.data");
+        autoGenerator.setCorePoolSize(20);
+        autoGenerator.setOutputDir("./src/test/java/");
+        autoGenerator.setNamespace("test.data");
         String[] disableCreate = {"created_at", "updated_at"};
         autoGenerator.setDisInsertable(disableCreate);
         String[] disableUpdate = {"created_at", "updated_at"};
@@ -42,6 +42,13 @@ public class GeneratorTests {
             "jdbc:mysql://sakya.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
         druidDataSource.setUsername("root");
         druidDataSource.setPassword("root");
+
+
+//        druidDataSource.setUrl(
+//            "jdbc:mysql://116.62.120.228:5588/rental_jq?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
+//        druidDataSource.setUsername("ykj-im-test");
+//        druidDataSource.setPassword("lTkgD91ZAz3egmwv");
+
         druidDataSource.setDbType("com.alibaba.druid.pool.DruidDataSource");
         druidDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         druidDataSource.setInitialSize(20);

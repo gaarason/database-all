@@ -48,6 +48,10 @@ spring.datasource.druid.username=root
 spring.datasource.druid.password=root
 spring.datasource.druid.driver-class-name=com.mysql.cj.jdbc.Driver
 spring.datasource.druid.db-type=com.alibaba.druid.pool.DruidDataSource
+spring.datasource.druid.initialSize=1
+spring.datasource.druid.minIdle=1
+spring.datasource.druid.maxActive=20
+spring.datasource.druid.maxWait=60000
 ```
 4.快速开始  
 ```java
