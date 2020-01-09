@@ -28,7 +28,7 @@ Eloquent ORM for Java
 <dependency>
     <groupId>com.github.gaarason.database-all</groupId>
     <artifactId>database-generator</artifactId>
-    <version>1.0.5</version>
+    <version>RELEASE</version>
 </dependency>
 ```
 3.编写单元测试  
@@ -138,7 +138,7 @@ public class GeneratorTests {
 <dependency>
     <groupId>com.github.gaarason.database-all</groupId>
     <artifactId>database-spring-boot-starter</artifactId>
-    <version>1.0.5</version>
+    <version>RELEASE</version>
 </dependency>
 ```
 3.配置连接 application.properties  
@@ -182,10 +182,8 @@ public class TestApplicationTests {
         generalGenerator.setIsSpringBoot(true);
         generalGenerator.setOutputDir("./src/main/java/");
         generalGenerator.setNamespace("gaarason.database.spring.boot.starter.test.data");
-        String[] disableCreate = {"created_at", "updated_at"};
-        generalGenerator.setDisInsertable(disableCreate);
-        String[] disableUpdate = {"created_at", "updated_at"};
-        generalGenerator.setDisUpdatable(disableUpdate);
+        generalGenerator.setDisInsertable("created_at", "updated_at");
+        generalGenerator.setDisUpdatable("created_at", "updated_at");
 
         generalGenerator.run();
     }

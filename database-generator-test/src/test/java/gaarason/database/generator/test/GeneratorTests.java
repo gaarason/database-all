@@ -41,11 +41,6 @@ public class GeneratorTests {
         druidDataSource.setUsername("root");
         druidDataSource.setPassword("root");
 
-//        druidDataSource.setUrl(
-//            "jdbc:mysql://116.62.120.228:5588/rental_jq?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
-//        druidDataSource.setUsername("ykj-im-test");
-//        druidDataSource.setPassword("lTkgD91ZAz3egmwv");
-
         druidDataSource.setDbType("com.alibaba.druid.pool.DruidDataSource");
         druidDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         druidDataSource.setInitialSize(20);

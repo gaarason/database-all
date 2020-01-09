@@ -38,7 +38,7 @@ List<Student> Students = studentModel.newQuery().where("id", "3").orWhere(
 <dependency>
     <groupId>com.github.gaarason.database-all</groupId>
     <artifactId>database-spring-boot-starter</artifactId>
-    <version>1.0.5</version>
+    <version>RELEASE</version>
 </dependency>
 ```
 3.配置连接 application.properties  
