@@ -18,7 +18,27 @@ import java.util.List;
 public class GeneratorTests {
 
     @Test
-    public void run() {
+    public void run有参构造() {
+        String jdbcUrl = "jdbc:mysql://sakya.local/test_master_0?useUnicode=true&characterEncoding=utf-8" +
+            "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
+        String username = "root";
+        String password = "root";
+        Generator generator = new Generator(jdbcUrl, username, password);
+
+        // set
+        generator.setStaticField(true);
+        generator.setIsSpringBoot(true);
+        generator.setCorePoolSize(20);
+        generator.setOutputDir("./src/test/java/");
+        generator.setNamespace("test.data");
+        generator.setDisInsertable("created_at", "updated_at");
+        generator.setDisUpdatable("created_at", "updated_at");
+
+        generator.run();
+    }
+
+    @Test
+    public void run无参构造() {
         ProxyDataSource proxyDataSource = proxyDataSource();
         ToolModel toolModel = new ToolModel(proxyDataSource);
         AutoGenerator autoGenerator = new AutoGenerator(toolModel);
@@ -45,6 +65,8 @@ public class GeneratorTests {
         druidDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         druidDataSource.setInitialSize(20);
         druidDataSource.setMaxActive(20);
+        druidDataSource.setLoginTimeout(3);
+        druidDataSource.setQueryTimeout(3);
         return druidDataSource;
     }
 

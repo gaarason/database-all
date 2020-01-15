@@ -1,11 +1,11 @@
 package gaarason.database.eloquent;
 
 import gaarason.database.connections.ProxyDataSource;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
 
-@Component
+@Repository
 public class GeneralModel extends Model<GeneralModel.Table> {
 
     @Resource
@@ -16,7 +16,7 @@ public class GeneralModel extends Model<GeneralModel.Table> {
         return proxyDataSource;
     }
 
-    public static class Table{
+    public static class Table {
 
     }
 

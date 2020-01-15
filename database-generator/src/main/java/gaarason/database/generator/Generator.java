@@ -1,5 +1,7 @@
 package gaarason.database.generator;
 
+import com.alibaba.druid.pool.DruidDataSource;
+import gaarason.database.connections.ProxyDataSource;
 import gaarason.database.eloquent.Model;
 import gaarason.database.generator.element.ColumnAnnotation;
 import gaarason.database.generator.element.Field;
@@ -7,6 +9,7 @@ import gaarason.database.generator.element.PrimaryAnnotation;
 import gaarason.database.utils.StringUtil;
 import lombok.Setter;
 
+import javax.sql.DataSource;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -14,7 +17,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-abstract public class Generator {
+public class Generator {
 
     /**
      * 输出目录
@@ -118,18 +121,73 @@ abstract public class Generator {
 
     private String entityNamespace;
 
+    private Model model;
+
     /**
+     * 使用无惨可重写
      * @return 数据库操作model
      */
-    abstract public Model getModel();
+    public Model getModel() {
+        return model;
+    }
 
+    /**
+     * 使用无参构造时,需要重写 getModel 方法
+     */
+    public Generator() {
+
+    }
+
+    public Generator(String jdbcUrl, String username, String password) {
+        DruidDataSource druidDataSource = new DruidDataSource();
+        druidDataSource.setUrl(jdbcUrl);
+        druidDataSource.setUsername(username);
+        druidDataSource.setPassword(password);
+        druidDataSource.setDbType("com.alibaba.druid.pool.DruidDataSource");
+        druidDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        druidDataSource.setInitialSize(20);
+        druidDataSource.setMaxActive(20);
+        druidDataSource.setLoginTimeout(3);
+        druidDataSource.setQueryTimeout(3);
+
+        List<DataSource> dataSources = new ArrayList<>();
+        dataSources.add(druidDataSource);
+
+        model = new ToolModel(new ProxyDataSource(dataSources));
+    }
+
+    protected static class ToolModel extends Model<ToolModel.Inner> {
+        private ProxyDataSource proxyDataSource;
+
+        public ToolModel(ProxyDataSource dataSource) {
+            proxyDataSource = dataSource;
+        }
+
+        public ProxyDataSource getProxyDataSource() {
+            return proxyDataSource;
+        }
+
+        public static class Inner {
+        }
+    }
+
+    /**
+     * 初始化相关名称
+     */
     private void init() {
+        if (getModel() == null) {
+            throw new RuntimeException("使用无参构造`public void Generator()`时,需要重写`getModel`方法,否则请使用`public void " +
+                "Generator(String jdbcUrl, String username, String password)`");
+        }
         baseModelNamespace = namespace + ("".equals(modelDir) ? "" : ("." + modelDir)) + ("".equals(
             baseModelDir) ? "" : ("." + baseModelDir));
         modelNamespace = namespace + ("".equals(modelDir) ? "" : ("." + modelDir));
         entityNamespace = namespace + ("".equals(entityDir) ? "" : ("." + entityDir));
     }
 
+    /**
+     * 开始生成
+     */
     public void run() {
         // 初始化namespace
         init();
@@ -204,8 +262,8 @@ abstract public class Generator {
         parameterMap.put("${entity_namespace}", entityNamespace);
         parameterMap.put("${entity_name}", entityName);
         parameterMap.put("${model_name}", modelName);
-        parameterMap.put("${is_spring_boot}", isSpringBoot ? "import org.springframework.stereotype.Component;" +
-            "\n\n@Component" : "");
+        parameterMap.put("${is_spring_boot}", isSpringBoot ? "import org.springframework.stereotype.Repository;" +
+            "\n\n@Repository" : "");
 
         return fillTemplate(modelTemplateStr, parameterMap);
     }
@@ -248,6 +306,11 @@ abstract public class Generator {
         return str.toString();
     }
 
+    /**
+     * 静态字段填充
+     * @param tableName 表名
+     * @return 内容
+     */
     private String fillStaticFieldsTemplate(String tableName) {
         StringBuilder str = new StringBuilder();
         // 字段信息
@@ -435,6 +498,11 @@ abstract public class Generator {
         }
     }
 
+    /**
+     * 将不合法的java标识符转换
+     * @param name 未验证的java标识符
+     * @return 合法的java标识符
+     */
     private static String nameConverter(String name) {
         return StringUtil.isJavaIdentifier(name) ? name : "a" + StringUtil.md5(name);
     }
