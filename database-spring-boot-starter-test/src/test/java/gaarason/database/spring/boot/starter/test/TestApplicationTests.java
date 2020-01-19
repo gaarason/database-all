@@ -3,8 +3,6 @@ package gaarason.database.spring.boot.starter.test;
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.eloquent.Record;
 import gaarason.database.generator.GeneralGenerator;
-import gaarason.database.spring.boot.starter.test.data.entity.Student;
-import gaarason.database.spring.boot.starter.test.data.service.StudentRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -29,9 +27,6 @@ public class TestApplicationTests {
     @Resource
     GeneralModel generalModel;
 
-    @Resource
-    StudentRepository studentRepository;
-
     @Test
     public void 生成代码() {
         // 设置
@@ -54,12 +49,6 @@ public class TestApplicationTests {
         Map<String, Object> stringObjectMap = first.toMap();
         Assert.assertEquals((long) stringObjectMap.get("id"), 3);
         System.out.println(stringObjectMap);
-    }
-
-    @Test
-    public void 简单查询_单个Repository() {
-        Record<Student> studentRecord = studentRepository.newQuery().where(Student.ID, "2").firstOrFail();
-        System.out.println(studentRecord.toObject());
     }
 
 }
