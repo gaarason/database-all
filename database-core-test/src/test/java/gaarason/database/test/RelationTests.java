@@ -22,8 +22,6 @@ import java.util.List;
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
 public class RelationTests extends BaseTests {
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     private static StudentModel studentModel = new StudentModel();
 

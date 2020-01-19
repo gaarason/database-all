@@ -1,10 +1,10 @@
 package gaarason.database.test;
 
 import gaarason.database.connections.ProxyDataSource;
-import gaarason.database.eloquent.enums.OrderBy;
 import gaarason.database.eloquent.Paginate;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
+import gaarason.database.eloquent.enums.OrderBy;
 import gaarason.database.exception.ConfirmOperationException;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.NestedTransactionException;
@@ -15,9 +15,7 @@ import gaarason.database.test.parent.BaseTests;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
 
 import javax.sql.DataSource;
@@ -28,8 +26,6 @@ import java.util.concurrent.CountDownLatch;
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
 public class QueryBuilderTests extends BaseTests {
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     private static StudentModel studentModel = new StudentModel();
 
@@ -115,7 +111,7 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(insert, 1);
 
         StudentModel.Entity entityFirst = studentModel.newQuery().where("id", "99").firstOrFail().toObject();
-        SimpleDateFormat          formatter   = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat    formatter   = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Assert.assertNotNull(entityFirst);
         Assert.assertEquals(entity.getId(), entityFirst.getId());
         Assert.assertEquals(entity.getAge(), entityFirst.getAge());
@@ -197,8 +193,9 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(entity.getName(), "gggg");
         Assert.assertEquals(entity.getAge(), Byte.valueOf("7"));
 
-        thrown.expect(ConfirmOperationException.class);
-        studentModel.newQuery().data("name", "ee").update();
+        Assert.assertThrows(ConfirmOperationException.class, () -> {
+            studentModel.newQuery().data("name", "ee").update();
+        });
     }
 
     @Test
@@ -214,8 +211,9 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(entity.getAge(), Byte.valueOf("7"));
         Assert.assertEquals(entity.getSex(), Byte.valueOf("1"));
 
-        thrown.expect(ConfirmOperationException.class);
-        studentModel.newQuery().update(entity1);
+        Assert.assertThrows(ConfirmOperationException.class, () -> {
+            studentModel.newQuery().update(entity1);
+        });
     }
 
     @Test
@@ -226,8 +224,9 @@ public class QueryBuilderTests extends BaseTests {
         Record<StudentModel.Entity> id1 = studentModel.newQuery().where("id", "3").first();
         Assert.assertNull(id1);
 
-        thrown.expect(ConfirmOperationException.class);
-        studentModel.newQuery().delete();
+        Assert.assertThrows(ConfirmOperationException.class, () -> {
+            studentModel.newQuery().delete();
+        });
     }
 
     @Test
@@ -282,8 +281,9 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(first5.getCreatedAt().toString(), "2009-03-14 17:15:23.0");
         Assert.assertEquals(first5.getUpdatedAt().toString(), "2010-04-24 22:11:03.0");
 
-        thrown.expect(EntityNotFoundException.class);
-        studentModel.newQuery().select("name", "id").where("id", "not found").firstOrFail();
+        Assert.assertThrows(EntityNotFoundException.class, () -> {
+            studentModel.newQuery().select("name", "id").where("id", "not found").firstOrFail();
+        });
     }
 
     @Test
@@ -366,7 +366,7 @@ public class QueryBuilderTests extends BaseTests {
             .first();
         Assert.assertNotNull(entityRecord);
         StudentModel.Entity entity          = entityRecord.toObject();
-        Map<String, Object>       stringObjectMap = entityRecord.toMap();
+        Map<String, Object> stringObjectMap = entityRecord.toMap();
         Assert.assertNull(entity.getId());
         Assert.assertNull(entity.getName());
         Assert.assertNull(entity.getAge());
@@ -647,16 +647,16 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(entities.get(1).getId().intValue(), 7);
 
         // 严格模式
-        thrown.expect(SQLRuntimeException.class);
-        List<StudentModel.Entity> entities1 = studentModel.newQuery()
-            .select("id", "name", "age")
-            .where("id", "&", "1")
-            .orderBy("id", OrderBy.DESC)
-            .group("sex", "age")
-            .group("id")
-            .get()
-            .toObjectList();
-        System.out.println(entities1);
+        Assert.assertThrows(SQLRuntimeException.class, () -> {
+            List<StudentModel.Entity> entities1 = studentModel.newQuery()
+                .select("id", "name", "age")
+                .where("id", "&", "1")
+                .orderBy("id", OrderBy.DESC)
+                .group("sex", "age")
+                .group("id")
+                .get()
+                .toObjectList();
+        });
     }
 
 
@@ -905,13 +905,14 @@ public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 事物_闭包() {
-        thrown.expect(RuntimeException.class);
-        studentModel.newQuery().transaction(() -> {
-            studentModel.newQuery().where("id", "1").data("name", "dddddd").update();
-            StudentModel.Entity entity = studentModel.newQuery().where("id", "1").firstOrFail().toObject();
-            Assert.assertEquals(entity.getName(), "dddddd");
-            throw new RuntimeException("ssss");
-        }, 3);
+        Assert.assertThrows(RuntimeException.class, () -> {
+            studentModel.newQuery().transaction(() -> {
+                studentModel.newQuery().where("id", "1").data("name", "dddddd").update();
+                StudentModel.Entity entity = studentModel.newQuery().where("id", "1").firstOrFail().toObject();
+                Assert.assertEquals(entity.getName(), "dddddd");
+                throw new RuntimeException("ssss");
+            }, 3);
+        });
 
         StudentModel.Entity entity = studentModel.newQuery().where("id", "1").firstOrFail().toObject();
         Assert.assertNotEquals(entity.getName(), "dddddd");
@@ -919,29 +920,30 @@ public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 事物_单个数据连接不可嵌套事物() {
-        thrown.expect(NestedTransactionException.class);
-        // 1层事物
-        studentModel.newQuery().transaction(() -> {
-            // 2层事物
+        Assert.assertThrows(NestedTransactionException.class, () -> {
+            // 1层事物
             studentModel.newQuery().transaction(() -> {
-                // 3层事物
+                // 2层事物
                 studentModel.newQuery().transaction(() -> {
-                    try {
-                        // 4层事物
-                        studentModel.newQuery().transaction(() -> {
-                            studentModel.newQuery().where("id", "1").data("name", "dddddd").update();
-                            StudentModel.Entity entity = studentModel.newQuery()
-                                .where("id", "1")
-                                .firstOrFail()
-                                .toObject();
-                            Assert.assertEquals(entity.getName(), "dddddd");
-                            throw new RuntimeException("业务上抛了个异常");
-                        }, 1);
-                    } catch (RuntimeException e) {
-                    }
+                    // 3层事物
+                    studentModel.newQuery().transaction(() -> {
+                        try {
+                            // 4层事物
+                            studentModel.newQuery().transaction(() -> {
+                                studentModel.newQuery().where("id", "1").data("name", "dddddd").update();
+                                StudentModel.Entity entity = studentModel.newQuery()
+                                    .where("id", "1")
+                                    .firstOrFail()
+                                    .toObject();
+                                Assert.assertEquals(entity.getName(), "dddddd");
+                                throw new RuntimeException("业务上抛了个异常");
+                            }, 1);
+                        } catch (RuntimeException e) {
+                        }
+                    }, 1);
                 }, 1);
-            }, 1);
-        }, 3);
+            }, 3);
+        });
     }
 
     @Test
@@ -966,15 +968,18 @@ public class QueryBuilderTests extends BaseTests {
         List<StudentModel.Entity> entities = studentModel.newQuery().get().toObjectList();
         Assert.assertEquals(entities.get(0).getName(), entities.get(2).getName());
 
-        thrown.expect(ConfirmOperationException.class);
-        studentModel.newQuery().data("name", "xxcc").update();
+        Assert.assertThrows(ConfirmOperationException.class, ()-> {
+            studentModel.newQuery().data("name", "xxcc").update();
+        });
     }
 
     @Test
     public void 安全_SQL注入() {
         String 用户非法输入 = "小明\' and 0<>(select count(*) from student) and \'1";
-        thrown.expect(EntityNotFoundException.class);
-        studentModel.newQuery().where("name", 用户非法输入).firstOrFail();
+
+        Assert.assertThrows(EntityNotFoundException.class, ()->{
+            studentModel.newQuery().where("name", 用户非法输入).firstOrFail();
+        });
     }
 
 //    @Test
@@ -1125,8 +1130,9 @@ public class QueryBuilderTests extends BaseTests {
             .query("select * from student where sex=12", new ArrayList<>());
         Assert.assertNull(query);
 
-        thrown.expect(EntityNotFoundException.class);
-        studentModel.newQuery().queryOrFail("select * from student where sex=12", new ArrayList<>());
+        Assert.assertThrows(EntityNotFoundException.class, () -> {
+            studentModel.newQuery().queryOrFail("select * from student where sex=12", new ArrayList<>());
+        });
     }
 
 }

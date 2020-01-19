@@ -1,5 +1,6 @@
 package gaarason.database.eloquent;
 
+import gaarason.database.contracts.eloquent.Repository;
 import gaarason.database.eloquent.annotations.Primary;
 import gaarason.database.utils.EntityUtil;
 import lombok.Getter;
@@ -8,7 +9,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 
-abstract class Initializing<T> implements Serializable {
+abstract class Initializing<T> implements Repository<T> {
 
     /**
      * 主键列名(并非一定是实体的属性名)

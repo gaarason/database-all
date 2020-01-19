@@ -1,4 +1,4 @@
-package gaarason.database.test.relation.data.model.base;
+package gaarason.database.spring.boot.starter.test.data.model.base;
 
 import gaarason.database.connections.ProxyDataSource;
 import gaarason.database.eloquent.Model;

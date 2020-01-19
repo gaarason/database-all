@@ -1,4 +1,4 @@
-package gaarason.database.test.relation.data.entity;
+package gaarason.database.spring.boot.starter.test.data.entity;
 
 import gaarason.database.eloquent.annotations.Column;
 import gaarason.database.eloquent.annotations.Primary;

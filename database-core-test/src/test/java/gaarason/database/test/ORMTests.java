@@ -20,8 +20,6 @@ import java.util.concurrent.CountDownLatch;
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
 public class ORMTests extends BaseTests {
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     private static StudentORMModel studentModel = new StudentORMModel();
 

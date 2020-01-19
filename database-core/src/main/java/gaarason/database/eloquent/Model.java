@@ -1,13 +1,14 @@
 package gaarason.database.eloquent;
 
 import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.contracts.eloquent.Repository;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.query.Builder;
 import gaarason.database.query.MySqlBuilder;
 
-abstract public class Model<T> extends Eventing<T> {
+abstract public class Model<T> extends SoftDeleting<T> {
 
     /**
      * @return dataSource代理
