@@ -11,6 +11,7 @@ import lombok.Setter;
 
 import javax.sql.DataSource;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -206,9 +207,9 @@ public class Generator {
         for (Map<String, Object> table : tables) {
             threadPool.execute(() -> {
                 // 单个表
-                for (String key : table.keySet()) {
+                for (Map.Entry<String, Object> entry : table.entrySet()) {
                     // 表名
-                    String tableName = table.get(key).toString();
+                    String tableName = entry.getValue().toString();
 
                     // entity文件名
                     String entityName = entityName(tableName);
@@ -450,9 +451,8 @@ public class Generator {
      * @return 填充后的内容
      */
     private static String fillTemplate(String template, Map<String, String> parameterMap) {
-        Set<String> strings = parameterMap.keySet();
-        for (String string : strings) {
-            template = template.replace(string, parameterMap.get(string));
+        for (Map.Entry<String, String> entry : parameterMap.entrySet()) {
+            template = template.replace(entry.getKey(), entry.getValue());
         }
         return template;
     }
@@ -467,7 +467,7 @@ public class Generator {
 
     private static String fileGetContent(String fileName) {
         InputStream    is               = Generator.class.getResourceAsStream(fileName);
-        BufferedReader br               = new BufferedReader(new InputStreamReader(is));
+        BufferedReader br               = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
         String         s;
         StringBuilder  configContentStr = new StringBuilder();
         try {
@@ -484,15 +484,18 @@ public class Generator {
     private static void filePutContent(String path, String fileName, String content) {
         try {
             File file = new File(path);
-            if (!file.exists()) {
-                file.mkdirs();
+            if (file.exists() || file.mkdirs()) {
+                OutputStreamWriter outputStreamWriter = new OutputStreamWriter(
+                    new FileOutputStream(path + fileName + ".java"), StandardCharsets.UTF_8);
+
+                outputStreamWriter.write(content.replaceAll("\\\\n", "\n"));
+                outputStreamWriter.flush();
+                outputStreamWriter.close();
+                // 控制台输出
+                consoleLog(fileName + " 生成完毕, 路径 : " + path);
+                return;
             }
-            FileWriter writer = new FileWriter(path + fileName + ".java", false);
-            writer.write(content.replaceAll("\\\\n", "\n"));
-            writer.flush();
-            writer.close();
-            // 控制台输出
-            consoleLog(fileName + " 生成完毕, 路径 : " + path);
+            throw new RuntimeException("目录建立失败 : " + file);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

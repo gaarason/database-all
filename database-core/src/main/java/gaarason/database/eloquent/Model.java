@@ -1,7 +1,6 @@
 package gaarason.database.eloquent;
 
 import gaarason.database.connections.ProxyDataSource;
-import gaarason.database.contracts.eloquent.Repository;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
@@ -92,7 +91,7 @@ abstract public class Model<T> extends SoftDeleting<T> {
      * @throws SQLRuntimeException
      */
     public Record<T> findOrFail(String id) throws EntityNotFoundException, SQLRuntimeException {
-        return newQuery().where(PrimaryKeyName, id).firstOrFail();
+        return newQuery().where(primaryKeyName, id).firstOrFail();
     }
 
     /**
@@ -102,7 +101,7 @@ abstract public class Model<T> extends SoftDeleting<T> {
      */
     @Nullable
     public Record<T> find(String id) {
-        return newQuery().where(PrimaryKeyName, id).first();
+        return newQuery().where(primaryKeyName, id).first();
     }
 
 }

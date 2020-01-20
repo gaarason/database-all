@@ -539,8 +539,8 @@ public class MySqlBuilder<T> extends Builder<T> {
 
     @Override
     public Builder<T> data(Map<String, String> map) {
-        for (String column : map.keySet()) {
-            data(column, map.get(column));
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            data(entry.getKey(), entry.getValue());
         }
         return this;
     }

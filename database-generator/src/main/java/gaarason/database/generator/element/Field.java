@@ -60,7 +60,7 @@ public class Field extends JavaElement {
     private String dataTypeTinyint() {
         Matcher matcher = tinyintPattern.matcher(columnType);
         if (matcher.find()) {
-            Integer length = new Integer(matcher.group(1));
+            Integer length = Integer.valueOf(matcher.group(1));
             if (length.equals(1)) {
                 return cutClassName(Boolean.class);
             }

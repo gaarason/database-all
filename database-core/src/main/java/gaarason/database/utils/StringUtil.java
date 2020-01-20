@@ -1,5 +1,6 @@
 package gaarason.database.utils;
 
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.List;
@@ -118,7 +119,7 @@ public class StringUtil {
     public static String md5(String input) {
         char[] hexDigits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
         try {
-            byte[] btInput = input.getBytes();
+            byte[] btInput = input.getBytes(StandardCharsets.UTF_8);
             // 获得MD5摘要算法的 MessageDigest 对象
             MessageDigest mdInst = MessageDigest.getInstance("MD5");
             // 使用指定的字节更新摘要

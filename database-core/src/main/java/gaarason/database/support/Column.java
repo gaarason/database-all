@@ -1,6 +1,5 @@
 package gaarason.database.support;
 
-import gaarason.database.core.lang.Nullable;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -19,7 +18,6 @@ public class Column implements Serializable {
     /**
      * 字段值
      */
-//    @Nullable
     private Object value;
 
     /**

@@ -264,7 +264,7 @@ public class Record<T> implements Serializable {
             case "class java.lang.String":
                 return value.toString();
             case "class java.lang.Integer":
-                return new Integer(value.toString());
+                return Integer.valueOf(value.toString());
             default:
                 return value;
         }
@@ -304,7 +304,7 @@ public class Record<T> implements Serializable {
             return false;
         }
         // 执行
-        boolean success = model.newQuery().where(model.PrimaryKeyName, originalPrimaryKeyValue.toString()).delete() > 0;
+        boolean success = model.newQuery().where(model.primaryKeyName, originalPrimaryKeyValue.toString()).delete() > 0;
         // 成功删除后后,刷新自身属性
         if (success) {
             this.metadataMap = new HashMap<>();
@@ -342,7 +342,7 @@ public class Record<T> implements Serializable {
         }
         // 执行
         boolean success = model.onlyTrashed()
-            .where(model.PrimaryKeyName, originalPrimaryKeyValue.toString())
+            .where(model.primaryKeyName, originalPrimaryKeyValue.toString())
             .restore() > 0;
         // 成功恢复后,刷新自身属性
         if (success && refresh) {
@@ -364,7 +364,7 @@ public class Record<T> implements Serializable {
         }
         // 刷新自身属性
         init(model.withTrashed()
-            .where(model.PrimaryKeyName, originalPrimaryKeyValue.toString())
+            .where(model.primaryKeyName, originalPrimaryKeyValue.toString())
             .firstOrFail().metadataMap);
         // 响应
         return this;
@@ -408,7 +408,7 @@ public class Record<T> implements Serializable {
         }
         // 执行
         boolean success = model.newQuery()
-            .where(model.PrimaryKeyName, originalPrimaryKeyValue.toString())
+            .where(model.primaryKeyName, originalPrimaryKeyValue.toString())
             .update(entity) > 0;
         // 成功更新后,刷新自身属性
         if (success) {

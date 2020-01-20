@@ -5,7 +5,6 @@ import gaarason.database.eloquent.annotations.Primary;
 import gaarason.database.utils.EntityUtil;
 import lombok.Getter;
 
-import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 
@@ -15,13 +14,13 @@ abstract class Initializing<T> implements Repository<T> {
      * 主键列名(并非一定是实体的属性名)
      */
     @Getter
-    protected String PrimaryKeyName;
+    protected String primaryKeyName;
 
     /**
      * 主键自增
      */
     @Getter
-    protected boolean PrimaryKeyIncrement;
+    protected boolean primaryKeyIncrement;
 
     /**
      * 实体类型
@@ -50,8 +49,8 @@ abstract class Initializing<T> implements Repository<T> {
         for (Field field : fields) {
             if (field.isAnnotationPresent(Primary.class)) {
                 Primary primary = field.getAnnotation(Primary.class);
-                PrimaryKeyIncrement = primary.increment();
-                PrimaryKeyName = EntityUtil.columnName(field);
+                primaryKeyIncrement = primary.increment();
+                primaryKeyName = EntityUtil.columnName(field);
                 break;
             }
         }
