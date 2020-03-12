@@ -12,6 +12,7 @@ import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.query.Builder;
 import gaarason.database.test.models.StudentModel;
 import gaarason.database.test.parent.BaseTests;
+import gaarason.database.test.utils.MultiThreadUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -21,7 +22,6 @@ import org.junit.runners.MethodSorters;
 import javax.sql.DataSource;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
@@ -35,43 +35,13 @@ public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
-    public void 新增_多线程_非entity方式() throws InterruptedException {
-        int            count          = 1000;
-        CountDownLatch countDownLatch = new CountDownLatch(count);
-        for (int i = 0; i < count; i++) {
-            new Thread(() -> {
-                List<String> columnNameList = new ArrayList<>();
-                columnNameList.add("name");
-                columnNameList.add("age");
-                columnNameList.add("sex");
-                List<String> valueList = new ArrayList<>();
-                valueList.add("testNAme134");
-                valueList.add("11");
-                valueList.add("1");
+    public void 新增_多线程_循环_非entity方式() throws InterruptedException {
+        // 原本数据量
+        Long beforeCount = studentModel.newQuery().count("id");
+        Assert.assertEquals(10L, beforeCount.longValue());
 
-                int insert = studentModel.newQuery().select(columnNameList).value(valueList).insert();
-                Assert.assertEquals(insert, 1);
-                StudentModel.Entity entityFirst = studentModel.newQuery()
-                    .where("name", "testNAme134")
-                    .orderBy("id", OrderBy.DESC)
-                    .firstOrFail()
-                    .toObject();
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                System.out.println(entityFirst);
-                Assert.assertNotNull(entityFirst);
-                Assert.assertEquals(11, entityFirst.getAge().intValue());
-                Assert.assertEquals("testNAme134", entityFirst.getName());
-                Assert.assertEquals(0, entityFirst.getTeacherId().intValue());
-                countDownLatch.countDown();
-            }).start();
-        }
-        countDownLatch.await();
-    }
-
-    @Test
-    public void 新增_非entity方式() {
-        int count = 1000;
-        for (int i = 0; i < count; i++) {
+        // 插入多次
+        MultiThreadUtil.run(100, 10, () -> {
             List<String> columnNameList = new ArrayList<>();
             columnNameList.add("name");
             columnNameList.add("age");
@@ -94,7 +64,11 @@ public class QueryBuilderTests extends BaseTests {
             Assert.assertEquals(11, entityFirst.getAge().intValue());
             Assert.assertEquals("testNAme134", entityFirst.getName());
             Assert.assertEquals(0, entityFirst.getTeacherId().intValue());
-        }
+        });
+
+        // 现在数据量
+        Long afterCount = studentModel.newQuery().count("id");
+        Assert.assertEquals(1010L, afterCount.longValue());
     }
 
     @Test
@@ -123,7 +97,7 @@ public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
-    public void 新增_多条记录() {
+    public void 新增_使用list单次新增多条记录() {
         List<StudentModel.Entity> entityList = new ArrayList<>();
         for (int i = 99; i < 10000; i++) {
             StudentModel.Entity entity = new StudentModel.Entity();
@@ -316,7 +290,7 @@ public class QueryBuilderTests extends BaseTests {
         long startMem = r.totalMemory(); // 开始时内存
         System.out.println("开始时内存: " + startMem);
         // 数据库数据有限,此处模拟大数据
-        新增_多条记录();
+        新增_多线程_循环_非entity方式();
         System.out.println("插入数据后的内存: " + r.totalMemory());
         Builder<StudentModel.Entity> queryBuilder = studentModel.newQuery();
 //        for(int i = 0 ; i < 100 ; i++){
@@ -343,7 +317,7 @@ public class QueryBuilderTests extends BaseTests {
         long startMem = r.totalMemory(); // 开始时内存
         System.out.println("开始时内存: " + startMem);
         // 数据库数据有限,此处模拟大数据
-        新增_多条记录();
+        新增_多线程_循环_非entity方式();
         System.out.println("插入数据后的内存: " + r.totalMemory());
         Builder<StudentModel.Entity> queryBuilder = studentModel.newQuery();
         System.out.println("构造sql后的内存: " + r.totalMemory());
@@ -591,7 +565,7 @@ public class QueryBuilderTests extends BaseTests {
     public void 随机获取() throws InterruptedException {
         // 数据库数据有限,此处模拟大数据
         for (int i = 0; i < 10; i++)
-            新增_多条记录();
+            新增_使用list单次新增多条记录();
         System.out.println("总数据量 : " + studentModel.newQuery().count("id"));
 
         long l1 = System.currentTimeMillis();
@@ -968,7 +942,7 @@ public class QueryBuilderTests extends BaseTests {
         List<StudentModel.Entity> entities = studentModel.newQuery().get().toObjectList();
         Assert.assertEquals(entities.get(0).getName(), entities.get(2).getName());
 
-        Assert.assertThrows(ConfirmOperationException.class, ()-> {
+        Assert.assertThrows(ConfirmOperationException.class, () -> {
             studentModel.newQuery().data("name", "xxcc").update();
         });
     }
@@ -977,7 +951,7 @@ public class QueryBuilderTests extends BaseTests {
     public void 安全_SQL注入() {
         String 用户非法输入 = "小明\' and 0<>(select count(*) from student) and \'1";
 
-        Assert.assertThrows(EntityNotFoundException.class, ()->{
+        Assert.assertThrows(EntityNotFoundException.class, () -> {
             studentModel.newQuery().where("name", 用户非法输入).firstOrFail();
         });
     }

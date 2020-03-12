@@ -1,7 +1,9 @@
 package gaarason.database.connections;
 
+import gaarason.database.exception.InternalConcurrentException;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
@@ -12,6 +14,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
+@ToString
 public class ProxyDataSource implements DataSource {
 
     /**
@@ -32,7 +35,7 @@ public class ProxyDataSource implements DataSource {
     private boolean hasSlave;
 
     /**
-     * 是否处于数据库事物中
+     * 单前线程中的 ProxyDataSource对象 是否处于数据库事物中
      */
     private ThreadLocal<Boolean> inTransaction = ThreadLocal.withInitial(() -> false);
 
@@ -87,7 +90,11 @@ public class ProxyDataSource implements DataSource {
     @Override
     public Connection getConnection() throws SQLException {
         DataSource realDataSource = getRealDataSource();
-        return realDataSource.getConnection();
+        Connection connection     = realDataSource.getConnection();
+        if(null == connection){
+            throw new InternalConcurrentException("Get an null value in ProxyDataSource object.");
+        }
+        return connection;
     }
 
     @Override

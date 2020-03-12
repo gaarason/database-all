@@ -1,7 +1,11 @@
 package gaarason.database.test;
 
+import gaarason.database.eloquent.enums.OrderBy;
+import gaarason.database.test.models.StudentModel;
+import gaarason.database.test.utils.MultiThreadUtil;
 import gaarason.database.utils.ExceptionUtil;
 import gaarason.database.utils.FormatUtil;
+import gaarason.database.utils.SnowFlakeIdUtil;
 import gaarason.database.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
@@ -9,8 +13,9 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
@@ -77,5 +82,26 @@ public class DatabaseUtilsTests {
         Assert.assertEquals(StringUtil.rtrim("tInvoice@@", "@"), "tInvoice");
         Assert.assertEquals(StringUtil.rtrim("tInvoice\n\n", "\n"), "tInvoice");
         Assert.assertEquals(StringUtil.rtrim("tInvoice", "Invoice"), "t");
+    }
+
+    @Test
+    public void testSnowFlakeIdUtil() throws InterruptedException {
+        ArrayList<Long> ids = new ArrayList<>();
+
+        MultiThreadUtil.run(100, 30000, () ->{
+            long id = SnowFlakeIdUtil.getId();
+            synchronized (ids){
+                ids.add(id);
+            }
+        });
+        System.out.println("生成id数量: "+ ids.size());
+
+        // 去重
+        LinkedHashSet<Long> hashSet = new LinkedHashSet<>(ids);
+        ArrayList<Long> listWithoutDuplicates = new ArrayList<>(hashSet);
+        Assert.assertEquals("存在重复的id", ids.size(), listWithoutDuplicates.size());
+        System.out.println("没有重复id");
+
+
     }
 }

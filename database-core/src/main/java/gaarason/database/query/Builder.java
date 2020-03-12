@@ -21,10 +21,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Union<T>, Support<T>, From<T>, Execute<T>,
     Select<T>, OrderBy<T>, Limit<T>, Group<T>, Value<T>, Data<T>, Transaction<T>, Aggregates<T>, Paginator<T>,
@@ -38,7 +35,7 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
     /**
      * 数据库连接
      */
-    private ProxyDataSource dataSource;
+    private final ProxyDataSource proxyDataSource;
 
     /**
      * 避免线程锁的connection缓存
@@ -55,8 +52,8 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
      */
     protected Model<T> model;
 
-    public Builder(ProxyDataSource dataSource, Model<T> model, Class<T> entityClass) {
-        this.dataSource = dataSource;
+    public Builder(ProxyDataSource proxyDataSource, Model<T> model, Class<T> entityClass) {
+        this.proxyDataSource = proxyDataSource;
         this.model = model;
         this.entityClass = entityClass;
         grammar = grammarFactory();
@@ -102,9 +99,9 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
     }
 
     @Override
-    public Builder clone() throws CloneNotSupportedRuntimeException {
+    public Builder<T> clone() throws CloneNotSupportedRuntimeException {
         try {
-            Builder builder = (Builder) super.clone();
+            Builder<T> builder = (Builder<T>) super.clone();
             builder.grammar = grammar.clone();
             return builder;
         } catch (CloneNotSupportedException e) {
@@ -120,29 +117,31 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
 
     @Override
     public void begin() throws SQLRuntimeException, NestedTransactionException {
-        if (dataSource.isInTransaction()) {
-            throw new NestedTransactionException();
-        }
-        try {
-            dataSource.setInTransaction();
-            Connection connection = dataSource.getConnection();
-            connection.setAutoCommit(false);
-            setLocalThreadConnection(connection);
-        } catch (SQLException e) {
-            throw new SQLRuntimeException(e.getMessage(), e);
+        synchronized (proxyDataSource) {
+            if (proxyDataSource.isInTransaction()) {
+                throw new NestedTransactionException();
+            }
+            try {
+                proxyDataSource.setInTransaction();
+                Connection connection = proxyDataSource.getConnection();
+                connection.setAutoCommit(false);
+                setLocalThreadConnection(connection);
+            } catch (SQLException e) {
+                throw new SQLRuntimeException(e.getMessage(), e);
+            }
         }
     }
 
     @Override
     public void commit() throws SQLRuntimeException {
         try {
-            getLocalThreadConnection().commit();
+            Objects.requireNonNull(getLocalThreadConnection()).commit();
             getLocalThreadConnection().close();
         } catch (SQLException e) {
             throw new SQLRuntimeException(e.getMessage(), e);
         } finally {
             removeLocalThreadConnection();
-            dataSource.setOutTransaction();
+            proxyDataSource.setOutTransaction();
         }
     }
 
@@ -155,13 +154,13 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
             throw new SQLRuntimeException(e.getMessage(), e);
         } finally {
             removeLocalThreadConnection();
-            dataSource.setOutTransaction();
+            proxyDataSource.setOutTransaction();
         }
     }
 
     @Override
     public boolean inTransaction() {
-        return dataSource.isInTransaction();
+        return proxyDataSource.isInTransaction();
     }
 
     @Override
@@ -298,7 +297,7 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
         int     offset = 0;
         boolean flag;
         do {
-            Builder cloneBuilder = clone();
+            Builder<T> cloneBuilder = clone();
             cloneBuilder.limit(offset, num);
             String        sql           = cloneBuilder.grammar.generateSql(SqlType.SELECT);
             List<String>  parameterList = cloneBuilder.grammar.getParameterList(SqlType.SELECT);
@@ -331,14 +330,19 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
      * @throws SQLRuntimeException 数据库连接获取失败
      */
     private Connection theConnection(boolean isWrite) throws SQLRuntimeException {
+        // 如果在事物中, 那么取已经开启事物的 Connection
         if (inTransaction()) {
             return getLocalThreadConnection();
-        } else {
-            dataSource.setWrite(isWrite);
-            try {
-                return dataSource.getConnection();
-            } catch (SQLException e) {
-                throw new SQLRuntimeException(e.getMessage(), e);
+        }
+        // 否则根据读写规则, 取新的 Connection
+        else {
+            synchronized (proxyDataSource) {
+                proxyDataSource.setWrite(isWrite);
+                try {
+                    return proxyDataSource.getConnection();
+                } catch (SQLException e) {
+                    throw new SQLRuntimeException(e.getMessage(), e);
+                }
             }
         }
     }
@@ -409,7 +413,12 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
      * @return 数据库连接
      */
     private Connection getLocalThreadConnection() {
-        return localThreadConnectionList.get(localThreadConnectionListName());
+        Connection connection = localThreadConnectionList.get(localThreadConnectionListName());
+        if (connection == null) {
+            throw new InternalConcurrentException(
+                "Get an null value in localThreadConnectionList with key[" + localThreadConnectionListName() + "].");
+        }
+        return connection;
     }
 
     /**
@@ -423,9 +432,8 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
         String processName        = ManagementFactory.getRuntimeMXBean().getName();
         String threadName         = Thread.currentThread().getName();
         String className          = getClass().toString();
-        int    dataSourceHashCode = dataSource.hashCode();
+        int    dataSourceHashCode = proxyDataSource.hashCode();
         return processName + threadName + className + dataSourceHashCode;
-
     }
 
 }

@@ -6,6 +6,7 @@ import gaarason.database.test.models.Student2Model;
 import gaarason.database.test.models.Student3Model;
 import gaarason.database.test.models.StudentModel;
 import gaarason.database.test.parent.BaseTests;
+import gaarason.database.test.utils.MultiThreadUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -18,10 +19,14 @@ import javax.sql.DataSource;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+/**
+ * `传播性`为同数据库连接不可嵌套, 不同的数据库连接可以任意嵌套
+ */
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
 public class TransactionTests extends BaseTests {
 
+    /*********  以下分别使用不同的数据库连接, 理解成物理上不同的数据库即可  ***********/
     private static StudentModel studentModel = new StudentModel();
 
     private static Student2Model student2Model = new Student2Model();
@@ -38,7 +43,7 @@ public class TransactionTests extends BaseTests {
     public void 事物_单个数据连接不可嵌套事物() {
         // 1层事物
         studentModel.newQuery().transaction(() -> {
-            // 2层事物
+            // 2层事物 应该抛出异常 NestedTransactionException
             studentModel.newQuery().transaction(() -> {
                 // 3层事物
                 studentModel.newQuery().transaction(() -> {
@@ -61,69 +66,64 @@ public class TransactionTests extends BaseTests {
     }
 
     @Test
-    public void 事物_lock_in_share_mode() {
-        studentModel.newQuery().transaction(() -> {
-            studentModel.newQuery().where("id", "3").sharedLock().get();
-        }, 3);
-    }
-
-    @Test
-    public void 事物_for_update() {
-        studentModel.newQuery().transaction(() -> {
-            studentModel.newQuery().where("id", "3").lockForUpdate().get();
-        }, 3);
-    }
-
-
-    @Test
     public void 事物_多线程下_多个数据连接嵌套事物2() throws InterruptedException {
-        int            count          = 100;
-        CountDownLatch countDownLatch = new CountDownLatch(count);
-        for (int i = 0; i < count; i++) {
-            new Thread(() -> {
-                try {
-                    // 1层事物
-                    studentModel.newQuery().transaction(() -> {
+
+        MultiThreadUtil.run(100,3,() -> {
+            System.out.println("子线程开启 ------------ " + Thread.currentThread().getName());
+            try {
+                // 第1层事物
+                studentModel.newQuery().transaction(() -> {
+                    try {
                         studentModel.newQuery().data("name", "testttt").where("id", "9").update();
-                        // 2层事物
-                        student2Model.newQuery().transaction(() -> {
-                            student2Model.newQuery().data("name", "testttt").where("id", "4").update();
-                            try {
-                                // 3层事物
-                                student3Model.newQuery().transaction(() -> {
-                                    student3Model.newQuery().where("id", "1").data("name", "dddddd").update();
-                                    Student3Model.Entity entity = student3Model.newQuery()
-                                        .where("id", "1")
-                                        .firstOrFail()
-                                        .toObject();
-                                    throw new RuntimeException("业务上抛了个异常");
-                                }, 1);
-                            } catch (RuntimeException e) {
-                                log.info("student3Model 业务上抛了个异常, 成功捕获, 所以student3Model上的事物回滚");
-                            }
-                            // student3Model 回滚
-                            Student3Model.Entity entity = student3Model.newQuery()
-                                .where("id", "1")
-                                .firstOrFail()
-                                .toObject();
-                            // student2Model 不受影响
-                            Student2Model.Entity id = student2Model.newQuery()
-                                .where("id", "4")
-                                .firstOrFail().toObject();
-                        }, 1);
-                        StudentModel.Entity id = studentModel.newQuery()
-                            .where("id", "9")
+                    }catch(Throwable e){
+                        log.error("不应该出现的异常" , e);
+                        throw e;
+                    }
+                    // 第2层事物 因为是不同的数据库连接,所以正常开启
+                    student2Model.newQuery().transaction(() -> {
+                        student2Model.newQuery().data("name", "testttt").where("id", "4").update();
+                        try {
+                            // 第3层事物 因为是不同的数据库连接,所以正常开启
+                            student3Model.newQuery().transaction(() -> {
+                                student3Model.newQuery().where("id", "1").data("name", "dddddd").update();
+                                Student3Model.Entity entity = student3Model.newQuery()
+                                    .where("id", "1")
+                                    .firstOrFail()
+                                    .toObject();
+//                                try {
+//                                    Thread.sleep(2);
+//                                } catch (InterruptedException e) {
+//                                    e.printStackTrace();
+//                                }
+                                throw new RuntimeException("业务上抛了个异常");
+                            }, 1);
+                            // 第3层事物 结束
+                        } catch (RuntimeException e) {
+                            log.info("student3Model 业务上抛了个异常, 成功捕获, 所以student3Model上的事物回滚");
+                        }
+                        // student3Model 回滚
+                        Student3Model.Entity entity = student3Model.newQuery()
+                            .where("id", "1")
+                            .firstOrFail()
+                            .toObject();
+                        // student2Model 不受影响
+                        Student2Model.Entity id = student2Model.newQuery()
+                            .where("id", "4")
                             .firstOrFail().toObject();
-                    }, 3);
-                } finally {
-                    countDownLatch.countDown();
-                    System.out.println("子线程结束");
-                }
-            }).start();
-            System.out.println("开启线程: " + i);
-        }
-        countDownLatch.await();
-        System.out.println("所有线程结束");
+                    }, 1);
+
+                    //  第2层事物结束
+                    StudentModel.Entity id = studentModel.newQuery()
+                        .where("id", "9")
+                        .firstOrFail().toObject();
+                }, 3);
+
+                // 第1层事物结束
+            } finally {
+                System.out.println("子线程结束 " + Thread.currentThread().getName());
+            }
+        });
+
     }
 
     @Test
@@ -246,6 +246,20 @@ public class TransactionTests extends BaseTests {
         }
         countDownLatch.await();
         System.out.println("所有线程结束");
+    }
+
+    @Test
+    public void 事物_lock_in_share_mode() {
+        studentModel.newQuery().transaction(() -> {
+            studentModel.newQuery().where("id", "3").sharedLock().get();
+        }, 3);
+    }
+
+    @Test
+    public void 事物_for_update() {
+        studentModel.newQuery().transaction(() -> {
+            studentModel.newQuery().where("id", "3").lockForUpdate().get();
+        }, 3);
     }
 
 }
