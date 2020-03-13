@@ -3,6 +3,10 @@ package gaarason.database.contracts.builder;
 import gaarason.database.exception.NestedTransactionException;
 import gaarason.database.exception.SQLRuntimeException;
 
+/**
+ * 事物
+ * @param <T>
+ */
 public interface Transaction<T> {
 
     /**
@@ -33,7 +37,7 @@ public interface Transaction<T> {
     /**
      * 以闭包开启一个事物
      * @param runnable    事物中的处理
-     * @param maxAttempts 事物重试次数
+     * @param maxAttempts 事物死锁重试次数
      * @return 事物最终执行成功与否
      */
     boolean transaction(Runnable runnable, int maxAttempts);

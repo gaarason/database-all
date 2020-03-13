@@ -2,6 +2,13 @@
 [![](https://jitpack.io/v/gaarason/database-all.svg)](https://jitpack.io/#gaarason/database-all)  
 
 Eloquent ORM for Java
+
+## 简介
+
+ 让连接数据库以及对数据库进行增删改查操作变得非常简单，不论希望使用原生 SQL、还是查询构建器，还是 Eloquent ORM。  
+      
+ Eloquent ORM 提供一个美观、简单的与数据库打交道的 ActiveRecord 实现，每张数据表都对应一个与该表数据结构对应的实体（Entity），以及的进行交互的模型（Model），通过模型类，你可以对数据表进行查询、插入、更新、删除等操作，并将结果反映到实体实例化的 java 对象中。
+
 ## 目录
 * [注册bean](/document/bean.md)
 * [数据映射](/document/mapping.md)
@@ -17,7 +24,7 @@ Eloquent ORM for Java
 // 查询id为4的一条数据
 Student student = studentModel.find("4").toObject();
 
-// select id,name from student where id=3 or(age>11 and id=7 and(id between 4 and 10 and age>11))
+// 稍复杂嵌套的语句 select id,name from student where id=3 or(age>11 and id=7 and(id between 4 and 10 and age>11))
 List<Student> Students = studentModel.newQuery().where("id", "3").orWhere(
     builder -> builder.where("age", ">", "11").where("id", "7").andWhere(
         builder2 -> builder2.whereBetween("id", "4", "10").where("age", ">", "11")

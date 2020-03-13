@@ -2,6 +2,10 @@ package gaarason.database.contracts.builder;
 
 import gaarason.database.query.Builder;
 
+/**
+ * 锁
+ * @param <T>
+ */
 public interface Lock<T> {
 
     /**

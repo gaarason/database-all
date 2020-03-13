@@ -90,15 +90,13 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
      */
     abstract Grammar grammarFactory();
 
+    /**
+     * 克隆当前查询构造器
+     * @return 查询构造器
+     * @throws CloneNotSupportedRuntimeException 克隆异常
+     */
     @Override
-    public Paginate<T> paginate(int currentPage, int perPage)
-        throws SQLRuntimeException, CloneNotSupportedRuntimeException {
-        Long    count = clone().count("*");
-        List<T> list  = limit((currentPage - 1) * perPage, perPage).get().toObjectList();
-        return new Paginate<>(list, currentPage, perPage, count.intValue());
-    }
-
-    @Override
+    @SuppressWarnings("unchecked")
     public Builder<T> clone() throws CloneNotSupportedRuntimeException {
         try {
             Builder<T> builder = (Builder<T>) super.clone();
@@ -108,13 +106,40 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
             throw new CloneNotSupportedRuntimeException(e.getMessage(), e);
         }
     }
+    /**
+     * 带总数的分页
+     * @param currentPage 当前页
+     * @param perPage     每页数量
+     * @return 分页对象
+     * @throws SQLRuntimeException 数据库异常
+     * @throws CloneNotSupportedRuntimeException 克隆异常
+     */
+    @Override
+    public Paginate<T> paginate(int currentPage, int perPage)
+        throws SQLRuntimeException, CloneNotSupportedRuntimeException {
+        Long    count = clone().count("*");
+        List<T> list  = limit((currentPage - 1) * perPage, perPage).get().toObjectList();
+        return new Paginate<>(list, currentPage, perPage, count.intValue());
+    }
 
+    /**
+     * 不带总数的分页
+     * @param currentPage 当前页
+     * @param perPage     每页数量
+     * @return 分页对象
+     * @throws SQLRuntimeException 数据库异常
+     */
     @Override
     public Paginate<T> simplePaginate(int currentPage, int perPage) throws SQLRuntimeException {
         List<T> list = limit((currentPage - 1) * perPage, perPage).get().toObjectList();
         return new Paginate<>(list, currentPage, perPage);
     }
 
+    /**
+     * 数据库事物开启
+     * @throws SQLRuntimeException 数据库异常
+     * @throws NestedTransactionException 构建
+     */
     @Override
     public void begin() throws SQLRuntimeException, NestedTransactionException {
         synchronized (proxyDataSource) {
@@ -132,6 +157,10 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
         }
     }
 
+    /**
+     * 数据库事物提交
+     * @throws SQLRuntimeException 数据库异常
+     */
     @Override
     public void commit() throws SQLRuntimeException {
         try {
@@ -145,6 +174,10 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
         }
     }
 
+    /**
+     * 数据库事物回滚
+     * @throws SQLRuntimeException 数据库异常
+     */
     @Override
     public void rollBack() throws SQLRuntimeException {
         try {
@@ -158,6 +191,10 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
         }
     }
 
+    /**
+     * 当前线程是否在事物中
+     * @return 是否在事物中
+     */
     @Override
     public boolean inTransaction() {
         return proxyDataSource.isInTransaction();

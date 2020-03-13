@@ -5,6 +5,10 @@ import gaarason.database.query.Builder;
 
 import java.util.List;
 
+/**
+ * 条件
+ * @param <T>
+ */
 public interface Where<T> {
 
     /**

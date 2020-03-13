@@ -12,20 +12,26 @@ public class MultiThreadUtil {
      * @param threadNumber 并发线程数量
      * @param cycleNumber  每个线程顺序执行次数数量
      * @param runnable     业务闭包
-     * @throws InterruptedException
      */
-    public static void run(int threadNumber, int cycleNumber, Runnable runnable) throws InterruptedException {
+    public static void run(int threadNumber, int cycleNumber, Runnable runnable) {
         CountDownLatch countDownLatch = new CountDownLatch(threadNumber);
         long           startTime      = System.currentTimeMillis();//记录开始时间
         for (int i = 0; i < threadNumber; i++) {
             new Thread(() -> {
-                for (int t = 0; t < cycleNumber; t++) {
-                    runnable.run();
+                try {
+                    for (int t = 0; t < cycleNumber; t++) {
+                        runnable.run();
+                    }
+                } finally {
+                    countDownLatch.countDown();
                 }
-                countDownLatch.countDown();
             }).start();
         }
-        countDownLatch.await();
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         long  endTime = System.currentTimeMillis();//记录结束时间
         float excTime = (float) (endTime - startTime) / 1000;
         System.out.println(

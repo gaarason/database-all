@@ -637,8 +637,8 @@ public class MySqlBuilder<T> extends Builder<T> {
 
     @Override
     public Builder<T> inRandomOrder(String field) {
-        Builder sameSubBuilder1 = model.newQuery();
-        Builder sameSubBuilder2 = model.newQuery();
+        Builder<T> sameSubBuilder1 = model.newQuery();
+        Builder<T> sameSubBuilder2 = model.newQuery();
         String  maxSql          = sameSubBuilder1.selectFunction("max", field, null).toSql(SqlType.SELECT);
         String  minSql          = sameSubBuilder2.selectFunction("min", field, null).toSql(SqlType.SELECT);
         String  floorSql        = "rand()*((" + maxSql + ")-(" + minSql + "))+(" + minSql + ")";

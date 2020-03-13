@@ -10,9 +10,7 @@ import gaarason.database.test.utils.MultiThreadUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
 
 import javax.sql.DataSource;
@@ -68,15 +66,15 @@ public class TransactionTests extends BaseTests {
     @Test
     public void 事物_多线程下_多个数据连接嵌套事物2() throws InterruptedException {
 
-        MultiThreadUtil.run(100,3,() -> {
+        MultiThreadUtil.run(100, 3, () -> {
             System.out.println("子线程开启 ------------ " + Thread.currentThread().getName());
             try {
                 // 第1层事物
                 studentModel.newQuery().transaction(() -> {
                     try {
                         studentModel.newQuery().data("name", "testttt").where("id", "9").update();
-                    }catch(Throwable e){
-                        log.error("不应该出现的异常" , e);
+                    } catch (Throwable e) {
+                        log.error("不应该出现的异常", e);
                         throw e;
                     }
                     // 第2层事物 因为是不同的数据库连接,所以正常开启
@@ -124,6 +122,40 @@ public class TransactionTests extends BaseTests {
             }
         });
 
+    }
+
+
+    @Test
+    public void 事物_在事物中开启多线程执行_子进程不处于事物中() {
+
+        studentModel.newQuery().data("name", "vv").where("id", "9").update();
+        // 第1层事物
+        studentModel.newQuery().transaction(() -> {
+
+            // 因为事物状态 绑定到了线程 所以先开启事物,然后在事物中开启多个子线程,这些子进程是不处于事物中的!
+            MultiThreadUtil.run(100, 3, () -> {
+                System.out.println("子线程开启 ------------ " + Thread.currentThread().getName());
+                try {
+                        studentModel.newQuery().data("name", "tesxxt").where("id", "9").update();
+                        StudentModel.Entity entity = studentModel.newQuery()
+                            .where("id", "9")
+                            .firstOrFail()
+                            .toObject();
+                        Assert.assertEquals(entity.getName(), "tesxxt");
+                        throw new RuntimeException("业务上抛了个异常");
+                    // 第1层事物结束
+                } finally {
+                    System.out.println("子线程结束 " + Thread.currentThread().getName());
+                }
+            });
+        }, 1);
+
+        StudentModel.Entity entity = studentModel.newQuery()
+            .where("id", "9")
+            .firstOrFail()
+            .toObject();
+        Assert.assertEquals(entity.getName(), "tesxxt");
+//        Assert.assertEquals(entity.getName(), "vv");
     }
 
     @Test

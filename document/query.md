@@ -12,6 +12,7 @@ Eloquent ORM for Java
     * [获取](#获取)
         * [分块处理](#分块处理)
     * [插入](#插入)
+        * [自增id](#自增id)
     * [更新](#更新)
     * [删除](#删除)
         * [默认删除](#默认删除)
@@ -96,7 +97,7 @@ RecordList<Student> records = studentModel.where("age","<","9").get();
 当要进行大量数据查询时,可以使用分块,他将自动拼接`limit`字段,在闭包中返回`boolean`表示是否进行下一次迭代  
 因为分块查询,并发的数据更改一定会伴随数据不准确的问题,如同redis中的`keys`与`scan`
 ```java
-studentModel.where("age","<","9").dealChunk(20000, records -> {
+studentModel.where("age","<","9").dealChunk(2000, records -> {
     // do something
     records.toObjectList();
     return true;
@@ -115,9 +116,10 @@ student.setSex(Byte.valueOf("1"));
 student.setTeacherId(0);
 student.setCreatedAt(new Date(1312312312));
 student.setUpdatedAt(new Date(1312312312));
+
 int num = studentModel.newQuery().insert(entity);
 
-// 实体批量操作
+// 单个实体操作
 List<Student> studentList = new ArrayList<>();
 for (int i = 99; i < 1000; i++) {
     Student student = new Student();
@@ -130,6 +132,7 @@ for (int i = 99; i < 1000; i++) {
     entity.setUpdatedAt(new Date());
     entityList.add(entity);
 }
+
 int num = studentModel.newQuery().insert(entityList);
 
 // 构造语句插入
@@ -141,7 +144,15 @@ List<String> valueList = new ArrayList<>();
 valueList.add("testNAme134");
 valueList.add("11");
 valueList.add("1");
+
 int num = studentModel.newQuery().select(columnNameList).value(valueList).insert();
+```
+
+### 自增id
+当数据库主键为`bigint unsigned`时, 可以使用雪花id生成器  
+默认使用本机mac地址转化为机器id(范围0-1023, 一旦出现机器id重复, 建议自行实现), 兼容10ms以内时间回拨, 单个进程每秒500w个id
+```java
+long id = gaarason.database.utils.SnowFlakeIdUtil.getId();
 ```
 
 ## 更新
@@ -377,8 +388,11 @@ RecordList<Student> records = studentModel.newQuery()
 
 ## 事务
 
-`隔离级别`设置在[注册bean](/document/bean.md)的`SESSION SQL_MODE`,默认可重复读   
-`传播性`为同数据库连接不可嵌套, 不同的数据库连接可以任意嵌套  
+- `隔离级别` 设置在[注册bean](/document/bean.md)的`SESSION SQL_MODE`, 默认可重复读   
+- `传播性` 同数据库连接(ProxyDataSource)且同个线程中不可嵌套, 不同的数据库连接可以任意嵌套  
+- `多线程` 事物绑定在线程中 **`(重要)`**
+  -  先开启事物, 再在事物中开启多线程执行, 子进程不处于事物中  
+  -  先开启多线程, 再在每个子线程中开启事物(即使是同一个数据库连接ProxyDataSource), 事物之间相互隔离, 可以按单线程思路书写业务
 
 ### 手动事物
 ```java

@@ -5,6 +5,10 @@ import gaarason.database.query.Builder;
 
 import java.util.List;
 
+/**
+ * 查询后过滤
+ * @param <T>
+ */
 public interface Having<T> {
 
     /**

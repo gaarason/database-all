@@ -261,26 +261,28 @@ public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
-    public void 查询_多条记录() {
-        List<StudentModel.Entity> entities1 = studentModel.newQuery()
-            .select("name")
-            .select("id")
-            .get()
-            .toObjectList();
+    public void 查询_多条记录() throws InterruptedException {
+        MultiThreadUtil.run(10, 10 , () -> {
+            List<StudentModel.Entity> entities1 = studentModel.newQuery()
+                .select("name")
+                .select("id")
+                .get()
+                .toObjectList();
 
-        Assert.assertEquals(entities1.size(), 10);
+            Assert.assertEquals(entities1.size(), 10);
 
-        List<StudentModel.Entity> entities2 = studentModel.newQuery().get().toObjectList();
-        StudentModel.Entity       entity2   = entities2.get(0);
-        System.out.println(entity2);
-        Assert.assertNotNull(entity2);
-        Assert.assertEquals(entity2.getId(), new Integer(1));
-        Assert.assertEquals(entity2.getId().intValue(), 1);
-        Assert.assertEquals(entity2.getName(), "小明");
-        Assert.assertEquals(entity2.getAge().intValue(), 6);
-        Assert.assertEquals(entity2.getTeacherId().intValue(), 6);
-        Assert.assertEquals(entity2.getCreatedAt().toString(), "2009-03-14 17:15:23.0");
-        Assert.assertEquals(entity2.getUpdatedAt().toString(), "2010-04-24 22:11:03.0");
+            List<StudentModel.Entity> entities2 = studentModel.newQuery().get().toObjectList();
+            StudentModel.Entity       entity2   = entities2.get(0);
+            System.out.println(entity2);
+            Assert.assertNotNull(entity2);
+            Assert.assertEquals(entity2.getId(), new Integer(1));
+            Assert.assertEquals(entity2.getId().intValue(), 1);
+            Assert.assertEquals(entity2.getName(), "小明");
+            Assert.assertEquals(entity2.getAge().intValue(), 6);
+            Assert.assertEquals(entity2.getTeacherId().intValue(), 6);
+            Assert.assertEquals(entity2.getCreatedAt().toString(), "2009-03-14 17:15:23.0");
+            Assert.assertEquals(entity2.getUpdatedAt().toString(), "2010-04-24 22:11:03.0");
+        });
     }
 
     @Test
@@ -293,18 +295,20 @@ public class QueryBuilderTests extends BaseTests {
         新增_多线程_循环_非entity方式();
         System.out.println("插入数据后的内存: " + r.totalMemory());
         Builder<StudentModel.Entity> queryBuilder = studentModel.newQuery();
-//        for(int i = 0 ; i < 100 ; i++){
-//            queryBuilder.unionAll((builder -> builder));
-//        }
+        for(int i = 0 ; i < 100 ; i++){
+            queryBuilder.unionAll((builder -> builder));
+        }
         System.out.println("构造sql后的内存: " + r.totalMemory());
         RecordList<StudentModel.Entity> records = queryBuilder.get();
         System.out.println("执行sql后的内存: " + r.totalMemory());
         int size = records.size();
-        System.out.println(size);
+        System.out.println("查询结果数量 : "+size);
+        StringBuilder temp = new StringBuilder();
         for (Record<StudentModel.Entity> record : records) {
             // do something
+            temp.append(record.toSearch());
         }
-
+        System.out.println(temp.toString());
         long orz = r.totalMemory() - startMem; // 剩余内存 现在
         System.out.println("最后的内存: " + r.totalMemory());
         System.out.println("执行消耗的内存差: " + orz);
@@ -320,13 +324,21 @@ public class QueryBuilderTests extends BaseTests {
         新增_多线程_循环_非entity方式();
         System.out.println("插入数据后的内存: " + r.totalMemory());
         Builder<StudentModel.Entity> queryBuilder = studentModel.newQuery();
+        for(int i = 0 ; i < 100 ; i++){
+            queryBuilder.unionAll((builder -> builder));
+        }
         System.out.println("构造sql后的内存: " + r.totalMemory());
+        StringBuilder temp = new StringBuilder();
         queryBuilder.dealChunk(2000, records -> {
             // do something
-            records.toObjectList();
+            for (Record<StudentModel.Entity> record : records) {
+                // do something
+                temp.append(record.toSearch());
+            }
             return true;
         });
         System.out.println("执行sql后的内存: " + r.totalMemory());
+        System.out.println(temp.toString());
 
         long orz = r.totalMemory() - startMem; // 剩余内存 现在
         System.out.println("最后的内存: " + r.totalMemory());
@@ -608,11 +620,15 @@ public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void GROUP() {
+        List<String> groupList = new ArrayList<>();
+        groupList.add("id");
+        groupList.add("age");
         List<StudentModel.Entity> entities = studentModel.newQuery()
             .select("id", "age")
             .where("id", "&", "1")
             .orderBy("id", OrderBy.DESC)
             .group("sex", "id", "age")
+            .group(groupList)
             .get()
             .toObjectList();
         System.out.println(entities);
@@ -705,8 +721,12 @@ public class QueryBuilderTests extends BaseTests {
     public void 筛选_havingIn_closure() {
         List<StudentModel.Entity> entityList1 = studentModel.newQuery().havingIn("id",
             builder -> builder.select("id").where("age", ">=", "11")
-        ).group("id").select("id").get().toObjectList();
-        Assert.assertEquals(entityList1.size(), 9);
+        ).andHaving(
+            builder -> builder.havingNotIn("sex",
+                builder1 -> builder1.select("sex").where("sex", "1")
+            )
+        ).group("id","sex").select("id").get().toObjectList();
+        Assert.assertEquals(entityList1.size(), 3);
     }
 
     @Test
@@ -831,6 +851,14 @@ public class QueryBuilderTests extends BaseTests {
             .firstOrFail().toObject();
         Assert.assertNotNull(first2);
         Assert.assertEquals(first2.getId().intValue(), 9);
+
+        StudentModel.Entity first3 = studentModel.newQuery()
+            .where("id", "<>", "10")
+            .orderBy("age", OrderBy.DESC)
+            .orderBy("id", OrderBy.ASC)
+            .firstOrFail().toObject();
+        Assert.assertNotNull(first3);
+        Assert.assertEquals(first3.getId().intValue(), 7);
     }
 
     @Test

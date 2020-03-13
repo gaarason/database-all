@@ -3,6 +3,10 @@ package gaarason.database.contracts.builder;
 import gaarason.database.eloquent.Paginate;
 import gaarason.database.exception.SQLRuntimeException;
 
+/**
+ * 分页
+ * @param <T>
+ */
 public interface Paginator<T> {
 
     /**

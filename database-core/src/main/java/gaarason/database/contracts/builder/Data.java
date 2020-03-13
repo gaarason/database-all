@@ -4,6 +4,10 @@ import gaarason.database.query.Builder;
 
 import java.util.Map;
 
+/**
+ * 数据
+ * @param <T>
+ */
 public interface Data<T> {
 
     /**
