@@ -28,6 +28,7 @@ public class GeneratorTests {
         // set
         generator.setStaticField(true);
         generator.setIsSpringBoot(true);
+        generator.setIsSwagger(true);
         generator.setCorePoolSize(20);
         generator.setOutputDir("./src/test/java/");
         generator.setNamespace("test.data");

@@ -29,7 +29,7 @@ CREATE TABLE `data_type`
   `text`         text                NOT NULL COMMENT '问题状态\r\n现"场检"查 enum(''''待提交'''',''''待整改'''',''''待复验'''',''''已通过'''',''''已作废'''',''''已关闭'''')\r\n实测实量一级问题 enum(''''检查中'''',''''待整改'''',''''已整改'''')\r\n实测实量二级问题 enum(''''检查中'''',''''检查完毕'''', ''''已整改'''')',
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4 COMMENT ='test';
+  DEFAULT CHARSET = utf8mb4;
 DROP TABLE IF EXISTS `test`;
 CREATE TABLE `test`
 (
@@ -59,7 +59,7 @@ CREATE TABLE `relationship_student_teacher`
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 30
-  DEFAULT CHARSET = utf8mb4 COMMENT ='学生表';
+  DEFAULT CHARSET = utf8mb4 COMMENT ='学生与老师的关系表';
 INSERT INTO `relationship_student_teacher`
 VALUES ('1', '1', '1', '2009-03-14 22:15:23', '2009-04-24 22:22:03');
 INSERT INTO `relationship_student_teacher`
