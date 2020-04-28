@@ -2,10 +2,11 @@ package gaarason.database.contracts;
 
 import gaarason.database.eloquent.enums.SqlType;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
+import gaarason.database.utils.CopyUtil;
 
 import java.util.List;
 
-public interface Grammar extends Cloneable {
+public interface Grammar {
 
     void pushSelect(String something);
 
@@ -48,5 +49,12 @@ public interface Grammar extends Cloneable {
      */
     void forAggregates();
 
-    Grammar clone() throws CloneNotSupportedRuntimeException;
+    /**
+     * 深度copy
+     * @return 和当前属性值一样的全新对象
+     * @throws CloneNotSupportedRuntimeException 克隆异常
+     */
+    default Grammar deepCopy() throws CloneNotSupportedRuntimeException{
+        return CopyUtil.deepCopy(this);
+    }
 }

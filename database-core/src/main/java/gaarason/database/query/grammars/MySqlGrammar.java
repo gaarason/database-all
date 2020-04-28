@@ -3,14 +3,14 @@ package gaarason.database.query.grammars;
 import gaarason.database.contracts.Grammar;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.enums.SqlType;
-import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.InvalidSQLTypeException;
 import gaarason.database.utils.FormatUtil;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MySqlGrammar implements Grammar {
+public class MySqlGrammar implements Grammar, Serializable {
 
     private String table;
 
@@ -267,12 +267,4 @@ public class MySqlGrammar implements Grammar {
         dataParameterList.add(value);
     }
 
-    @Override
-    public MySqlGrammar clone() throws CloneNotSupportedRuntimeException {
-        try {
-            return (MySqlGrammar) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new CloneNotSupportedRuntimeException(e.getMessage(), e);
-        }
-    }
 }

@@ -99,8 +99,10 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
     @SuppressWarnings("unchecked")
     public Builder<T> clone() throws CloneNotSupportedRuntimeException {
         try {
+            // 浅拷贝
             Builder<T> builder = (Builder<T>) super.clone();
-            builder.grammar = grammar.clone();
+            // 深拷贝
+            builder.grammar = grammar.deepCopy();
             return builder;
         } catch (CloneNotSupportedException e) {
             throw new CloneNotSupportedRuntimeException(e.getMessage(), e);
