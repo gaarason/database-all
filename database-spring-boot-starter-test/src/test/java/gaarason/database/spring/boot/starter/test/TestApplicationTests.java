@@ -3,6 +3,7 @@ package gaarason.database.spring.boot.starter.test;
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.eloquent.Record;
 import gaarason.database.generator.GeneralGenerator;
+import gaarason.database.generator.Generator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -40,6 +41,28 @@ public class TestApplicationTests {
         generalGenerator.setDisUpdatable(disableUpdate);
 
         generalGenerator.run();
+    }
+
+    @Test
+    public void run有参构造() {
+        String jdbcUrl = "jdbc:mysql://sakya.local/test_master_0?useUnicode=true&characterEncoding=utf-8" +
+            "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
+        String username = "root";
+        String    password  = "root";
+        Generator generator = new Generator(jdbcUrl, username, password);
+
+        // set
+        generator.setStaticField(true);
+        generator.setIsSpringBoot(true);
+        generator.setIsSwagger(true);
+        generator.setIsValidator(true);
+        generator.setCorePoolSize(20);
+        generator.setOutputDir("./src/test/java/");
+        generator.setNamespace("test.data");
+        generator.setDisInsertable("created_at", "updated_at");
+        generator.setDisUpdatable("created_at", "updated_at");
+
+        generator.run();
     }
 
     @Test

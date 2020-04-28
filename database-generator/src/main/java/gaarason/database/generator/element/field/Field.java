@@ -1,12 +1,12 @@
 package gaarason.database.generator.element.field;
 
+import gaarason.database.generator.element.JavaClassification;
 import gaarason.database.generator.element.JavaElement;
-import gaarason.database.generator.support.FieldAnnotation;
+import gaarason.database.generator.element.JavaVisibility;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.math.BigInteger;
-import java.sql.Time;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,15 +15,13 @@ import java.util.regex.Pattern;
 @EqualsAndHashCode(callSuper = true)
 public class Field extends JavaElement {
 
-    final private static Pattern tinyintPattern = Pattern.compile("tinyint\\((\\d)\\)");
-
     /**
-     *
+     * varchar(20)
      */
     private String dataType;
 
     /**
-     *
+     * int(1) unsigned
      */
     private String columnType;
 
@@ -83,26 +81,50 @@ public class Field extends JavaElement {
     private Boolean increment = false;
 
     /**
+     * java中的类型
+     * eg:Date
+     */
+    private String javaClassTypeString;
+
+    /**
+     * java数据类型分类
+     */
+    private JavaClassification javaClassification;
+
+    /**
+     * 最小值
+     * 当
+     */
+    private long min = 0;
+
+    /**
+     * 最大值
+     */
+    private long max = 0;
+
+
+
+    /**
      * @return eg:private String name;
      */
     public String toFieldName() {
-        return "private " + getJavaType() + " " + name + ";";
+        return indentation() + JavaVisibility.PRIVATE.getValue() + javaClassTypeString + " " + name + ";\n\n";
     }
 
     /**
      * @return eg:@Primary()
      */
     public String toAnnotationDatabasePrimary() {
-        return "@Primary(" +
+        return primary ? indentation() + "@Primary(" +
             (!increment ? "increment = " + increment : "") +
-            ")";
+            ")\n" : "";
     }
 
     /**
      * @return eg:@Column(name = "name", length = 20L, comment = "姓名")
      */
     public String toAnnotationDatabaseColumn() {
-        return "@Column(" +
+        return indentation() + "@Column(" +
 
             "name = \"" + name + "\"" +
             (unique ? ", unique = " + unique : "") +
@@ -113,7 +135,7 @@ public class Field extends JavaElement {
             (length != null && length != 255 ? ", length = " + length + "L" : "") +
             (!"".equals(comment) ? ", comment = \"" + comment + "\"" : "") +
 
-            ")";
+            ")\n";
     }
 
     /**
@@ -122,89 +144,65 @@ public class Field extends JavaElement {
     public String toAnnotationSwaggerAnnotationsApiModelProperty() {
         // 字段没有注释的情况下, 使用字段名
         String value = "".equals(comment) ? name : comment;
-        // 列不可为null, 且没有默认值, 则 require = true
-        boolean require = (!nullable) && (defaultValue == null);
 
-        return "@ApiModelProperty(" +
+        return indentation() + "@ApiModelProperty(" +
 
             "value = \"" + value + "\"" +
             (defaultValue != null ? ", example = \"" + defaultValue + "\"" : "") +
-            (require ? ", required = true" : "") +
+            (isRequired() ? ", required = true" : "") +
 
-            ")";
+            ")\n";
     }
 
     /**
-     * @return eg:@ApiModelProperty(value = "消息id", example = "39e0f74f-93fd-224c-0078-988542600fd3", required = true)
+     * javax.validation.constraints.@Max
+     * javax.validation.constraints.@Min
+     * org.hibernate.validator.constraints.@Length
+     * @return eg:@Length(min = 0, max = 50, message = "合同的首期缴费日期[firstPayDate]长度需要在0和50之间")
      */
-//    public String toAnnotationOrgHibernateValidatorConstraintValidator() {
-//        // 字段没有注释的情况下, 使用字段名
-//        String value = "".equals(comment) ? name : comment;
-//        // 列不可为null, 且没有默认值, 则 require = true
-//        boolean require = (!nullable) && (defaultValue == null);
-//
-//        return "@ApiModelProperty(" +
-//
-//            "value = \"" + value + "\"" +
-//            (defaultValue != null ? ", example = \"" + defaultValue + "\"" : "") +
-//            (require ? ", required = true" : "") +
-//
-//            ")";
-//    }
+    public String toAnnotationOrgHibernateValidatorConstraintValidator() {
+        // 字段没有注释的情况下, 使用字段名
+        String describe = "".equals(comment) ? name : comment;
 
-    private String getJavaType() {
-        switch (dataType.toLowerCase()) {
-            case "tinyint":
-                return dataTypeTinyint();
-            case "smallint":
-            case "mediumint":
-                return cutClassName(Integer.class);
-            case "int":
-                return dataTypeInt();
-            case "bigint":
-                return dataTypeBigint();
-            case "datetime":
-            case "timestamp":
-            case "year":
-            case "date":
-            case "time":
-                return cutClassName(Date.class);
-            case "blob":
-                return "Byte[]";
-            case "bit":
-                return cutClassName(Boolean.class);
-            case "char":
-            case "varchar":
-            case "text":
+        switch (javaClassification){
+            case NUMERIC:
+                return indentation() + "@Max(value = " + max + "L, " +
+                    "message = \"" + describe + "[" + name + "]需要小于等于" + max  + "\"" +
+                    ")\n" +
+                    indentation() + "@Min(value = " + min + "L, " +
+                    "message = \"" + describe + "[" + name + "]需要大于等于" + min  + "\"" +
+                    ")\n";
+            case STRING:
+                if(max == 0)
+                    return "";
+                else
+                return indentation() + "@Length(" +
+                    "min = " + min + ", " +
+                    "max = " + max + ", " +
+                    "message = \"" + describe + "[" + name + "]长度需要在" + min + "和" + max + "之间"  + "\"" +
+                    ")\n";
             default:
-                return cutClassName(String.class);
+                return "";
         }
-
     }
 
-    private String dataTypeTinyint() {
-        Matcher matcher = tinyintPattern.matcher(columnType);
-        if (matcher.find()) {
-            Integer length = Integer.valueOf(matcher.group(1));
-            if (length.equals(1)) {
-                return cutClassName(Boolean.class);
-            }
-        }
-        return columnType.contains("unsigned") ? cutClassName(Integer.class) : cutClassName(Byte.class);
+    /**
+     * 字段是否必填
+     * @return 是否必填
+     */
+    private boolean isRequired() {
+        // 列不可为null, 且没有默认值, 则 require = true
+        return (!nullable) && (defaultValue == null);
     }
 
-    private String dataTypeInt() {
-        return columnType.contains("unsigned") ? cutClassName(Long.class) : cutClassName(Integer.class);
+
+
+    /**
+     * 缩进
+     * @return 缩进所需的空格符或者制表符
+     */
+    private static String indentation(){
+        return "    ";
     }
 
-    private String dataTypeBigint() {
-        return columnType.contains("unsigned") ? cutClassName(BigInteger.class) : cutClassName(Long.class);
-
-    }
-
-    private static String cutClassName(Class classType) {
-        String   className = classType.toString();
-        String[] split     = className.split("\\.");
-        return split[split.length - 1];
-    }
 }

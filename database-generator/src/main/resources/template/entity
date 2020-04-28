@@ -1,12 +1,13 @@
 package ${namespace};\n
 \n
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;\n
 import com.fasterxml.jackson.databind.annotation.JsonNaming;\n
 import gaarason.database.eloquent.annotations.Column;\n
 import gaarason.database.eloquent.annotations.Primary;\n
 import gaarason.database.eloquent.annotations.Table;\n
 ${swagger_import}
 import lombok.Data;\n
-\n
+${validator_import}
 import java.io.Serializable;\n
 import java.math.BigInteger;\n
 import java.util.Date;\n

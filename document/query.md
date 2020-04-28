@@ -75,7 +75,7 @@ parameters.add("testNAme");
 parameters.add("11");
 parameters.add("1");
 int num = studentModel.newQuery()
-    .execute("insert into `student`(`id`,`name`,`age`,`sex`) values( ? , ? , ? , ? )", e2);
+    .execute("insert into `student`(`id`,`name`,`age`,`sex`) values( ? , ? , ? , ? )", parameters);
 ```
 
 ## 获取
@@ -120,6 +120,7 @@ student.setUpdatedAt(new Date(1312312312));
 int num = studentModel.newQuery().insert(entity);
 
 // 单个实体操作
+// 推荐
 List<Student> studentList = new ArrayList<>();
 for (int i = 99; i < 1000; i++) {
     Student student = new Student();
@@ -225,7 +226,7 @@ Record<Student> record = studentModel.newQuery().selectFunction("concat_ws", "\"
 
 ## where
 ### 字段与值的比较
-whereColumn
+where
 ```java
 Record<Student> record = studentModel.newQuery().whereRaw("id<2").first();
 Record<Student> record = studentModel.newQuery().where("id", ">", "2").first();

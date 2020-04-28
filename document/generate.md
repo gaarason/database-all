@@ -52,10 +52,11 @@ import java.util.List;
 @FixMethodOrder(MethodSorters.JVM)
 public class GeneratorTests {
 
+    // 推荐
     @Test
     public void run有参构造() {
         String jdbcUrl = "jdbc:mysql://sakya.local/test_master_0?useUnicode=true&characterEncoding=utf-8" +
-            "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
+                    "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
         String username = "root";
         String password = "root";
         Generator generator = new Generator(jdbcUrl, username, password);
@@ -63,6 +64,8 @@ public class GeneratorTests {
         // set
         generator.setStaticField(true);
         generator.setIsSpringBoot(true);
+//        generator.setIsSwagger(true);
+//        generator.setIsValidator(true);
         generator.setCorePoolSize(20);
         generator.setOutputDir("./src/test/java/");
         generator.setNamespace("test.data");

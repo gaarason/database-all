@@ -1,4 +1,5 @@
-    ${primary}\n
-    ${column}\n
-    ${apiModelProperty}
-    ${field}\n
+${primary}
+${column}
+${apiModelProperty}
+${validator}
+${field}

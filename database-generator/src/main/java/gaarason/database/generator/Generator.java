@@ -2,11 +2,10 @@ package gaarason.database.generator;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.Model;
 import gaarason.database.generator.element.field.Field;
 import gaarason.database.generator.element.field.MysqlFieldGenerator;
-import gaarason.database.generator.support.FieldAnnotation;
-import gaarason.database.generator.element.PrimaryAnnotation;
 import gaarason.database.utils.StringUtil;
 import lombok.Setter;
 
@@ -300,8 +299,12 @@ public class Generator {
         parameterMap.put("${table}", tableName);
         parameterMap.put("${swagger_import}", isSwagger ?
             "import io.swagger.annotations.ApiModel;\n" +
-                "import com.fasterxml.jackson.databind.PropertyNamingStrategy;\n" +
-                "import io.swagger.annotations.ApiModelProperty;\n\n" : "");
+                "import io.swagger.annotations.ApiModelProperty;\n" : "");
+        parameterMap.put("${validator_import}", isValidator ?
+            "import org.hibernate.validator.constraints.Length;\n" +
+                "\n" +
+                "import javax.validation.constraints.Max;\n" +
+                "import javax.validation.constraints.Min;\n" : "\n");
         parameterMap.put("${swagger_annotation}", isSwagger ? "@ApiModel(\"" + comment + "\")\n" : "");
         parameterMap.put("${static_fields}", staticField ? fillStaticFieldsTemplate(tableName) : "");
         parameterMap.put("${fields}", fillFieldsTemplate(tableName));
@@ -374,102 +377,34 @@ public class Generator {
         mysqlFieldGenerator.setExtra(getValue(fieldStringObjectMap, MysqlFieldGenerator.EXTRA));
         mysqlFieldGenerator.setColumnName(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_NAME));
         mysqlFieldGenerator.setColumnKey(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_KEY));
-        mysqlFieldGenerator.setCharacterOctetLength(getValue(fieldStringObjectMap, MysqlFieldGenerator.CHARACTER_OCTET_LENGTH));
+        mysqlFieldGenerator.setCharacterOctetLength(
+            getValue(fieldStringObjectMap, MysqlFieldGenerator.CHARACTER_OCTET_LENGTH));
         mysqlFieldGenerator.setNumericPrecision(getValue(fieldStringObjectMap, MysqlFieldGenerator.NUMERIC_PRECISION));
         mysqlFieldGenerator.setPrivileges(getValue(fieldStringObjectMap, MysqlFieldGenerator.PRIVILEGES));
         mysqlFieldGenerator.setColumnComment(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_COMMENT));
-        mysqlFieldGenerator.setDatetimePrecision(getValue(fieldStringObjectMap, MysqlFieldGenerator.DATETIME_PRECISION));
+        mysqlFieldGenerator.setDatetimePrecision(
+            getValue(fieldStringObjectMap, MysqlFieldGenerator.DATETIME_PRECISION));
         mysqlFieldGenerator.setCollationName(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLLATION_NAME));
         mysqlFieldGenerator.setNumericScale(getValue(fieldStringObjectMap, MysqlFieldGenerator.NUMERIC_SCALE));
         mysqlFieldGenerator.setColumnType(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_TYPE));
         mysqlFieldGenerator.setOrdinalPosition(getValue(fieldStringObjectMap, MysqlFieldGenerator.ORDINAL_POSITION));
-        mysqlFieldGenerator.setCharacterMaximumLength(getValue(fieldStringObjectMap, MysqlFieldGenerator.CHARACTER_MAXIMUM_LENGTH));
+        mysqlFieldGenerator.setCharacterMaximumLength(
+            getValue(fieldStringObjectMap, MysqlFieldGenerator.CHARACTER_MAXIMUM_LENGTH));
         mysqlFieldGenerator.setDataType(getValue(fieldStringObjectMap, MysqlFieldGenerator.DATA_TYPE));
         mysqlFieldGenerator.setCharacterSetName(getValue(fieldStringObjectMap, MysqlFieldGenerator.CHARACTER_SET_NAME));
         mysqlFieldGenerator.setColumnDefault(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_DEFAULT));
 
-
-//        mysqlFieldGenerator.setTableCatalog(fieldStringObjectMap.get(MysqlFieldGenerator.TABLE_CATALOG).toString());
-//        mysqlFieldGenerator.setIsNullable(fieldStringObjectMap.get(MysqlFieldGenerator.IS_NULLABLE).toString());
-//        mysqlFieldGenerator.setTableName(fieldStringObjectMap.get(MysqlFieldGenerator.TABLE_NAME).toString());
-//        mysqlFieldGenerator.setTableSchema(fieldStringObjectMap.get(MysqlFieldGenerator.TABLE_SCHEMA).toString());
-//        mysqlFieldGenerator.setExtra(fieldStringObjectMap.get(MysqlFieldGenerator.EXTRA).toString());
-//        mysqlFieldGenerator.setColumnName(fieldStringObjectMap.get(MysqlFieldGenerator.COLUMN_NAME).toString());
-//        mysqlFieldGenerator.setColumnKey(fieldStringObjectMap.get(MysqlFieldGenerator.COLUMN_KEY).toString());
-//        mysqlFieldGenerator.setCharacterOctetLength(fieldStringObjectMap.get(MysqlFieldGenerator.CHARACTER_OCTET_LENGTH).toString());
-//        mysqlFieldGenerator.setNumericPrecision(fieldStringObjectMap.get(MysqlFieldGenerator.NUMERIC_PRECISION).toString());
-//        mysqlFieldGenerator.setPrivileges(fieldStringObjectMap.get(MysqlFieldGenerator.PRIVILEGES).toString());
-//        mysqlFieldGenerator.setColumnComment(fieldStringObjectMap.get(MysqlFieldGenerator.COLUMN_COMMENT).toString());
-//        mysqlFieldGenerator.setDatetimePrecision(fieldStringObjectMap.get(MysqlFieldGenerator.DATETIME_PRECISION).toString());
-//        mysqlFieldGenerator.setCollationName(fieldStringObjectMap.get(MysqlFieldGenerator.COLLATION_NAME).toString());
-//        mysqlFieldGenerator.setNumericScale(fieldStringObjectMap.get(MysqlFieldGenerator.NUMERIC_SCALE).toString());
-//        mysqlFieldGenerator.setColumnType(fieldStringObjectMap.get(MysqlFieldGenerator.COLUMN_TYPE).toString());
-//        mysqlFieldGenerator.setOrdinalPosition(fieldStringObjectMap.get(MysqlFieldGenerator.ORDINAL_POSITION).toString());
-//        mysqlFieldGenerator.setCharacterMaximumLength(fieldStringObjectMap.get(MysqlFieldGenerator.CHARACTER_MAXIMUM_LENGTH).toString());
-//        mysqlFieldGenerator.setDataType(fieldStringObjectMap.get(MysqlFieldGenerator.DATA_TYPE).toString());
-//        mysqlFieldGenerator.setCharacterSetName(fieldStringObjectMap.get(MysqlFieldGenerator.CHARACTER_SET_NAME).toString());
-//        mysqlFieldGenerator.setColumnDefault(fieldStringObjectMap.get(MysqlFieldGenerator.COLUMN_DEFAULT).toString());
-
         Field field = mysqlFieldGenerator.toField(disInsertable, disUpdatable);
-
-//        // fieldStringObjectMap
-//        Field fieldInfo = new Field();
-//        fieldInfo.setName(nameConverter(StringUtil.lineToHump(fieldStringObjectMap.get("COLUMN_NAME").toString())));
-//        fieldInfo.setDataType(fieldStringObjectMap.get("DATA_TYPE").toString());
-//        fieldInfo.setColumnType(fieldStringObjectMap.get("COLUMN_TYPE").toString());
-//
-//        // @Column
-//        FieldAnnotation fieldAnnotation = new FieldAnnotation();
-//        fieldAnnotation.setName(fieldStringObjectMap.get("COLUMN_NAME").toString());
-//        fieldAnnotation.setUnique(fieldStringObjectMap.get("COLUMN_KEY").toString().equals("UNI"));
-//        fieldAnnotation.setUnsigned(fieldStringObjectMap.get("COLUMN_TYPE").toString().contains("unsigned"));
-//        fieldAnnotation.setNullable(fieldStringObjectMap.get("IS_NULLABLE").toString().equals("YES"));
-//        fieldAnnotation.setInsertable(!Arrays.asList(disInsertable).contains(fieldStringObjectMap.get("COLUMN_NAME").toString()));
-//        fieldAnnotation.setUpdatable(!Arrays.asList(disUpdatable).contains(fieldStringObjectMap.get("COLUMN_NAME").toString()));
-//
-//        if (fieldStringObjectMap.get("COLUMN_DEFAULT") != null) {
-//            fieldAnnotation.setDefaultValue(fieldStringObjectMap.get("COLUMN_DEFAULT").toString()
-//                .replace("\\\r\\\n", "")
-//                .replace("\\r\\n", "")
-//                .replace("\r\n", "")
-//                .replace("\\\n", "")
-//                .replace("\\n", "")
-//                .replace("\n", "")
-//                .replace("\"", "\\\""));
-//        }
-//        if (fieldStringObjectMap.get("CHARACTER_MAXIMUM_LENGTH") != null) {
-//            fieldAnnotation.setLength(Long.valueOf(fieldStringObjectMap.get("CHARACTER_MAXIMUM_LENGTH").toString()));
-//        }
-//        fieldAnnotation.setComment(
-//            fieldStringObjectMap.get("COLUMN_COMMENT").toString()
-//                .replace("\\\r\\\n", "")
-//                .replace("\\r\\n", "")
-//                .replace("\r\n", "")
-//                .replace("\\\n", "")
-//                .replace("\\n", "")
-//                .replace("\n", "")
-//                .replace("\"", "\\\"")
-//        );
-//
-//        // @primary
-//        PrimaryAnnotation primaryAnnotation = null;
-//        if (fieldStringObjectMap.get("COLUMN_KEY").toString().equals("PRI")) {
-//            primaryAnnotation = new PrimaryAnnotation();
-//            primaryAnnotation.setIncrement(fieldStringObjectMap.get("EXTRA").toString().equals("auto_increment"));
-//        }
 
         // 模板替换参数
         Map<String, String> parameterMap = new HashMap<>();
-//        parameterMap.put("${primary}", primaryAnnotation == null ? "" : primaryAnnotation.toString());
-//        parameterMap.put("${column}", fieldAnnotation.toDatabaseColumn());
-//        parameterMap.put("${fieldStringObjectMap}", fieldInfo.toString());
-//        parameterMap.put("${apiModelProperty}", isSwagger ? fieldAnnotation.toSwaggerAnnotationsApiModelProperty() +
-//            "\n" : "");
         parameterMap.put("${primary}", field.toAnnotationDatabasePrimary());
         parameterMap.put("${column}", field.toAnnotationDatabaseColumn());
         parameterMap.put("${field}", field.toFieldName());
-        parameterMap.put("${apiModelProperty}", isSwagger ? field.toAnnotationSwaggerAnnotationsApiModelProperty() +
-            "\n" : "");
+        parameterMap.put("${apiModelProperty}", isSwagger ? field.toAnnotationSwaggerAnnotationsApiModelProperty() :
+            "");
+        parameterMap.put("${validator}", isValidator ? field.toAnnotationOrgHibernateValidatorConstraintValidator() :
+            "");
 
         return fillTemplate(fieldTemplateStr, parameterMap);
     }
@@ -644,15 +579,15 @@ public class Generator {
      * @param keyName
      * @return 字符串 or Null
      */
-    private static String getValue(Map<String, Object> fieldStringObjectMap, String keyName){
+    @Nullable
+    private static String getValue(Map<String, Object> fieldStringObjectMap, String keyName) {
 
-        Object o = fieldStringObjectMap.get(keyName);
-        if(null != o){
-            return o.toString();
-        }else return null;
+//        Object o = fieldStringObjectMap.get(keyName);
+//        if(null != o){
+//            return o.toString();
+//        }else return null;
 
-//        return Objects.requireNonNull(
-//            Optional.ofNullable(fieldStringObjectMap.get(keyName)).map(Object::toString).orElse(null));
+        return Optional.ofNullable(fieldStringObjectMap.get(keyName)).map(Object::toString).orElse(null);
 
     }
 }
