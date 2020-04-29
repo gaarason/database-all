@@ -1,4 +1,6 @@
 package gaarason.database.exception;
 
-public class RelationNotFoundException extends RuntimeException {
+import gaarason.database.exception.base.BaseException;
+
+public class RelationNotFoundException extends BaseException {
 }

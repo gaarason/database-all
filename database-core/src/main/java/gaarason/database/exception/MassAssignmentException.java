@@ -1,4 +1,6 @@
 package gaarason.database.exception;
 
-public class MassAssignmentException extends RuntimeException {
+import gaarason.database.exception.base.BaseException;
+
+public class MassAssignmentException extends BaseException {
 }

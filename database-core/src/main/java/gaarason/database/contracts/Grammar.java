@@ -45,7 +45,8 @@ public interface Grammar {
     boolean hasWhere();
 
     /**
-     * 在统计时,需要剔除一些项目,eg: order by
+     * 在统计时,需要剔除一些项目,eg: order by , select
+     * count(*)
      */
     void forAggregates();
 

@@ -1,6 +1,11 @@
 package gaarason.database.exception;
 
-public class ConfirmOperationException extends RuntimeException {
+import gaarason.database.exception.base.BaseException;
+
+/**
+ * 需要确认操作
+ */
+public class ConfirmOperationException extends BaseException {
 
     public ConfirmOperationException(String message){
         super(message);

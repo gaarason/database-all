@@ -1,6 +1,8 @@
 package gaarason.database.exception;
 
-public class TypeNotSupportedException extends RuntimeException {
+import gaarason.database.exception.base.BaseException;
+
+public class TypeNotSupportedException extends BaseException {
 
     public TypeNotSupportedException(String message) {
         super(message);

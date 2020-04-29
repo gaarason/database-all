@@ -365,11 +365,17 @@ public class QueryBuilderTests extends BaseTests {
         Long count0 = studentModel.newQuery().where("sex", "1").group("age").count("id");
         Assert.assertEquals(count0.intValue(), 1);
 
+        Long count1 = studentModel.newQuery().select("id").where("sex", "1").group("id","age").count("id");
+        Assert.assertEquals(count1.intValue(), 1);
+
         Long count = studentModel.newQuery().where("sex", "1").count("age");
         Assert.assertEquals(count.intValue(), 6);
 
-        String max = studentModel.newQuery().where("sex", "1").max("id");
-        Assert.assertEquals(max, "10");
+        String max0 = studentModel.newQuery().select("age").where("sex", "1").group("age").max("id");
+        Assert.assertEquals(max0, "10");
+
+        String max1 = studentModel.newQuery().where("sex", "1").max("id");
+        Assert.assertEquals(max1, "10");
 
         String min = studentModel.newQuery().where("sex", "1").min("id");
         Assert.assertEquals(min, "3");
@@ -1007,7 +1013,7 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertNull(paginate.getTotal());
 
 
-        Paginate<StudentModel.Entity> paginate2 = studentModel.newQuery().orderBy("id").simplePaginate(2, 3);
+        Paginate<StudentModel.Entity> paginate2 = studentModel.newQuery().where("sex","1").orWhere((builder -> builder.where("sex","2"))).orderBy("id").simplePaginate(2, 3);
         System.out.println(paginate2);
         Assert.assertEquals(paginate2.getCurrentPage(), 2);
         Assert.assertNotNull(paginate2.getFrom());
@@ -1017,7 +1023,7 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertNull(paginate2.getLastPage());
         Assert.assertNull(paginate2.getTotal());
 
-        Paginate<StudentModel.Entity> paginate3 = studentModel.newQuery().orderBy("id").simplePaginate(3, 3);
+        Paginate<StudentModel.Entity> paginate3 = studentModel.newQuery().where("sex","1").orWhere((builder -> builder.where("sex","2"))).orderBy("id").simplePaginate(3, 3);
         System.out.println(paginate3);
         Assert.assertEquals(paginate3.getCurrentPage(), 3);
         Assert.assertNotNull(paginate3.getFrom());
@@ -1028,7 +1034,7 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertNull(paginate3.getTotal());
 
 
-        Paginate<StudentModel.Entity> paginate4 = studentModel.newQuery().orderBy("id").simplePaginate(4, 3);
+        Paginate<StudentModel.Entity> paginate4 = studentModel.newQuery().orderBy("id").where("sex","1").orWhere((builder -> builder.where("sex","2"))).simplePaginate(4, 3);
         System.out.println(paginate4);
         Assert.assertEquals(paginate4.getCurrentPage(), 4);
         Assert.assertNotNull(paginate4.getFrom());
@@ -1039,7 +1045,7 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertNull(paginate4.getTotal());
 
 
-        Paginate<StudentModel.Entity> paginate5 = studentModel.newQuery().orderBy("id").simplePaginate(5, 3);
+        Paginate<StudentModel.Entity> paginate5 = studentModel.newQuery().where("sex","1").orWhere((builder -> builder.where("sex","2"))).orderBy("id").simplePaginate(5, 3);
         System.out.println(paginate5);
         Assert.assertEquals(paginate5.getCurrentPage(), 5);
         Assert.assertNull(paginate5.getFrom());
@@ -1053,7 +1059,9 @@ public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 分页_通用分页() {
-        Paginate<StudentModel.Entity> paginate = studentModel.newQuery().orderBy("id").paginate(1, 4);
+        Paginate<StudentModel.Entity> paginate =
+            studentModel.newQuery().orderBy("id").paginate(1,
+            4);
         System.out.println(paginate);
         Assert.assertEquals(paginate.getCurrentPage(), 1);
         Assert.assertNotNull(paginate.getFrom());
@@ -1066,7 +1074,8 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(paginate.getTotal().intValue(), 10);
 
 
-        Paginate<StudentModel.Entity> paginate2 = studentModel.newQuery().orderBy("id").paginate(2, 4);
+        Paginate<StudentModel.Entity> paginate2 =
+            studentModel.newQuery().andWhere((builder -> builder.where("sex","1"))).orWhere((builder -> builder.where("sex","2"))).orderBy("id").paginate(2, 4);
         System.out.println(paginate2);
         Assert.assertEquals(paginate2.getCurrentPage(), 2);
         Assert.assertNotNull(paginate2.getFrom());
@@ -1079,7 +1088,10 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(paginate2.getTotal().intValue(), 10);
 
 
-        Paginate<StudentModel.Entity> paginate3 = studentModel.newQuery().orderBy("id").paginate(3, 4);
+        Paginate<StudentModel.Entity> paginate3 =
+            studentModel.newQuery().select("id","name").orderBy("id").where("sex","1").orWhere((builder -> builder.where(
+                "sex",
+            "2"))).group("id","name").paginate(3, 4);
         System.out.println(paginate3);
         Assert.assertEquals(paginate3.getCurrentPage(), 3);
         Assert.assertNotNull(paginate3.getFrom());
@@ -1088,11 +1100,11 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(paginate3.getTo().intValue(), 10);
         Assert.assertNotNull(paginate3.getLastPage());
         Assert.assertNotNull(paginate3.getTotal());
-        Assert.assertEquals(paginate3.getLastPage().intValue(), 3);
-        Assert.assertEquals(paginate3.getTotal().intValue(), 10);
+        Assert.assertEquals(paginate3.getLastPage().intValue(), 1);
+        Assert.assertEquals(paginate3.getTotal().intValue(), 1);
 
         // 防止过界
-        Paginate<StudentModel.Entity> paginate4 = studentModel.newQuery().orderBy("id").paginate(4, 4);
+        Paginate<StudentModel.Entity> paginate4 = studentModel.newQuery().orderBy("id").where("sex","1").orWhere((builder -> builder.where("sex","2"))).paginate(4, 4);
         System.out.println(paginate4);
         Assert.assertEquals(paginate4.getCurrentPage(), 4);
         Assert.assertNull(paginate4.getFrom());

@@ -1,6 +1,11 @@
 package gaarason.database.exception;
 
-public class ModelNewInstanceException extends RuntimeException {
+import gaarason.database.exception.base.BaseException;
+
+/**
+ * model创建失败
+ */
+public class ModelNewInstanceException extends BaseException {
     public ModelNewInstanceException(String message) {
         super(message);
     }

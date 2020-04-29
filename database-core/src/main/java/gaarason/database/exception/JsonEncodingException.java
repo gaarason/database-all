@@ -1,4 +1,6 @@
 package gaarason.database.exception;
 
-public class JsonEncodingException extends RuntimeException {
+import gaarason.database.exception.base.BaseException;
+
+public class JsonEncodingException extends BaseException {
 }

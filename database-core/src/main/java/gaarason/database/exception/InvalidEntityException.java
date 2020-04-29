@@ -1,4 +1,6 @@
 package gaarason.database.exception;
 
-public class InvalidEntityException extends RuntimeException {
+import gaarason.database.exception.base.BaseException;
+
+public class InvalidEntityException extends BaseException {
 }

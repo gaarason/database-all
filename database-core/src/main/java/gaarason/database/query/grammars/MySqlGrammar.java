@@ -136,9 +136,9 @@ public class MySqlGrammar implements Grammar, Serializable {
 
     @Override
     public void pushUnion(String something, String unionType) {
-        if(union == null){
+        if (union == null) {
             union = " " + unionType + FormatUtil.bracket(something);
-        }else{
+        } else {
             union += unionType + FormatUtil.bracket(something);
         }
     }

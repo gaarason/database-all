@@ -1,8 +1,10 @@
 package gaarason.database.exception;
 
+import gaarason.database.exception.base.BaseException;
+
 import java.util.Collection;
 
-public class SQLRuntimeException extends RuntimeException {
+public class SQLRuntimeException extends BaseException {
 
     public SQLRuntimeException(String message, Throwable cause) {
         super(message, cause);

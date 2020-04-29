@@ -195,12 +195,17 @@ studentModel.newQuery().whereRaw(1).forceDelete();
 ```
 
 ## 聚合函数
+select 中的字段应该确保已经出现在 group 中
 ```java
 Long count0 = studentModel.newQuery().where("sex", "1").group("age").count("id");
 
-Long count = studentModel.newQuery().where("sex", "1").count("age");
+Long count1 = studentModel.newQuery().select("id").where("sex", "1").group("id","age").count("id");
 
-String max = studentModel.newQuery().where("sex", "1").max("id");
+Long count2 = studentModel.newQuery().where("sex", "1").count("age");
+
+String max0 = studentModel.newQuery().select("age").where("sex", "1").group("age").max("id");
+
+String max1 = studentModel.newQuery().where("sex", "1").max("id");
 
 String min = studentModel.newQuery().where("sex", "1").min("id");
 
