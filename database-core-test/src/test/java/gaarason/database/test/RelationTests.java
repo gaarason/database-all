@@ -49,7 +49,7 @@ public class RelationTests extends BaseTests {
 
     @Test
     public void 一对多关系() {
-        Record<TeacherHasMany> record         = teacherHasManyModel.newQuery().where("id", "6").firstOrFail();
+        Record<TeacherHasMany, Integer> record         = teacherHasManyModel.newQuery().where("id", "6").firstOrFail();
         TeacherHasMany         teacherHasMany = record.toObject();
         System.out.println(teacherHasMany);
         Assert.assertEquals(teacherHasMany.getStudents().size(), 4);
@@ -57,7 +57,7 @@ public class RelationTests extends BaseTests {
 
     @Test
     public void 多对多关系() {
-        Record<StudentBelongsToMany> record               = studentBelongsToManyModel.newQuery()
+        Record<StudentBelongsToMany, Long> record               = studentBelongsToManyModel.newQuery()
             .where("id", "6")
             .firstOrFail();
         StudentBelongsToMany         studentBelongsToMany = record.toObject();

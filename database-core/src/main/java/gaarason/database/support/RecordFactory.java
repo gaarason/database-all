@@ -13,9 +13,9 @@ import java.util.Map;
 
 public class RecordFactory {
 
-    public static <T> RecordList<T> newRecordList(Class<T> entityClass, Model<T> model, ResultSet resultSet)
+    public static <T, K> RecordList<T, K> newRecordList(Class<T> entityClass, Model<T, K> model, ResultSet resultSet)
         throws SQLException {
-        RecordList<T>           recordList        = new RecordList<>();
+        RecordList<T, K>           recordList        = new RecordList<>();
         final ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         while (resultSet.next()) {
             recordList.add(new Record<>(entityClass, model, JDBCResultToMap(resultSetMetaData, resultSet)));
@@ -23,7 +23,7 @@ public class RecordFactory {
         return recordList;
     }
 
-    public static <T> Record<T> newRecord(Class<T> entityClass, Model<T> model, ResultSet resultSet)
+    public static <T, K> Record<T, K> newRecord(Class<T> entityClass, Model<T, K> model, ResultSet resultSet)
         throws SQLException, EntityNotFoundException {
         if (!resultSet.next()) {
             throw new EntityNotFoundException();
@@ -32,6 +32,13 @@ public class RecordFactory {
         return new Record<>(entityClass, model, JDBCResultToMap(resultSetMetaData, resultSet));
     }
 
+    /**
+     * jdbc结果集转化为通用map
+     * @param resultSetMetaData 源数据
+     * @param resultSet 结果集
+     * @return 通用map
+     * @throws SQLException 数据库异常
+     */
     private static Map<String, Column> JDBCResultToMap(ResultSetMetaData resultSetMetaData, ResultSet resultSet)
         throws SQLException {
         Map<String, Column> map                = new HashMap<>();

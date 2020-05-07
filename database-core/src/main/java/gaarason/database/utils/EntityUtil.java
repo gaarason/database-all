@@ -2,12 +2,13 @@ package gaarason.database.utils;
 
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.annotations.Column;
+import gaarason.database.eloquent.annotations.Primary;
 import gaarason.database.eloquent.annotations.Table;
+import gaarason.database.exception.IllegalAccessRuntimeException;
 
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.List;
 
 public class EntityUtil {
 
@@ -15,10 +16,10 @@ public class EntityUtil {
      * 通过entity解析对应的字段和值组成的map, 忽略不符合规则的字段
      * @param entity     数据表实体对象
      * @param insertType 新增?
-     * @param <T>        数据表实体类
+     * @param <T, K>        数据表实体类
      * @return 字段对值的映射
      */
-    public static <T> Map<String, String> columnValueMap(T entity, boolean insertType) {
+    public static <T, K> Map<String, String> columnValueMap(T entity, boolean insertType) {
         Map<String, String> columnValueMap = new HashMap<>();
         Field[]             fields         = entity.getClass().getDeclaredFields();
         for (Field field : fields) {
@@ -33,11 +34,11 @@ public class EntityUtil {
     /**
      * 通过entity解析对应的字段组成的list,忽略不符合规则的字段
      * @param entity     数据表实体对象
-     * @param <T>        数据表实体类
+     * @param <T, K>        数据表实体类
      * @param insertType 新增?
      * @return 字段组成的list
      */
-    public static <T> List<String> columnNameList(T entity, boolean insertType) {
+    public static <T, K> List<String> columnNameList(T entity, boolean insertType) {
         List<String> columnList = new ArrayList<>();
         Field[]      fields     = entity.getClass().getDeclaredFields();
         for (Field field : fields) {
@@ -51,11 +52,11 @@ public class EntityUtil {
     /**
      * 通过entity解析对应的字段的值组成的list, 忽略不符合规则的字段
      * @param entity     数据表实体对象
-     * @param <T>        数据表实体类
+     * @param <T, K>        数据表实体类
      * @param insertType 新增?
      * @return 字段的值组成的list
      */
-    public static <T> List<String> valueList(T entity, boolean insertType) {
+    public static <T, K> List<String> valueList(T entity, boolean insertType) {
         List<String> valueList = new ArrayList<>();
         Field[]      fields    = entity.getClass().getDeclaredFields();
         for (Field field : fields) {
@@ -69,11 +70,11 @@ public class EntityUtil {
     /**
      * 通过entity解析对应的字段的值组成的list, 忽略不符合规则的字段
      * @param entity         数据表实体对象
-     * @param <T>            数据表实体类
+     * @param <T, K>            数据表实体类
      * @param columnNameList 有效的属性名
      * @return 字段的值组成的list
      */
-    public static <T> List<String> valueList(T entity, List<String> columnNameList) {
+    public static <T, K> List<String> valueList(T entity, List<String> columnNameList) {
         List<String> valueList = new ArrayList<>();
         Field[]      fields    = entity.getClass().getDeclaredFields();
         for (Field field : fields) {
@@ -89,13 +90,13 @@ public class EntityUtil {
      * @param entityClass 数据表实体类
      * @return 数据表名
      */
-    public static <T> String tableName(Class<T> entityClass) {
+    public static <T, K> String tableName(Class<T> entityClass) {
         if (entityClass.isAnnotationPresent(Table.class)) {
             Table table = entityClass.getAnnotation(Table.class);
             return table.name();
         }
         String[] split = entityClass.getName().split("\\.");
-        return StringUtil.humpToLine(split[split.length -1]);
+        return StringUtil.humpToLine(split[split.length - 1]);
     }
 
     /**
@@ -119,6 +120,20 @@ public class EntityUtil {
     }
 
     /**
+     * 是否主键字段
+     * @param field     字段
+     * @param increment 自增
+     * @return 有效
+     */
+    public static boolean isPrimaryField(Field field, boolean increment) {
+        if (field.isAnnotationPresent(Primary.class)) {
+            Primary primary = field.getAnnotation(Primary.class);
+            return primary.increment() == increment;
+        }
+        return false;
+    }
+
+    /**
      * 获取属性的值
      * @param field 属性
      * @param obj   对象
@@ -130,8 +145,7 @@ public class EntityUtil {
             field.setAccessible(true); // 设置些属性是可以访问的
             return field.get(obj);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            return null;
+            throw new IllegalAccessRuntimeException(e);
         }
     }
 
@@ -148,6 +162,29 @@ public class EntityUtil {
             }
         }
         return StringUtil.humpToLine(field.getName());
+    }
+
+    /**
+     * 设置entity对象的自增属性值
+     * @param <T, K>    数据表实体类
+     * @param entity 数据表实体对象
+     * @param id     数据库生成的id
+     * @throws IllegalAccessRuntimeException 反射赋值异常
+     */
+    public static <T, K> void setPrimaryId(T entity, K id) {
+        Field[] fields = entity.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            if (isPrimaryField(field, true)) {
+                try {
+                    field.setAccessible(true); // 设置些属性是可以访问的
+//                    Class<?> type = field.getType();
+                    field.set(entity, id);
+                    return;
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    throw new IllegalAccessRuntimeException(e);
+                }
+            }
+        }
     }
 
     /**

@@ -1,4 +1,4 @@
 package gaarason.database.contracts.builder;
 
-public interface Special<T> {
+public interface Special<T, K> {
 }

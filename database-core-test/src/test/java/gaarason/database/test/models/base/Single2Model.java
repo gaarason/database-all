@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Properties;
 
 @Slf4j
-public class Single2Model<T> extends Model<T> {
+public class Single2Model<T, K> extends Model<T, K> {
 
     private static ProxyDataSource proxyDataSource = proxyDataSource();
 

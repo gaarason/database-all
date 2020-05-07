@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Properties;
 
 @Slf4j
-abstract public class BaseModel<T> extends Model<T> {
+abstract public class BaseModel<T, K> extends Model<T, K> {
 
     private static ProxyDataSource proxyDataSource = proxyDataSource();
 

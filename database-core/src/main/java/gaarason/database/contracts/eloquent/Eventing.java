@@ -4,7 +4,7 @@ import gaarason.database.eloquent.Record;
 
 import java.util.Collection;
 
-public interface Eventing<T> {
+public interface Eventing<T, K> {
 
     /**
      * sql日志记录
@@ -21,7 +21,7 @@ public interface Eventing<T> {
     /**
      * 事件会在从数据库中获取已存在模型时触发
      */
-    default void retrieved(Record<T> record) {
+    default void retrieved(Record<T, K> record) {
 
     }
 
@@ -29,14 +29,14 @@ public interface Eventing<T> {
      * 事件会当一个新模型被首次保存的时候触发
      * @return 继续操作
      */
-    default boolean creating(Record<T> record) {
+    default boolean creating(Record<T, K> record) {
         return true;
     }
 
     /**
      * 事件会当一个新模型被首次保存后触发
      */
-    default void created(Record<T> record) {
+    default void created(Record<T, K> record) {
 
     }
 
@@ -44,14 +44,14 @@ public interface Eventing<T> {
      * 一个模型已经在数据库中存在并调用save
      * @return 继续操作
      */
-    default boolean updating(Record<T> record) {
+    default boolean updating(Record<T, K> record) {
         return true;
     }
 
     /**
      * 一个模型已经在数据库中存在并调用save
      */
-    default void updated(Record<T> record) {
+    default void updated(Record<T, K> record) {
 
     }
 
@@ -59,14 +59,14 @@ public interface Eventing<T> {
      * 无论是创建还是更新
      * @return 继续操作
      */
-    default boolean saving(Record<T> record) {
+    default boolean saving(Record<T, K> record) {
         return true;
     }
 
     /**
      * 无论是创建还是更新
      */
-    default void saved(Record<T> record) {
+    default void saved(Record<T, K> record) {
 
     }
 
@@ -74,14 +74,14 @@ public interface Eventing<T> {
      * 删除时
      * @return 继续操作
      */
-    default boolean deleting(Record<T> record) {
+    default boolean deleting(Record<T, K> record) {
         return true;
     }
 
     /**
      * 删除后
      */
-    default void deleted(Record<T> record) {
+    default void deleted(Record<T, K> record) {
 
     }
 
@@ -89,14 +89,14 @@ public interface Eventing<T> {
      * 恢复时
      * @return 继续操作
      */
-    default boolean restoring(Record<T> record) {
+    default boolean restoring(Record<T, K> record) {
         return true;
     }
 
     /**
      * 恢复后
      */
-    default void restored(Record<T> record) {
+    default void restored(Record<T, K> record) {
 
     }
 }

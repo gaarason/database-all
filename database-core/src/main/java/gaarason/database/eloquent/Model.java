@@ -7,7 +7,7 @@ import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.query.Builder;
 import gaarason.database.query.MySqlBuilder;
 
-abstract public class Model<T> extends SoftDeleting<T> {
+abstract public class Model<T, K> extends SoftDeleting<T, K> {
 
     /**
      * @return dataSource代理
@@ -19,7 +19,7 @@ abstract public class Model<T> extends SoftDeleting<T> {
      * @param builder 查询构造器
      * @return 查询构造器
      */
-    protected Builder<T> apply(Builder<T> builder) {
+    protected Builder<T, K> apply(Builder<T, K> builder) {
         return builder;
     }
 
@@ -27,7 +27,7 @@ abstract public class Model<T> extends SoftDeleting<T> {
      * 原始查询构造器
      * @return 原始查询构造器
      */
-    private Builder<T> theBuilder() {
+    private Builder<T, K> theBuilder() {
         // todo 按连接类型,等等信息选择 builder
         ProxyDataSource proxyDataSource = getProxyDataSource();
         return apply(new MySqlBuilder<>(proxyDataSource, this, entityClass));
@@ -37,8 +37,8 @@ abstract public class Model<T> extends SoftDeleting<T> {
      * 新的查询构造器
      * @return 查询构造器
      */
-    public Builder<T> newQuery() {
-        Builder<T> builder = theBuilder();
+    public Builder<T, K> newQuery() {
+        Builder<T, K> builder = theBuilder();
         if (softDeleting()) {
             scopeSoftDelete(builder);
         }
@@ -49,8 +49,8 @@ abstract public class Model<T> extends SoftDeleting<T> {
      * 包含软删除模型
      * @return 查询构造器
      */
-    public Builder<T> withTrashed() {
-        Builder<T> builder = theBuilder();
+    public Builder<T, K> withTrashed() {
+        Builder<T, K> builder = theBuilder();
         scopeSoftDeleteWithTrashed(builder);
         return builder;
     }
@@ -59,8 +59,8 @@ abstract public class Model<T> extends SoftDeleting<T> {
      * 只获取软删除模型
      * @return 查询构造器
      */
-    public Builder<T> onlyTrashed() {
-        Builder<T> builder = theBuilder();
+    public Builder<T, K> onlyTrashed() {
+        Builder<T, K> builder = theBuilder();
         scopeSoftDeleteOnlyTrashed(builder);
         return builder;
     }
@@ -69,7 +69,7 @@ abstract public class Model<T> extends SoftDeleting<T> {
      * 新的记录对象
      * @return 记录对象
      */
-    public Record<T> newRecord() {
+    public Record<T, K> newRecord() {
         return new Record<>(entityClass, this);
     }
 
@@ -79,7 +79,7 @@ abstract public class Model<T> extends SoftDeleting<T> {
      * @return
      * @throws SQLRuntimeException
      */
-    public RecordList<T> all(String... column) throws SQLRuntimeException {
+    public RecordList<T, K> all(String... column) throws SQLRuntimeException {
         return newQuery().select(column).get();
     }
 
@@ -90,8 +90,8 @@ abstract public class Model<T> extends SoftDeleting<T> {
      * @throws EntityNotFoundException
      * @throws SQLRuntimeException
      */
-    public Record<T> findOrFail(String id) throws EntityNotFoundException, SQLRuntimeException {
-        return newQuery().where(primaryKeyName, id).firstOrFail();
+    public Record<T, K> findOrFail(String id) throws EntityNotFoundException, SQLRuntimeException {
+        return newQuery().where(primaryKeyColumnName, id).firstOrFail();
     }
 
     /**
@@ -100,8 +100,8 @@ abstract public class Model<T> extends SoftDeleting<T> {
      * @return
      */
     @Nullable
-    public Record<T> find(String id) {
-        return newQuery().where(primaryKeyName, id).first();
+    public Record<T, K> find(String id) {
+        return newQuery().where(primaryKeyColumnName, id).first();
     }
 
 }

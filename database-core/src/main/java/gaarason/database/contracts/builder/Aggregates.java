@@ -2,9 +2,9 @@ package gaarason.database.contracts.builder;
 
 /**
  * 统计
- * @param <T>
+ * @param <T, K>
  */
-public interface Aggregates<T> {
+public interface Aggregates<T, K> {
 
     /**
      * count 条数统计,兼容 group

@@ -23,13 +23,13 @@ public class SubQuery {
      * @return
      */
     @Nullable
-    public static <T> T dealHasOne(Field field, Map<String, Column> stringColumnMap) {
+    public static <T, K> T dealHasOne(Field field, Map<String, Column> stringColumnMap) {
         HasOne   hasOne      = field.getAnnotation(HasOne.class);
-        Model<T> targetModel = getModelInstance(hasOne.targetModel());
+        Model<T, K> targetModel = getModelInstance(hasOne.targetModel());
         String   foreignKey  = hasOne.foreignKey();
         String   localKey    = hasOne.localKey();
-        localKey = "".equals(localKey) ? targetModel.getPrimaryKeyName() : localKey;
-        Record<T> record = targetModel.newQuery()
+        localKey = "".equals(localKey) ? targetModel.getPrimaryKeyColumnName() : localKey;
+        Record<T, K> record = targetModel.newQuery()
             .where(localKey, String.valueOf(stringColumnMap.get(foreignKey).getValue()))
             .first();
         return record == null ? null : record.toObjectWithoutRelationship();
@@ -41,12 +41,12 @@ public class SubQuery {
      * @param stringColumnMap
      * @return
      */
-    public static <T> List<T> dealHasMany(Field field, Map<String, Column> stringColumnMap) {
+    public static <T, K> List<T> dealHasMany(Field field, Map<String, Column> stringColumnMap) {
         HasMany  hasMany     = field.getAnnotation(HasMany.class);
-        Model<T> targetModel = getModelInstance(hasMany.targetModel());
+        Model<T, K> targetModel = getModelInstance(hasMany.targetModel());
         String   foreignKey  = hasMany.foreignKey();
         String   localKey    = hasMany.localKey();
-        localKey = "".equals(localKey) ? targetModel.getPrimaryKeyName() : localKey;
+        localKey = "".equals(localKey) ? targetModel.getPrimaryKeyColumnName() : localKey;
         return targetModel.newQuery()
             .where(foreignKey, String.valueOf(stringColumnMap.get(localKey).getValue()))
             .get().toObjectWithoutRelationship();
@@ -58,12 +58,12 @@ public class SubQuery {
      * @param stringColumnMap
      * @return
      */
-    public static <T> List<T> dealBelongsToMany(Field field, Map<String, Column> stringColumnMap) {
+    public static <T, K> List<T> dealBelongsToMany(Field field, Map<String, Column> stringColumnMap) {
         BelongsToMany belongsToMany         = field.getAnnotation(BelongsToMany.class);
-        Model<T>      relationModel         = getModelInstance(belongsToMany.relationModel()); // user_teacher
+        Model<T, K>      relationModel         = getModelInstance(belongsToMany.relationModel()); // user_teacher
         final String  modelForeignKey       = belongsToMany.modelForeignKey(); // user_id
         final String  modelLocalKey         = belongsToMany.modelLocalKey(); // user.id
-        Model<T>      targetModel           = getModelInstance(belongsToMany.targetModel()); // teacher
+        Model<T, K>      targetModel           = getModelInstance(belongsToMany.targetModel()); // teacher
         final String  targetModelForeignKey = belongsToMany.targetModelForeignKey(); // teacher_id
         final String  targetModelLocalKey   = belongsToMany.targetModelLocalKey();  // teacher.id
         List<Object> targetModelForeignKeyList = relationModel.newQuery()
@@ -79,13 +79,13 @@ public class SubQuery {
      * @param stringColumnMap
      * @return
      */
-    public static <T> T dealBelongsTo(Field field, Map<String, Column> stringColumnMap) {
+    public static <T, K> T dealBelongsTo(Field field, Map<String, Column> stringColumnMap) {
         BelongsTo belongsTo   = field.getAnnotation(BelongsTo.class);
-        Model<T>  parentModel = getModelInstance(belongsTo.parentModel()); // user_teacher
+        Model<T, K>  parentModel = getModelInstance(belongsTo.parentModel()); // user_teacher
         String    foreignKey  = belongsTo.foreignKey();
         String    localKey    = belongsTo.localKey();
-        localKey = "".equals(localKey) ? parentModel.getPrimaryKeyName() : localKey;
-        Record<T> record = parentModel.newQuery()
+        localKey = "".equals(localKey) ? parentModel.getPrimaryKeyColumnName() : localKey;
+        Record<T, K> record = parentModel.newQuery()
             .where(localKey, String.valueOf(stringColumnMap.get(foreignKey).getValue()))
             .first();
         return record == null ? null : record.toObjectWithoutRelationship();
@@ -97,7 +97,7 @@ public class SubQuery {
      * @return
      */
     @SuppressWarnings("unchecked")
-    private static <T> Model<T> getModelInstance(Class<? extends Model> modelClass) {
+    private static <T, K> Model<T, K> getModelInstance(Class<? extends Model> modelClass) {
         try {
             return modelClass.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {

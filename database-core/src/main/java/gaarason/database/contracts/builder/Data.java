@@ -6,16 +6,16 @@ import java.util.Map;
 
 /**
  * 数据
- * @param <T>
+ * @param <T, K>
  */
-public interface Data<T> {
+public interface Data<T, K> {
 
     /**
      * 数据更新
      * @param sqlPart sql片段 eg: age=15,name="dd"
      * @return 查询构建器
      */
-    Builder<T> data(String sqlPart);
+    Builder<T, K> data(String sqlPart);
 
     /**
      * 数据更新
@@ -23,14 +23,14 @@ public interface Data<T> {
      * @param value  值
      * @return 查询构建器
      */
-    Builder<T> data(String column, String value);
+    Builder<T, K> data(String column, String value);
 
     /**
      * 数据更新
      * @param map Map<String column, String value>
      * @return 查询构建器
      */
-    Builder<T> data(Map<String, String> map);
+    Builder<T, K> data(Map<String, String> map);
 
     /**
      * 字段自增
@@ -38,7 +38,7 @@ public interface Data<T> {
      * @param steps  步长
      * @return 查询构建器
      */
-    Builder<T> dataIncrement(String column, int steps);
+    Builder<T, K> dataIncrement(String column, int steps);
 
     /**
      * 字段自减
@@ -46,6 +46,6 @@ public interface Data<T> {
      * @param steps  步长
      * @return 查询构建器
      */
-    Builder<T> dataDecrement(String column, int steps);
+    Builder<T, K> dataDecrement(String column, int steps);
 
 }

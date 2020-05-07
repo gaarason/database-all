@@ -2,7 +2,7 @@ package gaarason.database.contracts;
 
 import gaarason.database.eloquent.enums.SqlType;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
-import gaarason.database.utils.CopyUtil;
+import gaarason.database.utils.ObjectUtil;
 
 import java.util.List;
 
@@ -56,6 +56,6 @@ public interface Grammar {
      * @throws CloneNotSupportedRuntimeException 克隆异常
      */
     default Grammar deepCopy() throws CloneNotSupportedRuntimeException{
-        return CopyUtil.deepCopy(this);
+        return ObjectUtil.deepCopy(this);
     }
 }

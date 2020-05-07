@@ -8,7 +8,7 @@ import lombok.Data;
 
 import java.util.Date;
 
-public class StudentSoftDeleteModel extends SingleModel<StudentSoftDeleteModel.Entity> {
+public class StudentSoftDeleteModel extends SingleModel<StudentSoftDeleteModel.Entity, Integer> {
 
     @Data
     @Table(name = "student")

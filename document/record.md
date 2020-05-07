@@ -10,9 +10,9 @@ Eloquent ORM for Java
     * [通用map对象](#通用map对象)
     * [自定list对象](#自定list对象)
     * [ORM](#ORM)
+        * [新增](#新增)
         * [查询](#查询)
         * [更新](#更新)
-        * [新增](#新增)
         * [删除](#删除)
 * [查询构造器](/document/query.md)
 * [生成代码](/document/generate.md)
@@ -49,6 +49,25 @@ List<Object> list = studentModel.newQuery().get().toList(
 对于`gaarason.database.eloquent.Record<T>`对象提供ORM相关的能力  
 所有操作均可触发[数据模型](/document/model.md)`事件`
 
+### 新增
+
+执行一次`insert` ，并赋值通过程序插入的已知的属性； 
+而并没有执行`新的查询`或者`获取id`之类的操作； 
+所以,由数据库产生的数据,如`自动生成的自增主键`都是未知的。 
+
+```java
+// 先获取新的 record
+Record<Student> record = studentModel.newRecord();
+
+// 此处不应使用 toObject() 获取具体泛型对象
+Student student = record.getEntity();
+
+// 设置属性
+student.setName("肖邦");
+
+// 保存
+record.save();
+```
 ### 查询
 ```java
 // 查找id=3的记录, 记录不存在则抛出`EntityNotFoundException`异常
@@ -74,20 +93,6 @@ student.setName("肖邦");
 record.save();
 ```
 
-### 新增
-```java
-// 先获取新的 record
-Record<Student> record = studentModel.newRecord();
-
-// 此处不应使用 toObject() 获取具体泛型对象
-Student student = record.getEntity();
-
-// 设置属性
-student.setName("肖邦");
-
-// 保存
-record.save();
-```
 ### 删除
 ```java
 // 先获取 record

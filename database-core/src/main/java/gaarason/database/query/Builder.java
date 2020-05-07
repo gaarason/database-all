@@ -15,17 +15,17 @@ import gaarason.database.exception.*;
 import gaarason.database.support.RecordFactory;
 import gaarason.database.utils.ExceptionUtil;
 import gaarason.database.utils.FormatUtil;
+import gaarason.database.utils.ObjectUtil;
 
 import java.lang.management.ManagementFactory;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 
-abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Union<T>, Support<T>, From<T>, Execute<T>,
-    Select<T>, OrderBy<T>, Limit<T>, Group<T>, Value<T>, Data<T>, Transaction<T>, Aggregates<T>, Paginator<T>,
-    Lock<T>, Native<T>, Join<T>, Ability<T> {
+abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T, K>, Union<T, K>, Support<T, K>,
+    From<T, K>, Execute<T, K>,
+    Select<T, K>, OrderBy<T, K>, Limit<T, K>, Group<T, K>, Value<T, K>, Data<T, K>, Transaction<T, K>, Aggregates<T, K>,
+    Paginator<T, K>,
+    Lock<T, K>, Native<T, K>, Join<T, K>, Ability<T, K> {
 
     /**
      * 数据实体类
@@ -50,9 +50,9 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
     /**
      * 数据模型
      */
-    protected Model<T> model;
+    protected Model<T, K> model;
 
-    public Builder(ProxyDataSource proxyDataSource, Model<T> model, Class<T> entityClass) {
+    public Builder(ProxyDataSource proxyDataSource, Model<T, K> model, Class<T> entityClass) {
         this.proxyDataSource = proxyDataSource;
         this.model = model;
         this.entityClass = entityClass;
@@ -63,7 +63,7 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
      * 得到一个全新的查询构造器
      * @return 查询构造器
      */
-    private Builder<T> getNewSelf() {
+    private Builder<T, K> getNewSelf() {
         return model.newQuery();
     }
 
@@ -72,7 +72,7 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
      * @param closure 闭包
      * @return sqlPart eg:(`id`="3" and `age` between "12" and "19")
      */
-    String generateSqlPart(GenerateSqlPart<T> closure) {
+    String generateSqlPart(GenerateSqlPart<T, K> closure) {
         return generateSql(closure, false);
     }
 
@@ -81,7 +81,7 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
      * @param closure 闭包
      * @return sqlPart eg:(select * from `student` where `id`="3" and `age` between "12" and "19")
      */
-    String generateSql(GenerateSqlPart<T> closure) {
+    String generateSql(GenerateSqlPart<T, K> closure) {
         return generateSql(closure, true);
     }
 
@@ -97,10 +97,10 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
      */
     @Override
     @SuppressWarnings("unchecked")
-    public Builder<T> clone() throws CloneNotSupportedRuntimeException {
+    public Builder<T, K> clone() throws CloneNotSupportedRuntimeException {
         try {
             // 浅拷贝
-            Builder<T> builder = (Builder<T>) super.clone();
+            Builder<T, K> builder = (Builder<T, K>) super.clone();
             // 深拷贝
             builder.grammar = grammar.deepCopy();
             return builder;
@@ -108,12 +108,13 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
             throw new CloneNotSupportedRuntimeException(e.getMessage(), e);
         }
     }
+
     /**
      * 带总数的分页
      * @param currentPage 当前页
      * @param perPage     每页数量
      * @return 分页对象
-     * @throws SQLRuntimeException 数据库异常
+     * @throws SQLRuntimeException               数据库异常
      * @throws CloneNotSupportedRuntimeException 克隆异常
      */
     @Override
@@ -139,7 +140,7 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
 
     /**
      * 数据库事物开启
-     * @throws SQLRuntimeException 数据库异常
+     * @throws SQLRuntimeException        数据库异常
      * @throws NestedTransactionException 构建
      */
     @Override
@@ -251,7 +252,7 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
     }
 
     @Override
-    public Record<T> queryOrFail(String sql, Collection<String> parameters)
+    public Record<T, K> queryOrFail(String sql, Collection<String> parameters)
         throws SQLRuntimeException, EntityNotFoundException {
         Connection connection = theConnection(false);
         try {
@@ -268,7 +269,7 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
 
     @Nullable
     @Override
-    public Record<T> query(String sql, Collection<String> parameters) throws SQLRuntimeException {
+    public Record<T, K> query(String sql, Collection<String> parameters) throws SQLRuntimeException {
         try {
             return queryOrFail(sql, parameters);
         } catch (EntityNotFoundException e) {
@@ -277,7 +278,7 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
     }
 
     @Override
-    public RecordList<T> queryList(String sql, Collection<String> parameters) throws SQLRuntimeException {
+    public RecordList<T, K> queryList(String sql, Collection<String> parameters) throws SQLRuntimeException {
         Connection connection = theConnection(false);
         try {
             ResultSet resultSet = executeSql(connection, sql, parameters).executeQuery();
@@ -305,13 +306,88 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
         }
     }
 
+    @Override
+    public List<K> executeGetIds(String sql, Collection<String> parameters) throws SQLRuntimeException {
+
+        List<K>    ids        = new ArrayList<>();
+        Connection connection = theConnection(true);
+        try {
+            // 参数准备
+            PreparedStatement preparedStatement = executeSql(connection, sql, parameters);
+            // 执行
+            int affectedRows = preparedStatement.executeUpdate();
+            // 执行成功
+            // 获取键
+            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+            while (generatedKeys.next()) {
+                ids.add(getGeneratedKeys(generatedKeys));
+            }
+            generatedKeys.close();
+            return ids;
+
+        } catch (SQLException e) {
+            throw new SQLRuntimeException(sql, parameters, e.getMessage(), e);
+        } finally {
+            if (!inTransaction()) {
+                connectionClose(connection);
+            }
+        }
+    }
+
+
+    @Override
+    public K executeGetId(String sql, Collection<String> parameters) throws SQLRuntimeException {
+        Connection connection = theConnection(true);
+        try {
+            // 参数准备
+            PreparedStatement preparedStatement = executeSql(connection, sql, parameters);
+            // 执行
+            int affectedRows = preparedStatement.executeUpdate();
+            // 执行成功
+            // 获取键
+            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+            generatedKeys.next();
+            K key = getGeneratedKeys(generatedKeys); //得到第一个键值
+            generatedKeys.close();
+            return key;
+        } catch (SQLException e) {
+            throw new SQLRuntimeException(sql, parameters, e.getMessage(), e);
+        } finally {
+            if (!inTransaction()) {
+                connectionClose(connection);
+            }
+        }
+    }
+
+    /**
+     * 获取主键
+     * @param generatedKeys 数据集
+     * @return 主键
+     * @throws SQLException                      数据库异常
+     * @throws PrimaryKeyTypeNotSupportException 不支持的主键类型
+     */
+    private K getGeneratedKeys(ResultSet generatedKeys) throws SQLException, PrimaryKeyTypeNotSupportException {
+        Class<K> primaryKeyClass = model.getPrimaryKeyClass();
+        if (Byte.class.equals(primaryKeyClass) || byte.class.equals(primaryKeyClass)) {
+            return ObjectUtil.typeCast(generatedKeys.getByte(1), primaryKeyClass);
+        } else if (Integer.class.equals(primaryKeyClass) || int.class.equals(primaryKeyClass)) {
+            return ObjectUtil.typeCast(generatedKeys.getInt(1), primaryKeyClass);
+        } else if (Long.class.equals(primaryKeyClass) || long.class.equals(primaryKeyClass)) {
+            return ObjectUtil.typeCast(generatedKeys.getLong(1), primaryKeyClass);
+        } else if (String.class.equals(primaryKeyClass)) {
+            return ObjectUtil.typeCast(generatedKeys.getString(1), primaryKeyClass);
+        }
+        throw new PrimaryKeyTypeNotSupportException("Primary key type [" + primaryKeyClass + "] not support get " +
+            "generated keys yet.");
+    }
+
     /**
      * 执行sql, 处理jdbc结果集, 返回收集器
      * @return 收集器
      * @throws SQLRuntimeException     数据库异常
      * @throws EntityNotFoundException 查询结果为空
      */
-    Record<T> querySql() throws SQLRuntimeException, EntityNotFoundException {
+    Record<T, K> querySql() throws SQLRuntimeException, EntityNotFoundException {
         // sql组装执行
         String       sql           = grammar.generateSql(SqlType.SELECT);
         List<String> parameterList = grammar.getParameterList(SqlType.SELECT);
@@ -324,7 +400,7 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
      * @throws SQLRuntimeException     数据库异常
      * @throws EntityNotFoundException 查询结果为空
      */
-    RecordList<T> querySqlList() throws SQLRuntimeException, EntityNotFoundException {
+    RecordList<T, K> querySqlList() throws SQLRuntimeException, EntityNotFoundException {
         // sql组装执行
         String       sql           = grammar.generateSql(SqlType.SELECT);
         List<String> parameterList = grammar.getParameterList(SqlType.SELECT);
@@ -332,15 +408,15 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
     }
 
     @Override
-    public void dealChunk(int num, Chunk<T> chunk) throws SQLRuntimeException {
+    public void dealChunk(int num, Chunk<T, K> chunk) throws SQLRuntimeException {
         int     offset = 0;
         boolean flag;
         do {
-            Builder<T> cloneBuilder = clone();
+            Builder<T, K> cloneBuilder = clone();
             cloneBuilder.limit(offset, num);
-            String        sql           = cloneBuilder.grammar.generateSql(SqlType.SELECT);
-            List<String>  parameterList = cloneBuilder.grammar.getParameterList(SqlType.SELECT);
-            RecordList<T> records       = queryList(sql, parameterList);
+            String           sql           = cloneBuilder.grammar.generateSql(SqlType.SELECT);
+            List<String>     parameterList = cloneBuilder.grammar.getParameterList(SqlType.SELECT);
+            RecordList<T, K> records       = queryList(sql, parameterList);
             flag = chunk.deal(records) && (records.size() == num);
             offset += num;
         } while (flag);
@@ -411,9 +487,8 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
         throws SQLException {
         // 日志记录
         model.log(sql, parameterList);
-        // 预执行
-        PreparedStatement preparedStatement = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY,
-            ResultSet.CONCUR_READ_ONLY);
+        // 预执行 ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY
+        PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         // 参数绑定
         int i = 1;
         for (String parameter : parameterList) {
@@ -429,9 +504,9 @@ abstract public class Builder<T> implements Cloneable, Where<T>, Having<T>, Unio
      * @param wholeSql 是否生成完整sql
      * @return sql
      */
-    private String generateSql(GenerateSqlPart<T> closure, boolean wholeSql) {
-        Builder<T>   subBuilder    = closure.generate(getNewSelf());
-        List<String> parameterList = subBuilder.grammar.getParameterList(SqlType.SUBQUERY);
+    private String generateSql(GenerateSqlPart<T, K> closure, boolean wholeSql) {
+        Builder<T, K> subBuilder    = closure.generate(getNewSelf());
+        List<String>  parameterList = subBuilder.grammar.getParameterList(SqlType.SUBQUERY);
         for (String parameter : parameterList) {
             grammar.pushWhereParameter(parameter);
         }

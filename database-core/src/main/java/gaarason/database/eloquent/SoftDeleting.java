@@ -2,7 +2,7 @@ package gaarason.database.eloquent;
 
 import gaarason.database.query.Builder;
 
-abstract class SoftDeleting<T> extends Initializing<T> {
+abstract class SoftDeleting<T, K> extends Initializing<T, K> {
 
     /**
      * 是否启用软删除
@@ -16,7 +16,7 @@ abstract class SoftDeleting<T> extends Initializing<T> {
      * @param builder 查询构造器
      * @return 删除的行数
      */
-    public int delete(Builder<T> builder) {
+    public int delete(Builder<T, K> builder) {
         return softDeleting() ? softDelete(builder) : builder.forceDelete();
     }
 
@@ -25,7 +25,7 @@ abstract class SoftDeleting<T> extends Initializing<T> {
      * @param builder 查询构造器
      * @return 删除的行数
      */
-    public int restore(Builder<T> builder) {
+    public int restore(Builder<T, K> builder) {
         return softDeleteRestore(builder);
     }
 
@@ -33,7 +33,7 @@ abstract class SoftDeleting<T> extends Initializing<T> {
      * 软删除查询作用域(反)
      * @param builder 查询构造器
      */
-    protected void scopeSoftDeleteOnlyTrashed(Builder<T> builder) {
+    protected void scopeSoftDeleteOnlyTrashed(Builder<T, K> builder) {
         builder.where("is_deleted", "1");
     }
 
@@ -41,7 +41,7 @@ abstract class SoftDeleting<T> extends Initializing<T> {
      * 软删除查询作用域(全)
      * @param builder 查询构造器
      */
-    protected void scopeSoftDeleteWithTrashed(Builder<T> builder) {
+    protected void scopeSoftDeleteWithTrashed(Builder<T, K> builder) {
 
     }
 
@@ -49,7 +49,7 @@ abstract class SoftDeleting<T> extends Initializing<T> {
      * 软删除查询作用域
      * @param builder 查询构造器
      */
-    protected void scopeSoftDelete(Builder<T> builder) {
+    protected void scopeSoftDelete(Builder<T, K> builder) {
         builder.where("is_deleted", "0");
     }
 
@@ -59,7 +59,7 @@ abstract class SoftDeleting<T> extends Initializing<T> {
      * @param builder 查询构造器
      * @return 删除的行数
      */
-    protected int softDelete(Builder<T> builder) {
+    protected int softDelete(Builder<T, K> builder) {
         return builder.data("is_deleted", "1").update();
     }
 
@@ -68,7 +68,7 @@ abstract class SoftDeleting<T> extends Initializing<T> {
      * @param builder 查询构造器
      * @return 恢复的行数
      */
-    protected int softDeleteRestore(Builder<T> builder) {
+    protected int softDeleteRestore(Builder<T, K> builder) {
         return builder.data("is_deleted", "0").update();
     }
 }

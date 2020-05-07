@@ -4,7 +4,9 @@ import gaarason.database.connections.ProxyDataSource;
 import gaarason.database.contracts.Grammar;
 import gaarason.database.contracts.function.GenerateSqlPart;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.*;
+import gaarason.database.eloquent.Model;
+import gaarason.database.eloquent.Record;
+import gaarason.database.eloquent.RecordList;
 import gaarason.database.eloquent.enums.JoinType;
 import gaarason.database.eloquent.enums.OrderBy;
 import gaarason.database.eloquent.enums.SqlType;
@@ -19,9 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class MySqlBuilder<T> extends Builder<T> {
+public class MySqlBuilder<T, K> extends Builder<T, K> {
 
-    public MySqlBuilder(ProxyDataSource dataSourceModel, Model<T> model, Class<T> entityClass) {
+    public MySqlBuilder(ProxyDataSource dataSourceModel, Model<T, K> model, Class<T> entityClass) {
         super(dataSourceModel, model, entityClass);
     }
 
@@ -32,287 +34,287 @@ public class MySqlBuilder<T> extends Builder<T> {
 
 
     @Override
-    public Builder<T> whereRaw(String sqlPart) {
+    public Builder<T, K> whereRaw(String sqlPart) {
         grammar.pushWhere(sqlPart, "and");
         return this;
     }
 
     @Override
-    public Builder<T> where(String column, String symbol, String value) {
+    public Builder<T, K> where(String column, String symbol, String value) {
         String sqlPart = FormatUtil.column(column) + symbol + formatValue(value);
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> where(String column, String value) {
+    public Builder<T, K> where(String column, String value) {
         return where(column, "=", value);
     }
 
     @Override
-    public Builder<T> whereSubQuery(String column, String symbol, String completeSql) {
+    public Builder<T, K> whereSubQuery(String column, String symbol, String completeSql) {
         String sqlPart = FormatUtil.column(column) + symbol + FormatUtil.bracket(completeSql);
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> whereSubQuery(String column, String symbol, GenerateSqlPart<T> closure) {
+    public Builder<T, K> whereSubQuery(String column, String symbol, GenerateSqlPart<T, K> closure) {
         String completeSql = generateSql(closure);
         String sqlPart     = FormatUtil.column(column) + symbol + completeSql;
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> whereIn(String column, List<Object> valueList) {
+    public Builder<T, K> whereIn(String column, List<Object> valueList) {
         String sqlPart = FormatUtil.column(column) + "in" + FormatUtil.bracket(formatValue(valueList));
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> whereInRaw(String column, String sql) {
+    public Builder<T, K> whereInRaw(String column, String sql) {
         String sqlPart = FormatUtil.column(column) + "in" + FormatUtil.bracket(sql);
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> whereIn(String column, GenerateSqlPart<T> closure) {
+    public Builder<T, K> whereIn(String column, GenerateSqlPart<T, K> closure) {
         String sqlPart = generateSql(closure);
         return whereInRaw(column, sqlPart);
     }
 
     @Override
-    public Builder<T> whereNotIn(String column, List<Object> valueList) {
+    public Builder<T, K> whereNotIn(String column, List<Object> valueList) {
         String sqlPart = FormatUtil.column(column) + "not in" + FormatUtil.bracket(formatValue(valueList));
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> whereNotInRaw(String column, String sql) {
+    public Builder<T, K> whereNotInRaw(String column, String sql) {
         String sqlPart = FormatUtil.column(column) + "not in" + FormatUtil.bracket(sql);
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> whereNotIn(String column, GenerateSqlPart<T> closure) {
+    public Builder<T, K> whereNotIn(String column, GenerateSqlPart<T, K> closure) {
         String sqlPart = generateSql(closure);
         return whereNotInRaw(column, sqlPart);
     }
 
     @Override
-    public Builder<T> whereBetween(String column, String min, String max) {
+    public Builder<T, K> whereBetween(String column, String min, String max) {
         String sqlPart = FormatUtil.column(column) + "between" + formatValue(min) + "and" + formatValue(max);
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> whereNotBetween(String column, String min, String max) {
+    public Builder<T, K> whereNotBetween(String column, String min, String max) {
         String sqlPart =
             FormatUtil.column(column) + "not between" + formatValue(min) + "and" + formatValue(max);
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> whereNull(String column) {
+    public Builder<T, K> whereNull(String column) {
         String sqlPart = FormatUtil.column(column) + "is null";
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> whereNotNull(String column) {
+    public Builder<T, K> whereNotNull(String column) {
         String sqlPart = FormatUtil.column(column) + "is not null";
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> whereExistsRaw(String sql) {
+    public Builder<T, K> whereExistsRaw(String sql) {
         String sqlPart = "exists " + FormatUtil.bracket(sql);
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> whereExists(GenerateSqlPart<T> closure) {
+    public Builder<T, K> whereExists(GenerateSqlPart<T, K> closure) {
         String sql = generateSql(closure);
         return whereExistsRaw(sql);
     }
 
     @Override
-    public Builder<T> whereNotExistsRaw(String sql) {
+    public Builder<T, K> whereNotExistsRaw(String sql) {
         String sqlPart = "not exists " + FormatUtil.bracket(sql);
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> whereNotExists(GenerateSqlPart<T> closure) {
+    public Builder<T, K> whereNotExists(GenerateSqlPart<T, K> closure) {
         String sql = generateSql(closure);
         return whereNotExistsRaw(sql);
     }
 
     @Override
-    public Builder<T> whereColumn(String column1, String symbol, String column2) {
+    public Builder<T, K> whereColumn(String column1, String symbol, String column2) {
         String sqlPart = FormatUtil.column(column1) + symbol + FormatUtil.column(column2);
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> whereColumn(String column1, String column2) {
+    public Builder<T, K> whereColumn(String column1, String column2) {
         return whereColumn(column1, "=", column2);
     }
 
     @Override
-    public Builder<T> andWhere(GenerateSqlPart<T> closure) {
+    public Builder<T, K> andWhere(GenerateSqlPart<T, K> closure) {
         String sqlPart = generateSqlPart(closure);
         grammar.pushWhere(sqlPart, "and");
         return this;
     }
 
     @Override
-    public Builder<T> orWhere(GenerateSqlPart<T> closure) {
+    public Builder<T, K> orWhere(GenerateSqlPart<T, K> closure) {
         String sqlPart = generateSqlPart(closure);
         grammar.pushWhere(sqlPart, "or");
         return this;
     }
 
     @Override
-    public Builder<T> havingRaw(String sqlPart) {
+    public Builder<T, K> havingRaw(String sqlPart) {
         grammar.pushHaving(sqlPart, "and");
         return this;
     }
 
     @Override
-    public Builder<T> having(String column, String symbol, String value) {
+    public Builder<T, K> having(String column, String symbol, String value) {
         String sqlPart = FormatUtil.column(column) + symbol + formatValue(value);
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> having(String column, String value) {
+    public Builder<T, K> having(String column, String value) {
         return having(column, "=", value);
     }
 
     @Override
-    public Builder<T> havingIn(String column, List<Object> valueList) {
+    public Builder<T, K> havingIn(String column, List<Object> valueList) {
         String sqlPart = FormatUtil.column(column) + "in" + FormatUtil.bracket(formatValue(valueList));
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> havingInRaw(String column, String sql) {
+    public Builder<T, K> havingInRaw(String column, String sql) {
         String sqlPart = FormatUtil.column(column) + "in" + FormatUtil.bracket(sql);
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> havingIn(String column, GenerateSqlPart<T> closure) {
+    public Builder<T, K> havingIn(String column, GenerateSqlPart<T, K> closure) {
         String sqlPart = generateSql(closure);
         return havingInRaw(column, sqlPart);
     }
 
     @Override
-    public Builder<T> havingNotIn(String column, List<Object> valueList) {
+    public Builder<T, K> havingNotIn(String column, List<Object> valueList) {
         String sqlPart = FormatUtil.column(column) + "not in" + FormatUtil.bracket(formatValue(valueList));
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> havingNotInRaw(String column, String sql) {
+    public Builder<T, K> havingNotInRaw(String column, String sql) {
         String sqlPart = FormatUtil.column(column) + "not in" + FormatUtil.bracket(sql);
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> havingNotIn(String column, GenerateSqlPart<T> closure) {
+    public Builder<T, K> havingNotIn(String column, GenerateSqlPart<T, K> closure) {
         String sqlPart = generateSql(closure);
         return havingNotInRaw(column, sqlPart);
     }
 
     @Override
-    public Builder<T> havingBetween(String column, String min, String max) {
+    public Builder<T, K> havingBetween(String column, String min, String max) {
         String sqlPart = FormatUtil.column(column) + "between" + formatValue(min) + "and" + formatValue(max);
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> havingNotBetween(String column, String min, String max) {
+    public Builder<T, K> havingNotBetween(String column, String min, String max) {
         String sqlPart =
             FormatUtil.column(column) + "not between" + formatValue(min) + "and" + formatValue(max);
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> havingNull(String column) {
+    public Builder<T, K> havingNull(String column) {
         String sqlPart = FormatUtil.column(column) + "is null";
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> havingNotNull(String column) {
+    public Builder<T, K> havingNotNull(String column) {
         String sqlPart = FormatUtil.column(column) + "is not null";
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> havingExistsRaw(String sql) {
+    public Builder<T, K> havingExistsRaw(String sql) {
         String sqlPart = "exists " + FormatUtil.bracket(sql);
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> havingExists(GenerateSqlPart<T> Closure) {
+    public Builder<T, K> havingExists(GenerateSqlPart<T, K> Closure) {
         String sql = generateSql(Closure);
         return havingExistsRaw(sql);
     }
 
     @Override
-    public Builder<T> havingNotExistsRaw(String sql) {
+    public Builder<T, K> havingNotExistsRaw(String sql) {
         String sqlPart = "not exists " + FormatUtil.bracket(sql);
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> havingNotExists(GenerateSqlPart<T> Closure) {
+    public Builder<T, K> havingNotExists(GenerateSqlPart<T, K> Closure) {
         String sql = generateSql(Closure);
         return havingNotExistsRaw(sql);
     }
 
     @Override
-    public Builder<T> havingColumn(String column1, String symbol, String column2) {
+    public Builder<T, K> havingColumn(String column1, String symbol, String column2) {
         String sqlPart = FormatUtil.column(column1) + symbol + FormatUtil.column(column2);
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> havingColumn(String column1, String column2) {
+    public Builder<T, K> havingColumn(String column1, String column2) {
         return havingColumn(column1, "=", column2);
     }
 
     @Override
-    public Builder<T> andHaving(GenerateSqlPart<T> closure) {
+    public Builder<T, K> andHaving(GenerateSqlPart<T, K> closure) {
         String sqlPart = generateSqlPart(closure);
         grammar.pushHaving(sqlPart, "and");
         return this;
     }
 
     @Override
-    public Builder<T> orHaving(GenerateSqlPart<T> closure) {
+    public Builder<T, K> orHaving(GenerateSqlPart<T, K> closure) {
         String sqlPart = generateSqlPart(closure);
         grammar.pushHaving(sqlPart, "or");
         return this;
     }
 
     @Override
-    public Builder<T> from(String table) {
+    public Builder<T, K> from(String table) {
         grammar.pushFrom(FormatUtil.column(table));
         return this;
     }
 
     @Override
-    public Builder<T> select(String column) {
+    public Builder<T, K> select(String column) {
         String sqlPart = FormatUtil.column(column);
         grammar.pushSelect(sqlPart);
         return this;
     }
 
     @Override
-    public Builder<T> select(String... columnArray) {
+    public Builder<T, K> select(String... columnArray) {
         for (String column : columnArray) {
             select(column);
         }
@@ -320,7 +322,7 @@ public class MySqlBuilder<T> extends Builder<T> {
     }
 
     @Override
-    public Builder<T> select(List<String> columnList) {
+    public Builder<T, K> select(List<String> columnList) {
         for (String column : columnList) {
             select(column);
         }
@@ -328,7 +330,7 @@ public class MySqlBuilder<T> extends Builder<T> {
     }
 
     @Override
-    public Builder<T> selectFunction(String function, String parameter, @Nullable String alias) {
+    public Builder<T, K> selectFunction(String function, String parameter, @Nullable String alias) {
         String sqlPart = function + FormatUtil.bracket(parameter) + (alias == null ? "" :
             " as " + FormatUtil.quotes(alias));
         grammar.pushSelect(sqlPart);
@@ -336,7 +338,7 @@ public class MySqlBuilder<T> extends Builder<T> {
     }
 
     @Override
-    public Builder<T> selectFunction(String function, GenerateSqlPart<T> closure, @Nullable String alias) {
+    public Builder<T, K> selectFunction(String function, GenerateSqlPart<T, K> closure, @Nullable String alias) {
         String completeSql = generateSql(closure);
         String sqlPart = function + FormatUtil.bracket(completeSql) + (alias == null ? "" :
             " as " + FormatUtil.quotes(alias));
@@ -345,45 +347,45 @@ public class MySqlBuilder<T> extends Builder<T> {
     }
 
     @Override
-    public Builder<T> orderBy(String column, OrderBy type) {
+    public Builder<T, K> orderBy(String column, OrderBy type) {
         String sqlPart = FormatUtil.column(column) + " " + type.getOperation();
         grammar.pushOrderBy(sqlPart);
         return this;
     }
 
     @Override
-    public Builder<T> orderBy(String column) {
+    public Builder<T, K> orderBy(String column) {
         return orderBy(column, OrderBy.ASC);
     }
 
     @Override
-    public Builder<T> limit(int offset, int take) {
+    public Builder<T, K> limit(int offset, int take) {
         String sqlPart = String.valueOf(offset) + ',' + take;
         grammar.pushLimit(sqlPart);
         return this;
     }
 
     @Override
-    public Builder<T> limit(int take) {
+    public Builder<T, K> limit(int take) {
         String sqlPart = String.valueOf(take);
         grammar.pushLimit(sqlPart);
         return this;
     }
 
     @Override
-    public Builder<T> groupRaw(String sqlPart) {
+    public Builder<T, K> groupRaw(String sqlPart) {
         grammar.pushGroup(sqlPart);
         return this;
     }
 
     @Override
-    public Builder<T> group(String column) {
+    public Builder<T, K> group(String column) {
         String sqlPart = FormatUtil.column(column);
         return groupRaw(sqlPart);
     }
 
     @Override
-    public Builder<T> group(String... columnArray) {
+    public Builder<T, K> group(String... columnArray) {
         for (String column : columnArray) {
             group(column);
         }
@@ -391,7 +393,7 @@ public class MySqlBuilder<T> extends Builder<T> {
     }
 
     @Override
-    public Builder<T> group(List<String> columnList) {
+    public Builder<T, K> group(List<String> columnList) {
         for (String column : columnList) {
             group(column);
         }
@@ -399,7 +401,7 @@ public class MySqlBuilder<T> extends Builder<T> {
     }
 
     @Override
-    public Record<T> firstOrFail() throws SQLRuntimeException, EntityNotFoundException {
+    public Record<T, K> firstOrFail() throws SQLRuntimeException, EntityNotFoundException {
         limit(1);
         return querySql();
     }
@@ -413,7 +415,7 @@ public class MySqlBuilder<T> extends Builder<T> {
 
     @Override
     @Nullable
-    public Record<T> first() throws SQLRuntimeException {
+    public Record<T, K> first() throws SQLRuntimeException {
         try {
             return firstOrFail();
         } catch (EntityNotFoundException e) {
@@ -422,13 +424,20 @@ public class MySqlBuilder<T> extends Builder<T> {
     }
 
     @Override
-    public RecordList<T> get() throws SQLRuntimeException {
+    public RecordList<T, K> get() throws SQLRuntimeException {
         return querySqlList();
     }
 
     @Override
     public int insert() throws SQLRuntimeException {
         return updateSql(SqlType.INSERT);
+    }
+
+    @Override
+    public K insertGetId() throws SQLRuntimeException {
+        String       sql           = grammar.generateSql(SqlType.INSERT);
+        List<String> parameterList = grammar.getParameterList(SqlType.INSERT);
+        return executeGetId(sql, parameterList);
     }
 
     @Override
@@ -443,6 +452,25 @@ public class MySqlBuilder<T> extends Builder<T> {
         value(valueList);
         // 执行
         return insert();
+    }
+
+    @Override
+    public K insertGetId(T entity) throws SQLRuntimeException {
+        // 获取entity所有有效sql字段
+        List<String> columnNameList = EntityUtil.columnNameList(entity, true);
+        // 获取entity所有有效字段的值
+        List<String> valueList = EntityUtil.valueList(entity, columnNameList);
+        // 字段加入grammar
+        select(columnNameList);
+        // 字段的值加入grammar
+        value(valueList);
+        // 执行, 并获取主键id
+        K primaryId = insertGetId();
+        // 赋值主键
+        EntityUtil.setPrimaryId(entity, primaryId);
+        // 返回主键
+        return primaryId;
+
     }
 
     @Override
@@ -461,6 +489,26 @@ public class MySqlBuilder<T> extends Builder<T> {
         valueList(valueListList);
         // 执行
         return insert();
+    }
+
+    @Override
+    public List<K> insertGetIds(List<T> entityList) throws SQLRuntimeException {
+        // 获取entity所有有效字段
+        List<String>       columnNameList = EntityUtil.columnNameList(entityList.get(0), true);
+        List<List<String>> valueListList  = new ArrayList<>();
+        for (T entity : entityList) {
+            // 获取entity所有有效字段的值
+            List<String> valueList = EntityUtil.valueList(entity, columnNameList);
+            valueListList.add(valueList);
+        }
+        // 字段加入grammar
+        select(columnNameList);
+        // 字段的值加入grammar
+        valueList(valueListList);
+        // sql 组装
+        String       sql           = grammar.generateSql(SqlType.INSERT);
+        List<String> parameterList = grammar.getParameterList(SqlType.INSERT);
+        return executeGetIds(sql, parameterList);
     }
 
     @Override
@@ -506,7 +554,7 @@ public class MySqlBuilder<T> extends Builder<T> {
     }
 
     @Override
-    public Builder<T> value(List<String> valueList) {
+    public Builder<T, K> value(List<String> valueList) {
         StringBuilder sqlPartBuilder = new StringBuilder("(");
         for (String value : valueList) {
             String stub = FormatUtil.data(value, grammar);
@@ -518,7 +566,7 @@ public class MySqlBuilder<T> extends Builder<T> {
     }
 
     @Override
-    public Builder<T> valueList(List<List<String>> valueList) {
+    public Builder<T, K> valueList(List<List<String>> valueList) {
         for (List<String> value : valueList) {
             value(value);
         }
@@ -526,19 +574,19 @@ public class MySqlBuilder<T> extends Builder<T> {
     }
 
     @Override
-    public Builder<T> data(String sqlPart) {
+    public Builder<T, K> data(String sqlPart) {
         grammar.pushData(sqlPart);
         return this;
     }
 
     @Override
-    public Builder<T> data(String column, String value) {
+    public Builder<T, K> data(String column, String value) {
         String sqlPart = FormatUtil.column(column) + '=' + formatData(value);
         return data(sqlPart);
     }
 
     @Override
-    public Builder<T> data(Map<String, String> map) {
+    public Builder<T, K> data(Map<String, String> map) {
         for (Map.Entry<String, String> entry : map.entrySet()) {
             data(entry.getKey(), entry.getValue());
         }
@@ -546,13 +594,13 @@ public class MySqlBuilder<T> extends Builder<T> {
     }
 
     @Override
-    public Builder<T> dataIncrement(String column, int steps) {
+    public Builder<T, K> dataIncrement(String column, int steps) {
         String sqlPart = FormatUtil.column(column) + '=' + FormatUtil.column(column) + '+' + steps;
         return data(sqlPart);
     }
 
     @Override
-    public Builder<T> dataDecrement(String column, int steps) {
+    public Builder<T, K> dataDecrement(String column, int steps) {
         String sqlPart = FormatUtil.column(column) + '=' + FormatUtil.column(column) + '-' + steps;
         return data(sqlPart);
     }
@@ -595,38 +643,38 @@ public class MySqlBuilder<T> extends Builder<T> {
     }
 
     @Override
-    public Builder<T> sharedLock() {
+    public Builder<T, K> sharedLock() {
         grammar.pushLock("lock in share mode");
         return this;
     }
 
     @Override
-    public Builder<T> lockForUpdate() {
+    public Builder<T, K> lockForUpdate() {
         grammar.pushLock("for update");
         return this;
     }
 
     @Override
-    public Builder<T> union(GenerateSqlPart<T> closure) {
+    public Builder<T, K> union(GenerateSqlPart<T, K> closure) {
         String sqlPart = generateSql(closure);
         grammar.pushUnion(sqlPart, "union");
         return this;
     }
 
     @Override
-    public Builder<T> unionAll(GenerateSqlPart<T> closure) {
+    public Builder<T, K> unionAll(GenerateSqlPart<T, K> closure) {
         String sqlPart = generateSql(closure);
         grammar.pushUnion(sqlPart, "union all");
         return this;
     }
 
     @Override
-    public Builder<T> join(String table, String column1, String symbol, String column2) {
+    public Builder<T, K> join(String table, String column1, String symbol, String column2) {
         return join(JoinType.INNER, table, column1, symbol, column2);
     }
 
     @Override
-    public Builder<T> join(JoinType joinType, String table, String column1, String symbol, String column2) {
+    public Builder<T, K> join(JoinType joinType, String table, String column1, String symbol, String column2) {
         String sqlPart =
             FormatUtil.spaces(joinType.getOperation()) + "join " + FormatUtil.backQuote(table) + FormatUtil.spaces(
                 "on") +
@@ -636,12 +684,12 @@ public class MySqlBuilder<T> extends Builder<T> {
     }
 
     @Override
-    public Builder<T> inRandomOrder(String field) {
-        Builder<T> sameSubBuilder1 = model.newQuery();
-        Builder<T> sameSubBuilder2 = model.newQuery();
-        String  maxSql          = sameSubBuilder1.selectFunction("max", field, null).toSql(SqlType.SELECT);
-        String  minSql          = sameSubBuilder2.selectFunction("min", field, null).toSql(SqlType.SELECT);
-        String  floorSql        = "rand()*((" + maxSql + ")-(" + minSql + "))+(" + minSql + ")";
+    public Builder<T, K> inRandomOrder(String field) {
+        Builder<T, K> sameSubBuilder1 = model.newQuery();
+        Builder<T, K> sameSubBuilder2 = model.newQuery();
+        String        maxSql          = sameSubBuilder1.selectFunction("max", field, null).toSql(SqlType.SELECT);
+        String        minSql          = sameSubBuilder2.selectFunction("min", field, null).toSql(SqlType.SELECT);
+        String        floorSql        = "rand()*((" + maxSql + ")-(" + minSql + "))+(" + minSql + ")";
         // select floor(rand()*((select max(`$key`) from $from)-(select min(`$key`) from $from))+(select min(`$key`) from $from))
         // select * from `student` where `id`in(select floor(rand()*((select max(`id`) from `student`)-(select min
         // (`id`) from `student`))+(select min(`id`) from `student`))) limit 5

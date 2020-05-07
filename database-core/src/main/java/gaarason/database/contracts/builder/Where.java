@@ -7,16 +7,16 @@ import java.util.List;
 
 /**
  * 条件
- * @param <T>
+ * @param <T, K>
  */
-public interface Where<T> {
+public interface Where<T, K> {
 
     /**
      * 加入sql片段
      * @param sqlPart sql片段
      * @return 查询构建器
      */
-    Builder<T> whereRaw(String sqlPart);
+    Builder<T, K> whereRaw(String sqlPart);
 
     /**
      * 比较列与值
@@ -25,7 +25,7 @@ public interface Where<T> {
      * @param value  值
      * @return 查询构建器
      */
-    Builder<T> where(String column, String symbol, String value);
+    Builder<T, K> where(String column, String symbol, String value);
 
     /**
      * 比较列与值相等
@@ -33,7 +33,7 @@ public interface Where<T> {
      * @param value  值
      * @return 查询构建器
      */
-    Builder<T> where(String column, String value);
+    Builder<T, K> where(String column, String value);
 
     /**
      * 条件子查询
@@ -42,7 +42,7 @@ public interface Where<T> {
      * @param completeSql 完整sql
      * @return 查询构建器
      */
-    Builder<T> whereSubQuery(String column, String symbol, String completeSql);
+    Builder<T, K> whereSubQuery(String column, String symbol, String completeSql);
 
     /**
      * 条件子查询
@@ -51,7 +51,7 @@ public interface Where<T> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T> whereSubQuery(String column, String symbol, GenerateSqlPart<T> closure);
+    Builder<T, K> whereSubQuery(String column, String symbol, GenerateSqlPart<T, K> closure);
 
     /**
      * 列值在范围内
@@ -59,7 +59,7 @@ public interface Where<T> {
      * @param valueList 值所在的list
      * @return 查询构建器
      */
-    Builder<T> whereIn(String column, List<Object> valueList);
+    Builder<T, K> whereIn(String column, List<Object> valueList);
 
     /**
      * 列值在范围内(子查询)
@@ -67,7 +67,7 @@ public interface Where<T> {
      * @param sql    完整sql eg:select id from student where age>10
      * @return 查询构建器
      */
-    Builder<T> whereInRaw(String column, String sql);
+    Builder<T, K> whereInRaw(String column, String sql);
 
     /**
      * 列值在范围内(子查询)
@@ -75,7 +75,7 @@ public interface Where<T> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T> whereIn(String column, GenerateSqlPart<T> closure);
+    Builder<T, K> whereIn(String column, GenerateSqlPart<T, K> closure);
 
     /**
      * 列值不在范围内
@@ -83,7 +83,7 @@ public interface Where<T> {
      * @param valueList 值所在的list
      * @return 查询构建器
      */
-    Builder<T> whereNotIn(String column, List<Object> valueList);
+    Builder<T, K> whereNotIn(String column, List<Object> valueList);
 
     /**
      * 列值不在范围内(子查询)
@@ -91,7 +91,7 @@ public interface Where<T> {
      * @param sql    完整sql eg:select id from student where age>10
      * @return 查询构建器
      */
-    Builder<T> whereNotInRaw(String column, String sql);
+    Builder<T, K> whereNotInRaw(String column, String sql);
 
     /**
      * 列值不在范围内(子查询)
@@ -99,7 +99,7 @@ public interface Where<T> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T> whereNotIn(String column, GenerateSqlPart<T> closure);
+    Builder<T, K> whereNotIn(String column, GenerateSqlPart<T, K> closure);
 
     /**
      * 列值在2值之间
@@ -108,7 +108,7 @@ public interface Where<T> {
      * @param max    值2
      * @return 查询构建器
      */
-    Builder<T> whereBetween(String column, String min, String max);
+    Builder<T, K> whereBetween(String column, String min, String max);
 
     /**
      * 列值不在2值之间
@@ -117,49 +117,49 @@ public interface Where<T> {
      * @param max    值2
      * @return 查询构建器
      */
-    Builder<T> whereNotBetween(String column, String min, String max);
+    Builder<T, K> whereNotBetween(String column, String min, String max);
 
     /**
      * 列值为null
      * @param column 列名
      * @return 查询构建器
      */
-    Builder<T> whereNull(String column);
+    Builder<T, K> whereNull(String column);
 
     /**
      * 列值不为null
      * @param column 列名
      * @return 查询构建器
      */
-    Builder<T> whereNotNull(String column);
+    Builder<T, K> whereNotNull(String column);
 
     /**
      * exists一个sql
      * @param sql 完整sql
      * @return 查询构建器
      */
-    Builder<T> whereExistsRaw(String sql);
+    Builder<T, K> whereExistsRaw(String sql);
 
     /**
      * exists一个闭包
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T> whereExists(GenerateSqlPart<T> closure);
+    Builder<T, K> whereExists(GenerateSqlPart<T, K> closure);
 
     /**
      * not exists一个闭包
      * @param sql 闭包
      * @return 查询构建器
      */
-    Builder<T> whereNotExistsRaw(String sql);
+    Builder<T, K> whereNotExistsRaw(String sql);
 
     /**
      * not exists一个完整sql
      * @param closure 完整sql
      * @return 查询构建器
      */
-    Builder<T> whereNotExists(GenerateSqlPart<T> closure);
+    Builder<T, K> whereNotExists(GenerateSqlPart<T, K> closure);
 
     /**
      * 比较字段与字段
@@ -168,7 +168,7 @@ public interface Where<T> {
      * @param column2 列2
      * @return 查询构建器
      */
-    Builder<T> whereColumn(String column1, String symbol, String column2);
+    Builder<T, K> whereColumn(String column1, String symbol, String column2);
 
     /**
      * 字段与字段相等
@@ -176,20 +176,20 @@ public interface Where<T> {
      * @param column2 列2
      * @return 查询构建器
      */
-    Builder<T> whereColumn(String column1, String column2);
+    Builder<T, K> whereColumn(String column1, String column2);
 
     /**
      * 且
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T> andWhere(GenerateSqlPart<T> closure);
+    Builder<T, K> andWhere(GenerateSqlPart<T, K> closure);
 
     /**
      * 或
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T> orWhere(GenerateSqlPart<T> closure);
+    Builder<T, K> orWhere(GenerateSqlPart<T, K> closure);
 
 }

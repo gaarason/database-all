@@ -45,7 +45,7 @@ public class Paginate<T> {
     }
 
     @Nullable
-    private static Integer theFrom(List itemList, int currentPage, int perPage) {
+    private Integer theFrom(List<T> itemList, int currentPage, int perPage) {
         if (itemList.isEmpty()) {
             return null;
         }
@@ -53,7 +53,7 @@ public class Paginate<T> {
     }
 
     @Nullable
-    private static Integer theTo(List itemList, int currentPage, int perPage) {
+    private Integer theTo(List<T> itemList, int currentPage, int perPage) {
         if (itemList.isEmpty()) {
             return null;
         }

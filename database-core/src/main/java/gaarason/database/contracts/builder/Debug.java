@@ -1,4 +1,4 @@
 package gaarason.database.contracts.builder;
 
-interface Debug<T> {
+interface Debug<T, K> {
 }

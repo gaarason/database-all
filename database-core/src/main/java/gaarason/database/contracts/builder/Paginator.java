@@ -5,9 +5,9 @@ import gaarason.database.exception.SQLRuntimeException;
 
 /**
  * 分页
- * @param <T>
+ * @param <T, K>
  */
-public interface Paginator<T> {
+public interface Paginator<T, K> {
 
     /**
      * 不包含总数的分页

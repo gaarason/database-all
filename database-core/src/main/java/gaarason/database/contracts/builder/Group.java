@@ -6,36 +6,36 @@ import java.util.List;
 
 /**
  * 分组
- * @param <T>
+ * @param <T, K>
  */
-public interface Group<T> {
+public interface Group<T, K> {
 
     /**
      * 分组
      * @param sqlPart 原生语句
      * @return 查询构造器
      */
-    Builder<T> groupRaw(String sqlPart);
+    Builder<T, K> groupRaw(String sqlPart);
 
     /**
      * 分组
      * @param column 列名
      * @return 查询构造器
      */
-    Builder<T> group(String column);
+    Builder<T, K> group(String column);
 
     /**
      * 分组
      * @param column 列名数组
      * @return 查询构造器
      */
-    Builder<T> group(String... column);
+    Builder<T, K> group(String... column);
 
     /**
      * 分组
      * @param columnList 列名列表
      * @return 查询构造器
      */
-    Builder<T> group(List<String> columnList);
+    Builder<T, K> group(List<String> columnList);
 
 }

@@ -7,12 +7,13 @@ import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * 原生查询
- * @param <T>
+ * @param <T, K>
  */
-public interface Native<T> {
+public interface Native<T, K> {
 
     /**
      * 获取第一条数据, 数据为空时返回null
@@ -22,7 +23,7 @@ public interface Native<T> {
      * @throws SQLRuntimeException 数据库异常
      * @throws EntityNotFoundException 没有数据
      */
-    Record<T> queryOrFail(String sql, Collection<String> parameters)
+    Record<T, K> queryOrFail(String sql, Collection<String> parameters)
         throws SQLRuntimeException, EntityNotFoundException;
 
     /**
@@ -33,7 +34,7 @@ public interface Native<T> {
      * @throws SQLRuntimeException 数据库异常
      */
     @Nullable
-    Record<T> query(String sql, Collection<String> parameters) throws SQLRuntimeException;
+    Record<T, K> query(String sql, Collection<String> parameters) throws SQLRuntimeException;
 
     /**
      * 获取所有数据
@@ -42,7 +43,7 @@ public interface Native<T> {
      * @return 数剧记录
      * @throws SQLRuntimeException 数据库异常
      */
-    RecordList<T> queryList(String sql, Collection<String> parameters) throws SQLRuntimeException;
+    RecordList<T, K> queryList(String sql, Collection<String> parameters) throws SQLRuntimeException;
 
     /**
      * 执行语句
@@ -52,5 +53,23 @@ public interface Native<T> {
      * @throws SQLRuntimeException 数据库异常
      */
     int execute(String sql, Collection<String> parameters) throws SQLRuntimeException;
+
+    /**
+     * 执行语句
+     * @param sql 查询语句
+     * @param parameters 参数绑定列表
+     * @return 自增长主键
+     * @throws SQLRuntimeException 数据库异常
+     */
+    K executeGetId(String sql, Collection<String> parameters) throws SQLRuntimeException;
+
+    /**
+     * 执行语句
+     * @param sql 查询语句
+     * @param parameters 参数绑定列表
+     * @return 自增长主键列表
+     * @throws SQLRuntimeException 数据库异常
+     */
+    List<K> executeGetIds(String sql, Collection<String> parameters) throws SQLRuntimeException;
 
 }

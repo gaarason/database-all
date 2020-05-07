@@ -1,4 +1,4 @@
 package gaarason.database.contracts.builder;
 
-interface Index<T> {
+interface Index<T, K> {
 }

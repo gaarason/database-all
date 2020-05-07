@@ -1,4 +1,4 @@
 package gaarason.database.contracts.builder;
 
-public interface Support<T> {
+public interface Support<T, K> {
 }

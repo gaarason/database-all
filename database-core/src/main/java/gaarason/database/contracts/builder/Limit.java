@@ -4,9 +4,9 @@ import gaarason.database.query.Builder;
 
 /**
  * 限制
- * @param <T>
+ * @param <T, K>
  */
-public interface Limit<T> {
+public interface Limit<T, K> {
 
     /**
      * 查询数量限制
@@ -14,14 +14,14 @@ public interface Limit<T> {
      * @param take   获取数量
      * @return 查询构造器
      */
-    Builder<T> limit(int offset, int take);
+    Builder<T, K> limit(int offset, int take);
 
     /**
      * 查询数量限制
      * @param take 获取数量
      * @return 查询构造器
      */
-    Builder<T> limit(int take);
+    Builder<T, K> limit(int take);
 
 
 }

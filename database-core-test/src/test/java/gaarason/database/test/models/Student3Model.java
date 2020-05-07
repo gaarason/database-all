@@ -8,7 +8,7 @@ import lombok.Data;
 
 import java.util.Date;
 
-public class Student3Model extends Single3Model<Student3Model.Entity> {
+public class Student3Model extends Single3Model<Student3Model.Entity, Integer> {
 
     @Data
     @Table(name = "student")

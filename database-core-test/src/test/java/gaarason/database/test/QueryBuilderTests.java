@@ -96,6 +96,33 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertNotEquals(formatter.format(entity.getUpdatedAt()), formatter.format(entityFirst.getUpdatedAt()));
     }
 
+
+
+    @Test
+    public void 新增_单条记录_并获取数据库自增id() {
+        StudentModel.Entity entity = new StudentModel.Entity();
+//        entity.setId(99);
+        entity.setName("姓名");
+        entity.setAge(Byte.valueOf("13"));
+        entity.setSex(Byte.valueOf("1"));
+        entity.setTeacherId(0);
+        entity.setCreatedAt(new Date(1312312312));
+        entity.setUpdatedAt(new Date(1312312312));
+        Object insert = studentModel.newQuery().insertGetId(entity);
+        Assert.assertEquals(insert, 20);
+
+        StudentModel.Entity entityFirst = studentModel.newQuery().where("id", "20").firstOrFail().toObject();
+        SimpleDateFormat    formatter   = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Assert.assertNotNull(entityFirst);
+        Assert.assertEquals(entity.getId(), entityFirst.getId());
+        Assert.assertEquals(entity.getAge(), entityFirst.getAge());
+        Assert.assertEquals(entity.getName(), entityFirst.getName());
+        Assert.assertEquals(entity.getTeacherId(), entityFirst.getTeacherId());
+        // 这两个字段在entity中标记为不可更新
+        Assert.assertNotEquals(formatter.format(entity.getCreatedAt()), formatter.format(entityFirst.getCreatedAt()));
+        Assert.assertNotEquals(formatter.format(entity.getUpdatedAt()), formatter.format(entityFirst.getUpdatedAt()));
+    }
+
     @Test
     public void 新增_使用list单次新增多条记录() {
         List<StudentModel.Entity> entityList = new ArrayList<>();
@@ -112,7 +139,7 @@ public class QueryBuilderTests extends BaseTests {
         int insert = studentModel.newQuery().insert(entityList);
         Assert.assertEquals(insert, 9901);
 
-        RecordList<StudentModel.Entity> records = studentModel.newQuery()
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
             .whereBetween("id", "300", "350")
             .orderBy("id", OrderBy.DESC)
             .get();
@@ -130,10 +157,10 @@ public class QueryBuilderTests extends BaseTests {
 
         int update2 = studentModel.newQuery().data("name", "vvv").where("id", ">", "3").update();
         Assert.assertEquals(update2, 7);
-        RecordList<StudentModel.Entity> records = studentModel.newQuery().whereRaw("id>3").get();
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().whereRaw("id>3").get();
         Assert.assertEquals(records.size(), 7);
 
-        for (Record<StudentModel.Entity> record : records) {
+        for (Record<StudentModel.Entity, Integer> record : records) {
             Assert.assertEquals(record.getEntity().getName(), "vvv");
         }
     }
@@ -195,7 +222,7 @@ public class QueryBuilderTests extends BaseTests {
         int id = studentModel.newQuery().where("id", "3").forceDelete();
         Assert.assertEquals(id, 1);
 
-        Record<StudentModel.Entity> id1 = studentModel.newQuery().where("id", "3").first();
+        Record<StudentModel.Entity, Integer> id1 = studentModel.newQuery().where("id", "3").first();
         Assert.assertNull(id1);
 
         Assert.assertThrows(ConfirmOperationException.class, () -> {
@@ -205,7 +232,7 @@ public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 查询_单条记录() {
-        Record<StudentModel.Entity> RecordFirst1 =
+        Record<StudentModel.Entity, Integer> RecordFirst1 =
             studentModel.newQuery().select("name").select("id").first();
         log.info("RecordFirst1 : {}", RecordFirst1);
         Assert.assertNotNull(RecordFirst1);
@@ -218,7 +245,7 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertNull(first1.getCreatedAt());
         Assert.assertNull(first1.getUpdatedAt());
 
-        Record<StudentModel.Entity> RecordFirst2 = studentModel.newQuery().select("name", "id",
+        Record<StudentModel.Entity, Integer> RecordFirst2 = studentModel.newQuery().select("name", "id",
             "created_at").first();
         Assert.assertNotNull(RecordFirst2);
         StudentModel.Entity first2 = RecordFirst2.toObject();
@@ -239,11 +266,11 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertNull(first1.getCreatedAt());
         Assert.assertNull(first1.getUpdatedAt());
 
-        Record<StudentModel.Entity> first3 =
+        Record<StudentModel.Entity, Integer> first3 =
             studentModel.newQuery().select("name", "id").where("id", "not found").first();
         Assert.assertNull(first3);
 
-        Record<StudentModel.Entity> RecordFirst5 = studentModel.newQuery().first();
+        Record<StudentModel.Entity, Integer> RecordFirst5 = studentModel.newQuery().first();
         System.out.println(RecordFirst5);
         Assert.assertNotNull(RecordFirst5);
         StudentModel.Entity first5 = RecordFirst5.toObject();
@@ -294,17 +321,17 @@ public class QueryBuilderTests extends BaseTests {
         // 数据库数据有限,此处模拟大数据
         新增_多线程_循环_非entity方式();
         System.out.println("插入数据后的内存: " + r.totalMemory());
-        Builder<StudentModel.Entity> queryBuilder = studentModel.newQuery();
+        Builder<StudentModel.Entity, Integer> queryBuilder = studentModel.newQuery();
         for(int i = 0 ; i < 100 ; i++){
             queryBuilder.unionAll((builder -> builder));
         }
         System.out.println("构造sql后的内存: " + r.totalMemory());
-        RecordList<StudentModel.Entity> records = queryBuilder.get();
+        RecordList<StudentModel.Entity, Integer> records = queryBuilder.get();
         System.out.println("执行sql后的内存: " + r.totalMemory());
         int size = records.size();
         System.out.println("查询结果数量 : "+size);
         StringBuilder temp = new StringBuilder();
-        for (Record<StudentModel.Entity> record : records) {
+        for (Record<StudentModel.Entity, Integer> record : records) {
             // do something
             temp.append(record.toSearch());
         }
@@ -323,7 +350,7 @@ public class QueryBuilderTests extends BaseTests {
         // 数据库数据有限,此处模拟大数据
         新增_多线程_循环_非entity方式();
         System.out.println("插入数据后的内存: " + r.totalMemory());
-        Builder<StudentModel.Entity> queryBuilder = studentModel.newQuery();
+        Builder<StudentModel.Entity, Integer> queryBuilder = studentModel.newQuery();
         for(int i = 0 ; i < 100 ; i++){
             queryBuilder.unionAll((builder -> builder));
         }
@@ -331,7 +358,7 @@ public class QueryBuilderTests extends BaseTests {
         StringBuilder temp = new StringBuilder();
         queryBuilder.dealChunk(2000, records -> {
             // do something
-            for (Record<StudentModel.Entity> record : records) {
+            for (Record<StudentModel.Entity, Integer> record : records) {
                 // do something
                 temp.append(record.toSearch());
             }
@@ -347,7 +374,7 @@ public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 查询_调用mysql中的其他函数() {
-        Record<StudentModel.Entity> entityRecord = studentModel.newQuery()
+        Record<StudentModel.Entity, Integer> entityRecord = studentModel.newQuery()
             .selectFunction("concat_ws", "\"-\",`name`,`id`", "newKey")
             .first();
         Assert.assertNotNull(entityRecord);
@@ -391,7 +418,7 @@ public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 条件_字段之间比较() {
-        Record<StudentModel.Entity> entityRecord = studentModel.newQuery()
+        Record<StudentModel.Entity, Integer> entityRecord = studentModel.newQuery()
             .whereColumn("id", ">", "sex")
             .first();
         Assert.assertNotNull(entityRecord);
@@ -405,7 +432,7 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(first.getCreatedAt().toString(), "2009-03-14 15:11:23.0");
         Assert.assertEquals(first.getUpdatedAt().toString(), "2010-04-24 22:11:03.0");
 
-        Record<StudentModel.Entity> entityRecord2 =
+        Record<StudentModel.Entity, Integer> entityRecord2 =
             studentModel.newQuery().whereColumn("id", "sex").first();
         Assert.assertNotNull(entityRecord2);
         System.out.println(entityRecord2);
@@ -421,7 +448,7 @@ public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 条件_普通条件() {
-        Record<StudentModel.Entity> entityRecord = studentModel.newQuery().where("id", ">", "2").first();
+        Record<StudentModel.Entity, Integer> entityRecord = studentModel.newQuery().where("id", ">", "2").first();
         Assert.assertNotNull(entityRecord);
         System.out.println(entityRecord);
         StudentModel.Entity first = entityRecord.toObject();
@@ -563,7 +590,7 @@ public class QueryBuilderTests extends BaseTests {
         ins.add("1");
         ins.add("2");
         ins.add("3");
-        RecordList<StudentModel.Entity> records = studentModel.newQuery()
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
             .where("age", "!=", "99")
             .whereSubQuery("id", "in", builder -> builder.select("id").whereIn("id", ins))
             .get();
@@ -572,7 +599,7 @@ public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 条件_子查询_字符串() {
-        RecordList<StudentModel.Entity> records = studentModel.newQuery()
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
             .where("age", "!=", "99")
             .whereSubQuery("id", "in", "select id from student where id = 3")
             .get();
@@ -658,7 +685,7 @@ public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 筛选_字段之间比较() {
-        RecordList<StudentModel.Entity> records = studentModel.newQuery()
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
             .havingColumn("age", ">", "sex").group("age", "sex").select("age", "sex")
             .get();
         Assert.assertEquals(records.size(), 5);
@@ -667,7 +694,7 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(first.getAge().intValue(), 6);
         Assert.assertEquals(first.getSex().intValue(), 2);
 
-        RecordList<StudentModel.Entity> records2 = studentModel.newQuery()
+        RecordList<StudentModel.Entity, Integer> records2 = studentModel.newQuery()
             .havingColumn("age", "<", "sex").group("age", "sex").select("age", "sex")
             .get();
         Assert.assertTrue(records2.isEmpty());
@@ -675,7 +702,7 @@ public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 筛选_having() {
-        Record<StudentModel.Entity> entityRecord =
+        Record<StudentModel.Entity, Integer> entityRecord =
             studentModel.newQuery().select("id").group("id").where("id", "<", "3").having("id", ">=", "2").first();
         Assert.assertNotNull(entityRecord);
         System.out.println(entityRecord);
@@ -838,7 +865,7 @@ public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void join() {
-        RecordList<StudentModel.Entity> student_as_t = studentModel.newQuery()
+        RecordList<StudentModel.Entity, Integer> student_as_t = studentModel.newQuery()
             .select("student.*", "t.age as age2")
             .join("student as t", "student.id", "=", "t.age")
             .get();
@@ -869,7 +896,7 @@ public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void union() {
-        Record<StudentModel.Entity> record = studentModel.newQuery()
+        Record<StudentModel.Entity, Integer> record = studentModel.newQuery()
             .union((builder -> builder.where("id", "2")))
             .firstOrFail();
         System.out.println(record);
@@ -878,7 +905,7 @@ public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void unionAll() {
-        Record<StudentModel.Entity> record = studentModel.newQuery()
+        Record<StudentModel.Entity, Integer> record = studentModel.newQuery()
             .unionAll((builder -> builder.where("id", "2")))
             .union((builder -> builder.where("id", "7")))
             .firstOrFail();
@@ -1119,14 +1146,14 @@ public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 原生() {
-        Record<StudentModel.Entity> record = studentModel.newQuery()
+        Record<StudentModel.Entity, Integer> record = studentModel.newQuery()
             .query("select * from student where id=1", new ArrayList<>());
         Assert.assertNotNull(record);
         Assert.assertEquals(record.toObject().getId().intValue(), 1);
 
         List<String> e = new ArrayList<>();
         e.add("2");
-        RecordList<StudentModel.Entity> records = studentModel.newQuery()
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
             .queryList("select * from student where sex=?", e);
         Assert.assertEquals(records.size(), 4);
         Assert.assertEquals(records.get(0).toObject().getId().intValue(), 1);
@@ -1140,7 +1167,7 @@ public class QueryBuilderTests extends BaseTests {
             .execute("insert into `student`(`id`,`name`,`age`,`sex`) values( ? , ? , ? , ? )", e2);
         Assert.assertEquals(execute, 1);
 
-        Record<StudentModel.Entity> query = studentModel.newQuery()
+        Record<StudentModel.Entity, Integer> query = studentModel.newQuery()
             .query("select * from student where sex=12", new ArrayList<>());
         Assert.assertNull(query);
 

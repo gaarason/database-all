@@ -3,7 +3,7 @@ package gaarason.database.contracts.function;
 import gaarason.database.eloquent.Record;
 
 @FunctionalInterface
-public interface FilterRecordAttribute<V> {
+public interface FilterRecordAttribute<T, K> {
 
-    Object filter(Record<V> record);
+    Object filter(Record<T, K> record);
 }

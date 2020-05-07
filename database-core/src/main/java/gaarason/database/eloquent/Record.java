@@ -22,9 +22,9 @@ import java.util.Set;
 
 /**
  * 记录对象
- * @param <T> 数据实体类
+ * @param <T, K> 数据实体类
  */
-public class Record<T> implements Serializable {
+public class Record<T, K> implements Serializable {
 
     /**
      * 元数据
@@ -34,7 +34,7 @@ public class Record<T> implements Serializable {
     /**
      * 数据模型
      */
-    private Model<T> model;
+    private Model<T, K> model;
 
     /**
      * 数据实体类
@@ -68,7 +68,7 @@ public class Record<T> implements Serializable {
      * @param model           数据模型
      * @param stringColumnMap 元数据
      */
-    public Record(Class<T> entityClass, Model<T> model, Map<String, Column> stringColumnMap) {
+    public Record(Class<T> entityClass, Model<T, K> model, Map<String, Column> stringColumnMap) {
         this.entityClass = entityClass;
         this.model = model;
         init(stringColumnMap);
@@ -78,7 +78,7 @@ public class Record<T> implements Serializable {
      * @param entityClass 数据实体类
      * @param model       数据模型
      */
-    public Record(Class<T> entityClass, Model<T> model) {
+    public Record(Class<T> entityClass, Model<T, K> model) {
         this.entityClass = entityClass;
         this.model = model;
         init(new HashMap<>());
@@ -304,7 +304,7 @@ public class Record<T> implements Serializable {
             return false;
         }
         // 执行
-        boolean success = model.newQuery().where(model.primaryKeyName, originalPrimaryKeyValue.toString()).delete() > 0;
+        boolean success = model.newQuery().where(model.primaryKeyColumnName, originalPrimaryKeyValue.toString()).delete() > 0;
         // 成功删除后后,刷新自身属性
         if (success) {
             this.metadataMap = new HashMap<>();
@@ -342,7 +342,7 @@ public class Record<T> implements Serializable {
         }
         // 执行
         boolean success = model.onlyTrashed()
-            .where(model.primaryKeyName, originalPrimaryKeyValue.toString())
+            .where(model.primaryKeyColumnName, originalPrimaryKeyValue.toString())
             .restore() > 0;
         // 成功恢复后,刷新自身属性
         if (success && refresh) {
@@ -357,14 +357,14 @@ public class Record<T> implements Serializable {
      * retrieved
      * @return 执行成功
      */
-    public Record<T> refresh() {
+    public Record<T, K> refresh() {
         // 主键未知
         if (originalPrimaryKeyValue == null) {
             throw new PrimaryKeyNotFoundException();
         }
         // 刷新自身属性
         init(model.withTrashed()
-            .where(model.primaryKeyName, originalPrimaryKeyValue.toString())
+            .where(model.primaryKeyColumnName, originalPrimaryKeyValue.toString())
             .firstOrFail().metadataMap);
         // 响应
         return this;
@@ -382,7 +382,7 @@ public class Record<T> implements Serializable {
         }
         // 执行
         boolean success = model.newQuery().insert(entity) > 0;
-        // 成功插入后后,刷新自身属性
+        // 成功插入后,刷新自身属性
         if (success) {
             selfUpdate(entity, true);
             // aop通知
@@ -408,7 +408,7 @@ public class Record<T> implements Serializable {
         }
         // 执行
         boolean success = model.newQuery()
-            .where(model.primaryKeyName, originalPrimaryKeyValue.toString())
+            .where(model.primaryKeyColumnName, originalPrimaryKeyValue.toString())
             .update(entity) > 0;
         // 成功更新后,刷新自身属性
         if (success) {
@@ -424,7 +424,9 @@ public class Record<T> implements Serializable {
      * 更新自身数据
      */
     private void selfUpdate(T entity, boolean insertType) {
+        // 更新元数据
         selfUpdateMetadataMap(entity, insertType);
+        // 更新相关对象
         this.entity = originalEntity = toObjectWithoutRelationship();
     }
 
@@ -455,7 +457,7 @@ public class Record<T> implements Serializable {
      * 转字符
      * @return 字符
      */
-//    public String toString() {
-//        return entity.toString();
-//    }
+    public String toString() {
+        return entity.toString();
+    }
 }

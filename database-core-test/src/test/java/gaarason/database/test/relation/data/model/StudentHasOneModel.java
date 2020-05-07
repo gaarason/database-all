@@ -7,17 +7,17 @@ import gaarason.database.test.relation.data.model.base.BaseModel;
 import gaarason.database.test.relation.data.pojo.StudentHasOne;
 import gaarason.database.test.relation.data.pojo.Teacher;
 
-public class StudentHasOneModel extends BaseModel<StudentHasOne> {
+public class StudentHasOneModel extends BaseModel<StudentHasOne, Long> {
 
 //    public Teacher teacher(){
 //        return hasOne(TeacherModel.class, "teacher_id", "id");
 //    }
 //
-//    protected <T> T hasOne(Class<? extends Model> modelClass, String idName, String idName2){
+//    protected <T, K> T hasOne(Class<? extends Model> modelClass, String idName, String idName2){
 //
 //        Model model = getModelInstance(modelClass);
 //
-//        Record<T> first = model.newQuery().where(model.getPrimaryKeyName(), "").first();
+//        Record<T, K> first = model.newQuery().where(model.getPrimaryKeyName(), "").first();
 //        return first == null ? null : first.getEntity();
 //    }
 //

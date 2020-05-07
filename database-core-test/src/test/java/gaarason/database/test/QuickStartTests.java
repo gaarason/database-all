@@ -24,7 +24,7 @@ public class QuickStartTests {
      * step 1
      * 定义model
      */
-    public static class TestModel extends Model<TestModel.Inner> {
+    public static class TestModel extends Model<TestModel.Inner, Integer> {
 
         private static ProxyDataSource proxyDataSource = proxyDataSource();
 

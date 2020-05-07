@@ -7,30 +7,30 @@ import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.query.Builder;
 
-public interface Repository<T> extends Eventing<T>, SoftDeleting<T> {
+public interface Repository<T, K> extends Eventing<T, K>, SoftDeleting<T, K> {
     /**
      * 新的查询构造器
      * @return 查询构造器
      */
-    Builder<T> newQuery();
+    Builder<T, K> newQuery();
 
     /**
      * 包含软删除模型
      * @return 查询构造器
      */
-    Builder<T> withTrashed();
+    Builder<T, K> withTrashed();
 
     /**
      * 只获取软删除模型
      * @return 查询构造器
      */
-    Builder<T> onlyTrashed();
+    Builder<T, K> onlyTrashed();
 
     /**
      * 新的记录对象
      * @return 记录对象
      */
-    Record<T> newRecord();
+    Record<T, K> newRecord();
 
     /**
      * 查询全部
@@ -38,7 +38,7 @@ public interface Repository<T> extends Eventing<T>, SoftDeleting<T> {
      * @return
      * @throws SQLRuntimeException
      */
-    RecordList<T> all(String... column) throws SQLRuntimeException;
+    RecordList<T, K> all(String... column) throws SQLRuntimeException;
 
 
     /**
@@ -48,7 +48,7 @@ public interface Repository<T> extends Eventing<T>, SoftDeleting<T> {
      * @throws EntityNotFoundException
      * @throws SQLRuntimeException
      */
-    Record<T> findOrFail(String id) throws EntityNotFoundException, SQLRuntimeException;
+    Record<T, K> findOrFail(String id) throws EntityNotFoundException, SQLRuntimeException;
 
     /**
      * 单个查询
@@ -56,6 +56,6 @@ public interface Repository<T> extends Eventing<T>, SoftDeleting<T> {
      * @return
      */
     @Nullable
-    Record<T> find(String id);
+    Record<T, K> find(String id);
 
 }

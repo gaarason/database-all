@@ -34,17 +34,17 @@ public class SoftDeleteTests extends BaseTests {
         int id = studentModel.newQuery().where("id", "5").delete();
         Assert.assertEquals(id, 1);
 
-        Record<StudentSoftDeleteModel.Entity> record = studentModel.withTrashed().where("id", "5").first();
+        Record<StudentSoftDeleteModel.Entity, Integer> record = studentModel.withTrashed().where("id", "5").first();
         Assert.assertNotNull(record);
         Assert.assertTrue(record.toObject().isDeleted());
 
-        RecordList<StudentSoftDeleteModel.Entity> records = studentModel.onlyTrashed().get();
+        RecordList<StudentSoftDeleteModel.Entity, Integer> records = studentModel.onlyTrashed().get();
         Assert.assertEquals(records.size(), 1);
 
         int restore = studentModel.onlyTrashed().restore();
         Assert.assertEquals(restore, 1);
 
-        Record<StudentSoftDeleteModel.Entity> record1 = studentModel.findOrFail("5");
+        Record<StudentSoftDeleteModel.Entity, Integer> record1 = studentModel.findOrFail("5");
         Assert.assertFalse(record1.toObject().isDeleted());
     }
 
@@ -53,10 +53,10 @@ public class SoftDeleteTests extends BaseTests {
         int id = studentModel.newQuery().where("id", "5").forceDelete();
         Assert.assertEquals(id, 1);
 
-        Record<StudentSoftDeleteModel.Entity> record = studentModel.withTrashed().where("id", "5").first();
+        Record<StudentSoftDeleteModel.Entity, Integer> record = studentModel.withTrashed().where("id", "5").first();
         Assert.assertNull(record);
 
-        RecordList<StudentSoftDeleteModel.Entity> records = studentModel.onlyTrashed().get();
+        RecordList<StudentSoftDeleteModel.Entity, Integer> records = studentModel.onlyTrashed().get();
         Assert.assertEquals(records.size(), 0);
     }
 }

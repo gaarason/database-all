@@ -8,30 +8,30 @@ import java.util.List;
 
 /**
  * 需求字段
- * @param <T>
+ * @param <T, K>
  */
-public interface Select<T> {
+public interface Select<T, K> {
 
     /**
      * 查询字段
      * @param column 列名
      * @return 查询构造器
      */
-    Builder<T> select(String column);
+    Builder<T, K> select(String column);
 
     /**
      * 查询字段
      * @param column 列名数组
      * @return 查询构造器
      */
-    Builder<T> select(String... column);
+    Builder<T, K> select(String... column);
 
     /**
      * 查询字段
      * @param columnList 列名列表
      * @return 查询构造器
      */
-    Builder<T> select(List<String> columnList);
+    Builder<T, K> select(List<String> columnList);
 
     /**
      * 查询字段
@@ -40,7 +40,7 @@ public interface Select<T> {
      * @param alias 字段别名
      * @return 查询构造器
      */
-    Builder<T> selectFunction(String function, String parameter, @Nullable String alias);
+    Builder<T, K> selectFunction(String function, String parameter, @Nullable String alias);
 
     /**
      *
@@ -49,6 +49,6 @@ public interface Select<T> {
      * @param alias 字段别名
      * @return 查询构造器
      */
-    Builder<T> selectFunction(String function, GenerateSqlPart<T> closure, @Nullable String alias);
+    Builder<T, K> selectFunction(String function, GenerateSqlPart<T, K> closure, @Nullable String alias);
 
 }
