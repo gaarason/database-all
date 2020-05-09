@@ -7,7 +7,8 @@ import java.util.List;
 
 /**
  * 条件
- * @param <T, K>
+ * @param <T>
+ * @param <K>
  */
 public interface Where<T, K> {
 

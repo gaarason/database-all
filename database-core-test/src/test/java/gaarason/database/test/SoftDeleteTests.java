@@ -44,7 +44,7 @@ public class SoftDeleteTests extends BaseTests {
         int restore = studentModel.onlyTrashed().restore();
         Assert.assertEquals(restore, 1);
 
-        Record<StudentSoftDeleteModel.Entity, Integer> record1 = studentModel.findOrFail("5");
+        Record<StudentSoftDeleteModel.Entity, Integer> record1 = studentModel.findOrFail(5);
         Assert.assertFalse(record1.toObject().isDeleted());
     }
 

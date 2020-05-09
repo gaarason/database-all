@@ -16,13 +16,14 @@ Eloquent ORM for Java
 * [查询结果集](/document/record.md)
 * [查询构造器](/document/query.md)
 * [生成代码](/document/generate.md)
+* [版本信息](/document/version.md)
 
 
 - 以如下的方式在程序中查询数据
 
 ```java
 // 查询id为4的一条数据
-Student student = studentModel.find("4").toObject();
+Student student = studentModel.find(4).toObject();
 
 // 稍复杂嵌套的语句 select id,name from student where id=3 or(age>11 and id=7 and(id between 4 and 10 and age>11))
 List<Student> Students = studentModel.newQuery().where("id", "3").orWhere(
@@ -88,7 +89,7 @@ public class TestApplicationTests {
 
     @Test
     public void 简单查询() {
-        Record<GeneralModel.Table> first = generalModel.newQuery().from("student").where("id", "3").first();
+        Record<GeneralModel.Table, Object> first = generalModel.newQuery().from("student").where("id", "3").first();
         Assert.assertNotNull(first);
         Map<String, Object> stringObjectMap = first.toMap();
         Assert.assertEquals((long) stringObjectMap.get("id"), 3);

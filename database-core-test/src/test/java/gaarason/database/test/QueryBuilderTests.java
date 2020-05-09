@@ -97,7 +97,6 @@ public class QueryBuilderTests extends BaseTests {
     }
 
 
-
     @Test
     public void 新增_单条记录_并获取数据库自增id() {
         StudentModel.Entity entity = new StudentModel.Entity();
@@ -289,7 +288,7 @@ public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 查询_多条记录() throws InterruptedException {
-        MultiThreadUtil.run(10, 10 , () -> {
+        MultiThreadUtil.run(10, 10, () -> {
             List<StudentModel.Entity> entities1 = studentModel.newQuery()
                 .select("name")
                 .select("id")
@@ -322,14 +321,14 @@ public class QueryBuilderTests extends BaseTests {
         新增_多线程_循环_非entity方式();
         System.out.println("插入数据后的内存: " + r.totalMemory());
         Builder<StudentModel.Entity, Integer> queryBuilder = studentModel.newQuery();
-        for(int i = 0 ; i < 100 ; i++){
+        for (int i = 0; i < 100; i++) {
             queryBuilder.unionAll((builder -> builder));
         }
         System.out.println("构造sql后的内存: " + r.totalMemory());
         RecordList<StudentModel.Entity, Integer> records = queryBuilder.get();
         System.out.println("执行sql后的内存: " + r.totalMemory());
         int size = records.size();
-        System.out.println("查询结果数量 : "+size);
+        System.out.println("查询结果数量 : " + size);
         StringBuilder temp = new StringBuilder();
         for (Record<StudentModel.Entity, Integer> record : records) {
             // do something
@@ -351,7 +350,7 @@ public class QueryBuilderTests extends BaseTests {
         新增_多线程_循环_非entity方式();
         System.out.println("插入数据后的内存: " + r.totalMemory());
         Builder<StudentModel.Entity, Integer> queryBuilder = studentModel.newQuery();
-        for(int i = 0 ; i < 100 ; i++){
+        for (int i = 0; i < 100; i++) {
             queryBuilder.unionAll((builder -> builder));
         }
         System.out.println("构造sql后的内存: " + r.totalMemory());
@@ -392,7 +391,7 @@ public class QueryBuilderTests extends BaseTests {
         Long count0 = studentModel.newQuery().where("sex", "1").group("age").count("id");
         Assert.assertEquals(count0.intValue(), 1);
 
-        Long count1 = studentModel.newQuery().select("id").where("sex", "1").group("id","age").count("id");
+        Long count1 = studentModel.newQuery().select("id").where("sex", "1").group("id", "age").count("id");
         Assert.assertEquals(count1.intValue(), 1);
 
         Long count = studentModel.newQuery().where("sex", "1").count("age");
@@ -758,7 +757,7 @@ public class QueryBuilderTests extends BaseTests {
             builder -> builder.havingNotIn("sex",
                 builder1 -> builder1.select("sex").where("sex", "1")
             )
-        ).group("id","sex").select("id").get().toObjectList();
+        ).group("id", "sex").select("id").get().toObjectList();
         Assert.assertEquals(entityList1.size(), 3);
     }
 
@@ -946,7 +945,7 @@ public class QueryBuilderTests extends BaseTests {
                 StudentModel.Entity entity = studentModel.newQuery().where("id", "1").firstOrFail().toObject();
                 Assert.assertEquals(entity.getName(), "dddddd");
                 throw new RuntimeException("ssss");
-            }, 3);
+            }, 3, true);
         });
 
         StudentModel.Entity entity = studentModel.newQuery().where("id", "1").firstOrFail().toObject();
@@ -972,12 +971,12 @@ public class QueryBuilderTests extends BaseTests {
                                     .toObject();
                                 Assert.assertEquals(entity.getName(), "dddddd");
                                 throw new RuntimeException("业务上抛了个异常");
-                            }, 1);
+                            }, 1, true);
                         } catch (RuntimeException e) {
                         }
-                    }, 1);
-                }, 1);
-            }, 3);
+                    }, 1, true);
+                }, 1, true);
+            }, 3, true);
         });
     }
 
@@ -985,14 +984,14 @@ public class QueryBuilderTests extends BaseTests {
     public void 事物_lock_in_share_mode() {
         studentModel.newQuery().transaction(() -> {
             studentModel.newQuery().where("id", "3").sharedLock().get();
-        }, 3);
+        }, 3, true);
     }
 
     @Test
     public void 事物_for_update() {
         studentModel.newQuery().transaction(() -> {
             studentModel.newQuery().where("id", "3").lockForUpdate().get();
-        }, 3);
+        }, 3, true);
     }
 
     @Test
@@ -1040,7 +1039,11 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertNull(paginate.getTotal());
 
 
-        Paginate<StudentModel.Entity> paginate2 = studentModel.newQuery().where("sex","1").orWhere((builder -> builder.where("sex","2"))).orderBy("id").simplePaginate(2, 3);
+        Paginate<StudentModel.Entity> paginate2 = studentModel.newQuery()
+            .where("sex", "1")
+            .orWhere((builder -> builder.where("sex", "2")))
+            .orderBy("id")
+            .simplePaginate(2, 3);
         System.out.println(paginate2);
         Assert.assertEquals(paginate2.getCurrentPage(), 2);
         Assert.assertNotNull(paginate2.getFrom());
@@ -1050,7 +1053,11 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertNull(paginate2.getLastPage());
         Assert.assertNull(paginate2.getTotal());
 
-        Paginate<StudentModel.Entity> paginate3 = studentModel.newQuery().where("sex","1").orWhere((builder -> builder.where("sex","2"))).orderBy("id").simplePaginate(3, 3);
+        Paginate<StudentModel.Entity> paginate3 = studentModel.newQuery()
+            .where("sex", "1")
+            .orWhere((builder -> builder.where("sex", "2")))
+            .orderBy("id")
+            .simplePaginate(3, 3);
         System.out.println(paginate3);
         Assert.assertEquals(paginate3.getCurrentPage(), 3);
         Assert.assertNotNull(paginate3.getFrom());
@@ -1061,7 +1068,11 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertNull(paginate3.getTotal());
 
 
-        Paginate<StudentModel.Entity> paginate4 = studentModel.newQuery().orderBy("id").where("sex","1").orWhere((builder -> builder.where("sex","2"))).simplePaginate(4, 3);
+        Paginate<StudentModel.Entity> paginate4 = studentModel.newQuery()
+            .orderBy("id")
+            .where("sex", "1")
+            .orWhere((builder -> builder.where("sex", "2")))
+            .simplePaginate(4, 3);
         System.out.println(paginate4);
         Assert.assertEquals(paginate4.getCurrentPage(), 4);
         Assert.assertNotNull(paginate4.getFrom());
@@ -1072,7 +1083,11 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertNull(paginate4.getTotal());
 
 
-        Paginate<StudentModel.Entity> paginate5 = studentModel.newQuery().where("sex","1").orWhere((builder -> builder.where("sex","2"))).orderBy("id").simplePaginate(5, 3);
+        Paginate<StudentModel.Entity> paginate5 = studentModel.newQuery()
+            .where("sex", "1")
+            .orWhere((builder -> builder.where("sex", "2")))
+            .orderBy("id")
+            .simplePaginate(5, 3);
         System.out.println(paginate5);
         Assert.assertEquals(paginate5.getCurrentPage(), 5);
         Assert.assertNull(paginate5.getFrom());
@@ -1088,7 +1103,7 @@ public class QueryBuilderTests extends BaseTests {
     public void 分页_通用分页() {
         Paginate<StudentModel.Entity> paginate =
             studentModel.newQuery().orderBy("id").paginate(1,
-            4);
+                4);
         System.out.println(paginate);
         Assert.assertEquals(paginate.getCurrentPage(), 1);
         Assert.assertNotNull(paginate.getFrom());
@@ -1102,7 +1117,11 @@ public class QueryBuilderTests extends BaseTests {
 
 
         Paginate<StudentModel.Entity> paginate2 =
-            studentModel.newQuery().andWhere((builder -> builder.where("sex","1"))).orWhere((builder -> builder.where("sex","2"))).orderBy("id").paginate(2, 4);
+            studentModel.newQuery()
+                .andWhere((builder -> builder.where("sex", "1")))
+                .orWhere((builder -> builder.where("sex", "2")))
+                .orderBy("id")
+                .paginate(2, 4);
         System.out.println(paginate2);
         Assert.assertEquals(paginate2.getCurrentPage(), 2);
         Assert.assertNotNull(paginate2.getFrom());
@@ -1116,9 +1135,15 @@ public class QueryBuilderTests extends BaseTests {
 
 
         Paginate<StudentModel.Entity> paginate3 =
-            studentModel.newQuery().select("id","name").orderBy("id").where("sex","1").orWhere((builder -> builder.where(
-                "sex",
-            "2"))).group("id","name").paginate(3, 4);
+            studentModel.newQuery()
+                .select("id", "name")
+                .orderBy("id")
+                .where("sex", "1")
+                .orWhere((builder -> builder.where(
+                    "sex",
+                    "2")))
+                .group("id", "name")
+                .paginate(3, 4);
         System.out.println(paginate3);
         Assert.assertEquals(paginate3.getCurrentPage(), 3);
         Assert.assertNotNull(paginate3.getFrom());
@@ -1131,7 +1156,11 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(paginate3.getTotal().intValue(), 1);
 
         // 防止过界
-        Paginate<StudentModel.Entity> paginate4 = studentModel.newQuery().orderBy("id").where("sex","1").orWhere((builder -> builder.where("sex","2"))).paginate(4, 4);
+        Paginate<StudentModel.Entity> paginate4 = studentModel.newQuery()
+            .orderBy("id")
+            .where("sex", "1")
+            .orWhere((builder -> builder.where("sex", "2")))
+            .paginate(4, 4);
         System.out.println(paginate4);
         Assert.assertEquals(paginate4.getCurrentPage(), 4);
         Assert.assertNull(paginate4.getFrom());

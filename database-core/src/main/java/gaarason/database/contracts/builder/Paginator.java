@@ -5,7 +5,8 @@ import gaarason.database.exception.SQLRuntimeException;
 
 /**
  * 分页
- * @param <T, K>
+ * @param <T>
+ * @param <K>
  */
 public interface Paginator<T, K> {
 

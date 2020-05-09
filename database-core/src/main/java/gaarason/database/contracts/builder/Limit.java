@@ -4,7 +4,8 @@ import gaarason.database.query.Builder;
 
 /**
  * 限制
- * @param <T, K>
+ * @param <T>
+ * @param <K>
  */
 public interface Limit<T, K> {
 

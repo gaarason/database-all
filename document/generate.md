@@ -10,6 +10,7 @@ Eloquent ORM for Java
     * [总览](#总览)
     * [非spring](#非spring)
     * [spring](#spring)
+* [版本信息](/document/version.md)
 ## 总览
 
 通过数据库连接信息, 自动生成代码(`entity`,`model`) 
@@ -119,7 +120,7 @@ public class GeneratorTests {
         return new ProxyDataSource(dataSources);
     }
 
-    public static class ToolModel extends Model<ToolModel.Inner> {
+    public static class ToolModel extends Model<ToolModel.Inner, Object> {
         private ProxyDataSource proxyDataSource;
         public ToolModel(ProxyDataSource dataSource) {
             proxyDataSource = dataSource;

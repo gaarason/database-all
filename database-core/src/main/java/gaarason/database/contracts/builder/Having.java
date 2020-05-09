@@ -7,7 +7,8 @@ import java.util.List;
 
 /**
  * 查询后过滤
- * @param <T, K>
+ * @param <T>
+ * @param <K>
  */
 public interface Having<T, K> {
 

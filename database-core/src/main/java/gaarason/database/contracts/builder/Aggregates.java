@@ -2,7 +2,8 @@ package gaarason.database.contracts.builder;
 
 /**
  * 统计
- * @param <T, K>
+ * @param <T>
+ * @param <K>
  */
 public interface Aggregates<T, K> {
 

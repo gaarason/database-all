@@ -11,6 +11,7 @@ import gaarason.database.eloquent.enums.JoinType;
 import gaarason.database.eloquent.enums.OrderBy;
 import gaarason.database.eloquent.enums.SqlType;
 import gaarason.database.exception.EntityNotFoundException;
+import gaarason.database.exception.InsertNotSuccessException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.query.grammars.MySqlGrammar;
 import gaarason.database.utils.EntityUtil;
@@ -434,13 +435,6 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public K insertGetId() throws SQLRuntimeException {
-        String       sql           = grammar.generateSql(SqlType.INSERT);
-        List<String> parameterList = grammar.getParameterList(SqlType.INSERT);
-        return executeGetId(sql, parameterList);
-    }
-
-    @Override
     public int insert(T entity) throws SQLRuntimeException {
         // 获取entity所有有效sql字段
         List<String> columnNameList = EntityUtil.columnNameList(entity, true);
@@ -452,6 +446,21 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
         value(valueList);
         // 执行
         return insert();
+    }
+
+    @Override
+    public int insert(List<T> entityList) throws SQLRuntimeException {
+        // entityList处理
+        beforeBatchInsert(entityList);
+        // 执行
+        return insert();
+    }
+
+    @Override
+    public K insertGetId() throws SQLRuntimeException {
+        String       sql           = grammar.generateSql(SqlType.INSERT);
+        List<String> parameterList = grammar.getParameterList(SqlType.INSERT);
+        return executeGetId(sql, parameterList);
     }
 
     @Override
@@ -470,29 +479,41 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
         EntityUtil.setPrimaryId(entity, primaryId);
         // 返回主键
         return primaryId;
-
     }
 
     @Override
-    public int insert(List<T> entityList) throws SQLRuntimeException {
-        // 获取entity所有有效字段
-        List<String>       columnNameList = EntityUtil.columnNameList(entityList.get(0), true);
-        List<List<String>> valueListList  = new ArrayList<>();
-        for (T entity : entityList) {
-            // 获取entity所有有效字段的值
-            List<String> valueList = EntityUtil.valueList(entity, columnNameList);
-            valueListList.add(valueList);
+    public K insertGetIdOrFail() throws SQLRuntimeException, InsertNotSuccessException {
+        K id = insertGetId();
+        if (id == null) {
+            throw new InsertNotSuccessException();
         }
-        // 字段加入grammar
-        select(columnNameList);
-        // 字段的值加入grammar
-        valueList(valueListList);
-        // 执行
-        return insert();
+        return id;
+    }
+
+    @Override
+    public K insertGetIdOrFail(T entity) throws SQLRuntimeException, InsertNotSuccessException {
+        K id = insertGetId(entity);
+        if (id == null) {
+            throw new InsertNotSuccessException();
+        }
+        return id;
     }
 
     @Override
     public List<K> insertGetIds(List<T> entityList) throws SQLRuntimeException {
+        // entityList处理
+        beforeBatchInsert(entityList);
+        // sql 组装
+        String       sql           = grammar.generateSql(SqlType.INSERT);
+        List<String> parameterList = grammar.getParameterList(SqlType.INSERT);
+        return executeGetIds(sql, parameterList);
+    }
+
+    /**
+     * 批量插入数据, entityList处理
+     * @param entityList 数据实体对象列表
+     */
+    private void beforeBatchInsert(List<T> entityList) {
         // 获取entity所有有效字段
         List<String>       columnNameList = EntityUtil.columnNameList(entityList.get(0), true);
         List<List<String>> valueListList  = new ArrayList<>();
@@ -505,10 +526,6 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
         select(columnNameList);
         // 字段的值加入grammar
         valueList(valueListList);
-        // sql 组装
-        String       sql           = grammar.generateSql(SqlType.INSERT);
-        List<String> parameterList = grammar.getParameterList(SqlType.INSERT);
-        return executeGetIds(sql, parameterList);
     }
 
     @Override
@@ -555,6 +572,10 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
 
     @Override
     public Builder<T, K> value(List<String> valueList) {
+        if(valueList.size() == 0){
+            grammar.pushValue("()");
+            return this;
+        }
         StringBuilder sqlPartBuilder = new StringBuilder("(");
         for (String value : valueList) {
             String stub = FormatUtil.data(value, grammar);

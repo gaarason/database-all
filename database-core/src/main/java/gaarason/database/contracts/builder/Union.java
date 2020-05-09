@@ -5,7 +5,8 @@ import gaarason.database.query.Builder;
 
 /**
  * 结果集连接
- * @param <T, K>
+ * @param <T>
+ * @param <K>
  */
 public interface Union<T, K>{
 

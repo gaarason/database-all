@@ -4,7 +4,8 @@ import gaarason.database.query.Builder;
 
 /**
  * 数据表
- * @param <T, K>
+ * @param <T>
+ * @param <K>
  */
 public interface From<T, K> {
     /**

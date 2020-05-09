@@ -8,7 +8,8 @@ import java.util.List;
 
 /**
  * 需求字段
- * @param <T, K>
+ * @param <T>
+ * @param <K>
  */
 public interface Select<T, K> {
 

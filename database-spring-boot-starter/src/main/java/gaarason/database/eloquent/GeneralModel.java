@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Resource;
 
 @Repository
-public class GeneralModel extends Model<GeneralModel.Table> {
+public class GeneralModel extends Model<GeneralModel.Table, Object> {
 
     @Resource
     private ProxyDataSource proxyDataSource;

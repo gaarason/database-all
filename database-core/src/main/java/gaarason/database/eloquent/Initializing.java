@@ -71,8 +71,9 @@ abstract class Initializing<T, K> implements Repository<T, K> {
                 primaryKeyName = field.getName();
                 // 主键类型检测
                 if (!primaryKeyClass.equals(field.getType())) {
-                    throw new InvalidPrimaryKeyTypeException("The primary key of the entity does not match with the " +
-                        "generic");
+                    throw new InvalidPrimaryKeyTypeException(
+                        "The primary key type [" + field.getType() + "] of the entity does not match with the " +
+                            "generic [" + primaryKeyClass + "]");
                 }
                 break;
             }

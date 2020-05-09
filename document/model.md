@@ -13,6 +13,7 @@ Eloquent ORM for Java
 * [查询结果集](/document/record.md)
 * [查询构造器](/document/query.md)
 * [生成代码](/document/generate.md)
+* [版本信息](/document/version.md)
 ## 总览
 
 数据模型是将数据库操作集中声明的对象, 理解为`表`  
@@ -33,7 +34,12 @@ import gaarason.database.eloquent.Model;
 
 import javax.annotation.Resource;
 
-abstract public class BaseModel<T> extends Model<T> {
+/**
+ * Model基类
+ * @param <T> 实体类
+ * @param <K> 实体类中的主键java类型, 不存在主键时, 可使用 Object
+ */
+abstract public class BaseModel<T, K> extends Model<T, K> {
 
     @Resource(name = "proxyDataSource")
     protected ProxyDataSource dataSource;
@@ -54,10 +60,10 @@ package temp.model;
 
 import temp.model.base.BaseModel;
 import temp.pojo.Student;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
-@Component
-public class StudentModel extends BaseModel<Student> {
+@Repository
+public class StudentModel extends BaseModel<Student, Long> {
 
 }
 
@@ -82,18 +88,18 @@ package temp.model;
 
 import temp.model.base.BaseModel;
 import temp.pojo.Student;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
-@Component
-public class StudentModel extends BaseModel<Student> {
+@Repository
+public class StudentModel extends BaseModel<Student, Long> {
 
     @Override
-    public void retrieved(Record<Entity> entityRecord){
+    public void retrieved(Record<Entity, Long> entityRecord){
         System.out.println("已经从数据库中查询到数据");
     }
     
     @Override
-    public boolean updating(Record<Entity> record){
+    public boolean updating(Record<Entity, Long> record){
         if(record.getEntity().getId() == 9){
             System.out.println("正要修改id为9的数据, 但是拒绝");
             return false;
@@ -115,16 +121,16 @@ package temp.model;
 
 import temp.model.base.BaseModel;
 import temp.pojo.Student;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
-@Component
-public class StudentModel extends BaseModel<Student> {
+@Repository
+public class StudentModel extends BaseModel<Student, Long> {
     /**
      * 全局查询作用域
      * @param builder 查询构造器
      * @return 查询构造器
      */
-    protected Builder<T> apply(Builder<T> builder) {
+    protected Builder<Student, Long> apply(Builder<Student, Long> builder) {
         // return builder->where("type", "2");
         return builder;
     }
@@ -142,10 +148,10 @@ package temp.model;
 
 import temp.model.base.BaseModel;
 import temp.pojo.Student;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
-@Component
-public class StudentModel extends BaseModel<Student> {
+@Repository
+public class StudentModel extends BaseModel<Student, Long> {
 
     /**
      * 是否启用软删除
@@ -159,7 +165,7 @@ public class StudentModel extends BaseModel<Student> {
      * @param builder 查询构造器
      * @return 删除的行数
      */
-    public int delete(Builder<T> builder) {
+    public int delete(Builder<Student, Long> builder) {
         return softDeleting() ? softDelete(builder) : builder.forceDelete();
     }
 
@@ -168,7 +174,7 @@ public class StudentModel extends BaseModel<Student> {
      * @param builder 查询构造器
      * @return 删除的行数
      */
-    public int restore(Builder<T> builder) {
+    public int restore(Builder<Student, Long> builder) {
         return softDeleteRestore(builder);
     }
 
@@ -176,7 +182,7 @@ public class StudentModel extends BaseModel<Student> {
      * 软删除查询作用域(反)
      * @param builder 查询构造器
      */
-    protected void scopeSoftDeleteOnlyTrashed(Builder<T> builder) {
+    protected void scopeSoftDeleteOnlyTrashed(Builder<Student, Long> builder) {
         builder.where("is_deleted", "1");
     }
 
@@ -184,7 +190,7 @@ public class StudentModel extends BaseModel<Student> {
      * 软删除查询作用域(反)
      * @param builder 查询构造器
      */
-    protected void scopeSoftDeleteWithTrashed(Builder<T> builder) {
+    protected void scopeSoftDeleteWithTrashed(Builder<Student, Long> builder) {
 
     }
 
@@ -192,7 +198,7 @@ public class StudentModel extends BaseModel<Student> {
      * 软删除查询作用域
      * @param builder 查询构造器
      */
-    protected void scopeSoftDelete(Builder<T> builder) {
+    protected void scopeSoftDelete(Builder<Student, Long> builder) {
         builder.where("is_deleted", "0");
     }
 
@@ -202,7 +208,7 @@ public class StudentModel extends BaseModel<Student> {
      * @param builder 查询构造器
      * @return 删除的行数
      */
-    protected int softDelete(Builder<T> builder) {
+    protected int softDelete(Builder<Student, Long> builder) {
         return builder.data("is_deleted", "1").update();
     }
 
@@ -211,7 +217,7 @@ public class StudentModel extends BaseModel<Student> {
      * @param builder 查询构造器
      * @return 恢复的行数
      */
-    protected int softDeleteRestore(Builder<T> builder) {
+    protected int softDeleteRestore(Builder<Student, Long> builder) {
         return builder.data("is_deleted", "0").update();
     }
 }

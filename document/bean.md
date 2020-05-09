@@ -14,6 +14,7 @@ Eloquent ORM for Java
 * [查询结果集](/document/record.md)
 * [查询构造器](/document/query.md)
 * [生成代码](/document/generate.md)
+* [版本信息](/document/version.md)
 ## spring
 
 使用 spring boot 管理 bean
@@ -399,7 +400,7 @@ import javax.annotation.Resource;
 import java.util.Date;
 
 @Component
-public class StudentSingle2Model extends Model<StudentSingle2Model.Entity> {
+public class StudentSingle2Model extends Model<StudentSingle2Model.Entity, Integer> {
 
     @Data
     @Table(name = "student")
@@ -446,7 +447,7 @@ public class StudentSingle2Model extends Model<StudentSingle2Model.Entity> {
      * step 1
      * 定义model
      */
-    public static class TestModel extends Model<TestModel.Inner> {
+    public static class TestModel extends Model<TestModel.Inner, Integer> {
 
         private static ProxyDataSource proxyDataSource = proxyDataSource();
 

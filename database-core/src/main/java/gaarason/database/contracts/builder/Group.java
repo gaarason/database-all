@@ -6,7 +6,8 @@ import java.util.List;
 
 /**
  * 分组
- * @param <T, K>
+ * @param <T>
+ * @param <K>
  */
 public interface Group<T, K> {
 

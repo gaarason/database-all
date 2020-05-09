@@ -34,13 +34,12 @@ public class ObjectUtil {
     /**
      * 强制类型转换
      * @param original 原始对象
-     * @param future   目标类型
      * @param <T>      原始类型
      * @param <N>      目标类型
      * @return 目标对象
      */
     @SuppressWarnings("unchecked")
-    public static <T, N> N typeCast(T original, Class<N> future) {
+    public static <T, N> N typeCast(T original) {
         try {
             return (N) original;
         } catch (Throwable e) {

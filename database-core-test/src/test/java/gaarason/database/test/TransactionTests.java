@@ -55,12 +55,12 @@ public class TransactionTests extends BaseTests {
                                 .toObject();
                             Assert.assertEquals(entity.getName(), "dddddd");
                             throw new RuntimeException("业务上抛了个异常");
-                        }, 1);
+                        }, 1, true);
                     } catch (RuntimeException e) {
                     }
-                }, 1);
-            }, 1);
-        }, 3);
+                }, 1, true);
+            }, 1, true);
+        }, 3, true);
     }
 
     @Test
@@ -94,7 +94,7 @@ public class TransactionTests extends BaseTests {
 //                                    e.printStackTrace();
 //                                }
                                 throw new RuntimeException("业务上抛了个异常");
-                            }, 1);
+                            }, 1, true);
                             // 第3层事物 结束
                         } catch (RuntimeException e) {
                             log.info("student3Model 业务上抛了个异常, 成功捕获, 所以student3Model上的事物回滚");
@@ -108,13 +108,13 @@ public class TransactionTests extends BaseTests {
                         Student2Model.Entity id = student2Model.newQuery()
                             .where("id", "4")
                             .firstOrFail().toObject();
-                    }, 1);
+                    }, 1, true);
 
                     //  第2层事物结束
                     StudentModel.Entity id = studentModel.newQuery()
                         .where("id", "9")
                         .firstOrFail().toObject();
-                }, 3);
+                }, 3, true);
 
                 // 第1层事物结束
             } finally {
@@ -148,7 +148,7 @@ public class TransactionTests extends BaseTests {
                     System.out.println("子线程结束 " + Thread.currentThread().getName());
                 }
             });
-        }, 1);
+        }, 1, true);
 
         StudentModel.Entity entity = studentModel.newQuery()
             .where("id", "9")
@@ -175,7 +175,7 @@ public class TransactionTests extends BaseTests {
                         .where("id", "1")
                         .firstOrFail()
                         .toObject();
-                }, 1);
+                }, 1, true);
 
                 try {
                     // 3层事物
@@ -188,7 +188,7 @@ public class TransactionTests extends BaseTests {
                             .toObject();
                         Assert.assertEquals(entity.getName(), "ddddddxx");
                         throw new RuntimeException("业务上抛了个异常");
-                    }, 1);
+                    }, 1, true);
                 } catch (RuntimeException e) {
                     log.info("student3Model 业务上抛了个异常, 成功捕获, 所以student3Model上的事物回滚");
                 }
@@ -202,12 +202,12 @@ public class TransactionTests extends BaseTests {
                     .firstOrFail().toObject();
                 Assert.assertEquals(id.getName(), "testttt");
 
-            }, 1);
+            }, 1, true);
             StudentModel.Entity id = studentModel.newQuery()
                 .where("id", "9")
                 .firstOrFail().toObject();
             Assert.assertEquals(id.getName(), "testttt");
-        }, 3);
+        }, 3, true);
 
         // 事物结束后
         StudentModel.Entity id = studentModel.newQuery()
@@ -247,7 +247,7 @@ public class TransactionTests extends BaseTests {
                                     .toObject();
 //                                Assert.assertEquals(entity.getName(), "dddddd");
                                 throw new RuntimeException("业务上抛了个异常");
-                            }, 1);
+                            }, 1, true);
                         } catch (RuntimeException e) {
                             log.info("student3Model 业务上抛了个异常, 成功捕获, 所以student3Model上的事物回滚");
                         }
@@ -264,12 +264,12 @@ public class TransactionTests extends BaseTests {
                             .firstOrFail().toObject();
 //                        Assert.assertEquals(id.getName(), "testttt");
 
-                    }, 1);
+                    }, 1, true);
                     StudentModel.Entity id = studentModel.newQuery()
                         .where("id", "9")
                         .firstOrFail().toObject();
 //                    Assert.assertEquals(id.getName(), "testttt");
-                }, 3);
+                }, 3, true);
 
                 countDownLatch.countDown();
                 System.out.println("子线程结束");
@@ -284,14 +284,14 @@ public class TransactionTests extends BaseTests {
     public void 事物_lock_in_share_mode() {
         studentModel.newQuery().transaction(() -> {
             studentModel.newQuery().where("id", "3").sharedLock().get();
-        }, 3);
+        }, 3, true);
     }
 
     @Test
     public void 事物_for_update() {
         studentModel.newQuery().transaction(() -> {
             studentModel.newQuery().where("id", "3").lockForUpdate().get();
-        }, 3);
+        }, 3, true);
     }
 
 }

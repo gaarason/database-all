@@ -4,6 +4,7 @@ import gaarason.database.connections.ProxyDataSource;
 import gaarason.database.contracts.Grammar;
 import gaarason.database.contracts.builder.*;
 import gaarason.database.contracts.function.Chunk;
+import gaarason.database.contracts.function.ExecSqlWithinConnection;
 import gaarason.database.contracts.function.GenerateSqlPart;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.Model;
@@ -204,7 +205,7 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
     }
 
     @Override
-    public boolean transaction(Runnable runnable, int maxAttempts) {
+    public boolean transaction(Runnable runnable, int maxAttempts, boolean throwException) {
         for (int currentAttempt = 1; currentAttempt <= maxAttempts; currentAttempt++) {
             begin();
             try {
@@ -214,7 +215,8 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
             } catch (Throwable e) {
                 rollBack();
                 if (!ExceptionUtil.causedByDeadlock(e)) {
-                    throw e;
+                    if (throwException)
+                        throw e;
                 }
             }
         }
@@ -254,17 +256,10 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
     @Override
     public Record<T, K> queryOrFail(String sql, Collection<String> parameters)
         throws SQLRuntimeException, EntityNotFoundException {
-        Connection connection = theConnection(false);
-        try {
-            ResultSet resultSet = executeSql(connection, sql, parameters).executeQuery();
+        return doSomethingInConnection((preparedStatement) -> {
+            ResultSet resultSet = preparedStatement.executeQuery();
             return RecordFactory.newRecord(entityClass, model, resultSet);
-        } catch (SQLException e) {
-            throw new SQLRuntimeException(e.getMessage(), e);
-        } finally {
-            if (!inTransaction()) {
-                connectionClose(connection);
-            }
-        }
+        }, sql, parameters);
     }
 
     @Nullable
@@ -279,80 +274,75 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
 
     @Override
     public RecordList<T, K> queryList(String sql, Collection<String> parameters) throws SQLRuntimeException {
-        Connection connection = theConnection(false);
-        try {
-            ResultSet resultSet = executeSql(connection, sql, parameters).executeQuery();
+        return doSomethingInConnection((preparedStatement) -> {
+            ResultSet resultSet = preparedStatement.executeQuery();
             return RecordFactory.newRecordList(entityClass, model, resultSet);
-        } catch (SQLException e) {
-            throw new SQLRuntimeException(sql, parameters, e.getMessage(), e);
-        } finally {
-            if (!inTransaction()) {
-                connectionClose(connection);
-            }
-        }
+        }, sql, parameters);
     }
 
     @Override
     public int execute(String sql, Collection<String> parameters) throws SQLRuntimeException {
-        Connection connection = theConnection(true);
-        try {
-            return executeSql(connection, sql, parameters).executeUpdate();
-        } catch (SQLException e) {
-            throw new SQLRuntimeException(sql, parameters, e.getMessage(), e);
-        } finally {
-            if (!inTransaction()) {
-                connectionClose(connection);
-            }
-        }
+        return doSomethingInConnection(PreparedStatement::executeUpdate, sql, parameters);
     }
 
     @Override
     public List<K> executeGetIds(String sql, Collection<String> parameters) throws SQLRuntimeException {
-
-        List<K>    ids        = new ArrayList<>();
-        Connection connection = theConnection(true);
-        try {
-            // 参数准备
-            PreparedStatement preparedStatement = executeSql(connection, sql, parameters);
+        return doSomethingInConnection((preparedStatement) -> {
+            List<K> ids = new ArrayList<>();
             // 执行
             int affectedRows = preparedStatement.executeUpdate();
             // 执行成功
-            // 获取键
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
             while (generatedKeys.next()) {
                 ids.add(getGeneratedKeys(generatedKeys));
             }
             generatedKeys.close();
             return ids;
-
-        } catch (SQLException e) {
-            throw new SQLRuntimeException(sql, parameters, e.getMessage(), e);
-        } finally {
-            if (!inTransaction()) {
-                connectionClose(connection);
-            }
-        }
+        }, sql, parameters);
     }
-
 
     @Override
     public K executeGetId(String sql, Collection<String> parameters) throws SQLRuntimeException {
+        return doSomethingInConnection((preparedStatement) -> {
+            // 执行
+            int affectedRows = preparedStatement.executeUpdate();
+            // 执行成功
+            if (affectedRows > 0) {
+                // 获取键
+                ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+                generatedKeys.next();
+                K key = getGeneratedKeys(generatedKeys); //得到第一个键值
+                generatedKeys.close();
+                return key;
+            }
+            return null;
+        }, sql, parameters);
+    }
+
+    /**
+     * 在连接中执行
+     * @param closure    闭包
+     * @param sql        带占位符的sql
+     * @param parameters sql的参数
+     * @param <U>        响应类型
+     * @return 响应
+     * @throws SQLRuntimeException 数据库异常
+     */
+    protected <U> U doSomethingInConnection(ExecSqlWithinConnection<U> closure, String sql,
+                                            Collection<String> parameters) throws SQLRuntimeException {
+        // 获取连接
         Connection connection = theConnection(true);
         try {
             // 参数准备
             PreparedStatement preparedStatement = executeSql(connection, sql, parameters);
             // 执行
-            int affectedRows = preparedStatement.executeUpdate();
-            // 执行成功
-            // 获取键
-            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
-            generatedKeys.next();
-            K key = getGeneratedKeys(generatedKeys); //得到第一个键值
-            generatedKeys.close();
-            return key;
-        } catch (SQLException e) {
+            return closure.exec(preparedStatement);
+        } catch (EntityNotFoundException e) {
+            throw e;
+        } catch (Throwable e) {
             throw new SQLRuntimeException(sql, parameters, e.getMessage(), e);
         } finally {
+            // 关闭连接
             if (!inTransaction()) {
                 connectionClose(connection);
             }
@@ -369,13 +359,15 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
     private K getGeneratedKeys(ResultSet generatedKeys) throws SQLException, PrimaryKeyTypeNotSupportException {
         Class<K> primaryKeyClass = model.getPrimaryKeyClass();
         if (Byte.class.equals(primaryKeyClass) || byte.class.equals(primaryKeyClass)) {
-            return ObjectUtil.typeCast(generatedKeys.getByte(1), primaryKeyClass);
+            return ObjectUtil.typeCast(generatedKeys.getByte(1));
         } else if (Integer.class.equals(primaryKeyClass) || int.class.equals(primaryKeyClass)) {
-            return ObjectUtil.typeCast(generatedKeys.getInt(1), primaryKeyClass);
+            return ObjectUtil.typeCast(generatedKeys.getInt(1));
         } else if (Long.class.equals(primaryKeyClass) || long.class.equals(primaryKeyClass)) {
-            return ObjectUtil.typeCast(generatedKeys.getLong(1), primaryKeyClass);
+            return ObjectUtil.typeCast(generatedKeys.getLong(1));
         } else if (String.class.equals(primaryKeyClass)) {
-            return ObjectUtil.typeCast(generatedKeys.getString(1), primaryKeyClass);
+            return ObjectUtil.typeCast(generatedKeys.getString(1));
+        } else if (Object.class.equals(primaryKeyClass)) {
+            return ObjectUtil.typeCast(generatedKeys.getString(1));
         }
         throw new PrimaryKeyTypeNotSupportException("Primary key type [" + primaryKeyClass + "] not support get " +
             "generated keys yet.");

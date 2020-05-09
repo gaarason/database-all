@@ -171,13 +171,12 @@ public class EntityUtil {
      * @param id     数据库生成的id
      * @throws IllegalAccessRuntimeException 反射赋值异常
      */
-    public static <T, K> void setPrimaryId(T entity, K id) {
+    public static <T, K> void setPrimaryId(T entity, @Nullable K id) {
         Field[] fields = entity.getClass().getDeclaredFields();
         for (Field field : fields) {
             if (isPrimaryField(field, true)) {
                 try {
                     field.setAccessible(true); // 设置些属性是可以访问的
-//                    Class<?> type = field.getType();
                     field.set(entity, id);
                     return;
                 } catch (IllegalArgumentException | IllegalAccessException e) {

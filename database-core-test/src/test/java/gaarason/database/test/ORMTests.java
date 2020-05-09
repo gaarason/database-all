@@ -3,14 +3,13 @@ package gaarason.database.test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import gaarason.database.connections.ProxyDataSource;
 import gaarason.database.eloquent.Record;
+import gaarason.database.eloquent.RecordList;
 import gaarason.database.test.models.StudentORMModel;
 import gaarason.database.test.parent.BaseTests;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
 
 import javax.sql.DataSource;
@@ -30,15 +29,15 @@ public class ORMTests extends BaseTests {
 
     @Test
     public void ORM查询() {
-        Record<StudentORMModel.Entity, Integer> record = studentModel.findOrFail("3");
-        StudentORMModel.Entity         entity = record.getEntity();
+        Record<StudentORMModel.Entity, Integer> record = studentModel.findOrFail(3);
+        StudentORMModel.Entity                  entity = record.getEntity();
         Assert.assertEquals(entity.getAge(), Byte.valueOf("16"));
         Assert.assertEquals(entity.getName(), "小腾");
 
-        Record<StudentORMModel.Entity, Integer> noRecord = studentModel.find("32");
+        Record<StudentORMModel.Entity, Integer> noRecord = studentModel.find(32);
         Assert.assertNull(noRecord);
 
-        Record<StudentORMModel.Entity, Integer> record2 = studentModel.find("9");
+        Record<StudentORMModel.Entity, Integer> record2 = studentModel.find(9);
         Assert.assertNotNull(record2);
         StudentORMModel.Entity entity2 = record2.getEntity();
         Assert.assertEquals(entity2.getAge(), Byte.valueOf("17"));
@@ -48,7 +47,7 @@ public class ORMTests extends BaseTests {
 
     @Test
     public void ORM更新() throws JsonProcessingException {
-        Record<StudentORMModel.Entity, Integer> record = studentModel.findOrFail("8");
+        Record<StudentORMModel.Entity, Integer> record = studentModel.findOrFail(8);
         record.getEntity().setAge(Byte.valueOf("121"));
         boolean save = record.save();
         Assert.assertTrue(save);
@@ -64,7 +63,7 @@ public class ORMTests extends BaseTests {
         System.out.println(s);
 
         // ID 为 9 的不可以更新
-        Record<StudentORMModel.Entity, Integer> record2 = studentModel.findOrFail("9");
+        Record<StudentORMModel.Entity, Integer> record2 = studentModel.findOrFail(9);
         record2.getEntity().setAge(Byte.valueOf("121"));
         boolean save2 = record2.save();
         Assert.assertFalse(save2);
@@ -76,7 +75,7 @@ public class ORMTests extends BaseTests {
     @Test
     public void ORM新增() {
         Record<StudentORMModel.Entity, Integer> record = studentModel.newRecord();
-        StudentORMModel.Entity         entity = record.getEntity();
+        StudentORMModel.Entity                  entity = record.getEntity();
         entity.setId(15);
         entity.setName("小超超");
         entity.setAge(Byte.valueOf("44"));
@@ -87,7 +86,7 @@ public class ORMTests extends BaseTests {
 
         System.out.println(record);
 
-        Record<StudentORMModel.Entity, Integer> r = studentModel.findOrFail("15");
+        Record<StudentORMModel.Entity, Integer> r = studentModel.findOrFail(15);
         Assert.assertEquals(r.toObject().getName(), "小超超");
 
         // 成功新增后自身属性被刷新
@@ -105,13 +104,43 @@ public class ORMTests extends BaseTests {
     }
 
     @Test
+    public void ORM新增_自增id() {
+        Record<StudentORMModel.Entity, Integer> record = studentModel.newRecord();
+        StudentORMModel.Entity                  entity = record.getEntity();
+        entity.setName("小超超");
+        entity.setAge(Byte.valueOf("44"));
+        entity.setSex(Byte.valueOf("1"));
+        entity.setTeacherId(1);
+        boolean save = record.save();
+        Assert.assertTrue(save);
+        System.out.println(record);
+        Record<StudentORMModel.Entity, Integer> r = studentModel.findOrFail(20);
+        Assert.assertEquals(r.toObject().getName(), "小超超");
+        Assert.assertEquals(record.getEntity().getId().intValue(), 20);
+        Assert.assertEquals(entity.getId().intValue(), 20);
+
+        // 成功新增后自身属性被刷新
+        record.getEntity().setTeacherId(33);
+        boolean save1 = record.save();
+        Assert.assertTrue(save1);
+
+        Assert.assertEquals(record.toObject().getName(), "小超超");
+        Assert.assertEquals(record.toObject().getTeacherId().intValue(), 33);
+
+        // 用查询构造器验证
+        Record<StudentORMModel.Entity, Integer> record1 = studentModel.newQuery().where("id", "20").firstOrFail();
+        Assert.assertEquals(record1.toObject().getTeacherId().intValue(), 33);
+        Assert.assertEquals(record1.toObject().getName(), "小超超");
+    }
+
+    @Test
     public void ORM软删除与恢复() {
-        Record<StudentORMModel.Entity, Integer> record = studentModel.findOrFail("6");
+        Record<StudentORMModel.Entity, Integer> record = studentModel.findOrFail(6);
 
         boolean delete = record.delete();
         Assert.assertTrue(delete);
 
-        Record<StudentORMModel.Entity, Integer> record1 = studentModel.find("6");
+        Record<StudentORMModel.Entity, Integer> record1 = studentModel.find(6);
         Assert.assertNull(record1);
 
         boolean restore = record.restore();
@@ -128,15 +157,15 @@ public class ORMTests extends BaseTests {
         int            count          = 100;
         CountDownLatch countDownLatch = new CountDownLatch(count);
         for (int i = 0; i < count; i++) {
-            Record<StudentORMModel.Entity, Integer> record = studentModel.findOrFail("3");
-            StudentORMModel.Entity         entity = record.getEntity();
+            Record<StudentORMModel.Entity, Integer> record = studentModel.findOrFail(3);
+            StudentORMModel.Entity                  entity = record.getEntity();
             Assert.assertEquals(entity.getAge(), Byte.valueOf("16"));
             Assert.assertEquals(entity.getName(), "小腾");
 
-            Record<StudentORMModel.Entity, Integer> noRecord = studentModel.find("32");
+            Record<StudentORMModel.Entity, Integer> noRecord = studentModel.find(32);
             Assert.assertNull(noRecord);
 
-            Record<StudentORMModel.Entity, Integer> record2 = studentModel.find("9");
+            Record<StudentORMModel.Entity, Integer> record2 = studentModel.find(9);
             Assert.assertNotNull(record2);
             StudentORMModel.Entity entity2 = record2.getEntity();
             Assert.assertEquals(entity2.getAge(), Byte.valueOf("17"));

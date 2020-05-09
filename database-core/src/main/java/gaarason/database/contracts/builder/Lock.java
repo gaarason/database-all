@@ -4,7 +4,8 @@ import gaarason.database.query.Builder;
 
 /**
  * 锁
- * @param <T, K>
+ * @param <T>
+ * @param <K>
  */
 public interface Lock<T, K> {
 

@@ -40,22 +40,21 @@ public interface Repository<T, K> extends Eventing<T, K>, SoftDeleting<T, K> {
      */
     RecordList<T, K> all(String... column) throws SQLRuntimeException;
 
-
     /**
      * 单个查询
-     * @param id
-     * @return
-     * @throws EntityNotFoundException
-     * @throws SQLRuntimeException
+     * @param id 主键
+     * @return 结果集
+     * @throws EntityNotFoundException 未找到对象
+     * @throws SQLRuntimeException     数据库异常
      */
-    Record<T, K> findOrFail(String id) throws EntityNotFoundException, SQLRuntimeException;
+    Record<T, K> findOrFail(K id) throws EntityNotFoundException, SQLRuntimeException;
 
     /**
      * 单个查询
-     * @param id
-     * @return
+     * @param id 主键
+     * @return 结果集
      */
     @Nullable
-    Record<T, K> find(String id);
+    Record<T, K> find(K id);
 
 }

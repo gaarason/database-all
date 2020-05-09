@@ -14,6 +14,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @RunWith(SpringRunner.class)
@@ -67,11 +69,26 @@ public class TestApplicationTests {
 
     @Test
     public void 简单查询_通用() {
-        Record<GeneralModel.Table> first = generalModel.newQuery().from("student").where("id", "3").first();
+        Record<GeneralModel.Table, Object> first = generalModel.newQuery().from("student").where("id", "3").first();
         Assert.assertNotNull(first);
         Map<String, Object> stringObjectMap = first.toMap();
         Assert.assertEquals((long) stringObjectMap.get("id"), 3);
         System.out.println(stringObjectMap);
+    }
+
+    @Test
+    public void 简单插入_返回自增id() {
+        List<String> vList = new ArrayList<>();
+        vList.add("aaaccc");
+        Object       id      = generalModel.newQuery().from("student").select("name").value(vList).insertGetId();
+        Assert.assertNotNull(id);
+
+        Object studentId = generalModel.newQuery().from("student").insertGetId();
+        Assert.assertNotNull(studentId);
+
+        Assert.assertEquals(Integer.parseInt(studentId.toString()) - 1, Integer.parseInt(id.toString()));
+
+
     }
 
 }

@@ -265,6 +265,9 @@ public class Record<T, K> implements Serializable {
                 return value.toString();
             case "class java.lang.Integer":
                 return Integer.valueOf(value.toString());
+            case "class java.lang.Long":
+            case "class java.math.BigInteger":
+                return Long.valueOf(value.toString());
             default:
                 return value;
         }
@@ -381,7 +384,7 @@ public class Record<T, K> implements Serializable {
             return false;
         }
         // 执行
-        boolean success = model.newQuery().insert(entity) > 0;
+        boolean success = model.newQuery().insertGetId(entity) != null;
         // 成功插入后,刷新自身属性
         if (success) {
             selfUpdate(entity, true);

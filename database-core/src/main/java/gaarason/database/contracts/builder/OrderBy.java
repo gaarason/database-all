@@ -4,7 +4,8 @@ import gaarason.database.query.Builder;
 
 /**
  * 排序
- * @param <T, K>
+ * @param <T>
+ * @param <K>
  */
 public interface OrderBy<T, K> {
 

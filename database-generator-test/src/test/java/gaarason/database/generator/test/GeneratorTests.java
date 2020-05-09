@@ -83,7 +83,7 @@ public class GeneratorTests {
         return new ProxyDataSource(dataSources);
     }
 
-    public static class ToolModel extends Model<ToolModel.Inner> {
+    public static class ToolModel extends Model<ToolModel.Inner, Object> {
         private ProxyDataSource proxyDataSource;
         public ToolModel(ProxyDataSource dataSource) {
             proxyDataSource = dataSource;

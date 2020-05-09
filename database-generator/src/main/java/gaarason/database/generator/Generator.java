@@ -13,10 +13,7 @@ import javax.sql.DataSource;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class Generator {
 
@@ -136,6 +133,8 @@ public class Generator {
 
     private Model model;
 
+    private ConcurrentHashMap<String, String> tablePrimaryKeyTypeMap = new ConcurrentHashMap<>();
+
     /**
      * 使用无惨可重写
      * @return 数据库操作model
@@ -169,7 +168,7 @@ public class Generator {
         model = new ToolModel(new ProxyDataSource(dataSources));
     }
 
-    protected static class ToolModel extends Model<ToolModel.Inner> {
+    protected static class ToolModel extends Model<ToolModel.Inner, Object> {
         private ProxyDataSource proxyDataSource;
 
         public ToolModel(ProxyDataSource dataSource) {
@@ -234,10 +233,15 @@ public class Generator {
                     // entity写入文件
                     filePutContent(getAbsoluteWriteFilePath(entityNamespace), entityName, entityTemplateStrReplace);
 
+                    // 主键的java类型
+                    String primaryKeyType = Optional.ofNullable(tablePrimaryKeyTypeMap.get(tableName))
+                        .map(Object::toString)
+                        .orElse("Object");
                     // model文件名
                     String modelName = modelName(tableName);
                     // model文件内容
-                    String modelTemplateStrReplace = fillModelTemplate(tableName, modelName, entityName);
+                    String modelTemplateStrReplace = fillModelTemplate(tableName, modelName, entityName,
+                        primaryKeyType);
                     // model写入文件
                     filePutContent(getAbsoluteWriteFilePath(modelNamespace), modelName, modelTemplateStrReplace);
                 }
@@ -271,13 +275,14 @@ public class Generator {
      * @param entityName pojo对象名
      * @return 内容
      */
-    private String fillModelTemplate(String tableName, String modelName, String entityName) {
+    private String fillModelTemplate(String tableName, String modelName, String entityName, String primaryKeyType) {
         Map<String, String> parameterMap = new HashMap<>();
         parameterMap.put("${namespace}", modelNamespace);
         parameterMap.put("${base_model_namespace}", baseModelNamespace);
         parameterMap.put("${base_model_name}", baseModelName);
         parameterMap.put("${entity_namespace}", entityNamespace);
         parameterMap.put("${entity_name}", entityName);
+        parameterMap.put("${primary_key_type}", primaryKeyType);
         parameterMap.put("${model_name}", modelName);
         parameterMap.put("${is_spring_boot}", isSpringBoot ? "import org.springframework.stereotype.Repository;" +
             "\n\n@Repository" : "");
@@ -326,7 +331,7 @@ public class Generator {
 
         for (Map<String, Object> field : fields) {
             // 每个字段的填充
-            String fieldTemplateStrReplace = fillFieldTemplate(field);
+            String fieldTemplateStrReplace = fillFieldTemplate(field, tableName);
             // 追加
             str.append(fieldTemplateStrReplace);
         }
@@ -362,9 +367,10 @@ public class Generator {
     /**
      * 填充单个字段
      * @param fieldStringObjectMap 字段属性
+     * @param tableName            表名
      * @return 内容
      */
-    private String fillFieldTemplate(Map<String, Object> fieldStringObjectMap) {
+    private String fillFieldTemplate(Map<String, Object> fieldStringObjectMap, String tableName) {
 
         System.out.println(fieldStringObjectMap);
         // 判断数据源类型 目前仅支持mysql
@@ -395,6 +401,11 @@ public class Generator {
         mysqlFieldGenerator.setColumnDefault(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_DEFAULT));
 
         Field field = mysqlFieldGenerator.toField(disInsertable, disUpdatable);
+
+        // 暂存主键类型
+        if (field.getPrimary()) {
+            tablePrimaryKeyTypeMap.put(tableName, field.getJavaClassTypeString());
+        }
 
         // 模板替换参数
         Map<String, String> parameterMap = new HashMap<>();
@@ -581,13 +592,6 @@ public class Generator {
      */
     @Nullable
     private static String getValue(Map<String, Object> fieldStringObjectMap, String keyName) {
-
-//        Object o = fieldStringObjectMap.get(keyName);
-//        if(null != o){
-//            return o.toString();
-//        }else return null;
-
         return Optional.ofNullable(fieldStringObjectMap.get(keyName)).map(Object::toString).orElse(null);
-
     }
 }

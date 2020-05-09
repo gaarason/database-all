@@ -194,6 +194,9 @@ public class MySqlGrammar implements Grammar, Serializable {
     }
 
     private String dealValue() {
+        if(valueList.size() == 0){
+            return "()";
+        }
         StringBuilder stringBuilder = new StringBuilder();
         for (String value : valueList) {
             stringBuilder.append(value).append(',');

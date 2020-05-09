@@ -27,7 +27,7 @@ abstract public class Model<T, K> extends SoftDeleting<T, K> {
      * 原始查询构造器
      * @return 原始查询构造器
      */
-    private Builder<T, K> theBuilder() {
+    protected Builder<T, K> theBuilder() {
         // todo 按连接类型,等等信息选择 builder
         ProxyDataSource proxyDataSource = getProxyDataSource();
         return apply(new MySqlBuilder<>(proxyDataSource, this, entityClass));
@@ -73,35 +73,18 @@ abstract public class Model<T, K> extends SoftDeleting<T, K> {
         return new Record<>(entityClass, this);
     }
 
-    /**
-     * 查询全部
-     * @param column
-     * @return
-     * @throws SQLRuntimeException
-     */
+
     public RecordList<T, K> all(String... column) throws SQLRuntimeException {
         return newQuery().select(column).get();
     }
 
-    /**
-     * 单个查询
-     * @param id
-     * @return
-     * @throws EntityNotFoundException
-     * @throws SQLRuntimeException
-     */
-    public Record<T, K> findOrFail(String id) throws EntityNotFoundException, SQLRuntimeException {
-        return newQuery().where(primaryKeyColumnName, id).firstOrFail();
+    public Record<T, K> findOrFail(K id) throws EntityNotFoundException, SQLRuntimeException {
+        return newQuery().where(primaryKeyColumnName, id.toString()).firstOrFail();
     }
 
-    /**
-     * 单个查询
-     * @param id
-     * @return
-     */
     @Nullable
-    public Record<T, K> find(String id) {
-        return newQuery().where(primaryKeyColumnName, id).first();
+    public Record<T, K> find(K id) {
+        return newQuery().where(primaryKeyColumnName, id.toString()).first();
     }
 
 }

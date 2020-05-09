@@ -6,7 +6,8 @@ import java.util.Map;
 
 /**
  * 数据
- * @param <T, K>
+ * @param <T>
+ * @param <K>
  */
 public interface Data<T, K> {
 

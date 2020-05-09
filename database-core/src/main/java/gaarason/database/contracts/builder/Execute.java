@@ -6,13 +6,15 @@ import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
 import gaarason.database.eloquent.enums.SqlType;
 import gaarason.database.exception.EntityNotFoundException;
+import gaarason.database.exception.InsertNotSuccessException;
 import gaarason.database.exception.SQLRuntimeException;
 
 import java.util.List;
 
 /**
  * 执行
- * @param <T, K>
+ * @param <T>
+ * @param <K>
  */
 public interface Execute<T, K> {
 
@@ -61,12 +63,6 @@ public interface Execute<T, K> {
      */
     int insert() throws SQLRuntimeException;
 
-    /**
-     * 插入数据
-     * @return 数据库自增id
-     * @throws SQLRuntimeException 数据库异常
-     */
-    K insertGetId() throws SQLRuntimeException;
 
     /**
      * 插入数据
@@ -77,20 +73,46 @@ public interface Execute<T, K> {
     int insert(T entity) throws SQLRuntimeException;
 
     /**
-     * 插入数据
-     * @param entity 数据实体对象
-     * @return 数据库自增id
-     * @throws SQLRuntimeException 数据库异常
-     */
-    K insertGetId(T entity) throws SQLRuntimeException;
-
-    /**
      * 批量插入数据
      * @param entityList 数据实体对象列表
      * @return 受影响的行数
      * @throws SQLRuntimeException 数据库异常
      */
     int insert(List<T> entityList) throws SQLRuntimeException;
+
+    /**
+     * 插入数据
+     * @return 数据库自增id|null
+     * @throws SQLRuntimeException 数据库异常
+     */
+    @Nullable
+    K insertGetId() throws SQLRuntimeException;
+
+    /**
+     * 插入数据(会将数据库自增id更新到entity)
+     * @param entity 数据实体对象
+     * @return 数据库自增id|null
+     * @throws SQLRuntimeException 数据库异常
+     */
+    @Nullable
+    K insertGetId(T entity) throws SQLRuntimeException;
+
+    /**
+     * 插入数据(会将数据库自增id更新到entity)
+     * @return 数据库自增id
+     * @throws SQLRuntimeException       数据库异常
+     * @throws InsertNotSuccessException 新增失败
+     */
+    K insertGetIdOrFail() throws SQLRuntimeException, InsertNotSuccessException;
+
+    /**
+     * 插入数据(会将数据库自增id更新到entity)
+     * @param entity 数据实体对象
+     * @return 数据库自增id
+     * @throws SQLRuntimeException       数据库异常
+     * @throws InsertNotSuccessException 新增失败
+     */
+    K insertGetIdOrFail(T entity) throws SQLRuntimeException, InsertNotSuccessException;
 
     /**
      * 批量插入数据

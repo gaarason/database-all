@@ -9,6 +9,7 @@ Eloquent ORM for Java
     * [原生语句](#原生语句)
         * [原生查询](#原生查询)
         * [原生更新](#原生更新)
+        * [原生新增](#原生新增)
     * [获取](#获取)
         * [分块处理](#分块处理)
     * [插入](#插入)
@@ -48,6 +49,7 @@ Eloquent ORM for Java
     * [功能](#功能)
         * [随机抽样](#随机抽样)
 * [生成代码](/document/generate.md)
+* [版本信息](/document/version.md)
 
 ## 总览
 
@@ -59,13 +61,13 @@ Eloquent ORM for Java
 
 ```java
 // 查询单条
-Record<Student> record = studentModel.newQuery()
+Record<Student, Long> record = studentModel.newQuery()
             .query("select * from student where id=1", new ArrayList<>());
 
 // 查询多条
 List<String> parameters = new ArrayList<>();
 parameters.add("2");
-RecordList<Student> records = studentModel.newQuery().queryList("select * from student where sex=?", parameters);
+RecordList<Student, Long>, Long> records = studentModel.newQuery().queryList("select * from student where sex=?", parameters);
 ```
 ### 原生更新
 ```java
@@ -77,21 +79,38 @@ parameters.add("1");
 int num = studentModel.newQuery()
     .execute("insert into `student`(`id`,`name`,`age`,`sex`) values( ? , ? , ? , ? )", parameters);
 ```
+### 原生新增
+```java
+
+List<String> parameters = new ArrayList<>();
+parameters.add("134");
+parameters.add("testNAme");
+parameters.add("11");
+parameters.add("1");
+
+// 获取自增id 
+Object id = studentModel.newQuery()
+    .executeGetId("insert into `student`(`id`,`name`,`age`,`sex`) values( ? , ? , ? , ? )", parameters);
+
+// 获取自增id列表
+List<Object> ids = studentModel.newQuery()
+    .executeGetIds("insert into `student`(`id`,`name`,`age`,`sex`) values( ? , ? , ? , ? )", parameters);
+```
 
 ## 获取
 
 ```java
 // select name,id from student limit 1
-Record<Student> record = studentModel.newQuery().select("name").select("id").first();
+Record<Student, Long> record = studentModel.newQuery().select("name").select("id").first();
 
 // select * from student where name="小龙" limit 1
-Record<Student> record = studentModel.newQuery().where("name", "小龙").firstOrFail();
+Record<Student, Long> record = studentModel.newQuery().where("name", "小龙").firstOrFail();
 
 // select * from student where id=9 limit 1
-Record<Student> record = studentModel.findOrFail("9")
+Record<Student, Long> record = studentModel.findOrFail("9")
 
 // select * from student where `age`<9
-RecordList<Student> records = studentModel.where("age","<","9").get();
+RecordList<Student, Long>> records = studentModel.where("age","<","9").get();
 ```
 ### 分块处理
 当要进行大量数据查询时,可以使用分块,他将自动拼接`limit`字段,在闭包中返回`boolean`表示是否进行下一次迭代  
@@ -107,9 +126,11 @@ studentModel.where("age","<","9").dealChunk(2000, records -> {
 ## 插入
 
 ```java
+
+// 推荐
 // 实体赋值插入
 Student student = new Student();
-student.setId(99);
+// student.setId(99); 数据库主键自增的话,可以省略
 student.setName("姓名");
 student.setAge(Byte.valueOf("13"));
 student.setSex(Byte.valueOf("1"));
@@ -117,14 +138,19 @@ student.setTeacherId(0);
 student.setCreatedAt(new Date(1312312312));
 student.setUpdatedAt(new Date(1312312312));
 
+// 返回受影响的行数
 int num = studentModel.newQuery().insert(entity);
 
-// 单个实体操作
+// 返回自增主键, 并对entity进行主键赋值
+Long id = studentModel.newQuery().insertGetIdOrFail(entity);
+
+
 // 推荐
+// 多个实体操作
 List<Student> studentList = new ArrayList<>();
 for (int i = 99; i < 1000; i++) {
     Student student = new Student();
-    entity.setId(i);
+//    entity.setId(i);
     entity.setName("姓名");
     entity.setAge(Byte.valueOf("13"));
     entity.setSex(Byte.valueOf("1"));
@@ -134,7 +160,11 @@ for (int i = 99; i < 1000; i++) {
     entityList.add(entity);
 }
 
+// 返回受影响的行数
 int num = studentModel.newQuery().insert(entityList);
+
+// 返回自增主键列表
+List<Long> ids = studentModel.newQuery().insertGetIds(entity);
 
 // 构造语句插入
  List<String> columnNameList = new ArrayList<>();
@@ -222,35 +252,35 @@ int update2 = studentModel.newQuery().dataIncrement("age", 4).whereRaw("id=4").u
 
 ## select
 ```java
-Record<Student> record = studentModel.newQuery().select("name").select("id").select("id").first();
+Record<Student, Long> record = studentModel.newQuery().select("name").select("id").select("id").first();
 
-Record<Student> record = studentModel.newQuery().select("name","id","created_at").first();
+Record<Student, Long> record = studentModel.newQuery().select("name","id","created_at").first();
 
-Record<Student> record = studentModel.newQuery().selectFunction("concat_ws", "\"-\",`name`,`id`", "newKey").first();
+Record<Student, Long> record = studentModel.newQuery().selectFunction("concat_ws", "\"-\",`name`,`id`", "newKey").first();
 ```
 
 ## where
 ### 字段与值的比较
 where
 ```java
-Record<Student> record = studentModel.newQuery().whereRaw("id<2").first();
-Record<Student> record = studentModel.newQuery().where("id", ">", "2").first();
-Record<Student> record = studentModel.newQuery().where("id", "!=", "2").first();
-Record<Student> record = studentModel.newQuery().where("id", "2").first();
-Record<Student> record = studentModel.newQuery().where("name", "like", "%明%").first();
+Record<Student, Long> record = studentModel.newQuery().whereRaw("id<2").first();
+Record<Student, Long> record = studentModel.newQuery().where("id", ">", "2").first();
+Record<Student, Long> record = studentModel.newQuery().where("id", "!=", "2").first();
+Record<Student, Long> record = studentModel.newQuery().where("id", "2").first();
+Record<Student, Long> record = studentModel.newQuery().where("name", "like", "%明%").first();
 ```
 ### 字段之间的比较
 whereColumn
 ```java
-Record<Student> record = studentModel.newQuery().whereColumn("id", ">", "sex").first();
+Record<Student, Long> record = studentModel.newQuery().whereColumn("id", ">", "sex").first();
 ```
 ### 字段(不)在两值之间
 whereBetween
 whereNotBetween
 ```java
-RecordList<Student> records = studentModel.newQuery().whereBetween("id", "3", "5").get();
+RecordList<Student, Long>> records = studentModel.newQuery().whereBetween("id", "3", "5").get();
 
-RecordList<Student> records = studentModel.newQuery().whereNotBetween("id", "3", "5").get();
+RecordList<Student, Long>> records = studentModel.newQuery().whereNotBetween("id", "3", "5").get();
 ```
 ### 字段(不)在范围内
 whereIn
@@ -261,11 +291,11 @@ idList.add("4");
 idList.add("5");
 idList.add("6");
 idList.add("7");
-RecordList<Student> records = studentModel.newQuery().whereIn("id", idList).get();
+RecordList<Student, Long>> records = studentModel.newQuery().whereIn("id", idList).get();
 
-RecordList<Student> records = studentModel.newQuery().whereNotIn("id", idList).get();
+RecordList<Student, Long>> records = studentModel.newQuery().whereNotIn("id", idList).get();
 
-RecordList<Student> records = studentModel.newQuery().whereIn("id",
+RecordList<Student, Long>> records = studentModel.newQuery().whereIn("id",
     builder -> builder.select("id").where("age", ">=", "11")
 ).andWhere(
     builder -> builder.whereNotIn("sex",
@@ -279,9 +309,9 @@ whereNotIn
 whereNull
 whereNotNull
 ```java
-RecordList<Student> records = studentModel.newQuery().whereNull("id").get();
+RecordList<Student, Long>> records = studentModel.newQuery().whereNull("id").get();
 
-RecordList<Student> records = studentModel.newQuery().whereNotNull("id").get();
+RecordList<Student, Long>> records = studentModel.newQuery().whereNotNull("id").get();
 ```
 
 ### 子查询
@@ -290,12 +320,12 @@ List<Object> ins = new ArrayList<>();
 ins.add("1");
 ins.add("2");
 ins.add("3");
-RecordList<Student> records = studentModel.newQuery()
+RecordList<Student, Long>> records = studentModel.newQuery()
 .where("age", "!=", "99")
 .whereSubQuery("id", "in", builder -> builder.select("id").whereIn("id", ins))
 .get();
 
-RecordList<Student> records = studentModel.newQuery()
+RecordList<Student, Long>> records = studentModel.newQuery()
 .where("age", "!=", "99")
 .whereSubQuery("id", "in", "select id from student where id = 3")
 .get();
@@ -303,14 +333,14 @@ RecordList<Student> records = studentModel.newQuery()
 ### 且
 andWhere
 ```java
-RecordList<Student> records = studentModel.newQuery().where("id", "3").andWhere(
+RecordList<Student, Long>> records = studentModel.newQuery().where("id", "3").andWhere(
     (builder) -> builder.whereRaw("id=4")
 ).get();
 ```
 ### 或
 orWhere
 ```java
-RecordList<Student> records = studentModel.newQuery().where("id", "3").orWhere(
+RecordList<Student, Long>> records = studentModel.newQuery().where("id", "3").orWhere(
     (builder) -> builder.whereRaw("id=4")
 ).get();
 ```
@@ -319,7 +349,7 @@ RecordList<Student> records = studentModel.newQuery().where("id", "3").orWhere(
 whereExists
 whereNotExists
 ```java
-RecordList<Student> records = studentModel.newQuery()
+RecordList<Student, Long>> records = studentModel.newQuery()
 .select("id", "name", "age")
 .whereBetween("id", "1", "2")
 .whereExists(
@@ -336,7 +366,7 @@ RecordList<Student> records = studentModel.newQuery()
 
 ## order
 ```java
-RecordList<Student> records = studentModel.newQuery().orderBy("id", OrderBy.DESC).get();
+RecordList<Student, Long>> records = studentModel.newQuery().orderBy("id", OrderBy.DESC).get();
 ```
 
 ## group
@@ -344,7 +374,7 @@ RecordList<Student> records = studentModel.newQuery().orderBy("id", OrderBy.DESC
 因为在[注册bean](/document/bean.md)时默认设置了`SESSION SQL_MODE`, 所以`gourp`的结果类似`Oracle`
 
 ```java
-RecordList<Student> records = studentModel.newQuery()
+RecordList<Student, Long>> records = studentModel.newQuery()
 .select("id", "age")
 .where("id", "&", "1")
 .orderBy("id", OrderBy.DESC)
@@ -356,7 +386,7 @@ RecordList<Student> records = studentModel.newQuery()
 因为在`select`中使用的别名, 所以在使用`toObject`时无法正确匹配实例属性,因此建议使用`toMap`
 
 ```java
-RecordList<Student> records = studentModel.newQuery()
+RecordList<Student, Long>> records = studentModel.newQuery()
 .select("student.*", "t.age as age2")
 .join("student as t", "student.id", "=", "t.age")
 .get();
@@ -364,16 +394,16 @@ RecordList<Student> records = studentModel.newQuery()
 
 ## limit
 ```java
-RecordList<Student> records = studentModel.newQuery().orderBy("id", OrderBy.DESC).limit(2, 3).get();
+RecordList<Student, Long>> records = studentModel.newQuery().orderBy("id", OrderBy.DESC).limit(2, 3).get();
 
-RecordList<Student> records = studentModel.newQuery().orderBy("id", OrderBy.DESC).limit(2).get();
+RecordList<Student, Long>> records = studentModel.newQuery().orderBy("id", OrderBy.DESC).limit(2).get();
 ```
 ## from
 
 用以指定表名,大多数情况下可以使用默认值
 
 ```java
-RecordList<Student> records = studentModel.newQuery().from("student").get();
+RecordList<Student, Long>> records = studentModel.newQuery().from("student").get();
 ```
 ## data
 ```java
@@ -386,7 +416,7 @@ int num = studentModel.newQuery().data("name","小明").data("age","7").where("i
 ```
 ## union
 ```java
-RecordList<Student> records = studentModel.newQuery()
+RecordList<Student, Long>> records = studentModel.newQuery()
 .unionAll((builder -> builder.where("id", "2")))
 .union((builder -> builder.where("id", "7")))
 .firstOrFail();
@@ -427,18 +457,18 @@ studentModel.newQuery().transaction(() -> {
     // do something
     studentModel.newQuery().where("id", "1").data("name", "dddddd").update();
     StudentSingleModel.Entity entity = studentModel.newQuery().where("id", "1").firstOrFail().toObject();
-}, 3);
+}, 3, true);
 ```
 ### 共享锁与排他锁
 ```java
 studentModel.newQuery().transaction(()->{
     studentModel.newQuery().where("id", "3").sharedLock().get();
-}, 3);
+}, 3, true);
 ```
 ```java
 studentModel.newQuery().transaction(()->{
     studentModel.newQuery().where("id", "3").lockForUpdate().get();
-}, 3);
+}, 3, true);
 ```
 ## 分页
 ### 快速分页

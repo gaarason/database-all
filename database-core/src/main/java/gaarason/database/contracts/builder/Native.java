@@ -11,7 +11,8 @@ import java.util.List;
 
 /**
  * 原生查询
- * @param <T, K>
+ * @param <T>
+ * @param <K>
  */
 public interface Native<T, K> {
 
@@ -58,10 +59,21 @@ public interface Native<T, K> {
      * 执行语句
      * @param sql 查询语句
      * @param parameters 参数绑定列表
-     * @return 自增长主键
+     * @return 自增长主键|null
      * @throws SQLRuntimeException 数据库异常
      */
+    @Nullable
     K executeGetId(String sql, Collection<String> parameters) throws SQLRuntimeException;
+
+//    /**
+//     * 执行语句
+//     * @param sql 查询语句
+//     * @param parameters 参数绑定列表
+//     * @return 自增长主键
+//     * @throws SQLRuntimeException 数据库异常
+//     * @throws SQLRuntimeException 数据库异常
+//     */
+//    K executeGetIdOrFail(String sql, Collection<String> parameters) throws SQLRuntimeException;
 
     /**
      * 执行语句

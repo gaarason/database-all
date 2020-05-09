@@ -8,7 +8,7 @@ import javax.annotation.Resource;\n
 import java.util.Collection;\n
 \n
 @Slf4j\n
-abstract public class ${model_name}<T> extends Model<T> {\n
+abstract public class ${model_name}<T, K> extends Model<T, K> {\n
 \n
     // todo\n
     @Resource(name = "proxyDataSource")\n
