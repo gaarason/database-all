@@ -4,6 +4,11 @@ import gaarason.database.eloquent.Record;
 
 import java.util.Collection;
 
+/**
+ * 事件
+ * @param <T> 实体类
+ * @param <K> 主键类型
+ */
 public interface Eventing<T, K> {
 
     /**

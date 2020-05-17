@@ -15,6 +15,7 @@ Eloquent ORM for Java
 * [数据模型](/document/model.md)
 * [查询结果集](/document/record.md)
 * [查询构造器](/document/query.md)
+* [关联关系](/document/relationship.md)
 * [生成代码](/document/generate.md)
 * [版本信息](/document/version.md)
 

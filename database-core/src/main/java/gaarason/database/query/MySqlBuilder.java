@@ -17,10 +17,7 @@ import gaarason.database.query.grammars.MySqlGrammar;
 import gaarason.database.utils.EntityUtil;
 import gaarason.database.utils.FormatUtil;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class MySqlBuilder<T, K> extends Builder<T, K> {
 
@@ -65,7 +62,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereIn(String column, List<Object> valueList) {
+    public Builder<T, K> whereIn(String column, Collection<Object> valueList) {
         String sqlPart = FormatUtil.column(column) + "in" + FormatUtil.bracket(formatValue(valueList));
         return whereRaw(sqlPart);
     }
@@ -83,7 +80,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereNotIn(String column, List<Object> valueList) {
+    public Builder<T, K> whereNotIn(String column, Collection<Object> valueList) {
         String sqlPart = FormatUtil.column(column) + "not in" + FormatUtil.bracket(formatValue(valueList));
         return whereRaw(sqlPart);
     }
@@ -192,7 +189,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingIn(String column, List<Object> valueList) {
+    public Builder<T, K> havingIn(String column, Collection<Object> valueList) {
         String sqlPart = FormatUtil.column(column) + "in" + FormatUtil.bracket(formatValue(valueList));
         return havingRaw(sqlPart);
     }
@@ -210,7 +207,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingNotIn(String column, List<Object> valueList) {
+    public Builder<T, K> havingNotIn(String column, Collection<Object> valueList) {
         String sqlPart = FormatUtil.column(column) + "not in" + FormatUtil.bracket(formatValue(valueList));
         return havingRaw(sqlPart);
     }
@@ -323,7 +320,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> select(List<String> columnList) {
+    public Builder<T, K> select(Collection<String> columnList) {
         for (String column : columnList) {
             select(column);
         }
@@ -394,17 +391,11 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> group(List<String> columnList) {
+    public Builder<T, K> group(Collection<String> columnList) {
         for (String column : columnList) {
             group(column);
         }
         return this;
-    }
-
-    @Override
-    public Record<T, K> firstOrFail() throws SQLRuntimeException, EntityNotFoundException {
-        limit(1);
-        return querySql();
     }
 
     @Override
@@ -415,13 +406,28 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    @Nullable
+    public Record<T, K> find(K id) throws SQLRuntimeException {
+        return where(model.getPrimaryKeyColumnName(), id.toString()).first();
+    }
+
+    @Override
+    public Record<T, K> findOrFail(K id) throws EntityNotFoundException, SQLRuntimeException {
+        return where(model.getPrimaryKeyColumnName(), id.toString()).firstOrFail();
+    }
+
+    @Override
     public Record<T, K> first() throws SQLRuntimeException {
         try {
             return firstOrFail();
         } catch (EntityNotFoundException e) {
             return null;
         }
+    }
+
+    @Override
+    public Record<T, K> firstOrFail() throws SQLRuntimeException, EntityNotFoundException {
+        limit(1);
+        return querySql();
     }
 
     @Override
@@ -566,13 +572,13 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
      * @param valueList 参数
      * @return 参数占位符?
      */
-    private String formatValue(List<Object> valueList) {
+    private String formatValue(Collection<Object> valueList) {
         return FormatUtil.value(valueList, grammar);
     }
 
     @Override
     public Builder<T, K> value(List<String> valueList) {
-        if(valueList.size() == 0){
+        if (valueList.size() == 0) {
             grammar.pushValue("()");
             return this;
         }

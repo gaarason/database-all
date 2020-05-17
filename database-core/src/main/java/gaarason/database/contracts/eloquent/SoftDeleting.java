@@ -2,6 +2,11 @@ package gaarason.database.contracts.eloquent;
 
 import gaarason.database.query.Builder;
 
+/**
+ * 软删除
+ * @param <T> 实体类
+ * @param <K> 主键类型
+ */
 public interface SoftDeleting<T, K> {
 
     /**

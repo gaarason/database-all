@@ -3,7 +3,7 @@ package gaarason.database.contracts.builder;
 import gaarason.database.contracts.function.GenerateSqlPart;
 import gaarason.database.query.Builder;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * 条件
@@ -60,7 +60,7 @@ public interface Where<T, K> {
      * @param valueList 值所在的list
      * @return 查询构建器
      */
-    Builder<T, K> whereIn(String column, List<Object> valueList);
+    Builder<T, K> whereIn(String column, Collection<Object> valueList);
 
     /**
      * 列值在范围内(子查询)
@@ -84,7 +84,7 @@ public interface Where<T, K> {
      * @param valueList 值所在的list
      * @return 查询构建器
      */
-    Builder<T, K> whereNotIn(String column, List<Object> valueList);
+    Builder<T, K> whereNotIn(String column, Collection<Object> valueList);
 
     /**
      * 列值不在范围内(子查询)

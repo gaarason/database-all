@@ -2,16 +2,26 @@ package gaarason.database.eloquent;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import gaarason.database.contracts.function.GenerateSqlPart;
+import gaarason.database.contracts.function.RelationshipRecordWith;
+import gaarason.database.contracts.record.FriendlyORM;
+import gaarason.database.contracts.record.OperationORM;
+import gaarason.database.contracts.record.RelationshipORM;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.annotations.*;
-import gaarason.database.eloquent.relations.SubQuery;
+import gaarason.database.eloquent.relations.BelongsToManyQuery;
+import gaarason.database.eloquent.relations.BelongsToQuery;
+import gaarason.database.eloquent.relations.HasManyQuery;
+import gaarason.database.eloquent.relations.HasOneQuery;
 import gaarason.database.exception.EntityNewInstanceException;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.TypeNotSupportedException;
 import gaarason.database.support.Column;
 import gaarason.database.utils.EntityUtil;
+import gaarason.database.utils.ObjectUtil;
 import gaarason.database.utils.StringUtil;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -22,18 +32,21 @@ import java.util.Set;
 
 /**
  * 记录对象
- * @param <T, K> 数据实体类
+ * @param <T> 实体类
+ * @param <K> 主键类型
  */
-public class Record<T, K> implements Serializable {
+public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, RelationshipORM<T, K>, Serializable {
 
     /**
-     * 元数据
+     * 本表元数据
      */
+    @Getter
     private Map<String, Column> metadataMap;
 
     /**
      * 数据模型
      */
+    @Getter
     private Model<T, K> model;
 
     /**
@@ -56,14 +69,20 @@ public class Record<T, K> implements Serializable {
      * 主键值
      */
     @Nullable
-    private Object originalPrimaryKeyValue;
+    @Setter
+    Object originalPrimaryKeyValue;
 
     /**
      * 是否已经绑定具体的数据
      */
     private boolean hasBind;
 
+    Map<String, GenerateSqlPart<?, ?>> relationBuilderMap = new HashMap<>();
+
+    Map<String, RelationshipRecordWith<?, ?>> relationRecordMap = new HashMap<>();
+
     /**
+     * 根据查询结果集生成
      * @param entityClass     数据实体类
      * @param model           数据模型
      * @param stringColumnMap 元数据
@@ -75,6 +94,7 @@ public class Record<T, K> implements Serializable {
     }
 
     /**
+     * 凭空生成
      * @param entityClass 数据实体类
      * @param model       数据模型
      */
@@ -172,15 +192,15 @@ public class Record<T, K> implements Serializable {
      * @param attachedRelationship 是否查询关联关系
      * @return 实体对象
      */
-    private <V> V toObject(Class<V> entityClass, Map<String, Column> stringColumnMap, boolean attachedRelationship)
+    <V> V toObject(Class<V> entityClass, Map<String, Column> stringColumnMap, boolean attachedRelationship)
         throws EntityNewInstanceException {
         Field[] fields = entityClass.getDeclaredFields();
         try {
             V entity = entityClass.newInstance();
-            // 普通字段赋值
+            // 普通字段赋值, 主键赋值
             fieldAssignment(fields, stringColumnMap, entity);
             // 关联关系查询&赋值
-            if (attachedRelationship) {
+            if (relationBuilderMap.size() > 0 && attachedRelationship) {
                 fieldRelationAssignment(fields, stringColumnMap, entity);
             }
             return entity;
@@ -205,7 +225,7 @@ public class Record<T, K> implements Serializable {
             }
             field.setAccessible(true); // 设置属性是可访问
             try {
-                Object value = columnFill(field, column.getValue());
+                Object value = EntityUtil.columnFill(field, column.getValue());
                 field.set(entity, value);
                 // 主键值记录
                 if (field.isAnnotationPresent(Primary.class)) {
@@ -226,17 +246,27 @@ public class Record<T, K> implements Serializable {
     private <V> void fieldRelationAssignment(Field[] fields, Map<String, Column> stringColumnMap, V entity)
         throws TypeNotSupportedException {
         for (Field field : fields) {
+            // 获取关系的预处理
+            GenerateSqlPart        generateSqlPart        = relationBuilderMap.get(field.getName());
+            RelationshipRecordWith relationshipRecordWith = relationRecordMap.get(field.getName());
+            if (generateSqlPart == null || relationshipRecordWith == null) {
+                continue;
+            }
             field.setAccessible(true);
             Object relationshipEntity;
             // 关联关系查询&赋值
             if (field.isAnnotationPresent(HasOne.class)) {
-                relationshipEntity = SubQuery.dealHasOne(field, stringColumnMap);
+                relationshipEntity = HasOneQuery.dealSingle(field, stringColumnMap, generateSqlPart,
+                    relationshipRecordWith);
             } else if (field.isAnnotationPresent(HasMany.class)) {
-                relationshipEntity = SubQuery.dealHasMany(field, stringColumnMap);
+                relationshipEntity = HasManyQuery.dealSingle(field, stringColumnMap, generateSqlPart,
+                    relationshipRecordWith);
             } else if (field.isAnnotationPresent(BelongsToMany.class)) {
-                relationshipEntity = SubQuery.dealBelongsToMany(field, stringColumnMap);
+                relationshipEntity = BelongsToManyQuery.dealSingle(field, stringColumnMap, generateSqlPart,
+                    relationshipRecordWith);
             } else if (field.isAnnotationPresent(BelongsTo.class)) {
-                relationshipEntity = SubQuery.dealBelongsTo(field, stringColumnMap);
+                relationshipEntity = BelongsToQuery.dealSingle(field, stringColumnMap, generateSqlPart,
+                    relationshipRecordWith);
             } else {
                 continue;
             }
@@ -245,31 +275,6 @@ public class Record<T, K> implements Serializable {
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 throw new TypeNotSupportedException(e.getMessage());
             }
-        }
-    }
-
-    /**
-     * 用数据库字段填充类属性
-     * @param field 属性
-     * @param value 值
-     * @return 数据库字段值, 且对应实体entity的数据类型
-     */
-    @Nullable
-    private static Object columnFill(Field field, @Nullable Object value) {
-        if (value == null)
-            return null;
-        switch (field.getType().toString()) {
-            case "class java.lang.Byte":
-                return Byte.valueOf(value.toString());
-            case "class java.lang.String":
-                return value.toString();
-            case "class java.lang.Integer":
-                return Integer.valueOf(value.toString());
-            case "class java.lang.Long":
-            case "class java.math.BigInteger":
-                return Long.valueOf(value.toString());
-            default:
-                return value;
         }
     }
 
@@ -293,6 +298,48 @@ public class Record<T, K> implements Serializable {
     }
 
     /**
+     * 新增或者更新(关联关系)
+     * @param propertyName 关联关系属性 eg: teacher.student.id
+     * @return 执行成功
+     */
+//    public boolean save(String propertyName) {
+//        // 检测入参, 主要是多级检测
+//        if (!ObjectUtil.checkProperties(model.getEntityClass(), propertyName)) {
+//            throw new TypeNotSupportedException(propertyName);
+//        }
+//
+//        // 属性上的注解分析, 分析出关联关系类型
+//
+//        // 多级则开启事物, 依次执行
+//
+//        // todo
+//        return true;
+//    }
+
+    @Override
+    public Record<T, K> with(String column) {
+        return with(column, (builder) -> builder);
+    }
+
+    @Override
+    public <TO, KO> Record<T, K> with(String column, GenerateSqlPart<TO, KO> builderClosure) {
+        return with(column, builderClosure, (record) -> record);
+    }
+
+    @Override
+    public <TO, KO> Record<T, K> with(String column, GenerateSqlPart<TO, KO> builderClosure,
+                                      RelationshipRecordWith<TO, KO> recordClosure) {
+        // 效验参数
+        if (ObjectUtil.checkProperties(model.getEntityClass(), column)) {
+            relationBuilderMap.put(column, builderClosure);
+            relationRecordMap.put(column, recordClosure);
+
+        } else
+            throw new RuntimeException();
+        return this;
+    }
+
+    /**
      * 删除
      * deleting -> deleted
      * @return 执行成功
@@ -307,7 +354,9 @@ public class Record<T, K> implements Serializable {
             return false;
         }
         // 执行
-        boolean success = model.newQuery().where(model.primaryKeyColumnName, originalPrimaryKeyValue.toString()).delete() > 0;
+        boolean success = model.newQuery()
+            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
+            .delete() > 0;
         // 成功删除后后,刷新自身属性
         if (success) {
             this.metadataMap = new HashMap<>();
@@ -332,6 +381,7 @@ public class Record<T, K> implements Serializable {
     /**
      * 恢复
      * restoring -> restored
+     * @param refresh 是否刷新自身
      * @return 执行成功
      */
     public boolean restore(boolean refresh) {
@@ -345,7 +395,7 @@ public class Record<T, K> implements Serializable {
         }
         // 执行
         boolean success = model.onlyTrashed()
-            .where(model.primaryKeyColumnName, originalPrimaryKeyValue.toString())
+            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
             .restore() > 0;
         // 成功恢复后,刷新自身属性
         if (success && refresh) {
@@ -367,7 +417,7 @@ public class Record<T, K> implements Serializable {
         }
         // 刷新自身属性
         init(model.withTrashed()
-            .where(model.primaryKeyColumnName, originalPrimaryKeyValue.toString())
+            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
             .firstOrFail().metadataMap);
         // 响应
         return this;
@@ -411,7 +461,7 @@ public class Record<T, K> implements Serializable {
         }
         // 执行
         boolean success = model.newQuery()
-            .where(model.primaryKeyColumnName, originalPrimaryKeyValue.toString())
+            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
             .update(entity) > 0;
         // 成功更新后,刷新自身属性
         if (success) {

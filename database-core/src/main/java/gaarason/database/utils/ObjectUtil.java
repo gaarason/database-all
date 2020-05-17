@@ -1,12 +1,20 @@
 package gaarason.database.utils;
 
+import com.sun.tools.javac.util.List;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.TypeCastException;
+import gaarason.database.exception.TypeNotSupportedException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 
 public class ObjectUtil {
 
@@ -44,6 +52,42 @@ public class ObjectUtil {
             return (N) original;
         } catch (Throwable e) {
             throw new TypeCastException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 属性是否在类中存在(多层级)
+     * 集合类型的属性,将会使用第一个泛型类型
+     * @param detectedClass     待检测的类
+     * @param multipleAttribute 检测的属性 eg: teacher.student.id
+     * @return 是否存在
+     */
+    public static boolean checkProperties(Class<?> detectedClass, String multipleAttribute) {
+        String[] attrArr = multipleAttribute.split("\\.");
+        try {
+            Class<?> tempClass = detectedClass;
+            for (String attr : attrArr) {
+                Field field = tempClass.getDeclaredField(attr);
+
+                tempClass = field.getType();
+                boolean             contains  =
+                    new ArrayList<>(Arrays.asList(tempClass.getInterfaces())).contains(Collection.class);
+                // 如果是集合类型, 那么使用泛型对象
+                if (contains) {
+                    Type genericType = field.getGenericType();
+                    // 如果是泛型
+                    if (genericType instanceof ParameterizedType) {
+                        ParameterizedType pt = (ParameterizedType) genericType;
+                        // 得到泛型里的第一个class类型对象
+                        tempClass = (Class<?>) pt.getActualTypeArguments()[0];
+                    }
+                }
+            }
+            return true;
+        } catch (NoSuchFieldException e) {
+            return false;
+        } catch (Exception e) {
+            throw new TypeNotSupportedException(e.getMessage());
         }
     }
 }

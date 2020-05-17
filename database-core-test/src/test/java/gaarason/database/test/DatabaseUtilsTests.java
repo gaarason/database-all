@@ -1,21 +1,15 @@
 package gaarason.database.test;
 
-import gaarason.database.eloquent.enums.OrderBy;
-import gaarason.database.test.models.StudentModel;
+import gaarason.database.test.relation.data.pojo.TeacherHasMany;
 import gaarason.database.test.utils.MultiThreadUtil;
-import gaarason.database.utils.ExceptionUtil;
-import gaarason.database.utils.FormatUtil;
-import gaarason.database.utils.SnowFlakeIdUtil;
-import gaarason.database.utils.StringUtil;
+import gaarason.database.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
@@ -101,7 +95,28 @@ public class DatabaseUtilsTests {
         ArrayList<Long> listWithoutDuplicates = new ArrayList<>(hashSet);
         Assert.assertEquals("存在重复的id", ids.size(), listWithoutDuplicates.size());
         System.out.println("没有重复id");
-
-
     }
+
+    @Test
+    public void testCheckProperties(){
+        boolean student = ObjectUtil.checkProperties(TeacherHasMany.class, "student");
+        Assert.assertFalse(student);
+
+        boolean o = ObjectUtil.checkProperties(TeacherHasMany.class, "students");
+        Assert.assertTrue(o);
+
+        boolean o1 = ObjectUtil.checkProperties(TeacherHasMany.class, "students.teacherId");
+        Assert.assertTrue(o1);
+
+        boolean o2 = ObjectUtil.checkProperties(TeacherHasMany.class, "students.teacher.age");
+        Assert.assertTrue(o2);
+
+        boolean o3 = ObjectUtil.checkProperties(TeacherHasMany.class, "students.teacher.age2");
+        Assert.assertFalse(o3);
+
+        boolean o4 = ObjectUtil.checkProperties(TeacherHasMany.class, "students.teacher.students.teacher.students" +
+            ".teacher.id");
+        Assert.assertTrue(o4);
+    }
+
 }

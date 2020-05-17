@@ -34,8 +34,6 @@ public interface Grammar {
 
     void pushUnion(String something, String unionType);
 
-    String generateSql(SqlType sqlType);
-
     void pushWhereParameter(String value);
 
     void pushDataParameter(String value);
@@ -43,6 +41,8 @@ public interface Grammar {
     List<String> getParameterList(SqlType sqlType);
 
     boolean hasWhere();
+
+    String generateSql(SqlType sqlType);
 
     /**
      * 在统计时,需要剔除一些项目,eg: order by , select

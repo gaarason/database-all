@@ -12,6 +12,7 @@ Eloquent ORM for Java
         * [软删除](#软删除)
 * [查询结果集](/document/record.md)
 * [查询构造器](/document/query.md)
+* [关联关系](/document/relationship.md)
 * [生成代码](/document/generate.md)
 * [版本信息](/document/version.md)
 ## 总览
@@ -140,7 +141,7 @@ public class StudentModel extends BaseModel<Student, Long> {
 
 ### 软删除
 
-- 软删除相关实现, 重写 `gaarason.database.eloquent.SoftDeleting`的相关方法  
+- 软删除相关实现, 重写 `gaarason.database.eloquent.repository.BaseSoftDeleting`的相关方法  
 - 开启软删除, 重写`softDeleting`方法结果为`true`
 
 ```java

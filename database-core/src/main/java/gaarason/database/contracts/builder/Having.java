@@ -3,7 +3,7 @@ package gaarason.database.contracts.builder;
 import gaarason.database.contracts.function.GenerateSqlPart;
 import gaarason.database.query.Builder;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * 查询后过滤
@@ -42,12 +42,12 @@ public interface Having<T, K> {
      * @param valueList 值所在的list
      * @return 查询构建器
      */
-    Builder<T, K> havingIn(String column, List<Object> valueList);
+    Builder<T, K> havingIn(String column, Collection<Object> valueList);
 
     /**
      * 列值在范围内(子查询)
-     * @param column  列名
-     * @param sql 完整sql eg:select id from student having age>10
+     * @param column 列名
+     * @param sql    完整sql eg:select id from student having age>10
      * @return 查询构建器
      */
     Builder<T, K> havingInRaw(String column, String sql);
@@ -66,12 +66,12 @@ public interface Having<T, K> {
      * @param valueList 值所在的list
      * @return 查询构建器
      */
-    Builder<T, K> havingNotIn(String column, List<Object> valueList);
+    Builder<T, K> havingNotIn(String column, Collection<Object> valueList);
 
     /**
      * 列值不在范围内(子查询)
-     * @param column  列名
-     * @param sql 完整sql eg:select id from student having age>10
+     * @param column 列名
+     * @param sql    完整sql eg:select id from student having age>10
      * @return 查询构建器
      */
     Builder<T, K> havingNotInRaw(String column, String sql);

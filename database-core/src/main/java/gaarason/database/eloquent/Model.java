@@ -2,12 +2,13 @@ package gaarason.database.eloquent;
 
 import gaarason.database.connections.ProxyDataSource;
 import gaarason.database.core.lang.Nullable;
+import gaarason.database.eloquent.repository.BaseSoftDeleting;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.query.Builder;
 import gaarason.database.query.MySqlBuilder;
 
-abstract public class Model<T, K> extends SoftDeleting<T, K> {
+abstract public class Model<T, K> extends BaseSoftDeleting<T, K> {
 
     /**
      * @return dataSource代理

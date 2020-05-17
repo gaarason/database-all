@@ -1,4 +1,4 @@
-package gaarason.database.eloquent;
+package gaarason.database.eloquent.repository;
 
 import gaarason.database.contracts.eloquent.Repository;
 import gaarason.database.eloquent.annotations.Primary;
@@ -9,7 +9,7 @@ import lombok.Getter;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 
-abstract class Initializing<T, K> implements Repository<T, K> {
+abstract class BaseInitializing<T, K> implements Repository<T, K> {
 
     /**
      * 主键列名(并非一定是实体的属性名)
@@ -41,7 +41,7 @@ abstract class Initializing<T, K> implements Repository<T, K> {
     @Getter
     protected Class<T> entityClass;
 
-    Initializing() {
+    BaseInitializing() {
         // 泛型初始化
         genericInitialization();
         // entity分析

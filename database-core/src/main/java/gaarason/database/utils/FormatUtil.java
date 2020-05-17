@@ -2,7 +2,9 @@ package gaarason.database.utils;
 
 import gaarason.database.contracts.Grammar;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public class FormatUtil {
 
@@ -62,7 +64,7 @@ public class FormatUtil {
      * @param somethingList eg:[1,2,3]
      * @return eg: ? , ? , ?
      */
-    public static String value(List<Object> somethingList, Grammar grammar) {
+    public static String value(Collection<Object> somethingList, Grammar grammar) {
         StringBuilder StringBuilder = new StringBuilder();
         for (Object value : somethingList) {
             StringBuilder.append(FormatUtil.value(value.toString(), grammar)).append(',');

@@ -48,6 +48,7 @@ Eloquent ORM for Java
         * [总数分页](#总数分页)
     * [功能](#功能)
         * [随机抽样](#随机抽样)
+* [关联关系](/document/relationship.md)
 * [生成代码](/document/generate.md)
 * [版本信息](/document/version.md)
 

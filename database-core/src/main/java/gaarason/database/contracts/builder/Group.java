@@ -2,7 +2,7 @@ package gaarason.database.contracts.builder;
 
 import gaarason.database.query.Builder;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * 分组
@@ -37,6 +37,6 @@ public interface Group<T, K> {
      * @param columnList 列名列表
      * @return 查询构造器
      */
-    Builder<T, K> group(List<String> columnList);
+    Builder<T, K> group(Collection<String> columnList);
 
 }

@@ -26,6 +26,23 @@ public interface Execute<T, K> {
     String toSql(SqlType sqlType);
 
     /**
+     * 单个查询
+     * @param id 主键
+     * @return 数剧记录|null
+     */
+    @Nullable
+    Record<T, K> find(K id) throws SQLRuntimeException;
+
+    /**
+     * 单个查询
+     * @param id 主键
+     * @return 结果集
+     * @throws EntityNotFoundException 未找到对象
+     * @throws SQLRuntimeException     数据库异常
+     */
+    Record<T, K> findOrFail(K id) throws EntityNotFoundException, SQLRuntimeException;
+
+    /**
      * 获取第一条数据, 数据为空时返回null
      * @return 数剧记录|null
      * @throws SQLRuntimeException 数据库异常

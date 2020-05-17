@@ -1,8 +1,8 @@
-package gaarason.database.eloquent;
+package gaarason.database.eloquent.repository;
 
 import gaarason.database.query.Builder;
 
-abstract class SoftDeleting<T, K> extends Initializing<T, K> {
+abstract public class BaseSoftDeleting<T, K> extends BaseInitializing<T, K> {
 
     /**
      * 是否启用软删除

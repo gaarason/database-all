@@ -7,6 +7,11 @@ import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.query.Builder;
 
+/**
+ * model接口
+ * @param <T> 实体类
+ * @param <K> 主键类型
+ */
 public interface Repository<T, K> extends Eventing<T, K>, SoftDeleting<T, K> {
     /**
      * 新的查询构造器

@@ -3,6 +3,8 @@ package gaarason.database.support;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * jdbc字段值对象
@@ -71,5 +73,10 @@ public class Column implements Serializable {
     private boolean writable;
 
     private boolean definitelyWritable;
+
+    /**
+     * 标记关系
+     */
+    private Set<String> relationIds = new HashSet<>();
 
 }

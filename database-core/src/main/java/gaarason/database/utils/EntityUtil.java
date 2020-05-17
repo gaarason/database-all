@@ -1,10 +1,12 @@
 package gaarason.database.utils;
 
 import gaarason.database.core.lang.Nullable;
+import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.annotations.Column;
 import gaarason.database.eloquent.annotations.Primary;
 import gaarason.database.eloquent.annotations.Table;
 import gaarason.database.exception.IllegalAccessRuntimeException;
+import gaarason.database.exception.TypeNotSupportedException;
 
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
@@ -16,7 +18,7 @@ public class EntityUtil {
      * 通过entity解析对应的字段和值组成的map, 忽略不符合规则的字段
      * @param entity     数据表实体对象
      * @param insertType 新增?
-     * @param <T, K>        数据表实体类
+     * @param <T,        K>        数据表实体类
      * @return 字段对值的映射
      */
     public static <T, K> Map<String, String> columnValueMap(T entity, boolean insertType) {
@@ -34,7 +36,7 @@ public class EntityUtil {
     /**
      * 通过entity解析对应的字段组成的list,忽略不符合规则的字段
      * @param entity     数据表实体对象
-     * @param <T, K>        数据表实体类
+     * @param <T,        K>        数据表实体类
      * @param insertType 新增?
      * @return 字段组成的list
      */
@@ -52,7 +54,7 @@ public class EntityUtil {
     /**
      * 通过entity解析对应的字段的值组成的list, 忽略不符合规则的字段
      * @param entity     数据表实体对象
-     * @param <T, K>        数据表实体类
+     * @param <T,        K>        数据表实体类
      * @param insertType 新增?
      * @return 字段的值组成的list
      */
@@ -70,7 +72,7 @@ public class EntityUtil {
     /**
      * 通过entity解析对应的字段的值组成的list, 忽略不符合规则的字段
      * @param entity         数据表实体对象
-     * @param <T, K>            数据表实体类
+     * @param <T,            K>            数据表实体类
      * @param columnNameList 有效的属性名
      * @return 字段的值组成的list
      */
@@ -166,7 +168,7 @@ public class EntityUtil {
 
     /**
      * 设置entity对象的自增属性值
-     * @param <T, K>    数据表实体类
+     * @param <T,    K>    数据表实体类
      * @param entity 数据表实体对象
      * @param id     数据库生成的id
      * @throws IllegalAccessRuntimeException 反射赋值异常
@@ -183,6 +185,58 @@ public class EntityUtil {
                     throw new IllegalAccessRuntimeException(e);
                 }
             }
+        }
+    }
+
+    /**
+     * 用数据库字段填充类属性
+     * @param field 属性
+     * @param value 值
+     * @return 数据库字段值, 且对应实体entity的数据类型
+     */
+    @Nullable
+    public static Object columnFill(Field field, @Nullable Object value) {
+        if (value == null)
+            return null;
+        switch (field.getType().toString()) {
+            case "class java.lang.Byte":
+                return Byte.valueOf(value.toString());
+            case "class java.lang.String":
+                return value.toString();
+            case "class java.lang.Integer":
+                return Integer.valueOf(value.toString());
+            case "class java.lang.Long":
+            case "class java.math.BigInteger":
+                return Long.valueOf(value.toString());
+            default:
+                return value;
+        }
+    }
+
+    /**
+     * 将数据库查询结果赋值给entity的field
+     * 需要 field.setAccessible(true)
+     * @param field           属性
+     * @param stringColumnMap 元数据map
+     * @param entity          数据表实体对象
+     */
+    public static <T, K> void fieldAssignment(Field field, Map<String, gaarason.database.support.Column> stringColumnMap,
+                                        T entity, Record<T, K> record)
+        throws TypeNotSupportedException {
+        String                           columnName = EntityUtil.columnName(field);
+        gaarason.database.support.Column column     = stringColumnMap.get(columnName);
+        if (column != null) {
+            try {
+                Object value = EntityUtil.columnFill(field, column.getValue());
+                field.set(entity, value);
+                // 主键值记录
+                if (field.isAnnotationPresent(Primary.class)) {
+                    record.setOriginalPrimaryKeyValue(value);
+                }
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+                throw new TypeNotSupportedException(e.getMessage());
+            }
+
         }
     }
 

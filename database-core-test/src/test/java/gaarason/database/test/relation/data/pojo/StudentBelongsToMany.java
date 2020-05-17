@@ -4,7 +4,7 @@ import gaarason.database.eloquent.annotations.BelongsToMany;
 import gaarason.database.eloquent.annotations.Column;
 import gaarason.database.eloquent.annotations.Primary;
 import gaarason.database.eloquent.annotations.Table;
-import gaarason.database.test.relation.data.model.RelationshipStudentTeacherModel;
+import gaarason.database.test.relation.data.model.BaseRelationshipStudentTeacherModel;
 import gaarason.database.test.relation.data.model.TeacherModel;
 import lombok.Data;
 
@@ -57,7 +57,7 @@ public class StudentBelongsToMany implements Serializable {
     @Column(name = "updated_at", insertable = false, updatable = false, comment = "更新时间")
     private Date updatedAt;
 
-    @BelongsToMany(targetModel = TeacherModel.class, relationModel = RelationshipStudentTeacherModel.class,
+    @BelongsToMany(targetModel = TeacherModel.class, relationModel = BaseRelationshipStudentTeacherModel.class,
         modelForeignKey = "student_id", targetModelForeignKey = "teacher_id", modelLocalKey = "id",
         targetModelLocalKey = "id")
     private List<Teacher> teachers;
