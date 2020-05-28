@@ -37,6 +37,13 @@ public class RecordList<T, K> extends ArrayList<Record<T, K>> implements Friendl
     private List<Map<String, Column>> originalMetadataMapList;
 
     /**
+     * sql
+     */
+    @Getter
+    @Setter
+    private String originalSql;
+
+    /**
      * 转化为对象列表
      * @return 对象列表
      */

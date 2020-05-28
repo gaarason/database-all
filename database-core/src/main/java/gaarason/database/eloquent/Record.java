@@ -55,6 +55,12 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
     private Class<T> entityClass;
 
     /**
+     * 原Sql
+     */
+    @Getter
+    private String originalSql;
+
+    /**
      * 原数据实体
      */
     private T originalEntity;
@@ -87,9 +93,10 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      * @param model           数据模型
      * @param stringColumnMap 元数据
      */
-    public Record(Class<T> entityClass, Model<T, K> model, Map<String, Column> stringColumnMap) {
+    public Record(Class<T> entityClass, Model<T, K> model, Map<String, Column> stringColumnMap, String originalSql) {
         this.entityClass = entityClass;
         this.model = model;
+        this.originalSql = originalSql;
         init(stringColumnMap);
     }
 

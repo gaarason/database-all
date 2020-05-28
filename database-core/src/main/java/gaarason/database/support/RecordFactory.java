@@ -21,12 +21,14 @@ public class RecordFactory {
      * @param entityClass 实体类型
      * @param model       Model
      * @param resultSet   jdbc结果
+     * @param sql         执行的sql
      * @param <T>         实体类型
      * @param <K>         实体主键类型
      * @return 批量结果集
      * @throws SQLException 数据库异常
      */
-    public static <T, K> RecordList<T, K> newRecordList(Class<T> entityClass, Model<T, K> model, ResultSet resultSet)
+    public static <T, K> RecordList<T, K> newRecordList(Class<T> entityClass, Model<T, K> model, ResultSet resultSet,
+                                                        String sql)
         throws SQLException {
         RecordList<T, K> recordList = new RecordList<>();
         // 总的数据源
@@ -36,10 +38,12 @@ public class RecordFactory {
             // 拆分的数据源
             Map<String, Column> stringColumnMap = JDBCResultToMap(resultSetMetaData, resultSet);
             metadataMapList.add(stringColumnMap);
-            recordList.add(new Record<>(entityClass, model, stringColumnMap));
+            recordList.add(new Record<>(entityClass, model, stringColumnMap, ""));
         }
         // 设置数据源
         recordList.setOriginalMetadataMapList(metadataMapList);
+        // 设置原始sql
+        recordList.setOriginalSql(sql);
         return recordList;
     }
 
@@ -92,20 +96,22 @@ public class RecordFactory {
      * @param entityClass 实体类型
      * @param model       Model
      * @param resultSet   jdbc结果
+     * @param sql         执行的sql
      * @param <T>         实体类型
      * @param <K>         实体主键类型
      * @return 批量结果集
      * @throws SQLException            数据库异常
      * @throws EntityNotFoundException 数据为空
      */
-    public static <T, K> Record<T, K> newRecord(Class<T> entityClass, Model<T, K> model, ResultSet resultSet)
+    public static <T, K> Record<T, K> newRecord(Class<T> entityClass, Model<T, K> model, ResultSet resultSet,
+                                                String sql)
         throws SQLException, EntityNotFoundException {
         if (!resultSet.next()) {
             throw new EntityNotFoundException();
         }
         final ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         Map<String, Column>     stringColumnMap   = JDBCResultToMap(resultSetMetaData, resultSet);
-        return new Record<>(entityClass, model, stringColumnMap);
+        return new Record<>(entityClass, model, stringColumnMap, sql);
     }
 
     /**

@@ -21,6 +21,7 @@ import gaarason.database.utils.ObjectUtil;
 import java.lang.management.ManagementFactory;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T, K>, Union<T, K>, Support<T, K>,
     From<T, K>, Execute<T, K>,
@@ -39,9 +40,9 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
     private final ProxyDataSource proxyDataSource;
 
     /**
-     * 避免线程锁的connection缓存
+     * connection缓存
      */
-    private static Map<String, Connection> localThreadConnectionList = new HashMap<>();
+    private static Map<String, Connection> localThreadConnectionMap = new ConcurrentHashMap<>();
 
     /**
      * sql生成器
@@ -258,7 +259,7 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
         throws SQLRuntimeException, EntityNotFoundException {
         return doSomethingInConnection((preparedStatement) -> {
             ResultSet resultSet = preparedStatement.executeQuery();
-            return RecordFactory.newRecord(entityClass, model, resultSet);
+            return RecordFactory.newRecord(entityClass, model, resultSet, sql);
         }, sql, parameters);
     }
 
@@ -276,7 +277,7 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
     public RecordList<T, K> queryList(String sql, Collection<String> parameters) throws SQLRuntimeException {
         return doSomethingInConnection((preparedStatement) -> {
             ResultSet resultSet = preparedStatement.executeQuery();
-            return RecordFactory.newRecordList(entityClass, model, resultSet);
+            return RecordFactory.newRecordList(entityClass, model, resultSet, sql);
         }, sql, parameters);
     }
 
@@ -511,7 +512,7 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
      * @param connection 数据库连接
      */
     private void setLocalThreadConnection(Connection connection) {
-        localThreadConnectionList.put(localThreadConnectionListName(), connection);
+        localThreadConnectionMap.put(localThreadConnectionListName(), connection);
     }
 
     /**
@@ -519,7 +520,7 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
      * @return 数据库连接
      */
     private Connection getLocalThreadConnection() {
-        Connection connection = localThreadConnectionList.get(localThreadConnectionListName());
+        Connection connection = localThreadConnectionMap.get(localThreadConnectionListName());
         if (connection == null) {
             throw new InternalConcurrentException(
                 "Get an null value in localThreadConnectionList with key[" + localThreadConnectionListName() + "].");
@@ -531,7 +532,7 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
      * 移除线程内的数据库连接
      */
     private void removeLocalThreadConnection() {
-        localThreadConnectionList.remove(localThreadConnectionListName());
+        localThreadConnectionMap.remove(localThreadConnectionListName());
     }
 
     private String localThreadConnectionListName() {
