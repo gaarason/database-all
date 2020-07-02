@@ -76,6 +76,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      */
     @Nullable
     @Setter
+    @Getter
     Object originalPrimaryKeyValue;
 
     /**
@@ -83,8 +84,10 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      */
     private boolean hasBind;
 
+    @Getter
     Map<String, GenerateSqlPart<?, ?>> relationBuilderMap = new HashMap<>();
 
+    @Getter
     Map<String, RelationshipRecordWith<?, ?>> relationRecordMap = new HashMap<>();
 
     /**
@@ -304,11 +307,11 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
         return success;
     }
 
-    /**
-     * 新增或者更新(关联关系)
-     * @param propertyName 关联关系属性 eg: teacher.student.id
-     * @return 执行成功
-     */
+//    /**
+//     * 新增或者更新(关联关系)
+//     * @param propertyName 关联关系属性 eg: teacher.student.id
+//     * @return 执行成功
+//     */
 //    public boolean save(String propertyName) {
 //        // 检测入参, 主要是多级检测
 //        if (!ObjectUtil.checkProperties(model.getEntityClass(), propertyName)) {

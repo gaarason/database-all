@@ -48,6 +48,19 @@ public class RecordFactory {
     }
 
     /**
+     * 单体结果集列表,转化为 批量结果集
+     * @param records 单体结果列表
+     * @param <T>     实体类型
+     * @param <K>     实体主键类型
+     * @return 批量结果集
+     */
+    public static <T, K> RecordList<T, K> newRecordList(List<Record<T, K>> records) {
+        RecordList<T, K> recordList = new RecordList<>();
+        recordList.addAll(records);
+        return recordList;
+    }
+
+    /**
      * 筛选批量结果集
      * @param originalRecordList 原本批量结果集
      * @param column             字段

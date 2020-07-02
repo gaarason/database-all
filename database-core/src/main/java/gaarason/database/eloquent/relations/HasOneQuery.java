@@ -1,5 +1,6 @@
 package gaarason.database.eloquent.relations;
 
+import gaarason.database.cache.TableCache;
 import gaarason.database.contracts.function.GenerateSqlPart;
 import gaarason.database.contracts.function.RelationshipRecordWith;
 import gaarason.database.core.lang.Nullable;
@@ -19,9 +20,9 @@ public class HasOneQuery extends SubQuery {
     static class HasOneTemplate<T, K> {
         Model<T, K> targetModel;
 
-        String      foreignKey;
+        String foreignKey;
 
-        String      localKey;
+        String localKey;
 
         HasOneTemplate(Field field) {
             HasOne hasOne = field.getAnnotation(HasOne.class);
@@ -47,6 +48,31 @@ public class HasOneQuery extends SubQuery {
     public static <T, K> T dealSingle(Field field, Map<String, Column> stringColumnMap,
                                       GenerateSqlPart<T, K> generateSqlPart,
                                       RelationshipRecordWith<T, K> relationshipRecordWith) {
+        HasOneTemplate<T, K> hasOne = new HasOneTemplate<>(field);
+        Record<T, K> record = generateSqlPart.generate(hasOne.targetModel.newQuery())
+            .where(hasOne.localKey,
+                String.valueOf(stringColumnMap.get(hasOne.foreignKey).getValue()))
+            .first();
+        return record == null ? null : relationshipRecordWith.generate(record).toObject();
+    }
+
+
+    /**
+     * 单个关联查询, 以及对象转化
+     * @param field                  字段
+     * @param stringColumnMap        当前record的元数据
+     * @param generateSqlPart        Builder
+     * @param relationshipRecordWith Record
+     * @param tableCache             缓存
+     * @param <T>                    目标实体类
+     * @param <K>                    目标实体主键
+     * @return 目标实体对象
+     */
+    @Nullable
+    public static <T, K> T dealSingle(Field field, Map<String, Column> stringColumnMap,
+                                      GenerateSqlPart<T, K> generateSqlPart,
+                                      RelationshipRecordWith<T, K> relationshipRecordWith,
+                                      TableCache<Record<T, K>> tableCache) {
         HasOneTemplate<T, K> hasOne = new HasOneTemplate<>(field);
         Record<T, K> record = generateSqlPart.generate(hasOne.targetModel.newQuery())
             .where(hasOne.localKey,

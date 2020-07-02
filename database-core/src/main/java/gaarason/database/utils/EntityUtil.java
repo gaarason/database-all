@@ -18,10 +18,10 @@ public class EntityUtil {
      * 通过entity解析对应的字段和值组成的map, 忽略不符合规则的字段
      * @param entity     数据表实体对象
      * @param insertType 新增?
-     * @param <T,        K>        数据表实体类
+     * @param <T>        数据表实体类
      * @return 字段对值的映射
      */
-    public static <T, K> Map<String, String> columnValueMap(T entity, boolean insertType) {
+    public static <T> Map<String, String> columnValueMap(T entity, boolean insertType) {
         Map<String, String> columnValueMap = new HashMap<>();
         Field[]             fields         = entity.getClass().getDeclaredFields();
         for (Field field : fields) {
@@ -36,11 +36,11 @@ public class EntityUtil {
     /**
      * 通过entity解析对应的字段组成的list,忽略不符合规则的字段
      * @param entity     数据表实体对象
-     * @param <T,        K>        数据表实体类
+     * @param <T>        数据表实体类
      * @param insertType 新增?
      * @return 字段组成的list
      */
-    public static <T, K> List<String> columnNameList(T entity, boolean insertType) {
+    public static <T> List<String> columnNameList(T entity, boolean insertType) {
         List<String> columnList = new ArrayList<>();
         Field[]      fields     = entity.getClass().getDeclaredFields();
         for (Field field : fields) {
@@ -54,11 +54,11 @@ public class EntityUtil {
     /**
      * 通过entity解析对应的字段的值组成的list, 忽略不符合规则的字段
      * @param entity     数据表实体对象
-     * @param <T,        K>        数据表实体类
+     * @param <T>        数据表实体类
      * @param insertType 新增?
      * @return 字段的值组成的list
      */
-    public static <T, K> List<String> valueList(T entity, boolean insertType) {
+    public static <T> List<String> valueList(T entity, boolean insertType) {
         List<String> valueList = new ArrayList<>();
         Field[]      fields    = entity.getClass().getDeclaredFields();
         for (Field field : fields) {
@@ -72,11 +72,11 @@ public class EntityUtil {
     /**
      * 通过entity解析对应的字段的值组成的list, 忽略不符合规则的字段
      * @param entity         数据表实体对象
-     * @param <T,            K>            数据表实体类
+     * @param <T>            数据表实体类
      * @param columnNameList 有效的属性名
      * @return 字段的值组成的list
      */
-    public static <T, K> List<String> valueList(T entity, List<String> columnNameList) {
+    public static <T> List<String> valueList(T entity, List<String> columnNameList) {
         List<String> valueList = new ArrayList<>();
         Field[]      fields    = entity.getClass().getDeclaredFields();
         for (Field field : fields) {
@@ -92,7 +92,7 @@ public class EntityUtil {
      * @param entityClass 数据表实体类
      * @return 数据表名
      */
-    public static <T, K> String tableName(Class<T> entityClass) {
+    public static <T> String tableName(Class<T> entityClass) {
         if (entityClass.isAnnotationPresent(Table.class)) {
             Table table = entityClass.getAnnotation(Table.class);
             return table.name();

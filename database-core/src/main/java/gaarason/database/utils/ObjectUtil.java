@@ -1,6 +1,5 @@
 package gaarason.database.utils;
 
-import com.sun.tools.javac.util.List;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.TypeCastException;
 import gaarason.database.exception.TypeNotSupportedException;

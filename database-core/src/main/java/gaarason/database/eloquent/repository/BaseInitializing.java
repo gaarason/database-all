@@ -36,6 +36,12 @@ abstract class BaseInitializing<T, K> implements Repository<T, K> {
     protected Class<K> primaryKeyClass;
 
     /**
+     * 数据库表名
+     */
+    @Getter
+    protected String tableName;
+
+    /**
      * 实体类型
      */
     @Getter
@@ -62,6 +68,7 @@ abstract class BaseInitializing<T, K> implements Repository<T, K> {
      * 实体类型分析
      */
     private void analysisEntityClass() {
+        tableName = EntityUtil.tableName(entityClass);
         Field[] fields = entityClass.getDeclaredFields();
         for (Field field : fields) {
             if (field.isAnnotationPresent(Primary.class)) {
