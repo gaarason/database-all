@@ -25,7 +25,7 @@ public interface RelationshipORM<T, K> {
      * @param builderClosure 所关联的Model的查询构造器约束
      * @return 关联的Model的查询构造器
      */
-    <TO, KO> Record<T, K> with(String column, GenerateSqlPart<TO, KO> builderClosure);
+    Record<T, K> with(String column, GenerateSqlPart builderClosure);
 
     /**
      * 渴求式关联
@@ -34,6 +34,6 @@ public interface RelationshipORM<T, K> {
      * @param recordClosure  所关联的Model的再一级关联
      * @return 关联的Model的查询构造器
      */
-    <TO, KO> Record<T, K> with(String column, GenerateSqlPart<TO, KO> builderClosure,
-                               RelationshipRecordWith<TO, KO> recordClosure);
+    Record<T, K> with(String column, GenerateSqlPart builderClosure,
+                               RelationshipRecordWith recordClosure);
 }

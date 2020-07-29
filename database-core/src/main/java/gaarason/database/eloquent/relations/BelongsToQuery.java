@@ -7,6 +7,7 @@ import gaarason.database.eloquent.Model;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
 import gaarason.database.eloquent.annotations.BelongsTo;
+import gaarason.database.query.Builder;
 import gaarason.database.support.Column;
 import gaarason.database.support.RecordFactory;
 
@@ -16,8 +17,8 @@ import java.util.Map;
 
 public class BelongsToQuery extends SubQuery {
 
-    static class BelongsToTemplate<T, K> {
-        Model<T, K> parentModel;
+    static class BelongsToTemplate {
+        Model<? ,?> parentModel;
 
         String foreignKey;
 
@@ -39,24 +40,24 @@ public class BelongsToQuery extends SubQuery {
      * @param stringColumnMap        当前record的元数据
      * @param generateSqlPart        Builder
      * @param relationshipRecordWith Record
-     * @param <T>                    目标实体类
-     * @param <K>                    目标实体主键
      * @return 目标实体对象
      */
     @Nullable
-    public static <T, K> T dealSingle(Field field, Map<String, Column> stringColumnMap,
-                                      GenerateSqlPart<T, K> generateSqlPart,
-                                      RelationshipRecordWith<T, K> relationshipRecordWith) {
+    public static Object dealSingle(Field field, Map<String, Column> stringColumnMap,
+                                      GenerateSqlPart generateSqlPart,
+                                      RelationshipRecordWith relationshipRecordWith) {
 //        BelongsTo belongsTo = field.getAnnotation(
 //            BelongsTo.class);
-//        Model<T, K> parentModel = getModelInstance(belongsTo.parentModel());
+//        Model<?, ?> parentModel = getModelInstance(belongsTo.parentModel());
 //        String      foreignKey  = belongsTo.foreignKey();
 //        String      localKey    = belongsTo.localKey();
 //        localKey = "".equals(localKey) ? parentModel.getPrimaryKeyColumnName() : localKey;
 
-        BelongsToTemplate<T, K> belongsTo = new BelongsToTemplate<>(field);
+        BelongsToTemplate belongsTo = new BelongsToTemplate(field);
 
-        Record<T, K> record = generateSqlPart.generate(belongsTo.parentModel.newQuery())
+        Builder<?, ?> builder = belongsTo.parentModel.newQuery();
+
+        Record<?, ?> record = generateSqlPart.generate(belongsTo.parentModel.newQuery())
             .where(belongsTo.localKey, String.valueOf(stringColumnMap.get(belongsTo.foreignKey).getValue()))
             .first();
         return record == null ? null : relationshipRecordWith.generate(record).toObject();
@@ -68,19 +69,17 @@ public class BelongsToQuery extends SubQuery {
      * @param stringColumnMapList    当前recordList的元数据
      * @param generateSqlPart        Builder
      * @param relationshipRecordWith Record
-     * @param <T>                    目标实体类
-     * @param <K>                    目标实体主键
      * @return 查询结果集
      */
-    public static <T, K> RecordList<T, K> dealBatch(Field field, List<Map<String, Column>> stringColumnMapList,
-                                                    GenerateSqlPart<T, K> generateSqlPart,
-                                                    RelationshipRecordWith<T, K> relationshipRecordWith) {
-        BelongsToTemplate<T, K> belongsTo = new BelongsToTemplate<>(field);
+    public static RecordList<?, ?> dealBatch(Field field, List<Map<String, Column>> stringColumnMapList,
+                                                    GenerateSqlPart generateSqlPart,
+                                                    RelationshipRecordWith relationshipRecordWith) {
+        BelongsToTemplate belongsTo = new BelongsToTemplate(field);
 
-        RecordList<T, K> records = generateSqlPart.generate(belongsTo.parentModel.newQuery())
+        RecordList<?, ?> records = generateSqlPart.generate(belongsTo.parentModel.newQuery())
             .whereIn(belongsTo.localKey, getColumnInMapList(stringColumnMapList, belongsTo.foreignKey))
             .get();
-        for (Record<T, K> record : records) {
+        for (Record<?, ?> record : records) {
             relationshipRecordWith.generate(record);
         }
         return records;
@@ -91,14 +90,12 @@ public class BelongsToQuery extends SubQuery {
      * @param field                  字段
      * @param record                 当前record
      * @param relationshipRecordList 关联的recordList
-     * @param <T>                    目标实体类
-     * @param <K>                    目标实体主键
      * @return 筛选后的查询结果集
      */
     @Nullable
-    public static <T, K> Object filterBatch(Field field, Record<?, ?> record,
+    public static Object filterBatch(Field field, Record<?, ?> record,
                                             RecordList<?, ?> relationshipRecordList) {
-        BelongsToTemplate<T, K> belongsTo = new BelongsToTemplate<>(field);
+        BelongsToTemplate belongsTo = new BelongsToTemplate(field);
 
 
         Record<?, ?> newRecord = RecordFactory.filterRecord(relationshipRecordList, belongsTo.localKey,

@@ -55,7 +55,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereSubQuery(String column, String symbol, GenerateSqlPart<T, K> closure) {
+    public Builder<T, K> whereSubQuery(String column, String symbol, GenerateSqlPart closure) {
         String completeSql = generateSql(closure);
         String sqlPart     = FormatUtil.column(column) + symbol + completeSql;
         return whereRaw(sqlPart);
@@ -74,7 +74,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereIn(String column, GenerateSqlPart<T, K> closure) {
+    public Builder<T, K> whereIn(String column, GenerateSqlPart closure) {
         String sqlPart = generateSql(closure);
         return whereInRaw(column, sqlPart);
     }
@@ -92,7 +92,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereNotIn(String column, GenerateSqlPart<T, K> closure) {
+    public Builder<T, K> whereNotIn(String column, GenerateSqlPart closure) {
         String sqlPart = generateSql(closure);
         return whereNotInRaw(column, sqlPart);
     }
@@ -129,7 +129,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereExists(GenerateSqlPart<T, K> closure) {
+    public Builder<T, K> whereExists(GenerateSqlPart closure) {
         String sql = generateSql(closure);
         return whereExistsRaw(sql);
     }
@@ -141,7 +141,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereNotExists(GenerateSqlPart<T, K> closure) {
+    public Builder<T, K> whereNotExists(GenerateSqlPart closure) {
         String sql = generateSql(closure);
         return whereNotExistsRaw(sql);
     }
@@ -158,14 +158,14 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> andWhere(GenerateSqlPart<T, K> closure) {
+    public Builder<T, K> andWhere(GenerateSqlPart closure) {
         String sqlPart = generateSqlPart(closure);
         grammar.pushWhere(sqlPart, "and");
         return this;
     }
 
     @Override
-    public Builder<T, K> orWhere(GenerateSqlPart<T, K> closure) {
+    public Builder<T, K> orWhere(GenerateSqlPart closure) {
         String sqlPart = generateSqlPart(closure);
         grammar.pushWhere(sqlPart, "or");
         return this;
@@ -201,7 +201,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingIn(String column, GenerateSqlPart<T, K> closure) {
+    public Builder<T, K> havingIn(String column, GenerateSqlPart closure) {
         String sqlPart = generateSql(closure);
         return havingInRaw(column, sqlPart);
     }
@@ -219,7 +219,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingNotIn(String column, GenerateSqlPart<T, K> closure) {
+    public Builder<T, K> havingNotIn(String column, GenerateSqlPart closure) {
         String sqlPart = generateSql(closure);
         return havingNotInRaw(column, sqlPart);
     }
@@ -256,7 +256,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingExists(GenerateSqlPart<T, K> Closure) {
+    public Builder<T, K> havingExists(GenerateSqlPart Closure) {
         String sql = generateSql(Closure);
         return havingExistsRaw(sql);
     }
@@ -268,7 +268,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingNotExists(GenerateSqlPart<T, K> Closure) {
+    public Builder<T, K> havingNotExists(GenerateSqlPart Closure) {
         String sql = generateSql(Closure);
         return havingNotExistsRaw(sql);
     }
@@ -285,14 +285,14 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> andHaving(GenerateSqlPart<T, K> closure) {
+    public Builder<T, K> andHaving(GenerateSqlPart closure) {
         String sqlPart = generateSqlPart(closure);
         grammar.pushHaving(sqlPart, "and");
         return this;
     }
 
     @Override
-    public Builder<T, K> orHaving(GenerateSqlPart<T, K> closure) {
+    public Builder<T, K> orHaving(GenerateSqlPart closure) {
         String sqlPart = generateSqlPart(closure);
         grammar.pushHaving(sqlPart, "or");
         return this;
@@ -336,7 +336,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> selectFunction(String function, GenerateSqlPart<T, K> closure, @Nullable String alias) {
+    public Builder<T, K> selectFunction(String function, GenerateSqlPart closure, @Nullable String alias) {
         String completeSql = generateSql(closure);
         String sqlPart = function + FormatUtil.bracket(completeSql) + (alias == null ? "" :
             " as " + FormatUtil.quotes(alias));
@@ -682,14 +682,14 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> union(GenerateSqlPart<T, K> closure) {
+    public Builder<T, K> union(GenerateSqlPart closure) {
         String sqlPart = generateSql(closure);
         grammar.pushUnion(sqlPart, "union");
         return this;
     }
 
     @Override
-    public Builder<T, K> unionAll(GenerateSqlPart<T, K> closure) {
+    public Builder<T, K> unionAll(GenerateSqlPart closure) {
         String sqlPart = generateSql(closure);
         grammar.pushUnion(sqlPart, "union all");
         return this;

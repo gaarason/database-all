@@ -14,13 +14,13 @@ public @interface BelongsToMany {
      * 关联model
      * @return
      */
-    Class<? extends Model> targetModel();
+    Class<? extends Model<?, ?>> targetModel();
 
     /**
      * 关联关系中间model
      * @return
      */
-    Class<? extends Model> relationModel();
+    Class<? extends Model<?, ?>> relationModel();
 
     String modelLocalKey();
 

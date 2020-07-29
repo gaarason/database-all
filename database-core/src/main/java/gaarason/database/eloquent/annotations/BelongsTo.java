@@ -14,7 +14,7 @@ public @interface BelongsTo {
      * 所属的上级model
      * @return
      */
-    Class<? extends Model> parentModel();
+    Class<? extends Model<?, ?>> parentModel();
 
     /**
      * 本model的外键(指向上级model)

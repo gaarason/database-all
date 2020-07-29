@@ -220,8 +220,9 @@ public class EntityUtil {
      * @param stringColumnMap 元数据map
      * @param entity          数据表实体对象
      */
-    public static <T, K> void fieldAssignment(Field field, Map<String, gaarason.database.support.Column> stringColumnMap,
-                                        T entity, Record<T, K> record)
+    public static <T, K> void fieldAssignment(Field field,
+                                              Map<String, gaarason.database.support.Column> stringColumnMap,
+                                              T entity, Record<T, K> record)
         throws TypeNotSupportedException {
         String                           columnName = EntityUtil.columnName(field);
         gaarason.database.support.Column column     = stringColumnMap.get(columnName);
@@ -232,7 +233,13 @@ public class EntityUtil {
                 // 主键值记录
                 if (field.isAnnotationPresent(Primary.class)) {
                     record.setOriginalPrimaryKeyValue(value);
+//                    // 同级主键值集合, 为关联关系做准备
+//                    Set<Object> primaryKeyValueSet = record.getOriginalPrimaryKeyValueSet();
+//                    if (primaryKeyValueSet != null) {
+//                        primaryKeyValueSet.add(value);
+//                    }
                 }
+
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 throw new TypeNotSupportedException(e.getMessage());
             }

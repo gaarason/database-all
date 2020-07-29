@@ -1,19 +1,13 @@
 package gaarason.database.eloquent.relations;
 
-import gaarason.database.contracts.function.GenerateSqlPart;
-import gaarason.database.contracts.function.RelationshipRecordWith;
-import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.Model;
-import gaarason.database.eloquent.Record;
-import gaarason.database.eloquent.RecordList;
-import gaarason.database.eloquent.annotations.BelongsTo;
-import gaarason.database.eloquent.annotations.BelongsToMany;
-import gaarason.database.eloquent.annotations.HasMany;
 import gaarason.database.exception.ModelNewInstanceException;
 import gaarason.database.support.Column;
 
-import java.lang.reflect.Field;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 关联关系
@@ -25,9 +19,9 @@ public class SubQuery {
      * @param modelClass Model类
      * @return Model实例
      */
-    @SuppressWarnings("unchecked")
-    protected static <T, K> Model<T, K> getModelInstance(Class<? extends Model> modelClass) {
+    protected static Model<?, ?> getModelInstance(Class<? extends Model<?, ?>> modelClass) {
         try {
+            // todo 判断是spring项目, 则从容器中查找实例
             return modelClass.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
             throw new ModelNewInstanceException(e.getMessage());
@@ -37,7 +31,7 @@ public class SubQuery {
     /**
      * 将数据源中的某一列,转化为可以使用 where in 查询的 set
      * @param stringColumnMapList 数据源
-     * @param column 目标列
+     * @param column              目标列
      * @return 目标列的集合
      */
     protected static Set<Object> getColumnInMapList(List<Map<String, Column>> stringColumnMapList, String column) {

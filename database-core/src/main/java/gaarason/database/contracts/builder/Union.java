@@ -15,12 +15,12 @@ public interface Union<T, K>{
      * @param closure 返回代码片段
      * @return 查询构造器
      */
-    Builder<T, K> union(GenerateSqlPart<T, K> closure);
+    Builder<T, K> union(GenerateSqlPart closure);
 
     /**
      * 结果集连接(不去重)
      * @param closure 返回代码片段
      * @return 查询构造器
      */
-    Builder<T, K> unionAll(GenerateSqlPart<T, K> closure);
+    Builder<T, K> unionAll(GenerateSqlPart closure);
 }

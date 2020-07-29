@@ -19,14 +19,14 @@ public class BelongsToManyQuery extends SubQuery {
 
     final public static String RELATION_REMEMBER_KEY = "RELATION_REMEMBER_KEY";
 
-    static class BelongsToManyTemplate<T, K> {
-        Model<T, K> relationModel; // user_teacher
+    static class BelongsToManyTemplate {
+        Model<?, ?> relationModel; // user_teacher
 
         String modelForeignKey;// user_id
 
         String modelLocalKey; // user.id
 
-        Model<T, K> targetModel; // teacher
+        Model<?, ?> targetModel; // teacher
 
         String targetModelForeignKey; // teacher_id
 
@@ -49,15 +49,13 @@ public class BelongsToManyQuery extends SubQuery {
      * @param stringColumnMap        当前record的元数据
      * @param generateSqlPart        Builder
      * @param relationshipRecordWith Record
-     * @param <T>                    目标实体类
-     * @param <K>                    目标实体主键
      * @return 目标实体对象
      */
-    public static <T, K> List<T> dealSingle(Field field, Map<String, Column> stringColumnMap,
-                                            GenerateSqlPart<T, K> generateSqlPart,
-                                            RelationshipRecordWith<T, K> relationshipRecordWith) {
+    public static List<?> dealSingle(Field field, Map<String, Column> stringColumnMap,
+                                     GenerateSqlPart generateSqlPart,
+                                     RelationshipRecordWith relationshipRecordWith) {
 
-        BelongsToManyTemplate<T, K> belongsToMany = new BelongsToManyTemplate<>(field);
+        BelongsToManyTemplate belongsToMany = new BelongsToManyTemplate(field);
 
         // 中间表
         List<Object> targetModelForeignKeyList = belongsToMany.relationModel.newQuery()
@@ -66,10 +64,10 @@ public class BelongsToManyQuery extends SubQuery {
             .get()
             .toList(record -> record.toMap().get(belongsToMany.targetModelForeignKey));
         // 目标表
-        RecordList<T, K> relationRecordList = generateSqlPart.generate(belongsToMany.targetModel.newQuery())
+        RecordList<?, ?> relationRecordList = generateSqlPart.generate(belongsToMany.targetModel.newQuery())
             .whereIn(belongsToMany.targetModelLocalKey, targetModelForeignKeyList)
             .get();
-        for (Record<T, K> record : relationRecordList) {
+        for (Record<?, ?> record : relationRecordList) {
             relationshipRecordWith.generate(record);
         }
         return relationRecordList.toObjectList();
@@ -82,15 +80,13 @@ public class BelongsToManyQuery extends SubQuery {
      * @param stringColumnMapList    当前recordList的元数据
      * @param generateSqlPart        Builder
      * @param relationshipRecordWith Record
-     * @param <T>                    目标实体类
-     * @param <K>                    目标实体主键
      * @return 查询结果集
      */
-    public static <T, K> RecordList<T, K> dealBatch(Field field, Map<String, Column> metadataMap,
-                                                    List<Map<String, Column>> stringColumnMapList,
-                                                    GenerateSqlPart<T, K> generateSqlPart,
-                                                    RelationshipRecordWith<T, K> relationshipRecordWith) {
-        BelongsToManyTemplate<T, K> belongsToMany = new BelongsToManyTemplate<>(field);
+    public static RecordList<?, ?> dealBatch(Field field, Map<String, Column> metadataMap,
+                                             List<Map<String, Column>> stringColumnMapList,
+                                             GenerateSqlPart generateSqlPart,
+                                             RelationshipRecordWith relationshipRecordWith) {
+        BelongsToManyTemplate belongsToMany = new BelongsToManyTemplate(field);
         // 中间表
         List<Map<String, Object>> maps = belongsToMany.relationModel.newQuery()
             .whereIn(belongsToMany.modelForeignKey, getColumnInMapList(stringColumnMapList,
@@ -106,10 +102,10 @@ public class BelongsToManyQuery extends SubQuery {
         }
 
         // 目标表
-        RecordList<T, K> targetRecordList = generateSqlPart.generate(belongsToMany.targetModel.newQuery())
+        RecordList<?, ?> targetRecordList = generateSqlPart.generate(belongsToMany.targetModel.newQuery())
             .whereIn(belongsToMany.targetModelLocalKey, targetModelForeignKeySet)
             .get();
-        for (Record<T, K> record : targetRecordList) {
+        for (Record<?, ?> record : targetRecordList) {
             // 产生标记
             Column column = new Column();
             column.setColumnName(RELATION_REMEMBER_KEY);
@@ -138,14 +134,12 @@ public class BelongsToManyQuery extends SubQuery {
      * @param field                  字段
      * @param record                 当前record
      * @param relationshipRecordList 关联的recordList
-     * @param <T>                    目标实体类
-     * @param <K>                    目标实体主键
      * @return 筛选后的查询结果集
      */
-    public static <T, K> List<?> filterBatch(Field field, Record<?, ?> record,
-                                             RecordList<?, ?> relationshipRecordList) {
+    public static List<?> filterBatch(Field field, Record<?, ?> record,
+                                      RecordList<?, ?> relationshipRecordList) {
         // 筛选当前 record 所需要的属性
-        BelongsToManyTemplate<T, K> belongsToMany = new BelongsToManyTemplate<>(field);
+        BelongsToManyTemplate belongsToMany = new BelongsToManyTemplate(field);
 
         return RecordFactory.filterRecordList(relationshipRecordList, RELATION_REMEMBER_KEY,
             String.valueOf(record.getMetadataMap().get(belongsToMany.modelLocalKey).getValue())).toObjectList();

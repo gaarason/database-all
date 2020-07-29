@@ -49,6 +49,6 @@ public interface Select<T, K> {
      * @param alias    字段别名
      * @return 查询构造器
      */
-    Builder<T, K> selectFunction(String function, GenerateSqlPart<T, K> closure, @Nullable String alias);
+    Builder<T, K> selectFunction(String function, GenerateSqlPart closure, @Nullable String alias);
 
 }

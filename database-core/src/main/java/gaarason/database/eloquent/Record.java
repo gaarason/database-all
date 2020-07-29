@@ -7,6 +7,7 @@ import gaarason.database.contracts.function.RelationshipRecordWith;
 import gaarason.database.contracts.record.FriendlyORM;
 import gaarason.database.contracts.record.OperationORM;
 import gaarason.database.contracts.record.RelationshipORM;
+import gaarason.database.conversion.ToObject;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.annotations.*;
 import gaarason.database.eloquent.relations.BelongsToManyQuery;
@@ -25,10 +26,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 记录对象
@@ -79,16 +77,24 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
     @Getter
     Object originalPrimaryKeyValue;
 
+//    /**
+//     * 同级所有主键值
+//     */
+//    @Nullable
+//    @Setter
+//    @Getter
+//    Set<Object> originalPrimaryKeyValueSet;
+
     /**
      * 是否已经绑定具体的数据
      */
     private boolean hasBind;
 
     @Getter
-    Map<String, GenerateSqlPart<?, ?>> relationBuilderMap = new HashMap<>();
+    Map<String, GenerateSqlPart> relationBuilderMap = new HashMap<>();
 
     @Getter
-    Map<String, RelationshipRecordWith<?, ?>> relationRecordMap = new HashMap<>();
+    Map<String, RelationshipRecordWith> relationRecordMap = new HashMap<>();
 
     /**
      * 根据查询结果集生成
@@ -176,7 +182,12 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      * @return 实体对象
      */
     public T toObject() {
-        return toObject(entityClass, metadataMap, true);
+        ToObject<T, K> toObject = new ToObject<>(this);
+
+        return toObject.toObject();
+
+
+//        return toObject(entityClass, metadataMap, true);
     }
 
     /**
@@ -228,6 +239,8 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
     private <V> void fieldAssignment(Field[] fields, Map<String, Column> stringColumnMap, V entity)
         throws TypeNotSupportedException {
         for (Field field : fields) {
+//            EntityUtil.fieldAssignment(field, stringColumnMap, entity, this);
+
             String columnName = EntityUtil.columnName(field);
             Column column     = stringColumnMap.get(columnName);
             if (column == null) {
@@ -332,13 +345,13 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
     }
 
     @Override
-    public <TO, KO> Record<T, K> with(String column, GenerateSqlPart<TO, KO> builderClosure) {
+    public Record<T, K> with(String column, GenerateSqlPart builderClosure) {
         return with(column, builderClosure, (record) -> record);
     }
 
     @Override
-    public <TO, KO> Record<T, K> with(String column, GenerateSqlPart<TO, KO> builderClosure,
-                                      RelationshipRecordWith<TO, KO> recordClosure) {
+    public Record<T, K> with(String column, GenerateSqlPart builderClosure,
+                                      RelationshipRecordWith recordClosure) {
         // 效验参数
         if (ObjectUtil.checkProperties(model.getEntityClass(), column)) {
             relationBuilderMap.put(column, builderClosure);

@@ -52,7 +52,7 @@ public interface Where<T, K> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> whereSubQuery(String column, String symbol, GenerateSqlPart<T, K> closure);
+    Builder<T, K> whereSubQuery(String column, String symbol, GenerateSqlPart closure);
 
     /**
      * 列值在范围内
@@ -76,7 +76,7 @@ public interface Where<T, K> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> whereIn(String column, GenerateSqlPart<T, K> closure);
+    Builder<T, K> whereIn(String column, GenerateSqlPart closure);
 
     /**
      * 列值不在范围内
@@ -100,7 +100,7 @@ public interface Where<T, K> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> whereNotIn(String column, GenerateSqlPart<T, K> closure);
+    Builder<T, K> whereNotIn(String column, GenerateSqlPart closure);
 
     /**
      * 列值在2值之间
@@ -146,7 +146,7 @@ public interface Where<T, K> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> whereExists(GenerateSqlPart<T, K> closure);
+    Builder<T, K> whereExists(GenerateSqlPart closure);
 
     /**
      * not exists一个闭包
@@ -160,7 +160,7 @@ public interface Where<T, K> {
      * @param closure 完整sql
      * @return 查询构建器
      */
-    Builder<T, K> whereNotExists(GenerateSqlPart<T, K> closure);
+    Builder<T, K> whereNotExists(GenerateSqlPart closure);
 
     /**
      * 比较字段与字段
@@ -184,13 +184,13 @@ public interface Where<T, K> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> andWhere(GenerateSqlPart<T, K> closure);
+    Builder<T, K> andWhere(GenerateSqlPart closure);
 
     /**
      * 或
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> orWhere(GenerateSqlPart<T, K> closure);
+    Builder<T, K> orWhere(GenerateSqlPart closure);
 
 }

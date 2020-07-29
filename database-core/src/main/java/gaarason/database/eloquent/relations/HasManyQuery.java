@@ -15,8 +15,8 @@ import java.util.Map;
 
 public class HasManyQuery extends SubQuery {
 
-    static class HasManyTemplate<T, K> {
-        Model<T, K> targetModel;
+    static class HasManyTemplate {
+        Model<?, ?> targetModel;
 
         String foreignKey;
 
@@ -38,25 +38,23 @@ public class HasManyQuery extends SubQuery {
      * @param stringColumnMap        当前record的元数据
      * @param generateSqlPart        Builder
      * @param relationshipRecordWith Record
-     * @param <T>                    目标实体类
-     * @param <K>                    目标实体主键
      * @return 目标实体对象
      */
-    public static <T, K> List<T> dealSingle(Field field, Map<String, Column> stringColumnMap,
-                                            GenerateSqlPart<T, K> generateSqlPart,
-                                            RelationshipRecordWith<T, K> relationshipRecordWith) {
-        HasManyQuery.HasManyTemplate<T, K> hasMany = new HasManyQuery.HasManyTemplate<>(field);
+    public static List<?> dealSingle(Field field, Map<String, Column> stringColumnMap,
+                                            GenerateSqlPart generateSqlPart,
+                                            RelationshipRecordWith relationshipRecordWith) {
+        HasManyQuery.HasManyTemplate hasMany = new HasManyQuery.HasManyTemplate(field);
 
 
 //        HasMany     hasMany     = field.getAnnotation(HasMany.class);
-//        Model<T, K> targetModel = getModelInstance(hasMany.targetModel());
+//        Model<?, ?> targetModel = getModelInstance(hasMany.targetModel());
 //        String      foreignKey  = hasMany.foreignKey();
 //        String      localKey    = hasMany.localKey();
 //        localKey = "".equals(localKey) ? targetModel.getPrimaryKeyColumnName() : localKey;
-        RecordList<T, K> records = generateSqlPart.generate(hasMany.targetModel.newQuery())
+        RecordList<?, ?> records = generateSqlPart.generate(hasMany.targetModel.newQuery())
             .where(hasMany.foreignKey, String.valueOf(stringColumnMap.get(hasMany.localKey).getValue()))
             .get();
-        for (Record<T, K> record : records) {
+        for (Record<?, ?> record : records) {
             relationshipRecordWith.generate(record);
         }
         return records.toObjectList();
@@ -68,26 +66,24 @@ public class HasManyQuery extends SubQuery {
      * @param stringColumnMapList    当前recordList的元数据
      * @param generateSqlPart        Builder
      * @param relationshipRecordWith Record
-     * @param <T>                    目标实体类
-     * @param <K>                    目标实体主键
      * @return 查询结果集
      */
-    public static <T, K> RecordList<T, K> dealBatch(Field field, List<Map<String, Column>> stringColumnMapList,
-                                                    GenerateSqlPart<T, K> generateSqlPart,
-                                                    RelationshipRecordWith<T, K> relationshipRecordWith) {
+    public static RecordList<?, ?> dealBatch(Field field, List<Map<String, Column>> stringColumnMapList,
+                                                    GenerateSqlPart generateSqlPart,
+                                                    RelationshipRecordWith relationshipRecordWith) {
 
-        HasManyQuery.HasManyTemplate<T, K> hasMany = new HasManyQuery.HasManyTemplate<>(field);
+        HasManyQuery.HasManyTemplate hasMany = new HasManyQuery.HasManyTemplate(field);
 //        HasMany hasMany = field.getAnnotation(
 //            HasMany.class);
-//        Model<T, K> targetModel = getModelInstance(hasMany.targetModel());
+//        Model<?, ?> targetModel = getModelInstance(hasMany.targetModel());
 //        String      foreignKey  = hasMany.foreignKey();
 //        String      localKey    = hasMany.localKey();
 //        localKey = "".equals(localKey) ? targetModel.getPrimaryKeyColumnName() : localKey;
-        RecordList<T, K> records = generateSqlPart.generate(hasMany.targetModel.newQuery())
+        RecordList<?, ?> records = generateSqlPart.generate(hasMany.targetModel.newQuery())
             .whereIn(hasMany.localKey, getColumnInMapList(stringColumnMapList, hasMany.foreignKey))
             .get();
 
-        for (Record<T, K> record : records) {
+        for (Record<?, ?> record : records) {
             relationshipRecordWith.generate(record);
         }
         return records;
@@ -98,19 +94,17 @@ public class HasManyQuery extends SubQuery {
      * @param field                  字段
      * @param record                 当前record
      * @param relationshipRecordList 关联的recordList
-     * @param <T>                    目标实体类
-     * @param <K>                    目标实体主键
      * @return 筛选后的查询结果集
      */
-    public static <T, K> List<?> filterBatch(Field field, Record<?, ?> record,
+    public static List<?> filterBatch(Field field, Record<?, ?> record,
                                              RecordList<?, ?> relationshipRecordList) {
 //        // 筛选当前 record 所需要的属性
 //        HasMany     hasMany     = field.getAnnotation(HasMany.class);
-//        Model<T, K> targetModel = getModelInstance(hasMany.targetModel());
+//        Model<?, ?> targetModel = getModelInstance(hasMany.targetModel());
 //        String      foreignKey  = hasMany.foreignKey();
 //        String      localKey    = hasMany.localKey();
 //        localKey = "".equals(localKey) ? targetModel.getPrimaryKeyColumnName() : localKey;
-        HasManyQuery.HasManyTemplate<T, K> hasMany = new HasManyQuery.HasManyTemplate<>(field);
+        HasManyQuery.HasManyTemplate hasMany = new HasManyQuery.HasManyTemplate(field);
 
         return RecordFactory.filterRecordList(relationshipRecordList, hasMany.localKey,
             String.valueOf(record.getMetadataMap().get(hasMany.foreignKey).getValue())).toObjectList();

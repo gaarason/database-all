@@ -14,7 +14,7 @@ public @interface HasMany {
      * 关联model
      * @return
      */
-    Class<? extends Model> targetModel();
+    Class<? extends Model<?, ?>> targetModel();
 
     /**
      * targetModel的关联id, 一般为targetModel外键

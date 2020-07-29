@@ -74,7 +74,7 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
      * @param closure 闭包
      * @return sqlPart eg:(`id`="3" and `age` between "12" and "19")
      */
-    String generateSqlPart(GenerateSqlPart<T, K> closure) {
+    String generateSqlPart(GenerateSqlPart closure) {
         return generateSql(closure, false);
     }
 
@@ -83,7 +83,7 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
      * @param closure 闭包
      * @return sqlPart eg:(select * from `student` where `id`="3" and `age` between "12" and "19")
      */
-    String generateSql(GenerateSqlPart<T, K> closure) {
+    String generateSql(GenerateSqlPart closure) {
         return generateSql(closure, true);
     }
 
@@ -260,7 +260,7 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
         return doSomethingInConnection((preparedStatement) -> {
             ResultSet resultSet = preparedStatement.executeQuery();
             return RecordFactory.newRecord(entityClass, model, resultSet, sql);
-        }, sql, parameters);
+        }, sql, parameters, false);
     }
 
     @Nullable
@@ -278,12 +278,12 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
         return doSomethingInConnection((preparedStatement) -> {
             ResultSet resultSet = preparedStatement.executeQuery();
             return RecordFactory.newRecordList(entityClass, model, resultSet, sql);
-        }, sql, parameters);
+        }, sql, parameters, false);
     }
 
     @Override
     public int execute(String sql, Collection<String> parameters) throws SQLRuntimeException {
-        return doSomethingInConnection(PreparedStatement::executeUpdate, sql, parameters);
+        return doSomethingInConnection(PreparedStatement::executeUpdate, sql, parameters, true);
     }
 
     @Override
@@ -299,7 +299,7 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
             }
             generatedKeys.close();
             return ids;
-        }, sql, parameters);
+        }, sql, parameters, true);
     }
 
     @Override
@@ -317,7 +317,7 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
                 return key;
             }
             return null;
-        }, sql, parameters);
+        }, sql, parameters, true);
     }
 
     /**
@@ -325,14 +325,15 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
      * @param closure    闭包
      * @param sql        带占位符的sql
      * @param parameters sql的参数
+     * @param isWrite    是否写(主)链接
      * @param <U>        响应类型
      * @return 响应
      * @throws SQLRuntimeException 数据库异常
      */
     protected <U> U doSomethingInConnection(ExecSqlWithinConnection<U> closure, String sql,
-                                            Collection<String> parameters) throws SQLRuntimeException {
+                                            Collection<String> parameters, boolean isWrite) throws SQLRuntimeException {
         // 获取连接
-        Connection connection = theConnection(true);
+        Connection connection = theConnection(isWrite);
         try {
             // 参数准备
             PreparedStatement preparedStatement = executeSql(connection, sql, parameters);
@@ -497,8 +498,8 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
      * @param wholeSql 是否生成完整sql
      * @return sql
      */
-    private String generateSql(GenerateSqlPart<T, K> closure, boolean wholeSql) {
-        Builder<T, K> subBuilder    = closure.generate(getNewSelf());
+    private String generateSql(GenerateSqlPart closure, boolean wholeSql) {
+        Builder<?, ?> subBuilder    = closure.generate(getNewSelf());
         List<String>  parameterList = subBuilder.grammar.getParameterList(SqlType.SUBQUERY);
         for (String parameter : parameterList) {
             grammar.pushWhereParameter(parameter);

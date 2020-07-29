@@ -17,8 +17,8 @@ import java.util.Map;
 
 public class HasOneQuery extends SubQuery {
 
-    static class HasOneTemplate<T, K> {
-        Model<T, K> targetModel;
+    static class HasOneTemplate {
+        Model<?, ?> targetModel;
 
         String foreignKey;
 
@@ -40,19 +40,20 @@ public class HasOneQuery extends SubQuery {
      * @param stringColumnMap        当前record的元数据
      * @param generateSqlPart        Builder
      * @param relationshipRecordWith Record
-     * @param <T>                    目标实体类
-     * @param <K>                    目标实体主键
      * @return 目标实体对象
      */
     @Nullable
-    public static <T, K> T dealSingle(Field field, Map<String, Column> stringColumnMap,
-                                      GenerateSqlPart<T, K> generateSqlPart,
-                                      RelationshipRecordWith<T, K> relationshipRecordWith) {
-        HasOneTemplate<T, K> hasOne = new HasOneTemplate<>(field);
-        Record<T, K> record = generateSqlPart.generate(hasOne.targetModel.newQuery())
+    public static Object dealSingle(Field field, Map<String, Column> stringColumnMap,
+                                      GenerateSqlPart generateSqlPart,
+                                      RelationshipRecordWith relationshipRecordWith) {
+        HasOneTemplate hasOne = new HasOneTemplate(field);
+        Record<?, ?> record = generateSqlPart.generate(hasOne.targetModel.newQuery())
             .where(hasOne.localKey,
                 String.valueOf(stringColumnMap.get(hasOne.foreignKey).getValue()))
             .first();
+
+
+        //  todo  这里约等于递归
         return record == null ? null : relationshipRecordWith.generate(record).toObject();
     }
 
@@ -64,17 +65,15 @@ public class HasOneQuery extends SubQuery {
      * @param generateSqlPart        Builder
      * @param relationshipRecordWith Record
      * @param tableCache             缓存
-     * @param <T>                    目标实体类
-     * @param <K>                    目标实体主键
      * @return 目标实体对象
      */
     @Nullable
-    public static <T, K> T dealSingle(Field field, Map<String, Column> stringColumnMap,
-                                      GenerateSqlPart<T, K> generateSqlPart,
-                                      RelationshipRecordWith<T, K> relationshipRecordWith,
-                                      TableCache<Record<T, K>> tableCache) {
-        HasOneTemplate<T, K> hasOne = new HasOneTemplate<>(field);
-        Record<T, K> record = generateSqlPart.generate(hasOne.targetModel.newQuery())
+    public static Object dealSingle(Field field, Map<String, Column> stringColumnMap,
+                                      GenerateSqlPart generateSqlPart,
+                                      RelationshipRecordWith relationshipRecordWith,
+                                      TableCache<Record<?, ?>> tableCache) {
+        HasOneTemplate hasOne = new HasOneTemplate(field);
+        Record<?, ?> record = generateSqlPart.generate(hasOne.targetModel.newQuery())
             .where(hasOne.localKey,
                 String.valueOf(stringColumnMap.get(hasOne.foreignKey).getValue()))
             .first();
@@ -87,18 +86,16 @@ public class HasOneQuery extends SubQuery {
      * @param stringColumnMapList    当前recordList的元数据
      * @param generateSqlPart        Builder
      * @param relationshipRecordWith Record
-     * @param <T>                    目标实体类
-     * @param <K>                    目标实体主键
      * @return 查询结果集
      */
-    public static <T, K> RecordList<T, K> dealBatch(Field field, List<Map<String, Column>> stringColumnMapList,
-                                                    GenerateSqlPart<T, K> generateSqlPart,
-                                                    RelationshipRecordWith<T, K> relationshipRecordWith) {
-        HasOneTemplate<T, K> hasOne = new HasOneTemplate<>(field);
-        RecordList<T, K> records = generateSqlPart.generate(hasOne.targetModel.newQuery())
+    public static RecordList<?, ?> dealBatch(Field field, List<Map<String, Column>> stringColumnMapList,
+                                                    GenerateSqlPart generateSqlPart,
+                                                    RelationshipRecordWith relationshipRecordWith) {
+        HasOneTemplate hasOne = new HasOneTemplate(field);
+        RecordList<?, ?> records = generateSqlPart.generate(hasOne.targetModel.newQuery())
             .whereIn(hasOne.localKey, getColumnInMapList(stringColumnMapList, hasOne.foreignKey))
             .get();
-        for (Record<T, K> record : records) {
+        for (Record<?, ?> record : records) {
             relationshipRecordWith.generate(record);
         }
         return records;
@@ -109,18 +106,33 @@ public class HasOneQuery extends SubQuery {
      * @param field                  字段
      * @param record                 当前record
      * @param relationshipRecordList 关联的recordList
-     * @param <T>                    目标实体类
-     * @param <K>                    目标实体主键
      * @return 筛选后的查询结果集
      */
     @Nullable
-    public static <T, K> Object filterBatch(Field field, Record<?, ?> record,
+    public static Object filterBatch(Field field, Record<?, ?> record,
                                             RecordList<?, ?> relationshipRecordList) {
-        HasOneTemplate<T, K> hasOne = new HasOneTemplate<>(field);
+        HasOneTemplate hasOne = new HasOneTemplate(field);
         Record<?, ?> newRecord = RecordFactory.filterRecord(relationshipRecordList, hasOne.localKey,
             String.valueOf(record.getMetadataMap().get(hasOne.foreignKey).getValue()));
 
         return newRecord == null ? null : newRecord.toObject();
+
+    }
+
+
+
+    /**
+     * 筛选批量关联查询结果
+     * @return 筛选后的查询结果集
+     */
+    @Nullable
+    public static Object filterBatch222222222222(Field field,
+                                                 String foreignKeyValue, RecordList<?, ?> relationshipRecordList) {
+        HasOneTemplate hasOne = new HasOneTemplate(field);
+        Record<?, ?> newRecord = RecordFactory.filterRecord(relationshipRecordList, hasOne.localKey,
+            foreignKeyValue);
+
+        return newRecord == null ? null : newRecord.toObjectWithoutRelationship();
 
     }
 }

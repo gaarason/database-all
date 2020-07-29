@@ -40,7 +40,7 @@ public class RecordFactory {
             metadataMapList.add(stringColumnMap);
             recordList.add(new Record<>(entityClass, model, stringColumnMap, ""));
         }
-        // 设置数据源
+        // 额外设置 总数据源
         recordList.setOriginalMetadataMapList(metadataMapList);
         // 设置原始sql
         recordList.setOriginalSql(sql);
