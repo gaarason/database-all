@@ -1,6 +1,6 @@
 package gaarason.database.contracts.record;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+//import com.fasterxml.jackson.core.JsonProcessingException;
 import gaarason.database.contracts.function.FilterRecordAttribute;
 
 import java.util.List;

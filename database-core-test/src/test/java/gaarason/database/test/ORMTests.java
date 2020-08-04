@@ -1,6 +1,6 @@
 package gaarason.database.test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+//import com.fasterxml.jackson.core.JsonProcessingException;
 import gaarason.database.connections.ProxyDataSource;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
@@ -46,7 +46,7 @@ public class ORMTests extends BaseTests {
     }
 
     @Test
-    public void ORM更新() throws JsonProcessingException {
+    public void ORM更新() {
         Record<StudentORMModel.Entity, Integer> record = studentModel.findOrFail(8);
         record.getEntity().setAge(Byte.valueOf("121"));
         boolean save = record.save();
@@ -59,8 +59,8 @@ public class ORMTests extends BaseTests {
         StudentORMModel.Entity entity = record.toObject();
         Assert.assertEquals(entity.getAge(), Byte.valueOf("121"));
 
-        String s = record.toJson();
-        System.out.println(s);
+//        String s = record.toJson();
+//        System.out.println(s);
 
         // ID 为 9 的不可以更新
         Record<StudentORMModel.Entity, Integer> record2 = studentModel.findOrFail(9);

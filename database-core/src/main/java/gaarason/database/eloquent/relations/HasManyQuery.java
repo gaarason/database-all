@@ -41,8 +41,8 @@ public class HasManyQuery extends SubQuery {
      * @return 目标实体对象
      */
     public static List<?> dealSingle(Field field, Map<String, Column> stringColumnMap,
-                                            GenerateSqlPart generateSqlPart,
-                                            RelationshipRecordWith relationshipRecordWith) {
+                                     GenerateSqlPart generateSqlPart,
+                                     RelationshipRecordWith relationshipRecordWith) {
         HasManyQuery.HasManyTemplate hasMany = new HasManyQuery.HasManyTemplate(field);
 
 
@@ -69,8 +69,8 @@ public class HasManyQuery extends SubQuery {
      * @return 查询结果集
      */
     public static RecordList<?, ?> dealBatch(Field field, List<Map<String, Column>> stringColumnMapList,
-                                                    GenerateSqlPart generateSqlPart,
-                                                    RelationshipRecordWith relationshipRecordWith) {
+                                             GenerateSqlPart generateSqlPart,
+                                             RelationshipRecordWith relationshipRecordWith) {
 
         HasManyQuery.HasManyTemplate hasMany = new HasManyQuery.HasManyTemplate(field);
 //        HasMany hasMany = field.getAnnotation(
@@ -80,7 +80,9 @@ public class HasManyQuery extends SubQuery {
 //        String      localKey    = hasMany.localKey();
 //        localKey = "".equals(localKey) ? targetModel.getPrimaryKeyColumnName() : localKey;
         RecordList<?, ?> records = generateSqlPart.generate(hasMany.targetModel.newQuery())
-            .whereIn(hasMany.localKey, getColumnInMapList(stringColumnMapList, hasMany.foreignKey))
+//            .whereIn(hasMany.localKey, getColumnInMapList(stringColumnMapList, hasMany.foreignKey))
+            // todo check
+            .whereIn(hasMany.foreignKey, getColumnInMapList(stringColumnMapList, hasMany.localKey))
             .get();
 
         for (Record<?, ?> record : records) {
@@ -97,7 +99,7 @@ public class HasManyQuery extends SubQuery {
      * @return 筛选后的查询结果集
      */
     public static List<?> filterBatch(Field field, Record<?, ?> record,
-                                             RecordList<?, ?> relationshipRecordList) {
+                                      RecordList<?, ?> relationshipRecordList) {
 //        // 筛选当前 record 所需要的属性
 //        HasMany     hasMany     = field.getAnnotation(HasMany.class);
 //        Model<?, ?> targetModel = getModelInstance(hasMany.targetModel());
@@ -106,7 +108,12 @@ public class HasManyQuery extends SubQuery {
 //        localKey = "".equals(localKey) ? targetModel.getPrimaryKeyColumnName() : localKey;
         HasManyQuery.HasManyTemplate hasMany = new HasManyQuery.HasManyTemplate(field);
 
-        return RecordFactory.filterRecordList(relationshipRecordList, hasMany.localKey,
-            String.valueOf(record.getMetadataMap().get(hasMany.foreignKey).getValue())).toObjectList();
+//        return RecordFactory.filterRecordList(relationshipRecordList, hasMany.localKey,
+//            String.valueOf(record.getMetadataMap().get(hasMany.foreignKey).getValue())).toObjectList();
+
+
+        // todo  check
+        return RecordFactory.filterRecordList(relationshipRecordList, hasMany.foreignKey,
+            String.valueOf(record.getMetadataMap().get(hasMany.localKey).getValue())).toObjectList();
     }
 }

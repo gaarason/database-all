@@ -44,8 +44,8 @@ public class HasOneQuery extends SubQuery {
      */
     @Nullable
     public static Object dealSingle(Field field, Map<String, Column> stringColumnMap,
-                                      GenerateSqlPart generateSqlPart,
-                                      RelationshipRecordWith relationshipRecordWith) {
+                                    GenerateSqlPart generateSqlPart,
+                                    RelationshipRecordWith relationshipRecordWith) {
         HasOneTemplate hasOne = new HasOneTemplate(field);
         Record<?, ?> record = generateSqlPart.generate(hasOne.targetModel.newQuery())
             .where(hasOne.localKey,
@@ -56,6 +56,30 @@ public class HasOneQuery extends SubQuery {
         //  todo  这里约等于递归
         return record == null ? null : relationshipRecordWith.generate(record).toObject();
     }
+
+
+//    /**
+//     * 单个关联查询, 以及对象转化
+//     * @param field                  字段
+//     * @param stringColumnMapList        当前record的元数据
+//     * @param generateSqlPart        Builder
+//     * @param relationshipRecordWith Record
+//     * @return 目标实体对象
+//     */
+//    @Nullable
+//    public static Object dealSingle(Field field, List<Map<String, Column>> stringColumnMapList,
+//                                    GenerateSqlPart generateSqlPart,
+//                                    RelationshipRecordWith relationshipRecordWith) {
+//        HasOneTemplate hasOne = new HasOneTemplate(field);
+//        Record<?, ?> record = generateSqlPart.generate(hasOne.targetModel.newQuery())
+//            .where(hasOne.localKey,
+//                String.valueOf(stringColumnMap.get(hasOne.foreignKey).getValue()))
+//            .first();
+//
+//
+//        //  todo  这里约等于递归
+//        return record == null ? null : relationshipRecordWith.generate(record).toObject();
+//    }
 
 
     /**
@@ -121,18 +145,18 @@ public class HasOneQuery extends SubQuery {
 
 
 
-    /**
-     * 筛选批量关联查询结果
-     * @return 筛选后的查询结果集
-     */
-    @Nullable
-    public static Object filterBatch222222222222(Field field,
-                                                 String foreignKeyValue, RecordList<?, ?> relationshipRecordList) {
-        HasOneTemplate hasOne = new HasOneTemplate(field);
-        Record<?, ?> newRecord = RecordFactory.filterRecord(relationshipRecordList, hasOne.localKey,
-            foreignKeyValue);
-
-        return newRecord == null ? null : newRecord.toObjectWithoutRelationship();
-
-    }
+//    /**
+//     * 筛选批量关联查询结果
+//     * @return 筛选后的查询结果集
+//     */
+//    @Nullable
+//    public static Object filterBatch222222222222(Field field,
+//                                                 String foreignKeyValue, RecordList<?, ?> relationshipRecordList) {
+//        HasOneTemplate hasOne = new HasOneTemplate(field);
+//        Record<?, ?> newRecord = RecordFactory.filterRecord(relationshipRecordList, hasOne.localKey,
+//            foreignKeyValue);
+//
+//        return newRecord == null ? null : newRecord.toObjectWithoutRelationship();
+//
+//    }
 }

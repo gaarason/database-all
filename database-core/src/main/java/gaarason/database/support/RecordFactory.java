@@ -42,6 +42,8 @@ public class RecordFactory {
         }
         // 额外设置 总数据源
         recordList.setOriginalMetadataMapList(metadataMapList);
+        // todo check 额外设置 总数据源
+        recordList.getSameLevelAllMetadataMapList().addAll(metadataMapList);
         // 设置原始sql
         recordList.setOriginalSql(sql);
         return recordList;
@@ -56,7 +58,13 @@ public class RecordFactory {
      */
     public static <T, K> RecordList<T, K> newRecordList(List<Record<T, K>> records) {
         RecordList<T, K> recordList = new RecordList<>();
-        recordList.addAll(records);
+//        recordList.addAll(records);
+
+        for (Record<T, K> record : records) {
+            recordList.add(record);
+            // todo check
+            recordList.getSameLevelAllMetadataMapList().addAll(record.getSameLevelAllMetadataMapList());
+        }
         return recordList;
     }
 
@@ -78,8 +86,12 @@ public class RecordFactory {
             // 一对多关系
             Set<String> relationIds = originalRecord.getMetadataMap().get(column).getRelationIds();
             // 满足其一则加入
-            if ((!relationIds.isEmpty() && relationIds.contains(value)) || value.equals(targetValue))
+            if ((!relationIds.isEmpty() && relationIds.contains(value)) || value.equals(targetValue)) {
+                // todo check 同级的元数据, 用于关联查询优化
+                recordList.getSameLevelAllMetadataMapList().add(originalRecord.getMetadataMap());
+
                 recordList.add(originalRecord);
+            }
         }
         return recordList;
     }
@@ -98,6 +110,8 @@ public class RecordFactory {
                                                    String value) {
         for (Record<T, K> originalRecord : originalRecordList) {
             if (value.equals(originalRecord.getMetadataMap().get(column).getValue().toString())) {
+                // todo check 同级的元数据, 用于关联查询优化
+                originalRecord.setSameLevelAllMetadataMapList(originalRecordList.getOriginalMetadataMapList());
                 return originalRecord;
             }
         }

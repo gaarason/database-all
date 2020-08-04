@@ -66,6 +66,9 @@ public class RelationTests extends BaseTests {
 
     @Test
     public void 一对一关系_无线级关系() {
+        // select * from student limit 1
+        // select * from teacher where id in (?)
+        // select * from student where id in (? ?)
         StudentHasOne studentHasOne2 =
             studentHasOneModel.newQuery()
                 .firstOrFail()
@@ -95,7 +98,7 @@ public class RelationTests extends BaseTests {
             .with("teacher", builder -> builder, record -> record
                 .with("students"
                     , builder -> builder,
-                record1 -> record1.with("teacher")
+                    record1 -> record1.with("teacher")
                 )
             )
             .toObjectList();
@@ -105,7 +108,7 @@ public class RelationTests extends BaseTests {
         }
         Assert.assertNotNull(students.get(0).getTeacher());
         Assert.assertNotNull(students.get(0).getTeacher().getStudents());
-        Assert.assertEquals(students.get(0).getTeacher().getStudents().size() , 4);
+        Assert.assertEquals(students.get(0).getTeacher().getStudents().size(), 4);
         Assert.assertNotNull(students.get(0).getTeacher().getStudents().get(0).getTeacher());
 
     }
@@ -133,7 +136,7 @@ public class RelationTests extends BaseTests {
         // 声明且使用
         Record<TeacherHasMany, Integer> record2 =
             teacherHasManyModel.newQuery().where("id", "6").firstOrFail().with("students",
-                (builder -> builder.orderBy("id", OrderBy.DESC).where("id", "<=","2")));
+                (builder -> builder.orderBy("id", OrderBy.DESC).where("id", "<=", "2")));
         TeacherHasMany teacherHasMany2 = record2.toObject();
         System.out.println(teacherHasMany2);
         Assert.assertEquals(teacherHasMany2.getStudents().size(), 2);
@@ -144,7 +147,7 @@ public class RelationTests extends BaseTests {
         // 声明且使用
         Record<TeacherHasMany, Integer> record2 =
             teacherHasManyModel.newQuery().where("id", "6").firstOrFail().with("students",
-                (builder -> builder.orderBy("id", OrderBy.DESC).where("id", "<=","2")), record -> record.with(
+                (builder -> builder.orderBy("id", OrderBy.DESC).where("id", "<=", "2")), record -> record.with(
                     "teacher", builder -> builder, record1 -> record1.with("students", builder -> builder,
                         record3 -> record3.with("teacher"))));
         TeacherHasMany teacherHasMany2 = record2.toObject();
@@ -222,7 +225,10 @@ public class RelationTests extends BaseTests {
     @Test
     public void 反一对一关系_builder筛选() {
         StudentBelongsTo studentBelongsTo2 =
-            studentBelongsToModel.newQuery().firstOrFail().with("teacher", builder -> builder.select("id","name").select("id","name")).toObject();
+            studentBelongsToModel.newQuery()
+                .firstOrFail()
+                .with("teacher", builder -> builder.select("id", "name").select("id", "name"))
+                .toObject();
         System.out.println(studentBelongsTo2);
         System.out.println(studentBelongsTo2.getTeacher());
         Assert.assertEquals((long) studentBelongsTo2.getTeacher().getId(), 6);
@@ -233,7 +239,7 @@ public class RelationTests extends BaseTests {
     public void 多数据结果_反一对一关系() {
         List<StudentBelongsTo> studentList =
             studentBelongsToModel.newQuery().get().with("teacher",
-                builder -> builder.select("id","name")).toObjectList();
+                builder -> builder.select("id", "name")).toObjectList();
 
         for (StudentBelongsTo studentBelongsTo : studentList) {
             System.out.println(studentBelongsTo);

@@ -1,7 +1,8 @@
 package gaarason.database.eloquent;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+//import com.fasterxml.jackson.core.JsonProcessingException;
+//import com.fasterxml.jackson.databind.ObjectMapper;
+
 import gaarason.database.contracts.function.GenerateSqlPart;
 import gaarason.database.contracts.function.RelationshipRecordWith;
 import gaarason.database.contracts.record.FriendlyORM;
@@ -9,14 +10,7 @@ import gaarason.database.contracts.record.OperationORM;
 import gaarason.database.contracts.record.RelationshipORM;
 import gaarason.database.conversion.ToObject;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.annotations.*;
-import gaarason.database.eloquent.relations.BelongsToManyQuery;
-import gaarason.database.eloquent.relations.BelongsToQuery;
-import gaarason.database.eloquent.relations.HasManyQuery;
-import gaarason.database.eloquent.relations.HasOneQuery;
-import gaarason.database.exception.EntityNewInstanceException;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
-import gaarason.database.exception.TypeNotSupportedException;
 import gaarason.database.support.Column;
 import gaarason.database.utils.EntityUtil;
 import gaarason.database.utils.ObjectUtil;
@@ -34,6 +28,13 @@ import java.util.*;
  * @param <K> 主键类型
  */
 public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, RelationshipORM<T, K>, Serializable {
+
+    /**
+     * 同级的元数据, 用于关联查询优化
+     */
+    @Getter
+    @Setter
+    private List<Map<String, Column>> sameLevelAllMetadataMapList = new ArrayList<>();
 
     /**
      * 本表元数据
@@ -77,14 +78,6 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
     @Getter
     Object originalPrimaryKeyValue;
 
-//    /**
-//     * 同级所有主键值
-//     */
-//    @Nullable
-//    @Setter
-//    @Getter
-//    Set<Object> originalPrimaryKeyValueSet;
-
     /**
      * 是否已经绑定具体的数据
      */
@@ -126,6 +119,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      */
     private void init(Map<String, Column> stringColumnMap) {
         this.metadataMap = stringColumnMap;
+        this.sameLevelAllMetadataMapList.add(stringColumnMap);
         entity = originalEntity = toObjectWithoutRelationship();
         if (!stringColumnMap.isEmpty()) {
             hasBind = true;
@@ -167,138 +161,26 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
         return StringUtil.rtrim(sb.toString(), "&");
     }
 
-    /**
-     * 元数据转json字符串
-     * @return eg:{"subject":null,"sex":"","name":"小明明明","age":"16"}
-     * @throws JsonProcessingException 元数据不可转json
-     */
-    public String toJson() throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.writeValueAsString(toMap());
-    }
 
     /**
-     * 元数据转实体对象
-     * @return 实体对象
+     * 转化为对象列表
+     * @return 对象列表
      */
+    @Override
     public T toObject() {
-        ToObject<T, K> toObject = new ToObject<>(this);
+        ToObject<T, K> tkToObject = new ToObject<>(this, true);
+        return tkToObject.toObject();
 
-        return toObject.toObject();
-
-
-//        return toObject(entityClass, metadataMap, true);
     }
+
 
     /**
      * 元数据转实体对象
      * @return 实体对象
      */
     public T toObjectWithoutRelationship() {
-        return toObject(entityClass, metadataMap, false);
-    }
-
-    /**
-     * 元数据转指定实体对象
-     * @return 指定实体对象
-     */
-    public <V> V toObject(Class<V> entityClassCustom) {
-        return toObject(entityClassCustom, metadataMap, true);
-    }
-
-    /**
-     * 将元数据map赋值给实体对象
-     * @param entityClass          实体类
-     * @param stringColumnMap      元数据map
-     * @param attachedRelationship 是否查询关联关系
-     * @return 实体对象
-     */
-    <V> V toObject(Class<V> entityClass, Map<String, Column> stringColumnMap, boolean attachedRelationship)
-        throws EntityNewInstanceException {
-        Field[] fields = entityClass.getDeclaredFields();
-        try {
-            V entity = entityClass.newInstance();
-            // 普通字段赋值, 主键赋值
-            fieldAssignment(fields, stringColumnMap, entity);
-            // 关联关系查询&赋值
-            if (relationBuilderMap.size() > 0 && attachedRelationship) {
-                fieldRelationAssignment(fields, stringColumnMap, entity);
-            }
-            return entity;
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new EntityNewInstanceException(e.getMessage());
-        }
-    }
-
-    /**
-     * 将数据库查询结果赋值给entity的field
-     * @param fields          属性
-     * @param stringColumnMap 元数据map
-     * @param entity          数据表实体对象
-     */
-    private <V> void fieldAssignment(Field[] fields, Map<String, Column> stringColumnMap, V entity)
-        throws TypeNotSupportedException {
-        for (Field field : fields) {
-//            EntityUtil.fieldAssignment(field, stringColumnMap, entity, this);
-
-            String columnName = EntityUtil.columnName(field);
-            Column column     = stringColumnMap.get(columnName);
-            if (column == null) {
-                continue;
-            }
-            field.setAccessible(true); // 设置属性是可访问
-            try {
-                Object value = EntityUtil.columnFill(field, column.getValue());
-                field.set(entity, value);
-                // 主键值记录
-                if (field.isAnnotationPresent(Primary.class)) {
-                    originalPrimaryKeyValue = value;
-                }
-            } catch (IllegalArgumentException | IllegalAccessException e) {
-                throw new TypeNotSupportedException(e.getMessage());
-            }
-        }
-    }
-
-    /**
-     * 将关联关系的数据库查询结果赋值给entity的field
-     * @param fields          属性
-     * @param stringColumnMap 元数据map
-     * @param entity          数据表实体对象
-     */
-    private <V> void fieldRelationAssignment(Field[] fields, Map<String, Column> stringColumnMap, V entity)
-        throws TypeNotSupportedException {
-        for (Field field : fields) {
-            // 获取关系的预处理
-            GenerateSqlPart        generateSqlPart        = relationBuilderMap.get(field.getName());
-            RelationshipRecordWith relationshipRecordWith = relationRecordMap.get(field.getName());
-            if (generateSqlPart == null || relationshipRecordWith == null) {
-                continue;
-            }
-            field.setAccessible(true);
-            Object relationshipEntity;
-            // 关联关系查询&赋值
-            if (field.isAnnotationPresent(HasOne.class)) {
-                relationshipEntity = HasOneQuery.dealSingle(field, stringColumnMap, generateSqlPart,
-                    relationshipRecordWith);
-            } else if (field.isAnnotationPresent(HasMany.class)) {
-                relationshipEntity = HasManyQuery.dealSingle(field, stringColumnMap, generateSqlPart,
-                    relationshipRecordWith);
-            } else if (field.isAnnotationPresent(BelongsToMany.class)) {
-                relationshipEntity = BelongsToManyQuery.dealSingle(field, stringColumnMap, generateSqlPart,
-                    relationshipRecordWith);
-            } else if (field.isAnnotationPresent(BelongsTo.class)) {
-                relationshipEntity = BelongsToQuery.dealSingle(field, stringColumnMap, generateSqlPart,
-                    relationshipRecordWith);
-            } else {
-                continue;
-            }
-            try {
-                field.set(entity, relationshipEntity);
-            } catch (IllegalArgumentException | IllegalAccessException e) {
-                throw new TypeNotSupportedException(e.getMessage());
-            }
-        }
+        ToObject<T, K> tkToObject = new ToObject<>(this, false);
+        return tkToObject.toObject();
     }
 
     /**
@@ -351,7 +233,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
 
     @Override
     public Record<T, K> with(String column, GenerateSqlPart builderClosure,
-                                      RelationshipRecordWith recordClosure) {
+                             RelationshipRecordWith recordClosure) {
         // 效验参数
         if (ObjectUtil.checkProperties(model.getEntityClass(), column)) {
             relationBuilderMap.put(column, builderClosure);
@@ -536,4 +418,5 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
     public String toString() {
         return entity.toString();
     }
+
 }
