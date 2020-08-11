@@ -1,8 +1,8 @@
 package gaarason.database.test.relation.data.pojo;
 
-import gaarason.database.eloquent.annotations.Column;
-import gaarason.database.eloquent.annotations.Primary;
-import gaarason.database.eloquent.annotations.Table;
+import gaarason.database.eloquent.annotations.*;
+import gaarason.database.test.relation.data.model.RelationshipStudentTeacherModel;
+import gaarason.database.test.relation.data.model.TeacherModel;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -12,13 +12,13 @@ import java.util.Date;
 @Table(name = "student")
 public class Student implements Serializable {
 
-    final public static String ID         = "id";
+    final public static String ID = "id";
 
-    final public static String NAME       = "name";
+    final public static String NAME = "name";
 
-    final public static String AGE        = "age";
+    final public static String AGE = "age";
 
-    final public static String SEX        = "sex";
+    final public static String SEX = "sex";
 
     final public static String TEACHER_ID = "teacher_id";
 
@@ -52,6 +52,26 @@ public class Student implements Serializable {
 
     @Column(name = "updated_at", insertable = false, updatable = false, comment = "更新时间")
     private Date updatedAt;
+
+    @BelongsTo(parentModel = TeacherModel.class, localModelForeignKey = "teacher_id", parentModelLocalKey = "id")
+    private Teacher teacher;
+
+    @HasOneOrMany(sonModel = RelationshipStudentTeacherModel.class, sonModelForeignKey = "student_id")
+    private RelationshipStudentTeacher relationshipStudentTeacher;
+
+
+//    @BelongsToMany(targetModel = TeacherModel.class, relationModel = BaseRelationshipStudentTeacherModel.class,
+//        modelForeignKey = "student_id", targetModelForeignKey = "teacher_id", modelLocalKey = "id",
+//        targetModelLocalKey = "id")
+//    private List<Teacher> teachersBelongsToMany;
+
+
+
+//    @HasOne(targetModel = TeacherModel.class, foreignKey = "teacher_id")
+//    private Teacher teacherHasOne;
+//
+//    @HasMany(targetModel = TeacherModel.class, foreignKey = "teacher_id")
+//    private Teacher teachersHasMany;
 
 
 }

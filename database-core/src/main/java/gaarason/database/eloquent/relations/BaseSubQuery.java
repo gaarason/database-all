@@ -1,5 +1,6 @@
 package gaarason.database.eloquent.relations;
 
+import gaarason.database.contracts.eloquent.relations.SubQuery;
 import gaarason.database.eloquent.Model;
 import gaarason.database.exception.ModelNewInstanceException;
 import gaarason.database.support.Column;
@@ -12,7 +13,7 @@ import java.util.Set;
 /**
  * 关联关系
  */
-public class SubQuery {
+abstract public class BaseSubQuery implements SubQuery {
 
     /**
      * 获取 model 实例

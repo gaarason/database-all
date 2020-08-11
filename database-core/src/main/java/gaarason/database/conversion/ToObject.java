@@ -9,10 +9,10 @@ import gaarason.database.eloquent.annotations.BelongsTo;
 import gaarason.database.eloquent.annotations.BelongsToMany;
 import gaarason.database.eloquent.annotations.HasMany;
 import gaarason.database.eloquent.annotations.HasOne;
-import gaarason.database.eloquent.relations.BelongsToManyQuery;
-import gaarason.database.eloquent.relations.BelongsToQuery;
-import gaarason.database.eloquent.relations.HasManyQuery;
-import gaarason.database.eloquent.relations.HasOneQuery;
+import gaarason.database.eloquent.relations.BelongsToManyQueryBase;
+import gaarason.database.eloquent.relations.BelongsToQueryBase;
+import gaarason.database.eloquent.relations.HasManyQueryBase;
+import gaarason.database.eloquent.relations.HasOneQueryBase;
 import gaarason.database.exception.EntityNewInstanceException;
 import gaarason.database.support.Column;
 import gaarason.database.support.RecordFactory;
@@ -65,7 +65,13 @@ public class ToObject<T, K> {
         return toObjectList().get(0);
     }
 
+
+    public T toObject(Map<String, RecordList<?, ?>> cacheRelationRecordList) {
+        return toObjectList(cacheRelationRecordList).get(0);
+    }
+
     public List<T> toObjectList() {
+
         Map<String, RecordList<?, ?>> cacheRelationRecordList = new HashMap<>();
 
         return toObjectList(cacheRelationRecordList);
@@ -76,7 +82,6 @@ public class ToObject<T, K> {
      * 转化为对象列表
      * @return 对象列表
      */
-    @SuppressWarnings("unchecked")
     public List<T> toObjectList(Map<String, RecordList<?, ?>> cacheRelationRecordList) {
 
 
@@ -95,11 +100,17 @@ public class ToObject<T, K> {
                     field.setAccessible(true); // 设置属性是可访问
                     // 普通赋值
                     EntityUtil.fieldAssignment(field, record.getMetadataMap(), entity, record);
+
+                    if( !attachedRelationship){
+                        continue;
+                    }
+
                     // 获取关系的预处理
                     GenerateSqlPart generateSqlPart =
                         record.getRelationBuilderMap().get(field.getName());
                     RelationshipRecordWith relationshipRecordWith = record.getRelationRecordMap().get(field.getName());
                     if (generateSqlPart == null || relationshipRecordWith == null || !attachedRelationship) {
+//                        System.out.println(" continue ");
                         continue;
                     }
                     // 关联关系赋值
@@ -111,10 +122,10 @@ public class ToObject<T, K> {
 //                                relationshipRecordWith));
                         RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
                             field.getName(),
-                            () -> HasOneQuery.dealBatch(field, sameLevelAllMetadataMapList, generateSqlPart,
+                            () -> HasOneQueryBase.dealBatch(field, sameLevelAllMetadataMapList, generateSqlPart,
                                 relationshipRecordWith));
                         // 筛选当前 record 所需要的属性
-                        field.set(entity, HasOneQuery.filterBatch(field, record, relationshipRecordList));
+                        field.set(entity, HasOneQueryBase.filterBatch(field, record, relationshipRecordList, cacheRelationRecordList));
                     }
                     // 一对多
                     else if (field.isAnnotationPresent(HasMany.class)) {
@@ -124,10 +135,10 @@ public class ToObject<T, K> {
 //                                relationshipRecordWith));
                         RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
                             field.getName(),
-                            () -> HasManyQuery.dealBatch(field, sameLevelAllMetadataMapList, generateSqlPart,
+                            () -> HasManyQueryBase.dealBatch(field, sameLevelAllMetadataMapList, generateSqlPart,
                                 relationshipRecordWith));
                         // 筛选当前 record 所需要的属性
-                        field.set(entity, HasManyQuery.filterBatch(field, record, relationshipRecordList));
+                        field.set(entity, HasManyQueryBase.filterBatch(field, record, relationshipRecordList, cacheRelationRecordList));
                     }
                     // 多对多
                     else if (field.isAnnotationPresent(BelongsToMany.class)) {
@@ -136,10 +147,10 @@ public class ToObject<T, K> {
 //                            field.getName(), () -> BelongsToManyQuery.dealBatch(field, record.getMetadataMap(),
 //                                originalMetadataMapList, generateSqlPart, relationshipRecordWith));
                         RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
-                            field.getName(), () -> BelongsToManyQuery.dealBatch(field, record.getMetadataMap(),
+                            field.getName(), () -> BelongsToManyQueryBase.dealBatch(field, record.getMetadataMap(),
                                 sameLevelAllMetadataMapList, generateSqlPart, relationshipRecordWith));
                         // 筛选当前 record 所需要的属性
-                        field.set(entity, BelongsToManyQuery.filterBatch(field, record, relationshipRecordList));
+                        field.set(entity, BelongsToManyQueryBase.filterBatch(field, record, relationshipRecordList, cacheRelationRecordList));
                     }
                     // 逆向一对一
                     else if (field.isAnnotationPresent(BelongsTo.class)) {
@@ -149,10 +160,10 @@ public class ToObject<T, K> {
 //                                relationshipRecordWith));
                         RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
                             field.getName(),
-                            () -> BelongsToQuery.dealBatch(field, sameLevelAllMetadataMapList, generateSqlPart,
+                            () -> BelongsToQueryBase.dealBatch(field, sameLevelAllMetadataMapList, generateSqlPart,
                                 relationshipRecordWith));
                         // 筛选当前 record 所需要的属性
-                        field.set(entity, BelongsToQuery.filterBatch(field, record, relationshipRecordList));
+                        field.set(entity, BelongsToQueryBase.filterBatch(field, record, relationshipRecordList, cacheRelationRecordList));
                     }
                 }
                 list.add(entity);
@@ -172,18 +183,25 @@ public class ToObject<T, K> {
      * @param closure                 真实业务逻辑实现
      * @return 批量结果集
      */
-    private static RecordList<?, ?> getRecordListInCache(Map<String, RecordList<?, ?>> cacheRelationRecordList,
+    private RecordList<?, ?> getRecordListInCache(Map<String, RecordList<?, ?>> cacheRelationRecordList,
                                                          String key, GenerateRecordList closure) {
+
+        String ff = key + "|" + records.get(0).getModel().getTableName();
         // 关系model的结果集, 本地先取值
-        RecordList<?, ?> recordList = cacheRelationRecordList.get(key);
+        RecordList<?, ?> recordList = cacheRelationRecordList.get(ff);
         // 本地取值为空, 则查询数据
         if (recordList == null) {
             // 执行生成
             recordList = closure.generate();
             // 赋值本地, 以便下次使用
-            cacheRelationRecordList.put(key, recordList);
+            cacheRelationRecordList.put(ff, recordList);
         }
         return recordList;
+
+
+        // model(表名) - 字段名   ------>  RecordList<?, ?>
+
+
     }
 
 }

@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class BelongsToManyQuery extends SubQuery {
+public class BelongsToManyQueryBase extends BaseSubQuery {
 
     final public static String RELATION_REMEMBER_KEY = "RELATION_REMEMBER_KEY";
 
@@ -43,35 +43,35 @@ public class BelongsToManyQuery extends SubQuery {
         }
     }
 
-    /**
-     * 单个关联查询, 以及对象转化
-     * @param field                  字段
-     * @param stringColumnMap        当前record的元数据
-     * @param generateSqlPart        Builder
-     * @param relationshipRecordWith Record
-     * @return 目标实体对象
-     */
-    public static List<?> dealSingle(Field field, Map<String, Column> stringColumnMap,
-                                     GenerateSqlPart generateSqlPart,
-                                     RelationshipRecordWith relationshipRecordWith) {
-
-        BelongsToManyTemplate belongsToMany = new BelongsToManyTemplate(field);
-
-        // 中间表
-        List<Object> targetModelForeignKeyList = belongsToMany.relationModel.newQuery()
-            .where(belongsToMany.modelForeignKey,
-                String.valueOf(stringColumnMap.get(belongsToMany.modelLocalKey).getValue()))
-            .get()
-            .toList(record -> record.toMap().get(belongsToMany.targetModelForeignKey));
-        // 目标表
-        RecordList<?, ?> relationRecordList = generateSqlPart.generate(belongsToMany.targetModel.newQuery())
-            .whereIn(belongsToMany.targetModelLocalKey, targetModelForeignKeyList)
-            .get();
-        for (Record<?, ?> record : relationRecordList) {
-            relationshipRecordWith.generate(record);
-        }
-        return relationRecordList.toObjectList();
-    }
+//    /**
+//     * 单个关联查询, 以及对象转化
+//     * @param field                  字段
+//     * @param stringColumnMap        当前record的元数据
+//     * @param generateSqlPart        Builder
+//     * @param relationshipRecordWith Record
+//     * @return 目标实体对象
+//     */
+//    public static List<?> dealSingle(Field field, Map<String, Column> stringColumnMap,
+//                                     GenerateSqlPart generateSqlPart,
+//                                     RelationshipRecordWith relationshipRecordWith) {
+//
+//        BelongsToManyTemplate belongsToMany = new BelongsToManyTemplate(field);
+//
+//        // 中间表
+//        List<Object> targetModelForeignKeyList = belongsToMany.relationModel.newQuery()
+//            .where(belongsToMany.modelForeignKey,
+//                String.valueOf(stringColumnMap.get(belongsToMany.modelLocalKey).getValue()))
+//            .get()
+//            .toList(record -> record.toMap().get(belongsToMany.targetModelForeignKey));
+//        // 目标表
+//        RecordList<?, ?> relationRecordList = generateSqlPart.generate(belongsToMany.targetModel.newQuery())
+//            .whereIn(belongsToMany.targetModelLocalKey, targetModelForeignKeyList)
+//            .get();
+//        for (Record<?, ?> record : relationRecordList) {
+//            relationshipRecordWith.generate(record);
+//        }
+//        return relationRecordList.toObjectList();
+//    }
 
     /**
      * 批量关联查询
@@ -137,11 +137,11 @@ public class BelongsToManyQuery extends SubQuery {
      * @return 筛选后的查询结果集
      */
     public static List<?> filterBatch(Field field, Record<?, ?> record,
-                                      RecordList<?, ?> relationshipRecordList) {
+                                      RecordList<?, ?> relationshipRecordList, Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         // 筛选当前 record 所需要的属性
         BelongsToManyTemplate belongsToMany = new BelongsToManyTemplate(field);
 
         return RecordFactory.filterRecordList(relationshipRecordList, RELATION_REMEMBER_KEY,
-            String.valueOf(record.getMetadataMap().get(belongsToMany.modelLocalKey).getValue())).toObjectList();
+            String.valueOf(record.getMetadataMap().get(belongsToMany.modelLocalKey).getValue())).toObjectList(cacheRelationRecordList);
     }
 }

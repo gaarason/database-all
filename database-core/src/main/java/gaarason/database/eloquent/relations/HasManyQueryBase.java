@@ -13,7 +13,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
-public class HasManyQuery extends SubQuery {
+public class HasManyQueryBase extends BaseSubQuery {
 
     static class HasManyTemplate {
         Model<?, ?> targetModel;
@@ -31,34 +31,34 @@ public class HasManyQuery extends SubQuery {
 
         }
     }
-
-    /**
-     * 单个关联查询, 以及对象转化
-     * @param field                  字段
-     * @param stringColumnMap        当前record的元数据
-     * @param generateSqlPart        Builder
-     * @param relationshipRecordWith Record
-     * @return 目标实体对象
-     */
-    public static List<?> dealSingle(Field field, Map<String, Column> stringColumnMap,
-                                     GenerateSqlPart generateSqlPart,
-                                     RelationshipRecordWith relationshipRecordWith) {
-        HasManyQuery.HasManyTemplate hasMany = new HasManyQuery.HasManyTemplate(field);
-
-
-//        HasMany     hasMany     = field.getAnnotation(HasMany.class);
-//        Model<?, ?> targetModel = getModelInstance(hasMany.targetModel());
-//        String      foreignKey  = hasMany.foreignKey();
-//        String      localKey    = hasMany.localKey();
-//        localKey = "".equals(localKey) ? targetModel.getPrimaryKeyColumnName() : localKey;
-        RecordList<?, ?> records = generateSqlPart.generate(hasMany.targetModel.newQuery())
-            .where(hasMany.foreignKey, String.valueOf(stringColumnMap.get(hasMany.localKey).getValue()))
-            .get();
-        for (Record<?, ?> record : records) {
-            relationshipRecordWith.generate(record);
-        }
-        return records.toObjectList();
-    }
+//
+//    /**
+//     * 单个关联查询, 以及对象转化
+//     * @param field                  字段
+//     * @param stringColumnMap        当前record的元数据
+//     * @param generateSqlPart        Builder
+//     * @param relationshipRecordWith Record
+//     * @return 目标实体对象
+//     */
+//    public static List<?> dealSingle(Field field, Map<String, Column> stringColumnMap,
+//                                     GenerateSqlPart generateSqlPart,
+//                                     RelationshipRecordWith relationshipRecordWith) {
+//        HasManyQuery.HasManyTemplate hasMany = new HasManyQuery.HasManyTemplate(field);
+//
+//
+////        HasMany     hasMany     = field.getAnnotation(HasMany.class);
+////        Model<?, ?> targetModel = getModelInstance(hasMany.targetModel());
+////        String      foreignKey  = hasMany.foreignKey();
+////        String      localKey    = hasMany.localKey();
+////        localKey = "".equals(localKey) ? targetModel.getPrimaryKeyColumnName() : localKey;
+//        RecordList<?, ?> records = generateSqlPart.generate(hasMany.targetModel.newQuery())
+//            .where(hasMany.foreignKey, String.valueOf(stringColumnMap.get(hasMany.localKey).getValue()))
+//            .get();
+//        for (Record<?, ?> record : records) {
+//            relationshipRecordWith.generate(record);
+//        }
+//        return records.toObjectList();
+//    }
 
     /**
      * 批量关联查询
@@ -72,7 +72,7 @@ public class HasManyQuery extends SubQuery {
                                              GenerateSqlPart generateSqlPart,
                                              RelationshipRecordWith relationshipRecordWith) {
 
-        HasManyQuery.HasManyTemplate hasMany = new HasManyQuery.HasManyTemplate(field);
+        HasManyQueryBase.HasManyTemplate hasMany = new HasManyQueryBase.HasManyTemplate(field);
 //        HasMany hasMany = field.getAnnotation(
 //            HasMany.class);
 //        Model<?, ?> targetModel = getModelInstance(hasMany.targetModel());
@@ -99,14 +99,14 @@ public class HasManyQuery extends SubQuery {
      * @return 筛选后的查询结果集
      */
     public static List<?> filterBatch(Field field, Record<?, ?> record,
-                                      RecordList<?, ?> relationshipRecordList) {
+                                      RecordList<?, ?> relationshipRecordList, Map<String, RecordList<?, ?>> cacheRelationRecordList) {
 //        // 筛选当前 record 所需要的属性
 //        HasMany     hasMany     = field.getAnnotation(HasMany.class);
 //        Model<?, ?> targetModel = getModelInstance(hasMany.targetModel());
 //        String      foreignKey  = hasMany.foreignKey();
 //        String      localKey    = hasMany.localKey();
 //        localKey = "".equals(localKey) ? targetModel.getPrimaryKeyColumnName() : localKey;
-        HasManyQuery.HasManyTemplate hasMany = new HasManyQuery.HasManyTemplate(field);
+        HasManyQueryBase.HasManyTemplate hasMany = new HasManyQueryBase.HasManyTemplate(field);
 
 //        return RecordFactory.filterRecordList(relationshipRecordList, hasMany.localKey,
 //            String.valueOf(record.getMetadataMap().get(hasMany.foreignKey).getValue())).toObjectList();
@@ -114,6 +114,6 @@ public class HasManyQuery extends SubQuery {
 
         // todo  check
         return RecordFactory.filterRecordList(relationshipRecordList, hasMany.foreignKey,
-            String.valueOf(record.getMetadataMap().get(hasMany.localKey).getValue())).toObjectList();
+            String.valueOf(record.getMetadataMap().get(hasMany.localKey).getValue())).toObjectList(cacheRelationRecordList);
     }
 }

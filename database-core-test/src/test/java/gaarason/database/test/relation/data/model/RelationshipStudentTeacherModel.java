@@ -3,7 +3,7 @@ package gaarason.database.test.relation.data.model;
 import gaarason.database.test.relation.data.model.base.BaseModel;
 import gaarason.database.test.relation.data.pojo.RelationshipStudentTeacher;
 
-public class BaseRelationshipStudentTeacherModel extends BaseModel<RelationshipStudentTeacher, Long> {
+public class RelationshipStudentTeacherModel extends BaseModel<RelationshipStudentTeacher, Long> {
 
 }
 

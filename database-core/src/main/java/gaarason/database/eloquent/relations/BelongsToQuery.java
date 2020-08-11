@@ -7,7 +7,6 @@ import gaarason.database.eloquent.Model;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
 import gaarason.database.eloquent.annotations.BelongsTo;
-import gaarason.database.query.Builder;
 import gaarason.database.support.Column;
 import gaarason.database.support.RecordFactory;
 
@@ -15,7 +14,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
-public class BelongsToQuery extends SubQuery {
+public class BelongsToQuery extends BaseSubQuery {
 
     static class BelongsToTemplate {
         Model<? ,?> parentModel;
@@ -28,40 +27,40 @@ public class BelongsToQuery extends SubQuery {
             BelongsTo belongsTo = field.getAnnotation(
                 BelongsTo.class);
             parentModel = getModelInstance(belongsTo.parentModel());
-            foreignKey = belongsTo.foreignKey();
-            localKey = belongsTo.localKey();
+            foreignKey = belongsTo.localModelForeignKey();
+            localKey = belongsTo.parentModelLocalKey();
             localKey = "".equals(localKey) ? parentModel.getPrimaryKeyColumnName() : localKey;
         }
     }
 
-    /**
-     * 单个关联查询, 以及对象转化
-     * @param field                  字段
-     * @param stringColumnMap        当前record的元数据
-     * @param generateSqlPart        Builder
-     * @param relationshipRecordWith Record
-     * @return 目标实体对象
-     */
-    @Nullable
-    public static Object dealSingle(Field field, Map<String, Column> stringColumnMap,
-                                      GenerateSqlPart generateSqlPart,
-                                      RelationshipRecordWith relationshipRecordWith) {
-//        BelongsTo belongsTo = field.getAnnotation(
-//            BelongsTo.class);
-//        Model<?, ?> parentModel = getModelInstance(belongsTo.parentModel());
-//        String      foreignKey  = belongsTo.foreignKey();
-//        String      localKey    = belongsTo.localKey();
-//        localKey = "".equals(localKey) ? parentModel.getPrimaryKeyColumnName() : localKey;
-
-        BelongsToTemplate belongsTo = new BelongsToTemplate(field);
-
-        Builder<?, ?> builder = belongsTo.parentModel.newQuery();
-
-        Record<?, ?> record = generateSqlPart.generate(belongsTo.parentModel.newQuery())
-            .where(belongsTo.localKey, String.valueOf(stringColumnMap.get(belongsTo.foreignKey).getValue()))
-            .first();
-        return record == null ? null : relationshipRecordWith.generate(record).toObject();
-    }
+//    /**
+//     * 单个关联查询, 以及对象转化
+//     * @param field                  字段
+//     * @param stringColumnMap        当前record的元数据
+//     * @param generateSqlPart        Builder
+//     * @param relationshipRecordWith Record
+//     * @return 目标实体对象
+//     */
+//    @Nullable
+//    public static Object dealSingle(Field field, Map<String, Column> stringColumnMap,
+//                                      GenerateSqlPart generateSqlPart,
+//                                      RelationshipRecordWith relationshipRecordWith) {
+////        BelongsTo belongsTo = field.getAnnotation(
+////            BelongsTo.class);
+////        Model<?, ?> parentModel = getModelInstance(belongsTo.parentModel());
+////        String      foreignKey  = belongsTo.foreignKey();
+////        String      localKey    = belongsTo.localKey();
+////        localKey = "".equals(localKey) ? parentModel.getPrimaryKeyColumnName() : localKey;
+//
+//        BelongsToTemplate belongsTo = new BelongsToTemplate(field);
+//
+//        Builder<?, ?> builder = belongsTo.parentModel.newQuery();
+//
+//        Record<?, ?> record = generateSqlPart.generate(belongsTo.parentModel.newQuery())
+//            .where(belongsTo.localKey, String.valueOf(stringColumnMap.get(belongsTo.foreignKey).getValue()))
+//            .first();
+//        return record == null ? null : relationshipRecordWith.generate(record).toObject();
+//    }
 
     /**
      * 批量关联查询
@@ -94,14 +93,14 @@ public class BelongsToQuery extends SubQuery {
      */
     @Nullable
     public static Object filterBatch(Field field, Record<?, ?> record,
-                                            RecordList<?, ?> relationshipRecordList) {
+                                            RecordList<?, ?> relationshipRecordList, Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         BelongsToTemplate belongsTo = new BelongsToTemplate(field);
 
 
         Record<?, ?> newRecord = RecordFactory.filterRecord(relationshipRecordList, belongsTo.localKey,
             String.valueOf(record.getMetadataMap().get(belongsTo.foreignKey).getValue()));
 
-        return newRecord == null ? null : newRecord.toObject();
+        return newRecord == null ? null : newRecord.toObject(cacheRelationRecordList);
 
     }
 }

@@ -1,6 +1,5 @@
 package gaarason.database.eloquent.relations;
 
-import gaarason.database.cache.TableCache;
 import gaarason.database.contracts.function.GenerateSqlPart;
 import gaarason.database.contracts.function.RelationshipRecordWith;
 import gaarason.database.core.lang.Nullable;
@@ -15,7 +14,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
-public class HasOneQuery extends SubQuery {
+public class HasOneQueryBase extends BaseSubQuery {
 
     static class HasOneTemplate {
         Model<?, ?> targetModel;
@@ -34,40 +33,16 @@ public class HasOneQuery extends SubQuery {
         }
     }
 
-    /**
-     * 单个关联查询, 以及对象转化
-     * @param field                  字段
-     * @param stringColumnMap        当前record的元数据
-     * @param generateSqlPart        Builder
-     * @param relationshipRecordWith Record
-     * @return 目标实体对象
-     */
-    @Nullable
-    public static Object dealSingle(Field field, Map<String, Column> stringColumnMap,
-                                    GenerateSqlPart generateSqlPart,
-                                    RelationshipRecordWith relationshipRecordWith) {
-        HasOneTemplate hasOne = new HasOneTemplate(field);
-        Record<?, ?> record = generateSqlPart.generate(hasOne.targetModel.newQuery())
-            .where(hasOne.localKey,
-                String.valueOf(stringColumnMap.get(hasOne.foreignKey).getValue()))
-            .first();
-
-
-        //  todo  这里约等于递归
-        return record == null ? null : relationshipRecordWith.generate(record).toObject();
-    }
-
-
 //    /**
 //     * 单个关联查询, 以及对象转化
 //     * @param field                  字段
-//     * @param stringColumnMapList        当前record的元数据
+//     * @param stringColumnMap        当前record的元数据
 //     * @param generateSqlPart        Builder
 //     * @param relationshipRecordWith Record
 //     * @return 目标实体对象
 //     */
 //    @Nullable
-//    public static Object dealSingle(Field field, List<Map<String, Column>> stringColumnMapList,
+//    public static Object dealSingle(Field field, Map<String, Column> stringColumnMap,
 //                                    GenerateSqlPart generateSqlPart,
 //                                    RelationshipRecordWith relationshipRecordWith) {
 //        HasOneTemplate hasOne = new HasOneTemplate(field);
@@ -76,33 +51,32 @@ public class HasOneQuery extends SubQuery {
 //                String.valueOf(stringColumnMap.get(hasOne.foreignKey).getValue()))
 //            .first();
 //
-//
 //        //  todo  这里约等于递归
 //        return record == null ? null : relationshipRecordWith.generate(record).toObject();
 //    }
-
-
-    /**
-     * 单个关联查询, 以及对象转化
-     * @param field                  字段
-     * @param stringColumnMap        当前record的元数据
-     * @param generateSqlPart        Builder
-     * @param relationshipRecordWith Record
-     * @param tableCache             缓存
-     * @return 目标实体对象
-     */
-    @Nullable
-    public static Object dealSingle(Field field, Map<String, Column> stringColumnMap,
-                                      GenerateSqlPart generateSqlPart,
-                                      RelationshipRecordWith relationshipRecordWith,
-                                      TableCache<Record<?, ?>> tableCache) {
-        HasOneTemplate hasOne = new HasOneTemplate(field);
-        Record<?, ?> record = generateSqlPart.generate(hasOne.targetModel.newQuery())
-            .where(hasOne.localKey,
-                String.valueOf(stringColumnMap.get(hasOne.foreignKey).getValue()))
-            .first();
-        return record == null ? null : relationshipRecordWith.generate(record).toObject();
-    }
+//
+//
+//    /**
+//     * 单个关联查询, 以及对象转化
+//     * @param field                  字段
+//     * @param stringColumnMap        当前record的元数据
+//     * @param generateSqlPart        Builder
+//     * @param relationshipRecordWith Record
+//     * @param tableCache             缓存
+//     * @return 目标实体对象
+//     */
+//    @Nullable
+//    public static Object dealSingle(Field field, Map<String, Column> stringColumnMap,
+//                                      GenerateSqlPart generateSqlPart,
+//                                      RelationshipRecordWith relationshipRecordWith,
+//                                      TableCache<Record<?, ?>> tableCache) {
+//        HasOneTemplate hasOne = new HasOneTemplate(field);
+//        Record<?, ?> record = generateSqlPart.generate(hasOne.targetModel.newQuery())
+//            .where(hasOne.localKey,
+//                String.valueOf(stringColumnMap.get(hasOne.foreignKey).getValue()))
+//            .first();
+//        return record == null ? null : relationshipRecordWith.generate(record).toObject();
+//    }
 
     /**
      * 批量关联查询
@@ -134,29 +108,13 @@ public class HasOneQuery extends SubQuery {
      */
     @Nullable
     public static Object filterBatch(Field field, Record<?, ?> record,
-                                            RecordList<?, ?> relationshipRecordList) {
+                                            RecordList<?, ?> relationshipRecordList, Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         HasOneTemplate hasOne = new HasOneTemplate(field);
         Record<?, ?> newRecord = RecordFactory.filterRecord(relationshipRecordList, hasOne.localKey,
             String.valueOf(record.getMetadataMap().get(hasOne.foreignKey).getValue()));
 
-        return newRecord == null ? null : newRecord.toObject();
+        return newRecord == null ? null : newRecord.toObject(cacheRelationRecordList);
 
     }
 
-
-
-//    /**
-//     * 筛选批量关联查询结果
-//     * @return 筛选后的查询结果集
-//     */
-//    @Nullable
-//    public static Object filterBatch222222222222(Field field,
-//                                                 String foreignKeyValue, RecordList<?, ?> relationshipRecordList) {
-//        HasOneTemplate hasOne = new HasOneTemplate(field);
-//        Record<?, ?> newRecord = RecordFactory.filterRecord(relationshipRecordList, hasOne.localKey,
-//            foreignKeyValue);
-//
-//        return newRecord == null ? null : newRecord.toObjectWithoutRelationship();
-//
-//    }
 }

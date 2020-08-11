@@ -20,12 +20,12 @@ public @interface BelongsTo {
      * 本model的外键(指向上级model)
      * @return
      */
-    String foreignKey();
+    String localModelForeignKey();
 
     /**
-     * parentModel的关联id, 一般为parentModel主键
+     * parentModel的关联id, 一般为parentModel的primaryKey
      * @return
      */
-    String localKey() default "";
+    String parentModelLocalKey() default "";
 
 }

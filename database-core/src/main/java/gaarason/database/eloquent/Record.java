@@ -84,10 +84,10 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
     private boolean hasBind;
 
     @Getter
-    Map<String, GenerateSqlPart> relationBuilderMap = new HashMap<>();
+    private Map<String, GenerateSqlPart> relationBuilderMap = new HashMap<>();
 
     @Getter
-    Map<String, RelationshipRecordWith> relationRecordMap = new HashMap<>();
+    private Map<String, RelationshipRecordWith> relationRecordMap = new HashMap<>();
 
     /**
      * 根据查询结果集生成
@@ -173,6 +173,17 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
 
     }
 
+    /**
+     * 转化为对象列表
+     * @return 对象列表
+     */
+
+    public T toObject(Map<String, RecordList<?, ?>> cacheRelationRecordList) {
+        ToObject<T, K> tkToObject = new ToObject<>(this, true);
+        return tkToObject.toObject(cacheRelationRecordList);
+
+    }
+
 
     /**
      * 元数据转实体对象
@@ -240,7 +251,8 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
             relationRecordMap.put(column, recordClosure);
 
         } else
-            throw new RuntimeException();
+            // todo 抛出更明晰的异常
+            throw new RuntimeException(model.getEntityClass() + " 不存在属性 : " + column);
         return this;
     }
 
@@ -415,8 +427,11 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      * 转字符
      * @return 字符
      */
-    public String toString() {
-        return entity.toString();
-    }
+//    public String toString() {
+//        if(null == entity){
+//            return super.toString();
+//        }
+//        return entity.toString();
+//    }
 
 }
