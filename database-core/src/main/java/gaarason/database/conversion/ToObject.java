@@ -1,18 +1,13 @@
 package gaarason.database.conversion;
 
+import gaarason.database.contracts.eloquent.relations.SubQuery;
 import gaarason.database.contracts.function.GenerateRecordList;
 import gaarason.database.contracts.function.GenerateSqlPart;
 import gaarason.database.contracts.function.RelationshipRecordWith;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
-import gaarason.database.eloquent.annotations.BelongsTo;
-import gaarason.database.eloquent.annotations.BelongsToMany;
-import gaarason.database.eloquent.annotations.HasMany;
-import gaarason.database.eloquent.annotations.HasOne;
-import gaarason.database.eloquent.relations.BelongsToManyQueryBase;
-import gaarason.database.eloquent.relations.BelongsToQueryBase;
-import gaarason.database.eloquent.relations.HasManyQueryBase;
-import gaarason.database.eloquent.relations.HasOneQueryBase;
+import gaarason.database.eloquent.annotations.*;
+import gaarason.database.eloquent.relations.*;
 import gaarason.database.exception.EntityNewInstanceException;
 import gaarason.database.support.Column;
 import gaarason.database.support.RecordFactory;
@@ -84,7 +79,6 @@ public class ToObject<T, K> {
      */
     public List<T> toObjectList(Map<String, RecordList<?, ?>> cacheRelationRecordList) {
 
-
         List<Map<String, Column>> sameLevelAllMetadataMapList = records.getSameLevelAllMetadataMapList();
 
         List<T> list = new ArrayList<>();
@@ -110,61 +104,28 @@ public class ToObject<T, K> {
                         record.getRelationBuilderMap().get(field.getName());
                     RelationshipRecordWith relationshipRecordWith = record.getRelationRecordMap().get(field.getName());
                     if (generateSqlPart == null || relationshipRecordWith == null || !attachedRelationship) {
-//                        System.out.println(" continue ");
                         continue;
                     }
-                    // 关联关系赋值
-                    // 一对一
-                    if (field.isAnnotationPresent(HasOne.class)) {
-                        // 关系model的结果集, 优先内存查找
-//                        RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
-//                            field.getName(), () -> HasOneQuery.dealBatch(field, originalMetadataMapList, generateSqlPart,
-//                                relationshipRecordWith));
-                        RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
+
+                    SubQuery subQuery;
+
+                    if(field.isAnnotationPresent(HasOneOrMany.class)){
+                        subQuery = new HasOneOrManyQuery(field);
+                    }else if(field.isAnnotationPresent(BelongsTo.class)){
+                        subQuery = new BelongsToQuery(field);
+                    }else if(field.isAnnotationPresent(BelongsToMany.class)){
+                        subQuery = new BelongsToManyQuery(field);
+                    }else{
+                        continue;
+                    }
+
+                    RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
                             field.getName(),
-                            () -> HasOneQueryBase.dealBatch(field, sameLevelAllMetadataMapList, generateSqlPart,
-                                relationshipRecordWith));
-                        // 筛选当前 record 所需要的属性
-                        field.set(entity, HasOneQueryBase.filterBatch(field, record, relationshipRecordList, cacheRelationRecordList));
-                    }
-                    // 一对多
-                    else if (field.isAnnotationPresent(HasMany.class)) {
-                        // 关系model的结果集, 优先内存查找
-//                        RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
-//                            field.getName(), () -> HasManyQuery.dealBatch(field, originalMetadataMapList, generateSqlPart,
-//                                relationshipRecordWith));
-                        RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
-                            field.getName(),
-                            () -> HasManyQueryBase.dealBatch(field, sameLevelAllMetadataMapList, generateSqlPart,
-                                relationshipRecordWith));
-                        // 筛选当前 record 所需要的属性
-                        field.set(entity, HasManyQueryBase.filterBatch(field, record, relationshipRecordList, cacheRelationRecordList));
-                    }
-                    // 多对多
-                    else if (field.isAnnotationPresent(BelongsToMany.class)) {
-                        // 关系model的结果集, 优先内存查找
-//                        RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
-//                            field.getName(), () -> BelongsToManyQuery.dealBatch(field, record.getMetadataMap(),
-//                                originalMetadataMapList, generateSqlPart, relationshipRecordWith));
-                        RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
-                            field.getName(), () -> BelongsToManyQueryBase.dealBatch(field, record.getMetadataMap(),
-                                sameLevelAllMetadataMapList, generateSqlPart, relationshipRecordWith));
-                        // 筛选当前 record 所需要的属性
-                        field.set(entity, BelongsToManyQueryBase.filterBatch(field, record, relationshipRecordList, cacheRelationRecordList));
-                    }
-                    // 逆向一对一
-                    else if (field.isAnnotationPresent(BelongsTo.class)) {
-                        // 关系model的结果集, 优先内存查找
-//                        RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
-//                            field.getName(), () -> BelongsToQuery.dealBatch(field, originalMetadataMapList, generateSqlPart,
-//                                relationshipRecordWith));
-                        RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
-                            field.getName(),
-                            () -> BelongsToQueryBase.dealBatch(field, sameLevelAllMetadataMapList, generateSqlPart,
-                                relationshipRecordWith));
-                        // 筛选当前 record 所需要的属性
-                        field.set(entity, BelongsToQueryBase.filterBatch(field, record, relationshipRecordList, cacheRelationRecordList));
-                    }
+                            () -> subQuery.dealBatch(sameLevelAllMetadataMapList, generateSqlPart,
+                                    relationshipRecordWith));
+                    // 筛选当前 record 所需要的属性
+                    field.set(entity, subQuery.filterBatch(record, relationshipRecordList, cacheRelationRecordList));
+
                 }
                 list.add(entity);
             } catch (InstantiationException | IllegalAccessException e) {

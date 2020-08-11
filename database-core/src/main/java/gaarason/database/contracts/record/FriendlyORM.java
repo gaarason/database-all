@@ -1,6 +1,6 @@
 package gaarason.database.contracts.record;
 
-//import com.fasterxml.jackson.core.JsonProcessingException;
+import gaarason.database.eloquent.RecordList;
 
 import java.util.Map;
 
@@ -23,22 +23,16 @@ public interface FriendlyORM<T, K> {
      */
     String toSearch();
 
-//    /**
-//     * 元数据转json字符串
-//     * @return eg:{"subject":null,"sex":"","name":"小明明明","age":"16"}
-//     * @throws JsonProcessingException 元数据不可转json
-//     */
-//    String toJson() throws JsonProcessingException;
-
     /**
      * 元数据转实体对象
      * @return 实体对象
      */
     T toObject() ;
 
-//    /**
-//     * 元数据转指定实体对象
-//     * @return 指定实体对象
-//     */
-//    <V> V toObject(Class<V> entityClassCustom);
+    /**
+     * 元数据转实体对象
+     * @return 实体对象
+     */
+    T toObject(Map<String, RecordList<?, ?>> cacheRelationRecordList);
+
 }

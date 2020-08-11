@@ -43,7 +43,6 @@ public class RecordList<T, K> extends ArrayList<Record<T, K>> implements Friendl
      * @return 对象列表
      */
     @Override
-    @SuppressWarnings("unchecked")
     public List<T> toObjectList() {
         ToObject<T, K> tkToObject = new ToObject<>(this, true);
         return tkToObject.toObjectList();
@@ -53,7 +52,6 @@ public class RecordList<T, K> extends ArrayList<Record<T, K>> implements Friendl
      * 转化为对象列表
      * @return 对象列表
      */
-    @SuppressWarnings("unchecked")
     public List<T> toObjectList(Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         ToObject<T, K> tkToObject = new ToObject<>(this, true);
         return tkToObject.toObjectList(cacheRelationRecordList);

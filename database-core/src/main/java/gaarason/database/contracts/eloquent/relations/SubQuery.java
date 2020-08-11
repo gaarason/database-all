@@ -12,13 +12,26 @@ import java.util.List;
 import java.util.Map;
 
 public interface SubQuery {
-    
-    RecordList<?, ?> dealBatch(Field field, List<Map<String, Column>> stringColumnMapList,
+    /**
+     * 批量关联查询
+     * @param stringColumnMapList    当前recordList的元数据
+     * @param generateSqlPart        Builder
+     * @param relationshipRecordWith Record
+     * @return 查询结果集
+     */
+    RecordList<?, ?> dealBatch(List<Map<String, Column>> stringColumnMapList,
                                GenerateSqlPart generateSqlPart,
                                RelationshipRecordWith relationshipRecordWith);
 
+
+    /**
+     * 筛选批量关联查询结果
+     * @param record                 当前record
+     * @param relationshipRecordList 关联的recordList
+     * @return 筛选后的查询结果集
+     */
     @Nullable
-    Object filterBatch(Field field, Record<?, ?> record,
+    Object filterBatch(Record<?, ?> record,
                        RecordList<?, ?> relationshipRecordList, Map<String, RecordList<?, ?>> cacheRelationRecordList);
 
 

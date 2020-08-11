@@ -1,7 +1,7 @@
 package gaarason.database.contracts.record;
 
-//import com.fasterxml.jackson.core.JsonProcessingException;
 import gaarason.database.contracts.function.FilterRecordAttribute;
+import gaarason.database.eloquent.RecordList;
 
 import java.util.List;
 import java.util.Map;
@@ -18,6 +18,12 @@ public interface FriendlyListORM<T, K> {
      * @return 对象列表
      */
     List<T> toObjectList();
+
+    /**
+     * 转化为对象列表
+     * @return 对象列表
+     */
+    List<T> toObjectList(Map<String, RecordList<?, ?>> cacheRelationRecordList);
 
     /**
      * 转化为map list

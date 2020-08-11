@@ -46,12 +46,12 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      * 数据模型
      */
     @Getter
-    private Model<T, K> model;
+    private final Model<T, K> model;
 
     /**
      * 数据实体类
      */
-    private Class<T> entityClass;
+    private final Class<T> entityClass;
 
     /**
      * 原Sql
@@ -84,10 +84,10 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
     private boolean hasBind;
 
     @Getter
-    private Map<String, GenerateSqlPart> relationBuilderMap = new HashMap<>();
+    private final Map<String, GenerateSqlPart> relationBuilderMap = new HashMap<>();
 
     @Getter
-    private Map<String, RelationshipRecordWith> relationRecordMap = new HashMap<>();
+    private final Map<String, RelationshipRecordWith> relationRecordMap = new HashMap<>();
 
     /**
      * 根据查询结果集生成
@@ -177,7 +177,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      * 转化为对象列表
      * @return 对象列表
      */
-
+    @Override
     public T toObject(Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         ToObject<T, K> tkToObject = new ToObject<>(this, true);
         return tkToObject.toObject(cacheRelationRecordList);
@@ -422,16 +422,5 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
         }
         hasBind = true;
     }
-
-    /**
-     * 转字符
-     * @return 字符
-     */
-//    public String toString() {
-//        if(null == entity){
-//            return super.toString();
-//        }
-//        return entity.toString();
-//    }
 
 }
