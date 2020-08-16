@@ -7,7 +7,6 @@ import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
 import gaarason.database.support.Column;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 

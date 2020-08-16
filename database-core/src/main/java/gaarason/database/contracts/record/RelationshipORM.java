@@ -13,6 +13,12 @@ public interface RelationshipORM<T, K> {
 
 
     /**
+     * 清空渴求式关联
+     * @return 关联的Model的查询构造器
+     */
+    Record<T, K> withClear();
+
+    /**
      * 渴求式关联
      * @param column 所关联的Model(当前模块的属性名)
      * @return 关联的Model的查询构造器

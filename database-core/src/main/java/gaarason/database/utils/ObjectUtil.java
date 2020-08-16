@@ -16,7 +16,7 @@ import java.util.*;
 public class ObjectUtil {
 
     /**
-     * 通过序列化对对象进行递归copy
+     * 通过序列化对普通对象进行递归copy
      * @param original 源对象
      * @param <T>      对象所属的类
      * @return 全新的对象
@@ -84,7 +84,7 @@ public class ObjectUtil {
         } catch (NoSuchFieldException e) {
             return false;
         } catch (Exception e) {
-            throw new TypeNotSupportedException(e.getMessage());
+            throw new TypeNotSupportedException(e.getMessage(), e);
         }
     }
 }

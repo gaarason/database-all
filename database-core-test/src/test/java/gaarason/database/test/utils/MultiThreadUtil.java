@@ -30,7 +30,7 @@ public class MultiThreadUtil {
         try {
             countDownLatch.await();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e.getMessage(), e);
         }
         long  endTime = System.currentTimeMillis();//记录结束时间
         float excTime = (float) (endTime - startTime) / 1000;

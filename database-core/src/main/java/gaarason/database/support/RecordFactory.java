@@ -17,7 +17,30 @@ import java.util.*;
 public class RecordFactory {
 
     /**
-     * 批量结果集
+     * 单个结果集(来源 : 数据库查询结果)
+     * @param entityClass 实体类型
+     * @param model       Model
+     * @param resultSet   jdbc结果
+     * @param sql         执行的sql
+     * @param <T>         实体类型
+     * @param <K>         实体主键类型
+     * @return 批量结果集
+     * @throws SQLException            数据库异常
+     * @throws EntityNotFoundException 数据为空
+     */
+    public static <T, K> Record<T, K> newRecord(Class<T> entityClass, Model<T, K> model, ResultSet resultSet,
+                                                String sql)
+        throws SQLException, EntityNotFoundException {
+        if (!resultSet.next()) {
+            throw new EntityNotFoundException();
+        }
+        final ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+        Map<String, Column>     stringColumnMap   = JDBCResultToMap(resultSetMetaData, resultSet);
+        return new Record<>(entityClass, model, stringColumnMap, sql);
+    }
+
+    /**
+     * 批量结果集(来源 : 数据库查询结果)
      * @param entityClass 实体类型
      * @param model       Model
      * @param resultSet   jdbc结果
@@ -45,12 +68,50 @@ public class RecordFactory {
         // todo check 额外设置 总数据源
         recordList.getSameLevelAllMetadataMapList().addAll(metadataMapList);
         // 设置原始sql
+        // todo remove
         recordList.setOriginalSql(sql);
         return recordList;
     }
 
+
+//    /**
+//     * 批量结果集(来源 : 数据库查询结果)
+//     * @param entityClass 实体类型
+//     * @param model       Model
+//     * @param resultSet   jdbc结果
+//     * @param sql         执行的sql
+//     * @param <T>         实体类型
+//     * @param <K>         实体主键类型
+//     * @return 批量结果集
+//     * @throws SQLException 数据库异常
+//     */
+//    public static <T, K> RecordList<T, K> newRecordList(Class<T> entityClass, Model<T, K> model, ResultSet resultSet,
+//                                                        String sql)
+//        throws SQLException {
+//        RecordList<T, K> recordList = new RecordList<>();
+//        // 总的数据源
+//        List<Map<String, Column>> metadataMapList   = new ArrayList<>();
+//        final ResultSetMetaData   resultSetMetaData = resultSet.getMetaData();
+//        while (resultSet.next()) {
+//            // 拆分的数据源
+//            Map<String, Column> stringColumnMap = JDBCResultToMap(resultSetMetaData, resultSet);
+//            metadataMapList.add(stringColumnMap);
+//            recordList.add(new Record<>(entityClass, model, stringColumnMap, ""));
+//        }
+//        // 额外设置 总数据源
+//        recordList.setOriginalMetadataMapList(metadataMapList);
+//        // todo check 额外设置 总数据源
+//        recordList.getSameLevelAllMetadataMapList().addAll(metadataMapList);
+//        // 设置原始sql
+//        // todo remove
+//        recordList.setOriginalSql(sql);
+//        return recordList;
+//    }
+//
+
     /**
      * 单体结果集列表,转化为 批量结果集
+     * 仅 ToObject 构造方法中使用
      * @param records 单体结果列表
      * @param <T>     实体类型
      * @param <K>     实体主键类型
@@ -58,12 +119,14 @@ public class RecordFactory {
      */
     public static <T, K> RecordList<T, K> newRecordList(List<Record<T, K>> records) {
         RecordList<T, K> recordList = new RecordList<>();
-//        recordList.addAll(records);
-
         for (Record<T, K> record : records) {
+            // todo check
+            // 此处不应使用, deepCopyRecord
             recordList.add(record);
             // todo check
             recordList.getSameLevelAllMetadataMapList().addAll(record.getSameLevelAllMetadataMapList());
+            // todo  set originalMetadataMapList
+            // todo  set originalSql
         }
         return recordList;
     }
@@ -87,10 +150,15 @@ public class RecordFactory {
             Set<String> relationIds = originalRecord.getMetadataMap().get(column).getRelationIds();
             // 满足其一则加入
             if ((!relationIds.isEmpty() && relationIds.contains(value)) || value.equals(targetValue)) {
-                // todo check 同级的元数据, 用于关联查询优化
-                recordList.getSameLevelAllMetadataMapList().add(originalRecord.getMetadataMap());
 
-                recordList.add(originalRecord);
+
+                // 使用新地址对象, 而非引用
+                Record<T, K> tkRecord = deepCopyRecord(originalRecord);
+
+                // todo check 同级的元数据, 用于关联查询优化
+                recordList.getSameLevelAllMetadataMapList().add(tkRecord.getMetadataMap());
+
+                recordList.add(tkRecord);
             }
         }
         return recordList;
@@ -110,35 +178,33 @@ public class RecordFactory {
                                                    String value) {
         for (Record<T, K> originalRecord : originalRecordList) {
             if (value.equals(originalRecord.getMetadataMap().get(column).getValue().toString())) {
+
+
+                // 使用新地址对象, 而非引用
+                Record<T, K> tkRecord = deepCopyRecord(originalRecord);
+
                 // todo check 同级的元数据, 用于关联查询优化
-                originalRecord.setSameLevelAllMetadataMapList(originalRecordList.getOriginalMetadataMapList());
-                return originalRecord;
+                tkRecord.setSameLevelAllMetadataMapList(originalRecordList.getOriginalMetadataMapList());
+                return tkRecord;
             }
         }
         return null;
     }
 
+
     /**
-     * 单个结果集
-     * @param entityClass 实体类型
-     * @param model       Model
-     * @param resultSet   jdbc结果
-     * @param sql         执行的sql
-     * @param <T>         实体类型
-     * @param <K>         实体主键类型
-     * @return 批量结果集
-     * @throws SQLException            数据库异常
-     * @throws EntityNotFoundException 数据为空
+     * copy产生新的record, 其中model使用原record中的引用
+     * @param originalRecord 原结果集
+     * @param <T>            实体类型
+     * @param <K>            实体主键类型
+     * @return 单个结果集
      */
-    public static <T, K> Record<T, K> newRecord(Class<T> entityClass, Model<T, K> model, ResultSet resultSet,
-                                                String sql)
-        throws SQLException, EntityNotFoundException {
-        if (!resultSet.next()) {
-            throw new EntityNotFoundException();
-        }
-        final ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-        Map<String, Column>     stringColumnMap   = JDBCResultToMap(resultSetMetaData, resultSet);
-        return new Record<>(entityClass, model, stringColumnMap, sql);
+    private static <T, K> Record<T, K> deepCopyRecord(Record<T, K> originalRecord) {
+        Model<T, K>         model       = originalRecord.getModel();
+        Class<T>            entityClass = model.getEntityClass();
+        Map<String, Column> metadataMap = originalRecord.getMetadataMap();
+        String              originalSql = originalRecord.getOriginalSql();
+        return new Record<>(entityClass, model, metadataMap, originalSql);
     }
 
     /**

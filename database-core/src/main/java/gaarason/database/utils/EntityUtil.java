@@ -168,7 +168,8 @@ public class EntityUtil {
 
     /**
      * 设置entity对象的自增属性值
-     * @param <T,    K>    数据表实体类
+     * @param <T>    数据表实体类
+     * @param <K>    数据表主键类型
      * @param entity 数据表实体对象
      * @param id     数据库生成的id
      * @throws IllegalAccessRuntimeException 反射赋值异常
@@ -241,7 +242,7 @@ public class EntityUtil {
                 }
 
             } catch (IllegalArgumentException | IllegalAccessException e) {
-                throw new TypeNotSupportedException(e.getMessage());
+                throw new TypeNotSupportedException(e.getMessage(), e);
             }
 
         }

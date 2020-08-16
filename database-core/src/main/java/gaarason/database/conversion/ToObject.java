@@ -6,18 +6,20 @@ import gaarason.database.contracts.function.GenerateSqlPart;
 import gaarason.database.contracts.function.RelationshipRecordWith;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
-import gaarason.database.eloquent.annotations.*;
-import gaarason.database.eloquent.relations.*;
+import gaarason.database.eloquent.annotations.BelongsTo;
+import gaarason.database.eloquent.annotations.BelongsToMany;
+import gaarason.database.eloquent.annotations.HasOneOrMany;
+import gaarason.database.eloquent.relations.BelongsToManyQuery;
+import gaarason.database.eloquent.relations.BelongsToQuery;
+import gaarason.database.eloquent.relations.HasOneOrManyQuery;
 import gaarason.database.exception.EntityNewInstanceException;
+import gaarason.database.exception.RelationAnnotationNotSupportedException;
 import gaarason.database.support.Column;
 import gaarason.database.support.RecordFactory;
 import gaarason.database.utils.EntityUtil;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ToObject<T, K> {
 
@@ -37,6 +39,11 @@ public class ToObject<T, K> {
     private boolean attachedRelationship;
 
 
+    /**
+     * 基本对象转化
+     * @param record 结果集
+     * @param attachedRelationship 是否启用关联关系
+     */
     public ToObject(Record<T, K> record, boolean attachedRelationship) {
         List<Record<T, K>> records = new ArrayList<>();
         records.add(record);
@@ -95,7 +102,7 @@ public class ToObject<T, K> {
                     // 普通赋值
                     EntityUtil.fieldAssignment(field, record.getMetadataMap(), entity, record);
 
-                    if( !attachedRelationship){
+                    if (!attachedRelationship) {
                         continue;
                     }
 
@@ -104,32 +111,41 @@ public class ToObject<T, K> {
                         record.getRelationBuilderMap().get(field.getName());
                     RelationshipRecordWith relationshipRecordWith = record.getRelationRecordMap().get(field.getName());
                     if (generateSqlPart == null || relationshipRecordWith == null || !attachedRelationship) {
+//                        System.out.println(" 跳过关联关系 field :"+ field.getName()  );
+//                        System.out.println(" 跳过关联关系 :"+ generateSqlPart + relationshipRecordWith );
+
+
+                        if(field.getName().equals("students")){
+                            System.out.println(" 跳过关联关系 field :"+ field  );
+
+                        }
+
                         continue;
                     }
 
                     SubQuery subQuery;
 
-                    if(field.isAnnotationPresent(HasOneOrMany.class)){
+                    if (field.isAnnotationPresent(HasOneOrMany.class)) {
                         subQuery = new HasOneOrManyQuery(field);
-                    }else if(field.isAnnotationPresent(BelongsTo.class)){
+                    } else if (field.isAnnotationPresent(BelongsTo.class)) {
                         subQuery = new BelongsToQuery(field);
-                    }else if(field.isAnnotationPresent(BelongsToMany.class)){
+                    } else if (field.isAnnotationPresent(BelongsToMany.class)) {
                         subQuery = new BelongsToManyQuery(field);
-                    }else{
-                        continue;
+                    } else {
+                        throw new RelationAnnotationNotSupportedException(Arrays.toString(field.getAnnotations()));
                     }
 
                     RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
-                            field.getName(),
-                            () -> subQuery.dealBatch(sameLevelAllMetadataMapList, generateSqlPart,
-                                    relationshipRecordWith));
+                        field.getName(),
+                        () -> subQuery.dealBatch(sameLevelAllMetadataMapList, generateSqlPart,
+                            relationshipRecordWith), relationshipRecordWith);
                     // 筛选当前 record 所需要的属性
                     field.set(entity, subQuery.filterBatch(record, relationshipRecordList, cacheRelationRecordList));
 
                 }
                 list.add(entity);
             } catch (InstantiationException | IllegalAccessException e) {
-                throw new EntityNewInstanceException(e.getMessage());
+                throw new EntityNewInstanceException(e.getMessage(), e);
             }
         }
         return list;
@@ -145,9 +161,10 @@ public class ToObject<T, K> {
      * @return 批量结果集
      */
     private RecordList<?, ?> getRecordListInCache(Map<String, RecordList<?, ?>> cacheRelationRecordList,
-                                                         String key, GenerateRecordList closure) {
+                                                  String key, GenerateRecordList closure,
+                                                  RelationshipRecordWith relationshipRecordWith) {
 
-        String ff = key + "|" + records.get(0).getModel().getTableName();
+        String ff = key + "|tableName:" + records.get(0).getModel().getTableName();
         // 关系model的结果集, 本地先取值
         RecordList<?, ?> recordList = cacheRelationRecordList.get(ff);
         // 本地取值为空, 则查询数据
@@ -157,12 +174,13 @@ public class ToObject<T, K> {
             // 赋值本地, 以便下次使用
             cacheRelationRecordList.put(ff, recordList);
         }
+
+        for (Record<?, ?> record : recordList) {
+            // 清空重置with & 赋值with
+            relationshipRecordWith.generate(record.withClear());
+        }
+
         return recordList;
-
-
-        // model(表名) - 字段名   ------>  RecordList<?, ?>
-
-
     }
 
 }

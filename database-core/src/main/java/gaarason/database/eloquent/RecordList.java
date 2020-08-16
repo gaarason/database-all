@@ -34,6 +34,8 @@ public class RecordList<T, K> extends ArrayList<Record<T, K>> implements Friendl
     /**
      * sql
      */
+
+    // todo remove
     @Getter
     @Setter
     private String originalSql;

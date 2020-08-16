@@ -1,8 +1,5 @@
 package gaarason.database.eloquent;
 
-//import com.fasterxml.jackson.core.JsonProcessingException;
-//import com.fasterxml.jackson.databind.ObjectMapper;
-
 import gaarason.database.contracts.function.GenerateSqlPart;
 import gaarason.database.contracts.function.RelationshipRecordWith;
 import gaarason.database.contracts.record.FriendlyORM;
@@ -11,6 +8,7 @@ import gaarason.database.contracts.record.RelationshipORM;
 import gaarason.database.conversion.ToObject;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
+import gaarason.database.exception.RelationNotFoundException;
 import gaarason.database.support.Column;
 import gaarason.database.utils.EntityUtil;
 import gaarason.database.utils.ObjectUtil;
@@ -87,7 +85,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
     private final Map<String, GenerateSqlPart> relationBuilderMap = new HashMap<>();
 
     @Getter
-    private final Map<String, RelationshipRecordWith> relationRecordMap = new HashMap<>();
+    private Map<String, RelationshipRecordWith> relationRecordMap = new HashMap<>();
 
     /**
      * 根据查询结果集生成
@@ -233,6 +231,13 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
 //    }
 
     @Override
+    public Record<T, K> withClear() {
+        relationBuilderMap.clear();
+        relationRecordMap.clear();
+        return this;
+    }
+
+    @Override
     public Record<T, K> with(String column) {
         return with(column, (builder) -> builder);
     }
@@ -245,14 +250,13 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
     @Override
     public Record<T, K> with(String column, GenerateSqlPart builderClosure,
                              RelationshipRecordWith recordClosure) {
+        Class<T> entityClass = model.getEntityClass();
         // 效验参数
-        if (ObjectUtil.checkProperties(model.getEntityClass(), column)) {
+        if (ObjectUtil.checkProperties(entityClass, column)) {
             relationBuilderMap.put(column, builderClosure);
             relationRecordMap.put(column, recordClosure);
-
         } else
-            // todo 抛出更明晰的异常
-            throw new RuntimeException(model.getEntityClass() + " 不存在属性 : " + column);
+            throw new RelationNotFoundException(entityClass + " 不存在属性 : " + column);
         return this;
     }
 

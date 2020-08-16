@@ -95,7 +95,7 @@ public class BelongsToManyQuery extends BaseSubQuery {
 
             // 记录标记
             record.getMetadataMap().put(RELATION_REMEMBER_KEY, column);
-            relationshipRecordWith.generate(record);
+//            relationshipRecordWith.generate(record);
         }
         return targetRecordList;
     }

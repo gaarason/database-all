@@ -12,7 +12,7 @@ public class SnowFlakeIdUtil {
      * 初始化
      */
     private static final SnowFlakeIdGenerator GENERATOR =
-        new SnowFlakeIdGenerator(machineInformation.getIdWithMAC(SnowFlakeIdGenerator.MAX_WORKER_ID),
+        new SnowFlakeIdGenerator(MachineInformation.random(SnowFlakeIdGenerator.MAX_WORKER_ID),
             0);
 
     /**
@@ -191,7 +191,7 @@ public class SnowFlakeIdUtil {
         }
     }
 
-    public static class machineInformation {
+    public static class MachineInformation {
 
         /**
          * 获取机器编码MAC 用来做数据ID
@@ -215,6 +215,16 @@ public class SnowFlakeIdUtil {
                 throw new RuntimeException("机器编码MAC地址,转化为id失败: " + e.getMessage(), e);
             }
             return id;
+        }
+
+        /**
+         * 随机
+         * @param maxId 支持最大标识id
+         * @return ID
+         */
+        public static long random(long maxId){
+            double v = Math.random() * maxId;
+            return (long)v;
         }
     }
 }

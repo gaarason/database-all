@@ -58,11 +58,15 @@ public class HasOneOrManyQuery extends BaseSubQuery {
                                       GenerateSqlPart generateSqlPart,
                                       RelationshipRecordWith relationshipRecordWith) {
         RecordList<?, ?> records = generateSqlPart.generate(hasOneOrManyTemplate.sonModel.newQuery())
-            .whereIn(hasOneOrManyTemplate.localModelLocalKey, getColumnInMapList(stringColumnMapList, hasOneOrManyTemplate.sonModelForeignKey))
+//            .whereIn(hasOneOrManyTemplate.localModelLocalKey, getColumnInMapList(stringColumnMapList, hasOneOrManyTemplate.sonModelForeignKey))
+// todo check
+            .whereIn(hasOneOrManyTemplate.sonModelForeignKey, getColumnInMapList(stringColumnMapList, hasOneOrManyTemplate.localModelLocalKey))
+
+
             .get();
-        for (Record<?, ?> record : records) {
-            relationshipRecordWith.generate(record);
-        }
+//        for (Record<?, ?> record : records) {
+//            relationshipRecordWith.generate(record);
+//        }
         return records;
     }
 
@@ -87,8 +91,11 @@ public class HasOneOrManyQuery extends BaseSubQuery {
             String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue())).toObjectList(cacheRelationRecordList);
 
         }else{
-            Record<?, ?> newRecord = RecordFactory.filterRecord(relationshipRecordList, hasOneOrManyTemplate.localModelLocalKey,
-                    String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.sonModelForeignKey).getValue()));
+//            Record<?, ?> newRecord = RecordFactory.filterRecord(relationshipRecordList, hasOneOrManyTemplate.localModelLocalKey,
+//                String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.sonModelForeignKey).getValue()));
+//            return newRecord == null ? null : newRecord.toObject(cacheRelationRecordList);
+            Record<?, ?> newRecord = RecordFactory.filterRecord(relationshipRecordList, hasOneOrManyTemplate.sonModelForeignKey,
+                String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue()));
             return newRecord == null ? null : newRecord.toObject(cacheRelationRecordList);
         }
 

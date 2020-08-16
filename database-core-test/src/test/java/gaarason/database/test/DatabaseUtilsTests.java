@@ -1,6 +1,6 @@
 package gaarason.database.test;
 
-import gaarason.database.test.relation.data.pojo.TeacherHasMany;
+import gaarason.database.test.relation.data.pojo.Teacher;
 import gaarason.database.test.utils.MultiThreadUtil;
 import gaarason.database.utils.*;
 import lombok.extern.slf4j.Slf4j;
@@ -9,19 +9,21 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
 public class DatabaseUtilsTests {
 
     @Test
-    public void testEntityUtil(){
+    public void testEntityUtil() {
 
     }
 
     @Test
-    public void testExceptionUtil(){
+    public void testExceptionUtil() {
         Throwable e = new RuntimeException("message deadlock detected");
         Assert.assertTrue(ExceptionUtil.causedByDeadlock(e));
         Throwable e2 = new RuntimeException("message dea1dlock detected");
@@ -30,7 +32,7 @@ public class DatabaseUtilsTests {
     }
 
     @Test
-    public void testFormatUtil(){
+    public void testFormatUtil() {
         // 给字段加上反引号
         Assert.assertEquals(FormatUtil.column(" sum(order.amount) AS sum_price  "), "sum(`order`.`amount`) as " +
             "`sum_price`");
@@ -53,7 +55,7 @@ public class DatabaseUtilsTests {
     }
 
     @Test
-    public void testStringUtil(){
+    public void testStringUtil() {
         // 下划线转驼峰
         Assert.assertEquals(StringUtil.lineToHump("t_invoice"), "tInvoice");
         Assert.assertEquals(StringUtil.lineToHump("t_invoice", true), "TInvoice");
@@ -82,39 +84,49 @@ public class DatabaseUtilsTests {
     public void testSnowFlakeIdUtil() throws InterruptedException {
         ArrayList<Long> ids = new ArrayList<>();
 
-        MultiThreadUtil.run(100, 30000, () ->{
+        int a = 100;
+        int b = 30000;
+
+        MultiThreadUtil.run(a, b, () -> {
             long id = SnowFlakeIdUtil.getId();
-            synchronized (ids){
+            synchronized (ids) {
                 ids.add(id);
             }
         });
-        System.out.println("生成id数量: "+ ids.size());
+        System.out.println("生成id数量: " + ids.size());
+        Assert.assertEquals(a * b, ids.size());
 
         // 去重
-        LinkedHashSet<Long> hashSet = new LinkedHashSet<>(ids);
-        ArrayList<Long> listWithoutDuplicates = new ArrayList<>(hashSet);
+        LinkedHashSet<Long> hashSet               = new LinkedHashSet<>(ids);
+        ArrayList<Long>     listWithoutDuplicates = new ArrayList<>(hashSet);
         Assert.assertEquals("存在重复的id", ids.size(), listWithoutDuplicates.size());
         System.out.println("没有重复id");
     }
 
     @Test
-    public void testCheckProperties(){
-        boolean student = ObjectUtil.checkProperties(TeacherHasMany.class, "student");
-        Assert.assertFalse(student);
+    public void testCheckProperties() {
+        boolean student = ObjectUtil.checkProperties(Teacher.class, "students");
+        Assert.assertTrue(student);
 
-        boolean o = ObjectUtil.checkProperties(TeacherHasMany.class, "students");
+        boolean student11 = ObjectUtil.checkProperties(Teacher.class, "students11");
+        Assert.assertFalse(student11);
+
+        boolean o = ObjectUtil.checkProperties(Teacher.class, "student");
         Assert.assertTrue(o);
 
-        boolean o1 = ObjectUtil.checkProperties(TeacherHasMany.class, "students.teacherId");
+        boolean o1 = ObjectUtil.checkProperties(Teacher.class, "student.teacherId");
         Assert.assertTrue(o1);
 
-        boolean o2 = ObjectUtil.checkProperties(TeacherHasMany.class, "students.teacher.age");
+        boolean o11 = ObjectUtil.checkProperties(Teacher.class, "student.teacherIds");
+        Assert.assertFalse(o11);
+
+        boolean o2 = ObjectUtil.checkProperties(Teacher.class, "student.teacher.age");
         Assert.assertTrue(o2);
 
-        boolean o3 = ObjectUtil.checkProperties(TeacherHasMany.class, "students.teacher.age2");
+        boolean o3 = ObjectUtil.checkProperties(Teacher.class, "student.teacher.age2");
         Assert.assertFalse(o3);
 
-        boolean o4 = ObjectUtil.checkProperties(TeacherHasMany.class, "students.teacher.students.teacher.students" +
+        boolean o4 = ObjectUtil.checkProperties(Teacher.class, "student.teacher.students.teacher.students" +
             ".teacher.id");
         Assert.assertTrue(o4);
     }

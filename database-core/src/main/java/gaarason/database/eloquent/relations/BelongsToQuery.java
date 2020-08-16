@@ -55,9 +55,9 @@ public class BelongsToQuery extends BaseSubQuery {
         RecordList<?, ?> records = generateSqlPart.generate(belongsToTemplate.parentModel.newQuery())
             .whereIn(belongsToTemplate.parentModelLocalKey, getColumnInMapList(stringColumnMapList, belongsToTemplate.localModelForeignKey))
             .get();
-        for (Record<?, ?> record : records) {
-            relationshipRecordWith.generate(record);
-        }
+//        for (Record<?, ?> record : records) {
+//            relationshipRecordWith.generate(record);
+//        }
         return records;
     }
 
