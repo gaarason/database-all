@@ -45,6 +45,14 @@ public interface Having<T, K> {
     Builder<T, K> havingIn(String column, Collection<Object> valueList);
 
     /**
+     * 列值在范围内
+     * @param column     列名
+     * @param valueArray 值所在的数组
+     * @return 查询构建器
+     */
+    Builder<T, K> havingIn(String column, String... valueArray);
+
+    /**
      * 列值在范围内(子查询)
      * @param column 列名
      * @param sql    完整sql eg:select id from student having age>10
@@ -67,6 +75,14 @@ public interface Having<T, K> {
      * @return 查询构建器
      */
     Builder<T, K> havingNotIn(String column, Collection<Object> valueList);
+
+    /**
+     * 列值在范围内
+     * @param column     列名
+     * @param valueArray 值所在的数组
+     * @return 查询构建器
+     */
+    Builder<T, K> havingNotIn(String column, String... valueArray);
 
     /**
      * 列值不在范围内(子查询)

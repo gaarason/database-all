@@ -4,6 +4,9 @@ import gaarason.database.eloquent.Model;
 
 import java.lang.annotation.*;
 
+/**
+ * 类属性必须是 单数
+ */
 @Documented
 @Inherited
 @Target({ElementType.FIELD, ElementType.METHOD})

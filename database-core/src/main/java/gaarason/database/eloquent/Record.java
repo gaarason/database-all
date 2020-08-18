@@ -55,7 +55,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      * 原Sql
      */
     @Getter
-    private String originalSql;
+    private String originalSql = "";
 
     /**
      * 原数据实体

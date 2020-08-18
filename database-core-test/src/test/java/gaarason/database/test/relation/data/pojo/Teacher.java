@@ -1,9 +1,6 @@
 package gaarason.database.test.relation.data.pojo;
 
-import gaarason.database.eloquent.annotations.Column;
-import gaarason.database.eloquent.annotations.HasOneOrMany;
-import gaarason.database.eloquent.annotations.Primary;
-import gaarason.database.eloquent.annotations.Table;
+import gaarason.database.eloquent.annotations.*;
 import gaarason.database.test.relation.data.model.RelationshipStudentTeacherModel;
 import gaarason.database.test.relation.data.model.StudentModel;
 import lombok.Data;
@@ -59,13 +56,11 @@ public class Teacher implements Serializable {
     private Student student;
 
     @HasOneOrMany(sonModel = RelationshipStudentTeacherModel.class, sonModelForeignKey = "teacher_id")
-    private RelationshipStudentTeacher relationshipStudentTeacher;
+    private List<RelationshipStudentTeacher> relationshipStudentTeachers;
 
-
-//    @BelongsToMany(targetModel = StudentModel.class, foreignKey = "teacher_id")
-//    private List<Student> studentsBelongsToMany;
-
-//    @BelongsTo(parentModel = StudentModel.class, foreignKey = "teacher_id", localKey = "id")
-//    private Student studentBelongsTo;
+    @BelongsToMany(targetModel = StudentModel.class, relationModel = RelationshipStudentTeacherModel.class,
+        foreignKeyForLocalModel = "teacher_id", foreignKeyForTargetModel = "student_id", localModelLocalKey = "id",
+        targetModelLocalKey = "id")
+    private List<Student> studentsBelongsToMany;
 
 }

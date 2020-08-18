@@ -29,16 +29,14 @@ public class RecordList<T, K> extends ArrayList<Record<T, K>> implements Friendl
      */
     @Getter
     @Setter
-    private List<Map<String, Column>> originalMetadataMapList;
+    private List<Map<String, Column>> originalMetadataMapList = new ArrayList<>();
 
     /**
      * sql
      */
-
-    // todo remove
     @Getter
     @Setter
-    private String originalSql;
+    private String originalSql = "";
 
     /**
      * 转化为对象列表
@@ -47,6 +45,12 @@ public class RecordList<T, K> extends ArrayList<Record<T, K>> implements Friendl
     @Override
     public List<T> toObjectList() {
         ToObject<T, K> tkToObject = new ToObject<>(this, true);
+        return tkToObject.toObjectList();
+    }
+
+    @Override
+    public List<T> toObjectListWithoutRelationship() {
+        ToObject<T, K> tkToObject = new ToObject<>(this, false);
         return tkToObject.toObjectList();
     }
 
@@ -109,4 +113,13 @@ public class RecordList<T, K> extends ArrayList<Record<T, K>> implements Friendl
         return this;
     }
 
+    @Override
+    public String toString() {
+        return "RecordList{" +
+            "sameLevelAllMetadataMapList=" + sameLevelAllMetadataMapList +
+            ", originalMetadataMapList=" + originalMetadataMapList +
+            ", originalSql='" + originalSql + '\'' +
+            ", modCount=" + modCount +
+            '}';
+    }
 }

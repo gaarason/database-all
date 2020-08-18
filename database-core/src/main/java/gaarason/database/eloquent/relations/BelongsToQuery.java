@@ -2,15 +2,15 @@ package gaarason.database.eloquent.relations;
 
 import gaarason.database.contracts.function.GenerateSqlPart;
 import gaarason.database.contracts.function.RelationshipRecordWith;
-import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.Model;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
 import gaarason.database.eloquent.annotations.BelongsTo;
 import gaarason.database.support.Column;
-import gaarason.database.support.RecordFactory;
+import gaarason.database.utils.EntityUtil;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -20,23 +20,23 @@ public class BelongsToQuery extends BaseSubQuery {
 
 
     static class BelongsToTemplate {
-        Model<? ,?> parentModel;
+        Model<?, ?> parentModel;
 
         String localModelForeignKey;
 
         String parentModelLocalKey;
 
         BelongsToTemplate(Field field) {
-            BelongsTo belongsTo = field.getAnnotation(
-                BelongsTo.class);
+            BelongsTo belongsTo = field.getAnnotation(BelongsTo.class);
             parentModel = getModelInstance(belongsTo.parentModel());
             localModelForeignKey = belongsTo.localModelForeignKey();
             parentModelLocalKey = belongsTo.parentModelLocalKey();
-            parentModelLocalKey = "".equals(parentModelLocalKey) ? parentModel.getPrimaryKeyColumnName() : parentModelLocalKey;
+            parentModelLocalKey = "".equals(
+                parentModelLocalKey) ? parentModel.getPrimaryKeyColumnName() : parentModelLocalKey;
         }
     }
 
-    public BelongsToQuery(Field field){
+    public BelongsToQuery(Field field) {
         belongsToTemplate = new BelongsToTemplate(field);
     }
 
@@ -48,34 +48,35 @@ public class BelongsToQuery extends BaseSubQuery {
      * @return 查询结果集
      */
     @Override
-    public  RecordList<?, ?> dealBatch(List<Map<String, Column>> stringColumnMapList,
-                                                    GenerateSqlPart generateSqlPart,
-                                                    RelationshipRecordWith relationshipRecordWith) {
+    public RecordList<?, ?> dealBatch(List<Map<String, Column>> stringColumnMapList,
+                                      GenerateSqlPart generateSqlPart,
+                                      RelationshipRecordWith relationshipRecordWith) {
 
-        RecordList<?, ?> records = generateSqlPart.generate(belongsToTemplate.parentModel.newQuery())
-            .whereIn(belongsToTemplate.parentModelLocalKey, getColumnInMapList(stringColumnMapList, belongsToTemplate.localModelForeignKey))
+        return generateSqlPart.generate(belongsToTemplate.parentModel.newQuery())
+            .whereIn(belongsToTemplate.parentModelLocalKey,
+                getColumnInMapList(stringColumnMapList, belongsToTemplate.localModelForeignKey))
             .get();
-//        for (Record<?, ?> record : records) {
-//            relationshipRecordWith.generate(record);
-//        }
-        return records;
     }
 
-    /**
-     * 筛选批量关联查询结果
-     * @param record                 当前record
-     * @param relationshipRecordList 关联的recordList
-     * @return 筛选后的查询结果集
-     */
-    @Nullable
     @Override
-    public  Object filterBatch(Record<?, ?> record,
-                                            RecordList<?, ?> relationshipRecordList, Map<String, RecordList<?, ?>> cacheRelationRecordList) {
+    public List<?> filterBatchRecord(Record<?, ?> record, List<?> relationshipObjectList) {
+        // 父表的外键字段名
+        String column = belongsToTemplate.parentModelLocalKey;
+        // 本表的关系键值
+        String value = String.valueOf(
+            record.getMetadataMap().get(belongsToTemplate.localModelForeignKey).getValue());
+        List<Object> objectList = new ArrayList<>();
+        for (Object o : relationshipObjectList) {
+            // todo 有优化空间
+            Object fieldByColumn = EntityUtil.getFieldByColumn(o, column);
 
-        Record<?, ?> newRecord = RecordFactory.filterRecord(relationshipRecordList, belongsToTemplate.parentModelLocalKey,
-            String.valueOf(record.getMetadataMap().get(belongsToTemplate.localModelForeignKey).getValue()));
-
-        return newRecord == null ? null : newRecord.toObject(cacheRelationRecordList);
+            // 满足则加入
+            if (value.equals(fieldByColumn.toString())) {
+                // 加入
+                objectList.add(o);
+            }
+        }
+        return objectList;
 
     }
 }

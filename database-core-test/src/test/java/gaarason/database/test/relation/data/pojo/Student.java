@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Table(name = "student")
@@ -57,21 +58,13 @@ public class Student implements Serializable {
     private Teacher teacher;
 
     @HasOneOrMany(sonModel = RelationshipStudentTeacherModel.class, sonModelForeignKey = "student_id")
-    private RelationshipStudentTeacher relationshipStudentTeacher;
+    private List<RelationshipStudentTeacher> relationshipStudentTeachers;
 
 
-//    @BelongsToMany(targetModel = TeacherModel.class, relationModel = BaseRelationshipStudentTeacherModel.class,
-//        modelForeignKey = "student_id", targetModelForeignKey = "teacher_id", modelLocalKey = "id",
-//        targetModelLocalKey = "id")
-//    private List<Teacher> teachersBelongsToMany;
-
-
-
-//    @HasOne(targetModel = TeacherModel.class, foreignKey = "teacher_id")
-//    private Teacher teacherHasOne;
-//
-//    @HasMany(targetModel = TeacherModel.class, foreignKey = "teacher_id")
-//    private Teacher teachersHasMany;
+    @BelongsToMany(targetModel = TeacherModel.class, relationModel = RelationshipStudentTeacherModel.class,
+        foreignKeyForLocalModel = "student_id", foreignKeyForTargetModel = "teacher_id", localModelLocalKey = "id",
+        targetModelLocalKey = "id")
+    private List<Teacher> teachersBelongsToMany;
 
 
 }

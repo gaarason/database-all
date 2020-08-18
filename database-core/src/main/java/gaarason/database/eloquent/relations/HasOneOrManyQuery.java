@@ -2,25 +2,20 @@ package gaarason.database.eloquent.relations;
 
 import gaarason.database.contracts.function.GenerateSqlPart;
 import gaarason.database.contracts.function.RelationshipRecordWith;
-import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.Model;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
 import gaarason.database.eloquent.annotations.HasOneOrMany;
 import gaarason.database.support.Column;
-import gaarason.database.support.RecordFactory;
+import gaarason.database.utils.EntityUtil;
+import gaarason.database.utils.ObjectUtil;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class HasOneOrManyQuery extends BaseSubQuery {
 
     private final HasOneOrManyTemplate hasOneOrManyTemplate;
-
-    private final boolean isCollection;
 
     static class HasOneOrManyTemplate {
         Model<?, ?> sonModel;
@@ -40,10 +35,8 @@ public class HasOneOrManyQuery extends BaseSubQuery {
         }
     }
 
-    public HasOneOrManyQuery(Field field){
+    public HasOneOrManyQuery(Field field) {
         hasOneOrManyTemplate = new HasOneOrManyTemplate(field);
-        isCollection = Arrays.asList(field.getType().getInterfaces()).contains(Collection.class);
-
     }
 
     /**
@@ -57,48 +50,32 @@ public class HasOneOrManyQuery extends BaseSubQuery {
     public RecordList<?, ?> dealBatch(List<Map<String, Column>> stringColumnMapList,
                                       GenerateSqlPart generateSqlPart,
                                       RelationshipRecordWith relationshipRecordWith) {
-        RecordList<?, ?> records = generateSqlPart.generate(hasOneOrManyTemplate.sonModel.newQuery())
-//            .whereIn(hasOneOrManyTemplate.localModelLocalKey, getColumnInMapList(stringColumnMapList, hasOneOrManyTemplate.sonModelForeignKey))
-// todo check
-            .whereIn(hasOneOrManyTemplate.sonModelForeignKey, getColumnInMapList(stringColumnMapList, hasOneOrManyTemplate.localModelLocalKey))
-
-
+        return generateSqlPart.generate(hasOneOrManyTemplate.sonModel.newQuery())
+            .whereIn(hasOneOrManyTemplate.sonModelForeignKey,
+                getColumnInMapList(stringColumnMapList, hasOneOrManyTemplate.localModelLocalKey))
             .get();
-//        for (Record<?, ?> record : records) {
-//            relationshipRecordWith.generate(record);
-//        }
-        return records;
     }
 
-    /**
-     * 筛选批量关联查询结果
-     * @param record                 当前record
-     * @param relationshipRecordList 关联的recordList
-     * @return 筛选后的查询结果集
-     */
-    @Nullable
     @Override
-    public Object filterBatch(Record<?, ?> record,
-                              RecordList<?, ?> relationshipRecordList,
-                              Map<String, RecordList<?, ?>> cacheRelationRecordList) {
-        if(isCollection){
+    public List<?> filterBatchRecord(Record<?, ?> record, List<?> relationshipObjectList) {
+        // 子表的外键字段名
+        String column = hasOneOrManyTemplate.sonModelForeignKey;
+        // 本表的关系键值
+        String value  = String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
 
-//        return RecordFactory.filterRecordList(relationshipRecordList, hasMany.localKey,
-//            String.valueOf(record.getMetadataMap().get(hasMany.foreignKey).getValue())).toObjectList();
+        List<Object> objectList = new ArrayList<>();
 
-        // todo  check
-        return RecordFactory.filterRecordList(relationshipRecordList, hasOneOrManyTemplate.sonModelForeignKey,
-            String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue())).toObjectList(cacheRelationRecordList);
+        for (Object o : relationshipObjectList) {
+            // todo 有优化空间
+            Object fieldByColumn = EntityUtil.getFieldByColumn(o, column);
 
-        }else{
-//            Record<?, ?> newRecord = RecordFactory.filterRecord(relationshipRecordList, hasOneOrManyTemplate.localModelLocalKey,
-//                String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.sonModelForeignKey).getValue()));
-//            return newRecord == null ? null : newRecord.toObject(cacheRelationRecordList);
-            Record<?, ?> newRecord = RecordFactory.filterRecord(relationshipRecordList, hasOneOrManyTemplate.sonModelForeignKey,
-                String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue()));
-            return newRecord == null ? null : newRecord.toObject(cacheRelationRecordList);
+            // 满足则加入
+            if (value.equals(fieldByColumn.toString())) {
+                // 加入
+                objectList.add(ObjectUtil.deepCopy(o));
+            }
         }
-
+        return objectList;
     }
 
 }

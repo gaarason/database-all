@@ -22,16 +22,12 @@ public interface SubQuery {
                                GenerateSqlPart generateSqlPart,
                                RelationshipRecordWith relationshipRecordWith);
 
-
     /**
-     * 筛选批量关联查询结果
+     * 筛选批量关联查询结果对象
      * @param record                 当前record
-     * @param relationshipRecordList 关联的recordList
+     * @param relationshipObjectList 关联的ObjectList
      * @return 筛选后的查询结果集
      */
-    @Nullable
-    Object filterBatch(Record<?, ?> record,
-                       RecordList<?, ?> relationshipRecordList, Map<String, RecordList<?, ?>> cacheRelationRecordList);
-
+    List<?> filterBatchRecord(Record<?, ?> record, List<?> relationshipObjectList);
 
 }

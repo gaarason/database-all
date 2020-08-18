@@ -63,6 +63,14 @@ public interface Where<T, K> {
     Builder<T, K> whereIn(String column, Collection<Object> valueList);
 
     /**
+     * 列值在范围内
+     * @param column     列名
+     * @param valueArray 值所在的数组
+     * @return 查询构建器
+     */
+    Builder<T, K> whereIn(String column, String... valueArray);
+
+    /**
      * 列值在范围内(子查询)
      * @param column 列名
      * @param sql    完整sql eg:select id from student where age>10
@@ -101,6 +109,14 @@ public interface Where<T, K> {
      * @return 查询构建器
      */
     Builder<T, K> whereNotIn(String column, GenerateSqlPart closure);
+
+    /**
+     * 列值在范围内
+     * @param column     列名
+     * @param valueArray 值所在的数组
+     * @return 查询构建器
+     */
+    Builder<T, K> whereNotIn(String column, String... valueArray);
 
     /**
      * 列值在2值之间

@@ -41,7 +41,7 @@ public class ToObject<T, K> {
 
     /**
      * 基本对象转化
-     * @param record 结果集
+     * @param record               结果集
      * @param attachedRelationship 是否启用关联关系
      */
     public ToObject(Record<T, K> record, boolean attachedRelationship) {
@@ -102,24 +102,12 @@ public class ToObject<T, K> {
                     // 普通赋值
                     EntityUtil.fieldAssignment(field, record.getMetadataMap(), entity, record);
 
-                    if (!attachedRelationship) {
-                        continue;
-                    }
-
                     // 获取关系的预处理
                     GenerateSqlPart generateSqlPart =
                         record.getRelationBuilderMap().get(field.getName());
                     RelationshipRecordWith relationshipRecordWith = record.getRelationRecordMap().get(field.getName());
+
                     if (generateSqlPart == null || relationshipRecordWith == null || !attachedRelationship) {
-//                        System.out.println(" 跳过关联关系 field :"+ field.getName()  );
-//                        System.out.println(" 跳过关联关系 :"+ generateSqlPart + relationshipRecordWith );
-
-
-                        if(field.getName().equals("students")){
-                            System.out.println(" 跳过关联关系 field :"+ field  );
-
-                        }
-
                         continue;
                     }
 
@@ -138,10 +126,25 @@ public class ToObject<T, K> {
                     RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
                         field.getName(),
                         () -> subQuery.dealBatch(sameLevelAllMetadataMapList, generateSqlPart,
-                            relationshipRecordWith), relationshipRecordWith);
-                    // 筛选当前 record 所需要的属性
-                    field.set(entity, subQuery.filterBatch(record, relationshipRecordList, cacheRelationRecordList));
+                            relationshipRecordWith), generateSqlPart, relationshipRecordWith);
 
+                    // 直接处理 递归处理
+                    List<?> allObjects = relationshipRecordList.toObjectList(cacheRelationRecordList);
+
+                    // 筛选当前 record 所需要的属性
+                    List<?> objects = subQuery.filterBatchRecord(record, allObjects);
+
+                    // 是否是集合
+                    boolean isCollection =
+                        Arrays.asList(field.getType().getInterfaces()).contains(Collection.class);
+
+                    if (isCollection) {
+                        // 设置字段值
+                        field.set(entity, objects);
+                    } else {
+                        // 设置字段值
+                        field.set(entity, objects.size() == 0 ? null : objects.get(0));
+                    }
                 }
                 list.add(entity);
             } catch (InstantiationException | IllegalAccessException e) {
@@ -152,7 +155,6 @@ public class ToObject<T, K> {
 
     }
 
-
     /**
      * 在内存缓存中优先查找目标值
      * @param cacheRelationRecordList 缓存map
@@ -162,25 +164,25 @@ public class ToObject<T, K> {
      */
     private RecordList<?, ?> getRecordListInCache(Map<String, RecordList<?, ?>> cacheRelationRecordList,
                                                   String key, GenerateRecordList closure,
+                                                  GenerateSqlPart generateSqlPart,
                                                   RelationshipRecordWith relationshipRecordWith) {
-
-        String ff = key + "|tableName:" + records.get(0).getModel().getTableName();
-        // 关系model的结果集, 本地先取值
-        RecordList<?, ?> recordList = cacheRelationRecordList.get(ff);
+        String cacheKey = key + "|" + generateSqlPart.hashCode() + "|tableName:" + records.get(0)
+            .getModel()
+            .getTableName();
+        RecordList<?, ?> recordList = cacheRelationRecordList.get(cacheKey);
         // 本地取值为空, 则查询数据
         if (recordList == null) {
             // 执行生成
             recordList = closure.generate();
             // 赋值本地, 以便下次使用
-            cacheRelationRecordList.put(ff, recordList);
+            cacheRelationRecordList.put(cacheKey, recordList);
         }
 
-        for (Record<?, ?> record : recordList) {
-            // 清空重置with & 赋值with
+        RecordList<?, ?> recordsCopy = RecordFactory.deepCopyRecordList(recordList);
+        for (Record<?, ?> record : recordsCopy) {
             relationshipRecordWith.generate(record.withClear());
         }
-
-        return recordList;
+        return recordsCopy;
     }
 
 }

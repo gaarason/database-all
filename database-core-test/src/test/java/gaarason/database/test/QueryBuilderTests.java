@@ -526,6 +526,23 @@ public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
+    public void 条件_whereIn_Array() {
+        List<StudentModel.Entity> entityList1 = studentModel.newQuery()
+            .whereIn("id", "4", "5", "6", "7")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(entityList1.size(), 4);
+
+        List<StudentModel.Entity> entityList2 = studentModel.newQuery()
+            .whereIn("id", "4", "5", "6", "7")
+            .whereNotIn("id",
+                "10", "9", "7")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(entityList2.size(), 3);
+    }
+
+    @Test
     public void 条件_whereIn_closure() {
         List<StudentModel.Entity> entityList1 = studentModel.newQuery().whereIn("id",
             builder -> builder.select("id").where("age", ">=", "11")
@@ -715,6 +732,7 @@ public class QueryBuilderTests extends BaseTests {
             .havingBetween("id", "3", "5").select("id")
             .get()
             .toObjectList();
+        System.out.println(entityList1);
         Assert.assertEquals(entityList1.size(), 3);
 
         List<StudentModel.Entity> entityList2 = studentModel.newQuery()
@@ -723,6 +741,7 @@ public class QueryBuilderTests extends BaseTests {
                 "id", "3", "4").select("id").group("id")
             .get()
             .toObjectList();
+        System.out.println(entityList2);
         Assert.assertEquals(entityList2.size(), 1);
     }
 
@@ -737,6 +756,7 @@ public class QueryBuilderTests extends BaseTests {
             .havingIn("id", idList).group("id").select("id")
             .get()
             .toObjectList();
+        System.out.println(entityList1);
         Assert.assertEquals(entityList1.size(), 4);
 
         List<Object> idList2 = new ArrayList<>();
@@ -744,8 +764,28 @@ public class QueryBuilderTests extends BaseTests {
         idList2.add("9");
         idList2.add("7");
 
-        List<StudentModel.Entity> entityList2 = studentModel.newQuery().whereIn("id", idList).whereNotIn("id",
+        List<StudentModel.Entity> entityList2 = studentModel.newQuery().havingIn("id", idList).group("id").select("id").havingNotIn("id",
             idList2).get().toObjectList();
+        System.out.println(entityList2);
+        Assert.assertEquals(entityList2.size(), 3);
+    }
+
+    @Test
+    public void 条件_havingIn_Array() {
+        List<StudentModel.Entity> entityList1 = studentModel.newQuery()
+            .havingIn("id", "4", "5", "6", "7").group("id").select("id")
+            .get()
+            .toObjectList();
+        System.out.println(entityList1);
+        Assert.assertEquals(entityList1.size(), 4);
+
+        List<StudentModel.Entity> entityList2 = studentModel.newQuery()
+            .havingIn("id", "4", "5", "6", "7").group("id").select("id")
+            .havingNotIn("id",
+                "10", "9", "7")
+            .get()
+            .toObjectList();
+        System.out.println(entityList2);
         Assert.assertEquals(entityList2.size(), 3);
     }
 

@@ -68,6 +68,12 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
+    public Builder<T, K> whereIn(String column, String... valueArray) {
+        Set<Object> valueSet = new HashSet<>(Arrays.asList(valueArray));
+        return whereIn(column, valueSet);
+    }
+
+    @Override
     public Builder<T, K> whereInRaw(String column, String sql) {
         String sqlPart = FormatUtil.column(column) + "in" + FormatUtil.bracket(sql);
         return whereRaw(sqlPart);
@@ -95,6 +101,12 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     public Builder<T, K> whereNotIn(String column, GenerateSqlPart closure) {
         String sqlPart = generateSql(closure);
         return whereNotInRaw(column, sqlPart);
+    }
+
+    @Override
+    public Builder<T, K> whereNotIn(String column, String... valueArray) {
+        Set<Object> valueSet = new HashSet<>(Arrays.asList(valueArray));
+        return whereNotIn(column, valueSet);
     }
 
     @Override
@@ -195,6 +207,12 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
+    public Builder<T, K> havingIn(String column, String... valueArray) {
+        Set<Object> valueSet = new HashSet<>(Arrays.asList(valueArray));
+        return havingIn(column, valueSet);
+    }
+
+    @Override
     public Builder<T, K> havingInRaw(String column, String sql) {
         String sqlPart = FormatUtil.column(column) + "in" + FormatUtil.bracket(sql);
         return havingRaw(sqlPart);
@@ -210,6 +228,12 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     public Builder<T, K> havingNotIn(String column, Collection<Object> valueList) {
         String sqlPart = FormatUtil.column(column) + "not in" + FormatUtil.bracket(formatValue(valueList));
         return havingRaw(sqlPart);
+    }
+
+    @Override
+    public Builder<T, K> havingNotIn(String column, String... valueArray) {
+        Set<Object> valueSet = new HashSet<>(Arrays.asList(valueArray));
+        return havingNotIn(column, valueSet);
     }
 
     @Override

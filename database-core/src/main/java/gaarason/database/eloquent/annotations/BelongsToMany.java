@@ -4,6 +4,9 @@ import gaarason.database.eloquent.Model;
 
 import java.lang.annotation.*;
 
+/**
+ * 类属性必须是 复数
+ */
 @Documented
 @Inherited
 @Target({ElementType.FIELD, ElementType.METHOD})
@@ -22,11 +25,11 @@ public @interface BelongsToMany {
      */
     Class<? extends Model<?, ?>> relationModel();
 
-    String modelLocalKey();
+    String localModelLocalKey();
+
+    String foreignKeyForLocalModel();
+
+    String foreignKeyForTargetModel();
 
     String targetModelLocalKey();
-
-    String modelForeignKey();
-
-    String targetModelForeignKey();
 }

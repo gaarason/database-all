@@ -23,6 +23,12 @@ public interface FriendlyListORM<T, K> {
      * 转化为对象列表
      * @return 对象列表
      */
+    List<T> toObjectListWithoutRelationship();
+
+    /**
+     * 转化为对象列表
+     * @return 对象列表
+     */
     List<T> toObjectList(Map<String, RecordList<?, ?>> cacheRelationRecordList);
 
     /**
