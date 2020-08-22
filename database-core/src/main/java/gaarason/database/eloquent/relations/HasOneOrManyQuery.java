@@ -1,17 +1,16 @@
 package gaarason.database.eloquent.relations;
 
 import gaarason.database.contracts.function.GenerateSqlPart;
-import gaarason.database.contracts.function.RelationshipRecordWith;
 import gaarason.database.eloquent.Model;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
 import gaarason.database.eloquent.annotations.HasOneOrMany;
 import gaarason.database.support.Column;
-import gaarason.database.utils.EntityUtil;
-import gaarason.database.utils.ObjectUtil;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class HasOneOrManyQuery extends BaseSubQuery {
 
@@ -39,43 +38,26 @@ public class HasOneOrManyQuery extends BaseSubQuery {
         hasOneOrManyTemplate = new HasOneOrManyTemplate(field);
     }
 
-    /**
-     * 批量关联查询
-     * @param stringColumnMapList    当前recordList的元数据
-     * @param generateSqlPart        Builder
-     * @param relationshipRecordWith Record
-     * @return 查询结果集
-     */
+    public Set<Object> getSetInMapList(List<Map<String, Column>> stringColumnMapList) {
+        return getColumnInMapList(stringColumnMapList, hasOneOrManyTemplate.localModelLocalKey);
+    }
+
     @Override
-    public RecordList<?, ?> dealBatch(List<Map<String, Column>> stringColumnMapList,
-                                      GenerateSqlPart generateSqlPart,
-                                      RelationshipRecordWith relationshipRecordWith) {
+    public RecordList<?, ?> dealBatch(Set<Object> setInMapList, GenerateSqlPart generateSqlPart) {
         return generateSqlPart.generate(hasOneOrManyTemplate.sonModel.newQuery())
-            .whereIn(hasOneOrManyTemplate.sonModelForeignKey,
-                getColumnInMapList(stringColumnMapList, hasOneOrManyTemplate.localModelLocalKey))
+            .whereIn(hasOneOrManyTemplate.sonModelForeignKey, setInMapList)
             .get();
     }
 
     @Override
-    public List<?> filterBatchRecord(Record<?, ?> record, List<?> relationshipObjectList) {
+    public List<?> filterBatchRecord(Record<?, ?> record, RecordList<?, ?> relationshipRecordList,
+                                     Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         // 子表的外键字段名
         String column = hasOneOrManyTemplate.sonModelForeignKey;
         // 本表的关系键值
-        String value  = String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
+        String value = String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
 
-        List<Object> objectList = new ArrayList<>();
-
-        for (Object o : relationshipObjectList) {
-            // todo 有优化空间
-            Object fieldByColumn = EntityUtil.getFieldByColumn(o, column);
-
-            // 满足则加入
-            if (value.equals(fieldByColumn.toString())) {
-                // 加入
-                objectList.add(ObjectUtil.deepCopy(o));
-            }
-        }
-        return objectList;
+        return findObjList(relationshipRecordList.toObjectList(cacheRelationRecordList), column, value);
     }
 
 }

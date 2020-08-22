@@ -75,7 +75,7 @@ public class StringUtil {
      */
     public static String rtrim(String str, String character) {
         final int length = character.length();
-        if (str.equals("") || str.length() < length)
+        if ("".equals(str) || str.length() < length)
             return str;
         return str.substring(str.length() - length).equals(character) ? rtrim(str.substring(0, str.length() - length),
             character) : str;

@@ -10,19 +10,10 @@ import gaarason.database.support.Column;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class RecordList<T, K> extends ArrayList<Record<T, K>> implements FriendlyListORM<T, K>,
     RelationshipListORM<T, K> {
-
-    /**
-     * 同级的元数据, 用于关联查询优化
-     */
-    @Getter
-    @Setter
-    private List<Map<String, Column>> sameLevelAllMetadataMapList = new ArrayList<>();
 
     /**
      * 元数据
@@ -37,6 +28,12 @@ public class RecordList<T, K> extends ArrayList<Record<T, K>> implements Friendl
     @Getter
     @Setter
     private String originalSql = "";
+
+
+    @Getter
+    @Setter
+    private Map<String, Set<String>> cacheMap = new HashMap<>();
+
 
     /**
      * 转化为对象列表
@@ -95,12 +92,12 @@ public class RecordList<T, K> extends ArrayList<Record<T, K>> implements Friendl
 
     @Override
     public RecordList<T, K> with(String column) {
-        return with(column, (builder) -> builder);
+        return with(column, builder -> builder);
     }
 
     @Override
     public RecordList<T, K> with(String column, GenerateSqlPart builderClosure) {
-        return with(column, builderClosure, (record) -> record);
+        return with(column, builderClosure, record -> record);
     }
 
     @Override
@@ -111,15 +108,5 @@ public class RecordList<T, K> extends ArrayList<Record<T, K>> implements Friendl
             tkRecord.with(column, builderClosure, recordListClosure);
         }
         return this;
-    }
-
-    @Override
-    public String toString() {
-        return "RecordList{" +
-            "sameLevelAllMetadataMapList=" + sameLevelAllMetadataMapList +
-            ", originalMetadataMapList=" + originalMetadataMapList +
-            ", originalSql='" + originalSql + '\'' +
-            ", modCount=" + modCount +
-            '}';
     }
 }

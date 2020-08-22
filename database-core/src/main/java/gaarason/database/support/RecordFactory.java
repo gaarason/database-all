@@ -62,7 +62,6 @@ public class RecordFactory {
             Map<String, Column> stringColumnMap = JDBCResultToMap(resultSetMetaData, resultSet);
             recordList.add(new Record<>(entityClass, model, stringColumnMap, sql));
             recordList.getOriginalMetadataMapList().add(stringColumnMap);
-            recordList.getSameLevelAllMetadataMapList().add(stringColumnMap);
         }
         // 设置原始sql
         recordList.setOriginalSql(sql);
@@ -80,15 +79,11 @@ public class RecordFactory {
      */
     public static <T, K> RecordList<T, K> newRecordList(List<Record<T, K>> records) {
         RecordList<T, K> recordList = new RecordList<>();
-
         String sql = records.size() > 0 ? records.get(0).getOriginalSql() : "";
         for (Record<T, K> record : records) {
-            // todo check
             // 此处不应使用, deepCopyRecord
             recordList.add(record);
-            recordList.getSameLevelAllMetadataMapList().addAll(copy(record.getSameLevelAllMetadataMapList()));
             recordList.getOriginalMetadataMapList().add(copy(record.getMetadataMap()));
-
         }
         recordList.setOriginalSql(sql);
         return recordList;
@@ -101,7 +96,7 @@ public class RecordFactory {
      * @param <K>            实体主键类型
      * @return 单个结果集
      */
-    public static <T, K> Record<T, K> deepCopyRecord(Record<T, K> originalRecord) {
+    public static <T, K> Record<T, K> copyRecord(Record<T, K> originalRecord) {
         Model<T, K>         model       = originalRecord.getModel();
         Class<T>            entityClass = model.getEntityClass();
         Map<String, Column> metadataMap = copy(originalRecord.getMetadataMap());
@@ -110,26 +105,25 @@ public class RecordFactory {
     }
 
     /**
-     * copy产生新的recordList, 其中model使用原record中的引用
+     * copy产生新的recordList
      * @param originalRecordList 原结果集
      * @param <T>                实体类型
      * @param <K>                实体主键类型
      * @return 批量结果集
      */
-    public static <T, K> RecordList<T, K> deepCopyRecordList(RecordList<T, K> originalRecordList) {
+    public static <T, K> RecordList<T, K> copyRecordList(RecordList<T, K> originalRecordList) {
         RecordList<T, K> recordList = new RecordList<>();
         for (Record<T, K> originalRecord : originalRecordList) {
-
             Model<T, K>         model       = originalRecord.getModel();
             Class<T>            entityClass = model.getEntityClass();
             Map<String, Column> metadataMap = copy(originalRecord.getMetadataMap());
             String              originalSql = originalRecord.getOriginalSql();
             recordList.add(new Record<>(entityClass, model, metadataMap, originalSql));
         }
-        // todo  check 此处是否应该使用引用 ?
-        recordList.getSameLevelAllMetadataMapList().addAll(copy(originalRecordList.getSameLevelAllMetadataMapList()));
+        // 使用引用
         recordList.getOriginalMetadataMapList().addAll(copy(originalRecordList.getOriginalMetadataMapList()));
-        recordList.setOriginalSql(recordList.getOriginalSql());
+        recordList.setOriginalSql(originalRecordList.getOriginalSql());
+        recordList.setCacheMap(copy(originalRecordList.getCacheMap()));
         return recordList;
     }
 

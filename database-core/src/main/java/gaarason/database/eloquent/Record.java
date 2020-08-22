@@ -85,7 +85,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
     private final Map<String, GenerateSqlPart> relationBuilderMap = new HashMap<>();
 
     @Getter
-    private Map<String, RelationshipRecordWith> relationRecordMap = new HashMap<>();
+    private final Map<String, RelationshipRecordWith> relationRecordMap = new HashMap<>();
 
     /**
      * 根据查询结果集生成
@@ -121,7 +121,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
         entity = originalEntity = toObjectWithoutRelationship();
         if (!stringColumnMap.isEmpty()) {
             hasBind = true;
-            // aop通知
+            // 通知
             model.retrieved(this);
         } else {
             hasBind = false;
@@ -239,24 +239,33 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
 
     @Override
     public Record<T, K> with(String column) {
-        return with(column, (builder) -> builder);
+        return with(column, builder -> builder);
     }
 
     @Override
     public Record<T, K> with(String column, GenerateSqlPart builderClosure) {
-        return with(column, builderClosure, (record) -> record);
+        return with(column, builderClosure, record -> record);
     }
 
     @Override
     public Record<T, K> with(String column, GenerateSqlPart builderClosure,
                              RelationshipRecordWith recordClosure) {
-        Class<T> entityClass = model.getEntityClass();
         // 效验参数
-        if (ObjectUtil.checkProperties(entityClass, column)) {
-            relationBuilderMap.put(column, builderClosure);
-            relationRecordMap.put(column, recordClosure);
-        } else
-            throw new RelationNotFoundException(entityClass + " 不存在属性 : " + column);
+        if (!ObjectUtil.checkProperties(entityClass, column)) {
+            throw new RelationNotFoundException(entityClass + " 不存在关联属性 : " + column);
+        }
+
+        String[] columnArr = column.split("\\.");
+        // 快捷类型
+        if (columnArr.length > 1) {
+            String lastLevelColumn  = columnArr[columnArr.length - 1];
+            String otherLevelColumn = StringUtil.rtrim(column, "." + lastLevelColumn);
+            return with(otherLevelColumn, builder -> builder,
+                record -> record.with(lastLevelColumn, builderClosure, recordClosure));
+        }
+
+        relationBuilderMap.put(column, builderClosure);
+        relationRecordMap.put(column, recordClosure);
         return this;
     }
 
@@ -283,7 +292,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
             this.metadataMap = new HashMap<>();
             entity = originalEntity = toObjectWithoutRelationship();
             hasBind = false;
-            // aop通知
+            // 通知
             model.deleted(this);
         }
         // 响应
@@ -310,7 +319,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
         if (originalPrimaryKeyValue == null) {
             throw new PrimaryKeyNotFoundException();
         }
-        // aop阻止
+        // 阻止
         if (!model.restoring(this)) {
             return false;
         }
@@ -359,7 +368,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
         // 成功插入后,刷新自身属性
         if (success) {
             selfUpdate(entity, true);
-            // aop通知
+            // 通知
             model.created(this);
         }
         // 响应
@@ -376,7 +385,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
         if (originalPrimaryKeyValue == null) {
             throw new PrimaryKeyNotFoundException();
         }
-        // aop阻止
+        // 阻止
         if (!model.updating(this)) {
             return false;
         }

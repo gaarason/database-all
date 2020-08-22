@@ -1,23 +1,20 @@
 package gaarason.database.eloquent.relations;
 
 import gaarason.database.contracts.function.GenerateSqlPart;
-import gaarason.database.contracts.function.RelationshipRecordWith;
 import gaarason.database.eloquent.Model;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
 import gaarason.database.eloquent.annotations.BelongsTo;
 import gaarason.database.support.Column;
-import gaarason.database.utils.EntityUtil;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class BelongsToQuery extends BaseSubQuery {
 
     private final BelongsToTemplate belongsToTemplate;
-
 
     static class BelongsToTemplate {
         Model<?, ?> parentModel;
@@ -40,43 +37,27 @@ public class BelongsToQuery extends BaseSubQuery {
         belongsToTemplate = new BelongsToTemplate(field);
     }
 
-    /**
-     * 批量关联查询
-     * @param stringColumnMapList    当前recordList的元数据
-     * @param generateSqlPart        Builder
-     * @param relationshipRecordWith Record
-     * @return 查询结果集
-     */
     @Override
-    public RecordList<?, ?> dealBatch(List<Map<String, Column>> stringColumnMapList,
-                                      GenerateSqlPart generateSqlPart,
-                                      RelationshipRecordWith relationshipRecordWith) {
+    public Set<Object> getSetInMapList(List<Map<String, Column>> stringColumnMapList) {
+        return getColumnInMapList(stringColumnMapList, belongsToTemplate.localModelForeignKey);
+    }
 
+    @Override
+    public RecordList<?, ?> dealBatch(Set<Object> setInMapList, GenerateSqlPart generateSqlPart) {
         return generateSqlPart.generate(belongsToTemplate.parentModel.newQuery())
-            .whereIn(belongsToTemplate.parentModelLocalKey,
-                getColumnInMapList(stringColumnMapList, belongsToTemplate.localModelForeignKey))
+            .whereIn(belongsToTemplate.parentModelLocalKey, setInMapList)
             .get();
     }
 
     @Override
-    public List<?> filterBatchRecord(Record<?, ?> record, List<?> relationshipObjectList) {
+    public List<?> filterBatchRecord(Record<?, ?> record, RecordList<?, ?> relationshipRecordList,
+                                     Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         // 父表的外键字段名
         String column = belongsToTemplate.parentModelLocalKey;
         // 本表的关系键值
         String value = String.valueOf(
             record.getMetadataMap().get(belongsToTemplate.localModelForeignKey).getValue());
-        List<Object> objectList = new ArrayList<>();
-        for (Object o : relationshipObjectList) {
-            // todo 有优化空间
-            Object fieldByColumn = EntityUtil.getFieldByColumn(o, column);
 
-            // 满足则加入
-            if (value.equals(fieldByColumn.toString())) {
-                // 加入
-                objectList.add(o);
-            }
-        }
-        return objectList;
-
+        return findObjList(relationshipRecordList.toObjectList(cacheRelationRecordList), column, value);
     }
 }

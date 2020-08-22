@@ -77,6 +77,6 @@ public class Column implements Serializable {
     /**
      * 标记关系
      */
-    private Set<String> relationIds = new HashSet<>();
+//    private Set<String> relationIds = new HashSet<>();
 
 }

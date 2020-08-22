@@ -198,9 +198,9 @@ public class EntityUtil {
     /**
      * 获取数据库字段名对应的类属性的值
      * @param columnName 列名
-     * @return 数据库字段名
+     * @return 类属性的值
      */
-    public static Object getFieldByColumn(Object obj, String columnName) {
+    public static Object getFieldValueByColumn(Object obj, String columnName) {
         // 不存在注解时, 则查找类中是否存在小驼峰的属性名
         String   fieldNameTemp = StringUtil.lineToHump(columnName, false);
         Object   value         = null;
@@ -212,6 +212,7 @@ public class EntityUtil {
                 if (field.isAnnotationPresent(Column.class)) {
                     Column column = field.getAnnotation(Column.class);
                     if (columnName.equals(column.name())) {
+                        // 精准命中直接返回
                         return field.get(obj);
                     }
                 }
@@ -227,6 +228,69 @@ public class EntityUtil {
             throw new IllegalAccessRuntimeException(e);
         }
         throw new ColumnNotFoundException(columnName + " not found in " + obj);
+    }
+
+    /**
+     * 获取数据库字段名对应的类属性的名
+     * @param columnName 列名
+     * @return 类属性的名
+     */
+    public static String getFieldNameByColumn(Object obj, String columnName) {
+        // 不存在注解时, 则查找类中是否存在小驼峰的属性名
+        String   fieldNameTemp = StringUtil.lineToHump(columnName, false);
+        String   fieldName     = null;
+        Class<?> clazz         = obj.getClass();
+        for (Field field : clazz.getDeclaredFields()) {
+            field.setAccessible(true);
+            // 优先精准匹配注解
+            if (field.isAnnotationPresent(Column.class)) {
+                Column column = field.getAnnotation(Column.class);
+                if (columnName.equals(column.name())) {
+                    // 精准命中直接返回
+                    return field.getName();
+                }
+            }
+            // 同时查找小驼峰的属性名, 以备万一
+            if (field.getName().equals(fieldNameTemp)) {
+                fieldName = field.getName();
+            }
+        }
+        if (fieldName == null) {
+            throw new ColumnNotFoundException(columnName + " not found in " + clazz);
+        }
+        return fieldName;
+
+    }
+
+    /**
+     * 获取数据库字段名对应的类属性的名
+     * @param columnName 列名
+     * @return 类属性的名
+     */
+    public static String getFieldNameByColumn(Class<?> clazz, String columnName) {
+        // 不存在注解时, 则查找类中是否存在小驼峰的属性名
+        String   fieldNameTemp = StringUtil.lineToHump(columnName, false);
+        String   fieldName     = null;
+        for (Field field : clazz.getDeclaredFields()) {
+            field.setAccessible(true);
+            // 优先精准匹配注解
+            if (field.isAnnotationPresent(Column.class)) {
+                Column column = field.getAnnotation(Column.class);
+                if (columnName.equals(column.name())) {
+                    // 精准命中直接返回
+                    return field.getName();
+                }
+            }
+            // 同时查找小驼峰的属性名, 以备万一
+            if (field.getName().equals(fieldNameTemp)) {
+                fieldName = field.getName();
+            }
+        }
+        if (fieldName == null) {
+            throw new ColumnNotFoundException(columnName + " not found in " + clazz);
+        }
+        return fieldName;
+
     }
 
     /**
@@ -297,13 +361,7 @@ public class EntityUtil {
                 // 主键值记录
                 if (field.isAnnotationPresent(Primary.class)) {
                     record.setOriginalPrimaryKeyValue(value);
-//                    // 同级主键值集合, 为关联关系做准备
-//                    Set<Object> primaryKeyValueSet = record.getOriginalPrimaryKeyValueSet();
-//                    if (primaryKeyValueSet != null) {
-//                        primaryKeyValueSet.add(value);
-//                    }
                 }
-
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 throw new TypeNotSupportedException(e.getMessage(), e);
             }

@@ -17,6 +17,7 @@ import gaarason.database.exception.RelationAnnotationNotSupportedException;
 import gaarason.database.support.Column;
 import gaarason.database.support.RecordFactory;
 import gaarason.database.utils.EntityUtil;
+import gaarason.database.utils.StringUtil;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -86,7 +87,7 @@ public class ToObject<T, K> {
      */
     public List<T> toObjectList(Map<String, RecordList<?, ?>> cacheRelationRecordList) {
 
-        List<Map<String, Column>> sameLevelAllMetadataMapList = records.getSameLevelAllMetadataMapList();
+        List<Map<String, Column>> originalMetadataMapList = records.getOriginalMetadataMapList();
 
         List<T> list = new ArrayList<>();
         // 关联关系的临时性缓存
@@ -111,6 +112,7 @@ public class ToObject<T, K> {
                         continue;
                     }
 
+                    // 关联关系处理器
                     SubQuery subQuery;
 
                     if (field.isAnnotationPresent(HasOneOrMany.class)) {
@@ -123,16 +125,19 @@ public class ToObject<T, K> {
                         throw new RelationAnnotationNotSupportedException(Arrays.toString(field.getAnnotations()));
                     }
 
-                    RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
-                        field.getName(),
-                        () -> subQuery.dealBatch(sameLevelAllMetadataMapList, generateSqlPart,
-                            relationshipRecordWith), generateSqlPart, relationshipRecordWith);
+                    // 关系set
+                    Set<Object> setInMapList = subQuery.getSetInMapList(originalMetadataMapList);
 
-                    // 直接处理 递归处理
-                    List<?> allObjects = relationshipRecordList.toObjectList(cacheRelationRecordList);
+                    // 本级关系查询
+                    RecordList<?, ?> relationshipRecordList = getRecordListInCache(setInMapList,
+                        cacheRelationRecordList,
+                        field.getName(), record.getModel().getTableName(),
+                        () -> subQuery.dealBatch(setInMapList, generateSqlPart), generateSqlPart,
+                        relationshipRecordWith);
 
-                    // 筛选当前 record 所需要的属性
-                    List<?> objects = subQuery.filterBatchRecord(record, allObjects);
+                    // 递归处理下级关系, 并筛选当前 record 所需要的属性
+                    List<?> objects = subQuery.filterBatchRecord(record, relationshipRecordList,
+                        cacheRelationRecordList);
 
                     // 是否是集合
                     boolean isCollection =
@@ -155,32 +160,36 @@ public class ToObject<T, K> {
 
     }
 
+
     /**
      * 在内存缓存中优先查找目标值
      * @param cacheRelationRecordList 缓存map
      * @param key                     目标值
+     * @param tableName               表名
      * @param closure                 真实业务逻辑实现
+     * @param generateSqlPart         builder 实现
+     * @param relationshipRecordWith  record 实现
      * @return 批量结果集
      */
-    private RecordList<?, ?> getRecordListInCache(Map<String, RecordList<?, ?>> cacheRelationRecordList,
-                                                  String key, GenerateRecordList closure,
+    private RecordList<?, ?> getRecordListInCache(Set<Object> setInMapList,
+                                                  Map<String, RecordList<?, ?>> cacheRelationRecordList, String key,
+                                                  String tableName, GenerateRecordList closure,
                                                   GenerateSqlPart generateSqlPart,
                                                   RelationshipRecordWith relationshipRecordWith) {
-        String cacheKey = key + "|" + generateSqlPart.hashCode() + "|tableName:" + records.get(0)
-            .getModel()
-            .getTableName();
-        RecordList<?, ?> recordList = cacheRelationRecordList.get(cacheKey);
-        // 本地取值为空, 则查询数据
-        if (recordList == null) {
-            // 执行生成
-            recordList = closure.generate();
-            // 赋值本地, 以便下次使用
-            cacheRelationRecordList.put(cacheKey, recordList);
-        }
+        // 缓存keyName
+        String cacheKeyName = key + "|" + generateSqlPart.hashCode() + "|"
+            + "|tableName:" + tableName + "|" + StringUtil.md5(setInMapList.toString());
 
-        RecordList<?, ?> recordsCopy = RecordFactory.deepCopyRecordList(recordList);
+        // 结果
+        RecordList<?, ?> recordList = cacheRelationRecordList.computeIfAbsent(cacheKeyName,
+            theKey -> closure.generate());
+
+        // 使用复制结果
+        RecordList<?, ?> recordsCopy = RecordFactory.copyRecordList(recordList);
+
+        // 赋值关联关系
         for (Record<?, ?> record : recordsCopy) {
-            relationshipRecordWith.generate(record.withClear());
+            relationshipRecordWith.generate(record);
         }
         return recordsCopy;
     }
