@@ -10,7 +10,6 @@ import java.util.Collection;
 @Slf4j
 abstract public class BaseModel<T, K> extends Model<T, K> {
 
-    // todo
     @Resource(name = "proxyDataSource")
     protected ProxyDataSource proxyDataSource;
 

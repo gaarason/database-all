@@ -30,9 +30,9 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
     /**
      * 同级的元数据, 用于关联查询优化
      */
-    @Getter
-    @Setter
-    private List<Map<String, Column>> sameLevelAllMetadataMapList = new ArrayList<>();
+//    @Getter
+//    @Setter
+//    private List<Map<String, Column>> sameLevelAllMetadataMapList = new ArrayList<>();
 
     /**
      * 本表元数据
@@ -82,10 +82,12 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
     private boolean hasBind;
 
     @Getter
-    private final Map<String, GenerateSqlPart> relationBuilderMap = new HashMap<>();
+    @Setter
+    private Map<String, GenerateSqlPart> relationBuilderMap = new HashMap<>();
 
     @Getter
-    private final Map<String, RelationshipRecordWith> relationRecordMap = new HashMap<>();
+    @Setter
+    private Map<String, RelationshipRecordWith> relationRecordMap = new HashMap<>();
 
     /**
      * 根据查询结果集生成
@@ -117,7 +119,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      */
     private void init(Map<String, Column> stringColumnMap) {
         this.metadataMap = stringColumnMap;
-        this.sameLevelAllMetadataMapList.add(stringColumnMap);
+//        this.sameLevelAllMetadataMapList.add(stringColumnMap);
         entity = originalEntity = toObjectWithoutRelationship();
         if (!stringColumnMap.isEmpty()) {
             hasBind = true;

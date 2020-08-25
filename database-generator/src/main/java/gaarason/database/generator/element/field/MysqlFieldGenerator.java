@@ -190,6 +190,7 @@ public class MysqlFieldGenerator extends BaseFieldGenerator {
         field.setDataType(dataType);
         field.setColumnType(columnType);
         field.setName(nameConverter(StringUtil.lineToHump(columnName)));
+        field.setColumnName(columnName);
         field.setUnique("UNI".equals(columnKey));
         field.setUnsigned(columnType.contains("unsigned"));
         field.setNullable("YES".equals(isNullable));
@@ -243,11 +244,6 @@ public class MysqlFieldGenerator extends BaseFieldGenerator {
                 field.setMin(0);
                 field.setJavaClassification(JavaClassification.STRING);
         }
-
-//        ArrayList<JavaElement.Annotation> annotationList = new ArrayList<>();
-//
-//        field.setAnnotations(annotationList);
-
         return field;
     }
 

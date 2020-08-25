@@ -5,6 +5,7 @@ import gaarason.database.eloquent.Model;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
 import gaarason.database.eloquent.annotations.BelongsToMany;
+import gaarason.database.eloquent.enums.SqlType;
 import gaarason.database.support.Column;
 import gaarason.database.utils.EntityUtil;
 
@@ -44,16 +45,19 @@ public class BelongsToManyQuery extends BaseSubQuery {
     }
 
     @Override
-    public Set<Object> getSetInMapList(List<Map<String, Column>> stringColumnMapList) {
-        return getColumnInMapList(stringColumnMapList, belongsToManyTemplate.localModelLocalKey);
+    public String[] dealBatchSql(List<Map<String, Column>> stringColumnMapList, GenerateSqlPart generateSqlPart) {
+        return new String[]{belongsToManyTemplate.relationModel.newQuery()
+            .whereIn(belongsToManyTemplate.foreignKeyForLocalModel,
+                getColumnInMapList(stringColumnMapList, belongsToManyTemplate.localModelLocalKey))
+            .toSql(SqlType.SELECT), generateSqlPart.generate(belongsToManyTemplate.targetModel.newQuery()).toSql(
+            SqlType.SUBQUERY)};
     }
 
     @Override
-    public RecordList<?, ?> dealBatch(Set<Object> setInMapList, GenerateSqlPart generateSqlPart) {
+    public RecordList<?, ?> dealBatch(String[] sql) {
         // 中间表结果
-        List<Map<String, Object>> relationMaps = belongsToManyTemplate.relationModel.newQuery()
-            .whereIn(belongsToManyTemplate.foreignKeyForLocalModel, setInMapList)
-            .get().toMapList();
+        List<Map<String, Object>> relationMaps = belongsToManyTemplate.relationModel.newQuery().queryList(sql[0],
+            new ArrayList<>()).toMapList();
 
         // 将中间表结果中的目标表外键 ,转化为可以使用 where in 查询的 set
         Set<Object> targetModelForeignKeySet = new HashSet<>();
@@ -65,7 +69,7 @@ public class BelongsToManyQuery extends BaseSubQuery {
         }
 
         // 目标表结果
-        RecordList<?, ?> targetRecordList = generateSqlPart.generate(belongsToManyTemplate.targetModel.newQuery())
+        RecordList<?, ?> targetRecordList = belongsToManyTemplate.targetModel.newQuery().whereRaw(sql[1])
             .whereIn(belongsToManyTemplate.targetModelLocalKey, targetModelForeignKeySet)
             .get();
 
@@ -90,6 +94,8 @@ public class BelongsToManyQuery extends BaseSubQuery {
             }
         }
         return targetRecordList;
+
+
     }
 
     @Override

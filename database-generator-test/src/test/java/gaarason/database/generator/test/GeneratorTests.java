@@ -21,15 +21,15 @@ public class GeneratorTests {
     public void run有参构造() {
         String jdbcUrl = "jdbc:mysql://sakya.local/test_master_0?useUnicode=true&characterEncoding=utf-8" +
             "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
-        String username = "root";
-        String password = "root";
+        String    username  = "root";
+        String    password  = "root";
         Generator generator = new Generator(jdbcUrl, username, password);
 
         // set
         generator.setStaticField(true);
         generator.setIsSpringBoot(true);
-//        generator.setIsSwagger(true);
-//        generator.setIsValidator(true);
+        generator.setIsSwagger(true);
+        generator.setIsValidator(true);
         generator.setCorePoolSize(20);
         generator.setOutputDir("./src/test/java/");
         generator.setNamespace("test.data");
@@ -42,8 +42,8 @@ public class GeneratorTests {
     @Test
     public void run无参构造() {
         ProxyDataSource proxyDataSource = proxyDataSource();
-        ToolModel toolModel = new ToolModel(proxyDataSource);
-        AutoGenerator autoGenerator = new AutoGenerator(toolModel);
+        ToolModel       toolModel       = new ToolModel(proxyDataSource);
+        AutoGenerator   autoGenerator   = new AutoGenerator(toolModel);
         // set
         autoGenerator.setStaticField(true);
         autoGenerator.setIsSpringBoot(true);
@@ -85,21 +85,26 @@ public class GeneratorTests {
 
     public static class ToolModel extends Model<ToolModel.Inner, Object> {
         private ProxyDataSource proxyDataSource;
+
         public ToolModel(ProxyDataSource dataSource) {
             proxyDataSource = dataSource;
         }
+
         public ProxyDataSource getProxyDataSource() {
             return proxyDataSource;
         }
+
         public static class Inner {
         }
     }
 
     public class AutoGenerator extends Generator {
         private Model toolModel;
+
         public AutoGenerator(Model model) {
             toolModel = model;
         }
+
         public Model getModel() {
             return toolModel;
         }

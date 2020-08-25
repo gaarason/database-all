@@ -17,7 +17,6 @@ import gaarason.database.exception.RelationAnnotationNotSupportedException;
 import gaarason.database.support.Column;
 import gaarason.database.support.RecordFactory;
 import gaarason.database.utils.EntityUtil;
-import gaarason.database.utils.StringUtil;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -74,9 +73,7 @@ public class ToObject<T, K> {
     }
 
     public List<T> toObjectList() {
-
         Map<String, RecordList<?, ?>> cacheRelationRecordList = new HashMap<>();
-
         return toObjectList(cacheRelationRecordList);
 
     }
@@ -86,7 +83,7 @@ public class ToObject<T, K> {
      * @return 对象列表
      */
     public List<T> toObjectList(Map<String, RecordList<?, ?>> cacheRelationRecordList) {
-
+        // 同级数据源
         List<Map<String, Column>> originalMetadataMapList = records.getOriginalMetadataMapList();
 
         List<T> list = new ArrayList<>();
@@ -125,25 +122,20 @@ public class ToObject<T, K> {
                         throw new RelationAnnotationNotSupportedException(Arrays.toString(field.getAnnotations()));
                     }
 
-                    // 关系set
-                    Set<Object> setInMapList = subQuery.getSetInMapList(originalMetadataMapList);
+                    // sql数组
+                    String[] sqlArr = subQuery.dealBatchSql(originalMetadataMapList, generateSqlPart);
 
                     // 本级关系查询
-                    RecordList<?, ?> relationshipRecordList = getRecordListInCache(setInMapList,
-                        cacheRelationRecordList,
-                        field.getName(), record.getModel().getTableName(),
-                        () -> subQuery.dealBatch(setInMapList, generateSqlPart), generateSqlPart,
-                        relationshipRecordWith);
+                    RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
+                        field.getName(), record.getModel().getTableName(), () -> subQuery.dealBatch(sqlArr),
+                        relationshipRecordWith, sqlArr);
 
                     // 递归处理下级关系, 并筛选当前 record 所需要的属性
                     List<?> objects = subQuery.filterBatchRecord(record, relationshipRecordList,
                         cacheRelationRecordList);
 
                     // 是否是集合
-                    boolean isCollection =
-                        Arrays.asList(field.getType().getInterfaces()).contains(Collection.class);
-
-                    if (isCollection) {
+                    if (Arrays.asList(field.getType().getInterfaces()).contains(Collection.class)) {
                         // 设置字段值
                         field.set(entity, objects);
                     } else {
@@ -160,27 +152,23 @@ public class ToObject<T, K> {
 
     }
 
-
     /**
      * 在内存缓存中优先查找目标值
      * @param cacheRelationRecordList 缓存map
      * @param key                     目标值
      * @param tableName               表名
      * @param closure                 真实业务逻辑实现
-     * @param generateSqlPart         builder 实现
      * @param relationshipRecordWith  record 实现
+     * @param sqlArr                  sql数组
      * @return 批量结果集
      */
-    private RecordList<?, ?> getRecordListInCache(Set<Object> setInMapList,
-                                                  Map<String, RecordList<?, ?>> cacheRelationRecordList, String key,
+    private RecordList<?, ?> getRecordListInCache(Map<String, RecordList<?, ?>> cacheRelationRecordList, String key,
                                                   String tableName, GenerateRecordList closure,
-                                                  GenerateSqlPart generateSqlPart,
-                                                  RelationshipRecordWith relationshipRecordWith) {
+                                                  RelationshipRecordWith relationshipRecordWith, String[] sqlArr) {
         // 缓存keyName
-        String cacheKeyName = key + "|" + generateSqlPart.hashCode() + "|"
-            + "|tableName:" + tableName + "|" + StringUtil.md5(setInMapList.toString());
+        String cacheKeyName = key + "|" + Arrays.toString(sqlArr) + "|" + tableName;
 
-        // 结果
+        // 有缓存有直接返回, 没有就执行后返回
         RecordList<?, ?> recordList = cacheRelationRecordList.computeIfAbsent(cacheKeyName,
             theKey -> closure.generate());
 

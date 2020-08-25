@@ -41,7 +41,7 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(10L, beforeCount.longValue());
 
         // 插入多次
-        MultiThreadUtil.run(100, 10, () -> {
+        MultiThreadUtil.run(10, 10, () -> {
             List<String> columnNameList = new ArrayList<>();
             columnNameList.add("name");
             columnNameList.add("age");
@@ -68,7 +68,7 @@ public class QueryBuilderTests extends BaseTests {
 
         // 现在数据量
         Long afterCount = studentModel.newQuery().count("id");
-        Assert.assertEquals(1010L, afterCount.longValue());
+        Assert.assertEquals(110L, afterCount.longValue());
     }
 
     @Test

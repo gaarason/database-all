@@ -354,7 +354,7 @@ public class Generator {
             // 静态字段名
             String staticName = nameConverter(columnName).toUpperCase();
 
-            // 每个字段的填充
+            // 每个字段的填充(避免静态字段与普通属性名一样导致冲突, 一样时使用$前缀)
             String fieldTemplateStrReplace =
                 "    final public static String " + (staticName.equals(columnName) ? "$" : "") + staticName +
                     " = \"" + columnName + "\";\n";

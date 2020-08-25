@@ -7,6 +7,7 @@ import gaarason.database.contracts.record.FriendlyListORM;
 import gaarason.database.contracts.record.RelationshipListORM;
 import gaarason.database.conversion.ToObject;
 import gaarason.database.support.Column;
+import gaarason.database.utils.StringUtil;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -102,11 +103,28 @@ public class RecordList<T, K> extends ArrayList<Record<T, K>> implements Friendl
 
     @Override
     public RecordList<T, K> with(String column, GenerateSqlPart builderClosure,
-                                 RelationshipRecordWith recordListClosure) {
+                                 RelationshipRecordWith recordClosure) {
+        String[] columnArr = column.split("\\.");
+        // 快捷类型
+        if (columnArr.length > 1) {
+            String lastLevelColumn  = columnArr[columnArr.length - 1];
+            String otherLevelColumn = StringUtil.rtrim(column, "." + lastLevelColumn);
+            return with(otherLevelColumn, builder -> builder,
+                record -> record.with(lastLevelColumn, builderClosure, recordClosure));
+        }
         for (Record<T, K> tkRecord : this) {
             // 赋值关联关系过滤
-            tkRecord.with(column, builderClosure, recordListClosure);
+            // 保持引用
+            tkRecord.getRelationBuilderMap().put(column, builderClosure);
+            tkRecord.getRelationRecordMap().put(column, recordClosure);
         }
         return this;
+
+
+//        for (Record<T, K> tkRecord : this) {
+//            // 赋值关联关系过滤
+//            tkRecord.with(column, builderClosure, recordClosure);
+//        }
+//        return this;
     }
 }

@@ -33,7 +33,9 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
 
     @Override
     public Builder<T, K> whereRaw(String sqlPart) {
-        grammar.pushWhere(sqlPart, "and");
+        if(!"".equals(sqlPart)){
+            grammar.pushWhere(sqlPart, "and");
+        }
         return this;
     }
 

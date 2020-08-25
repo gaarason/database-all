@@ -8,9 +8,7 @@ import gaarason.database.test.parent.BaseTests;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
 
 import javax.sql.DataSource;
@@ -18,7 +16,7 @@ import java.util.List;
 
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
-public class SoftDeleteTests extends BaseTests {
+public class ScopeTests extends BaseTests {
 //    @Rule
 //    public ExpectedException thrown = ExpectedException.none();
 

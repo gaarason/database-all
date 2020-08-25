@@ -26,9 +26,14 @@ public class Field extends JavaElement {
     private String columnType;
 
     /**
-     * 字段名/列名
+     * 属性名
      */
     private String name;
+
+    /**
+     * 字段名/列名
+     */
+    private String columnName;
 
     /**
      * 是否唯一
@@ -126,7 +131,7 @@ public class Field extends JavaElement {
     public String toAnnotationDatabaseColumn() {
         return indentation() + "@Column(" +
 
-            "name = \"" + name + "\"" +
+            "name = \"" + columnName + "\"" +
             (unique ? ", unique = " + unique : "") +
             (unsigned ? ", unsigned = " + unsigned : "") +
             (nullable ? ", nullable = " + nullable : "") +
@@ -143,7 +148,7 @@ public class Field extends JavaElement {
      */
     public String toAnnotationSwaggerAnnotationsApiModelProperty() {
         // 字段没有注释的情况下, 使用字段名
-        String value = "".equals(comment) ? name : comment;
+        String value = "".equals(comment) ? columnName : comment;
 
         return indentation() + "@ApiModelProperty(" +
 
@@ -162,15 +167,15 @@ public class Field extends JavaElement {
      */
     public String toAnnotationOrgHibernateValidatorConstraintValidator() {
         // 字段没有注释的情况下, 使用字段名
-        String describe = "".equals(comment) ? name : comment;
+        String describe = "".equals(comment) ? columnName : comment;
 
         switch (javaClassification){
             case NUMERIC:
                 return indentation() + "@Max(value = " + max + "L, " +
-                    "message = \"" + describe + "[" + name + "]需要小于等于" + max  + "\"" +
+                    "message = \"" + describe + "[" + columnName + "]需要小于等于" + max  + "\"" +
                     ")\n" +
                     indentation() + "@Min(value = " + min + "L, " +
-                    "message = \"" + describe + "[" + name + "]需要大于等于" + min  + "\"" +
+                    "message = \"" + describe + "[" + columnName + "]需要大于等于" + min  + "\"" +
                     ")\n";
             case STRING:
                 if(max == 0)
@@ -179,7 +184,7 @@ public class Field extends JavaElement {
                 return indentation() + "@Length(" +
                     "min = " + min + ", " +
                     "max = " + max + ", " +
-                    "message = \"" + describe + "[" + name + "]长度需要在" + min + "和" + max + "之间"  + "\"" +
+                    "message = \"" + describe + "[" + columnName + "]长度需要在" + min + "和" + max + "之间"  + "\"" +
                     ")\n";
             default:
                 return "";

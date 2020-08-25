@@ -7,24 +7,23 @@ import gaarason.database.support.Column;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public interface SubQuery {
 
     /**
-     * 将元数据中的关系键值,转化为可以使用 where in 查询的 set
+     * 批量关联查询的sql预生成, 可以作为缓存key
      * @param stringColumnMapList 当前recordList的元数据
-     * @return 关系set
+     * @param generateSqlPart     Builder
+     * @return sql数组
      */
-    Set<Object> getSetInMapList(List<Map<String, Column>> stringColumnMapList);
+    String[] dealBatchSql(List<Map<String, Column>> stringColumnMapList, GenerateSqlPart generateSqlPart);
 
     /**
      * 批量关联查询
-     * @param setInMapList    关系set
-     * @param generateSqlPart Builder
+     * @param sqlArr sql数组
      * @return 查询结果集
      */
-    RecordList<?, ?> dealBatch(Set<Object> setInMapList, GenerateSqlPart generateSqlPart);
+    RecordList<?, ?> dealBatch(String[] sqlArr);
 
     /**
      * 筛选批量关联查询结果对象

@@ -1,8 +1,10 @@
 package gaarason.database.test;
 
 import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.contracts.function.GenerateSqlPart;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.enums.OrderBy;
+import gaarason.database.query.Builder;
 import gaarason.database.test.parent.BaseTests;
 import gaarason.database.test.relation.data.model.RelationshipStudentTeacherModel;
 import gaarason.database.test.relation.data.model.StudentModel;
@@ -25,6 +27,11 @@ import java.util.Set;
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
 public class RelationTests extends BaseTests {
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 
     private static StudentModel studentModel = new StudentModel();
 
@@ -669,7 +676,81 @@ public class RelationTests extends BaseTests {
 
     }
 
-    // todo
+    @Test
+    public void 多数据结果_一对一关系_builder筛选1() {
+        Set<Object> teacherIds = new HashSet<>();
+        teacherIds.add("1");
+//        teacherIds.add("2");
+//
+
+        List<Student> students = studentModel.newQuery()
+            .get()
+            .with("teacher", builder -> builder.whereIn("id", teacherIds), record -> record.with(
+                "students"))
+            .toObjectList();
+
+        for (Student student : students) {
+            System.out.println(student);
+        }
+    }
+
+    @Test
+    public void 多数据结果_一对一关系_无线级关系1() {
+        List<Student> students = studentModel.newQuery()
+            .get()
+            .with("teacher", builder -> builder, record -> record
+                .with("students")
+            )
+            .toObjectList();
+
+        for (Student student : students) {
+            System.out.println(student);
+        }
+        Assert.assertNotNull(students.get(0).getTeacher());
+        Assert.assertNotNull(students.get(0).getTeacher().getStudents());
+        Assert.assertEquals(students.get(0).getTeacher().getStudents().size(), 4);
+    }
+
+    @Test
+    public void 多数据结果_一对一关系_builder筛选2() {
+        Set<Object> teacherIds = new HashSet<>();
+        teacherIds.add("1");
+//        teacherIds.add("2");
+        Set<Object> studentIds = new HashSet<>();
+        studentIds.add("5");
+        studentIds.add("6");
+
+
+        List<Student> students = studentModel.newQuery()
+            .get()
+            .with("teacher", builder -> builder.whereIn("id", teacherIds), record -> record.with(
+                "students", builder -> builder.whereIn("id", studentIds)))
+//        "students", builder -> builder.whereIn("teacher_id", "5","6")))
+            .toObjectList();
+
+        for (Student student : students) {
+            System.out.println(student);
+        }
+
+    }
+
+    @Test
+    public void 多数据结果_一对一关系_无线级关系2() {
+        List<Student> students = studentModel.newQuery()
+            .get()
+            .with("teacher", builder -> builder, record -> record
+                .with("students")
+            )
+            .toObjectList();
+
+        for (Student student : students) {
+            System.out.println(student);
+        }
+        Assert.assertNotNull(students.get(0).getTeacher());
+        Assert.assertNotNull(students.get(0).getTeacher().getStudents());
+        Assert.assertEquals(students.get(0).getTeacher().getStudents().size(), 4);
+    }
+
     @Test
     public void 多数据结果_一对一关系_builder筛选() {
         Set<Object> teacherIds = new HashSet<>();
@@ -711,7 +792,7 @@ public class RelationTests extends BaseTests {
             .get()
             .with("teacher", builder -> builder, record -> record
                 .with("students", builder -> builder, record1 -> record1
-                    .with("teacher")
+                    .with("teacher", builder -> builder, record2 -> record2.with("students"))
                 )
             )
             .toObjectList();
@@ -950,7 +1031,8 @@ public class RelationTests extends BaseTests {
         Student student = studentModel.newQuery()
             .where("id", "1")
             .firstOrFail()
-            .with("teachersBelongsToMany", builder -> builder, record -> record.with("studentsBelongsToMany",
+            .with("teachersBelongsToMany", builder -> builder, record -> record.with(
+                "studentsBelongsToMany",
                 builder -> builder))
             .toObject();
 

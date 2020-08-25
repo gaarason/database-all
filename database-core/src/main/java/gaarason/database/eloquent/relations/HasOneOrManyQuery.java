@@ -5,12 +5,13 @@ import gaarason.database.eloquent.Model;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
 import gaarason.database.eloquent.annotations.HasOneOrMany;
+import gaarason.database.eloquent.enums.SqlType;
 import gaarason.database.support.Column;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class HasOneOrManyQuery extends BaseSubQuery {
 
@@ -38,15 +39,17 @@ public class HasOneOrManyQuery extends BaseSubQuery {
         hasOneOrManyTemplate = new HasOneOrManyTemplate(field);
     }
 
-    public Set<Object> getSetInMapList(List<Map<String, Column>> stringColumnMapList) {
-        return getColumnInMapList(stringColumnMapList, hasOneOrManyTemplate.localModelLocalKey);
+    @Override
+    public String[] dealBatchSql(List<Map<String, Column>> stringColumnMapList, GenerateSqlPart generateSqlPart) {
+        return new String[]{generateSqlPart.generate(hasOneOrManyTemplate.sonModel.newQuery())
+            .whereIn(hasOneOrManyTemplate.sonModelForeignKey,
+                getColumnInMapList(stringColumnMapList, hasOneOrManyTemplate.localModelLocalKey))
+            .toSql(SqlType.SELECT)};
     }
 
     @Override
-    public RecordList<?, ?> dealBatch(Set<Object> setInMapList, GenerateSqlPart generateSqlPart) {
-        return generateSqlPart.generate(hasOneOrManyTemplate.sonModel.newQuery())
-            .whereIn(hasOneOrManyTemplate.sonModelForeignKey, setInMapList)
-            .get();
+    public RecordList<?, ?> dealBatch(String[] sql) {
+        return hasOneOrManyTemplate.sonModel.newQuery().queryList(sql[0], new ArrayList<>());
     }
 
     @Override

@@ -21,23 +21,23 @@ public class ProxyDataSource implements DataSource {
      * 写连接
      */
     @Getter
-    private List<DataSource> masterDataSourceList;
+    protected List<DataSource> masterDataSourceList;
 
     /**
      * 读连接
      */
     @Getter
-    private List<DataSource> slaveDataSourceList;
+    protected List<DataSource> slaveDataSourceList;
 
     /**
      * 是否主从(读写分离)
      */
-    private boolean hasSlave;
+    protected boolean hasSlave;
 
     /**
      * 单前线程中的 ProxyDataSource对象 是否处于数据库事物中
      */
-    private ThreadLocal<Boolean> inTransaction = ThreadLocal.withInitial(() -> false);
+    protected ThreadLocal<Boolean> inTransaction = ThreadLocal.withInitial(() -> false);
 
     public boolean isInTransaction() {
         return inTransaction.get();
@@ -56,14 +56,14 @@ public class ProxyDataSource implements DataSource {
      */
     @Setter
     @Getter
-    private boolean isWrite = false;
+    protected boolean isWrite = false;
 
-    private ThreadLocal<DataSource> masterDataSource = ThreadLocal.withInitial(() -> {
+    protected ThreadLocal<DataSource> masterDataSource = ThreadLocal.withInitial(() -> {
         // TODO 权重选择
         return masterDataSourceList.get((new Random()).nextInt(masterDataSourceList.size()));
     });
 
-    private ThreadLocal<DataSource> slaveDataSource = ThreadLocal.withInitial(() -> {
+    protected ThreadLocal<DataSource> slaveDataSource = ThreadLocal.withInitial(() -> {
         // TODO 权重选择
         return slaveDataSourceList.get((new Random()).nextInt(slaveDataSourceList.size()));
     });
@@ -79,11 +79,15 @@ public class ProxyDataSource implements DataSource {
         hasSlave = false;
     }
 
+    public ProxyDataSource() {
+        hasSlave = false;
+    }
+
     /**
      * 得到 DataSource
      * @return DataSource
      */
-    private DataSource getRealDataSource() {
+    protected DataSource getRealDataSource() {
         return (!hasSlave || isWrite || isInTransaction()) ? masterDataSource.get() : slaveDataSource.get();
     }
 
@@ -91,7 +95,7 @@ public class ProxyDataSource implements DataSource {
     public Connection getConnection() throws SQLException {
         DataSource realDataSource = getRealDataSource();
         Connection connection     = realDataSource.getConnection();
-        if(null == connection){
+        if (null == connection) {
             throw new InternalConcurrentException("Get an null value in ProxyDataSource object.");
         }
         return connection;
