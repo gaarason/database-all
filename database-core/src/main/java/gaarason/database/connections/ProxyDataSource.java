@@ -32,7 +32,7 @@ public class ProxyDataSource implements DataSource {
     /**
      * 是否主从(读写分离)
      */
-    protected boolean hasSlave;
+    protected boolean hasSlave = false;
 
     /**
      * 单前线程中的 ProxyDataSource对象 是否处于数据库事物中
@@ -76,11 +76,9 @@ public class ProxyDataSource implements DataSource {
 
     public ProxyDataSource(List<DataSource> masterDataSourceList) {
         this.masterDataSourceList = masterDataSourceList;
-        hasSlave = false;
     }
 
     public ProxyDataSource() {
-        hasSlave = false;
     }
 
     /**
