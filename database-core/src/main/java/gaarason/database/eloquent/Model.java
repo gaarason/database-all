@@ -1,6 +1,6 @@
 package gaarason.database.eloquent;
 
-import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.contracts.GaarasonDataSource;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.repository.BaseSoftDeleting;
 import gaarason.database.exception.EntityNotFoundException;
@@ -13,7 +13,7 @@ abstract public class Model<T, K> extends BaseSoftDeleting<T, K> {
     /**
      * @return dataSource代理
      */
-    abstract public ProxyDataSource getProxyDataSource();
+    abstract public GaarasonDataSource getDataSource();
 
     /**
      * 全局查询作用域
@@ -30,8 +30,8 @@ abstract public class Model<T, K> extends BaseSoftDeleting<T, K> {
      */
     protected Builder<T, K> theBuilder() {
         // todo 按连接类型,等等信息选择 builder
-        ProxyDataSource proxyDataSource = getProxyDataSource();
-        return apply(new MySqlBuilder<>(proxyDataSource, this, entityClass));
+        GaarasonDataSource gaarasonDataSource = getDataSource();
+        return apply(new MySqlBuilder<>(gaarasonDataSource, this, entityClass));
     }
 
     /**

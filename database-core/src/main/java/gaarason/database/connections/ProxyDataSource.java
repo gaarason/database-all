@@ -1,5 +1,6 @@
 package gaarason.database.connections;
 
+import gaarason.database.contracts.GaarasonDataSource;
 import gaarason.database.exception.InternalConcurrentException;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +16,7 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 @ToString
-public class ProxyDataSource implements DataSource {
+public class ProxyDataSource implements GaarasonDataSource {
 
     /**
      * 写连接
@@ -85,7 +86,8 @@ public class ProxyDataSource implements DataSource {
      * 得到 DataSource
      * @return DataSource
      */
-    protected DataSource getRealDataSource() {
+    @Override
+    public DataSource getRealDataSource() {
         return (!hasSlave || isWrite || isInTransaction()) ? masterDataSource.get() : slaveDataSource.get();
     }
 

@@ -30,7 +30,7 @@ public class QueryBuilderTests extends BaseTests {
     private static StudentModel studentModel = new StudentModel();
 
     protected List<DataSource> getDataSourceList() {
-        ProxyDataSource proxyDataSource = studentModel.getProxyDataSource();
+        ProxyDataSource proxyDataSource = studentModel.getDataSource();
         return proxyDataSource.getMasterDataSourceList();
     }
 

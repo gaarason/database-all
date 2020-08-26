@@ -175,7 +175,7 @@ public class Generator {
             proxyDataSource = dataSource;
         }
 
-        public ProxyDataSource getProxyDataSource() {
+        public ProxyDataSource getDataSource() {
             return proxyDataSource;
         }
 

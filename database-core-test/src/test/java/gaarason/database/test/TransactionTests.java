@@ -32,7 +32,7 @@ public class TransactionTests extends BaseTests {
     private static Student3Model student3Model = new Student3Model();
 
     protected List<DataSource> getDataSourceList() {
-        ProxyDataSource proxyDataSource = studentModel.getProxyDataSource();
+        ProxyDataSource proxyDataSource = studentModel.getDataSource();
         return proxyDataSource.getMasterDataSourceList();
     }
 

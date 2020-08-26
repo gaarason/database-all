@@ -1,6 +1,6 @@
 package gaarason.database.spring.boot.starter.test.data.model.base;
 
-import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.contracts.GaarasonDataSource;
 import gaarason.database.eloquent.Model;
 import lombok.extern.slf4j.Slf4j;
 
@@ -10,12 +10,12 @@ import java.util.Collection;
 @Slf4j
 abstract public class BaseModel<T, K> extends Model<T, K> {
 
-    @Resource(name = "proxyDataSource")
-    protected ProxyDataSource proxyDataSource;
+    @Resource
+    protected GaarasonDataSource gaarasonDataSource;
 
     @Override
-    public ProxyDataSource getProxyDataSource(){
-        return proxyDataSource;
+    public GaarasonDataSource getDataSource() {
+        return gaarasonDataSource;
     }
 
     /**

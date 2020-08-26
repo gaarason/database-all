@@ -23,7 +23,7 @@ public class ScopeTests extends BaseTests {
     private static StudentSoftDeleteModel studentModel = new StudentSoftDeleteModel();
 
     protected List<DataSource> getDataSourceList() {
-        ProxyDataSource proxyDataSource = studentModel.getProxyDataSource();
+        ProxyDataSource proxyDataSource = studentModel.getDataSource();
         return proxyDataSource.getMasterDataSourceList();
     }
 

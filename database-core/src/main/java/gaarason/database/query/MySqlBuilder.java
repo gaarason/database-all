@@ -1,6 +1,6 @@
 package gaarason.database.query;
 
-import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.contracts.GaarasonDataSource;
 import gaarason.database.contracts.Grammar;
 import gaarason.database.contracts.function.GenerateSqlPart;
 import gaarason.database.core.lang.Nullable;
@@ -21,8 +21,8 @@ import java.util.*;
 
 public class MySqlBuilder<T, K> extends Builder<T, K> {
 
-    public MySqlBuilder(ProxyDataSource dataSourceModel, Model<T, K> model, Class<T> entityClass) {
-        super(dataSourceModel, model, entityClass);
+    public MySqlBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
+        super(gaarasonDataSource, model, entityClass);
     }
 
     @Override
@@ -33,7 +33,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
 
     @Override
     public Builder<T, K> whereRaw(String sqlPart) {
-        if(!"".equals(sqlPart)){
+        if (!"".equals(sqlPart)) {
             grammar.pushWhere(sqlPart, "and");
         }
         return this;

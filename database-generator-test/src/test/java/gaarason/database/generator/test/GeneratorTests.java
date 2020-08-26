@@ -90,7 +90,7 @@ public class GeneratorTests {
             proxyDataSource = dataSource;
         }
 
-        public ProxyDataSource getProxyDataSource() {
+        public ProxyDataSource getDataSource() {
             return proxyDataSource;
         }
 
@@ -98,14 +98,14 @@ public class GeneratorTests {
         }
     }
 
-    public class AutoGenerator extends Generator {
-        private Model toolModel;
+    public static class AutoGenerator extends Generator {
+        private Model<?, ?> toolModel;
 
-        public AutoGenerator(Model model) {
+        public AutoGenerator(Model<?, ?> model) {
             toolModel = model;
         }
 
-        public Model getModel() {
+        public Model<?, ?> getModel() {
             return toolModel;
         }
 

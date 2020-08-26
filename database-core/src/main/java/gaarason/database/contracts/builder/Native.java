@@ -65,16 +65,6 @@ public interface Native<T, K> {
     @Nullable
     K executeGetId(String sql, Collection<String> parameters) throws SQLRuntimeException;
 
-//    /**
-//     * 执行语句
-//     * @param sql 查询语句
-//     * @param parameters 参数绑定列表
-//     * @return 自增长主键
-//     * @throws SQLRuntimeException 数据库异常
-//     * @throws SQLRuntimeException 数据库异常
-//     */
-//    K executeGetIdOrFail(String sql, Collection<String> parameters) throws SQLRuntimeException;
-
     /**
      * 执行语句
      * @param sql 查询语句

@@ -22,7 +22,7 @@ public class IncrementTypeTests extends BaseTests {
     private static PeopleModel peopleModel = new PeopleModel();
 
     protected List<DataSource> getDataSourceList() {
-        ProxyDataSource proxyDataSource = peopleModel.getProxyDataSource();
+        ProxyDataSource proxyDataSource = peopleModel.getDataSource();
         return proxyDataSource.getMasterDataSourceList();
     }
 

@@ -15,7 +15,7 @@ public class GeneralGenerator extends Generator {
 
     @Override
     @NonNull
-    public Model getModel() {
+    public Model<?, ?> getModel() {
         return generalModel;
     }
 }

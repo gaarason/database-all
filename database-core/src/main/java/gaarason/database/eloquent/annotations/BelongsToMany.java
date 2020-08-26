@@ -14,22 +14,38 @@ import java.lang.annotation.*;
 public @interface BelongsToMany {
 
     /**
-     * 关联model
+     * `目标表`model
      * @return
      */
     Class<? extends Model<?, ?>> targetModel();
 
     /**
-     * 关联关系中间model
+     * `关系表`model
      * @return
      */
     Class<? extends Model<?, ?>> relationModel();
 
+    /**
+     * `本表`中的`关联键`
+     * @return
+     */
     String localModelLocalKey();
 
+    /**
+     * `关系表`中的`关联本表的外键`
+     * @return
+     */
     String foreignKeyForLocalModel();
 
+    /**
+     * `关系表`中的`关联目标表的外键`
+     * @return
+     */
     String foreignKeyForTargetModel();
 
+    /**
+     * `目标表`中的`关联键`
+     * @return
+     */
     String targetModelLocalKey();
 }

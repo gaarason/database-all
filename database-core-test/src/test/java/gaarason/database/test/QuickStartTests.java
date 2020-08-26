@@ -91,7 +91,7 @@ public class QuickStartTests {
          * @return ProxyDataSource
          */
         @Override
-        public ProxyDataSource getProxyDataSource() {
+        public ProxyDataSource getDataSource() {
             return proxyDataSource;
         }
 

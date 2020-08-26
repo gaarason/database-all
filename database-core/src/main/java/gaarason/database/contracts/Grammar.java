@@ -1,10 +1,13 @@
 package gaarason.database.contracts;
 
+import gaarason.database.contracts.function.GenerateSqlPart;
+import gaarason.database.contracts.function.RelationshipRecordWith;
 import gaarason.database.eloquent.enums.SqlType;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.utils.ObjectUtil;
 
 import java.util.List;
+import java.util.Map;
 
 public interface Grammar {
 
@@ -55,7 +58,21 @@ public interface Grammar {
      * @return 和当前属性值一样的全新对象
      * @throws CloneNotSupportedRuntimeException 克隆异常
      */
-    default Grammar deepCopy() throws CloneNotSupportedRuntimeException{
+    default Grammar deepCopy() throws CloneNotSupportedRuntimeException {
         return ObjectUtil.deepCopy(this);
     }
+
+    /**
+     * 记录with信息
+     * @param column         所关联的Model(当前模块的属性名)
+     * @param builderClosure 所关联的Model的查询构造器约束
+     * @param recordClosure  所关联的Model的再一级关联
+     */
+    void pushWith(String column, GenerateSqlPart builderClosure, RelationshipRecordWith recordClosure);
+
+    /**
+     * 拉取with信息
+     * @return map
+     */
+    Map<String, Object[]> pullWith();
 }

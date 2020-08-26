@@ -1,6 +1,6 @@
 package gaarason.database.eloquent;
 
-import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.contracts.GaarasonDataSource;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
@@ -9,11 +9,11 @@ import javax.annotation.Resource;
 public class GeneralModel extends Model<GeneralModel.Table, Object> {
 
     @Resource
-    private ProxyDataSource proxyDataSource;
+    private GaarasonDataSource gaarasonDataSource;
 
     @Override
-    public ProxyDataSource getProxyDataSource() {
-        return proxyDataSource;
+    public GaarasonDataSource getDataSource() {
+        return gaarasonDataSource;
     }
 
     public static class Table {

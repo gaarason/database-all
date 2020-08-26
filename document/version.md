@@ -36,3 +36,9 @@ Eloquent ORM for Java
 新增加
 - 新提供`K insertGetId()`/`K insertGetId(T entity)`/`K insertGetIdOrFail()`/`K insertGetIdOrFail(T entity)`/`List<K> insertGetIds(List<T> entityList)`
 
+### 2.0.x->2.1.x
+
+新增加
+- 新提供关联关系相关注解`@HasOneOrMany()`,`@BelongsTo()`,`@BelongsToMany()`
+- 新提供关联关系相关执行`Record::with(String column, GenerateSqlPart builderClosure, RelationshipRecordWith recordClosure)` 与 `RecordList::with()` 与 `Builer::with()` 方法签名类似, 接受3个参数 
+

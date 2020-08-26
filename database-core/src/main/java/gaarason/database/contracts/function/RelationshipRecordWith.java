@@ -2,8 +2,10 @@ package gaarason.database.contracts.function;
 
 import gaarason.database.eloquent.Record;
 
+import java.io.Serializable;
+
 @FunctionalInterface
-public interface RelationshipRecordWith {
+public interface RelationshipRecordWith extends Serializable {
 
     /**
      * Record关联关系

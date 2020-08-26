@@ -28,13 +28,6 @@ import java.util.*;
 public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, RelationshipORM<T, K>, Serializable {
 
     /**
-     * 同级的元数据, 用于关联查询优化
-     */
-//    @Getter
-//    @Setter
-//    private List<Map<String, Column>> sameLevelAllMetadataMapList = new ArrayList<>();
-
-    /**
      * 本表元数据
      */
     @Getter

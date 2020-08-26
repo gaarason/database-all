@@ -1,16 +1,14 @@
 package gaarason.database.query.grammars;
 
-import gaarason.database.contracts.Grammar;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.enums.SqlType;
 import gaarason.database.exception.InvalidSQLTypeException;
 import gaarason.database.utils.FormatUtil;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MySqlGrammar implements Grammar, Serializable {
+public class MySqlGrammar extends BaseGrammar {
 
     private String table;
 
@@ -194,7 +192,7 @@ public class MySqlGrammar implements Grammar, Serializable {
     }
 
     private String dealValue() {
-        if(valueList.size() == 0){
+        if (valueList.size() == 0) {
             return "()";
         }
         StringBuilder stringBuilder = new StringBuilder();

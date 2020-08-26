@@ -10,7 +10,7 @@ public class TestDataSource extends ProxyDataSource {
         hasSlave = true;
     }
 
-    protected DataSource getRealDataSource() {
+    public DataSource getRealDataSource() {
         return (!hasSlave || isWrite || isInTransaction()) ? masterDataSource.get() : slaveDataSource.get();
     }
 

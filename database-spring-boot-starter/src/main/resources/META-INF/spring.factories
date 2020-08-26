@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-gaarason.database.spring.boot.starter.configurations.ProxyDataSourceConfiguration
+gaarason.database.spring.boot.starter.configurations.GaarasonDataSourceConfiguration

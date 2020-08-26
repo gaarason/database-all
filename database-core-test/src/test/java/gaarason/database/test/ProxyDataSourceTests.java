@@ -30,15 +30,15 @@ public class ProxyDataSourceTests extends BaseTests {
     private static Student3Model student3Model = new Student3Model();
 
     protected List<DataSource> getDataSourceList() {
-        ProxyDataSource proxyDataSource = studentModel.getProxyDataSource();
+        ProxyDataSource proxyDataSource = studentModel.getDataSource();
         return proxyDataSource.getMasterDataSourceList();
     }
 
 
     @Test
     public void 事物状态在各个proxyDataSource中相互独立() throws InterruptedException {
-        ProxyDataSource proxyDataSource  = studentModel.getProxyDataSource();
-        ProxyDataSource proxyDataSource1 = student2Model.getProxyDataSource();
+        ProxyDataSource proxyDataSource  = studentModel.getDataSource();
+        ProxyDataSource proxyDataSource1 = student2Model.getDataSource();
 
         proxyDataSource.setInTransaction();
         boolean q = proxyDataSource.isInTransaction();
@@ -52,7 +52,7 @@ public class ProxyDataSourceTests extends BaseTests {
 
     @Test
     public void 同一个proxyDataSource的事物状态在各个线程中相互独立() throws InterruptedException {
-        ProxyDataSource proxyDataSource = studentModel.getProxyDataSource();
+        ProxyDataSource proxyDataSource = studentModel.getDataSource();
 
         MultiThreadUtil.run(100, 10, () -> {
             boolean be = proxyDataSource.isInTransaction();
@@ -68,9 +68,9 @@ public class ProxyDataSourceTests extends BaseTests {
 
     @Test
     public void 多个proxyDataSource的事物状态在各个线程中相互独立() throws InterruptedException {
-        ProxyDataSource proxyDataSource  = studentModel.getProxyDataSource();
-        ProxyDataSource proxyDataSource1 = student2Model.getProxyDataSource();
-        ProxyDataSource proxyDataSource2 = student3Model.getProxyDataSource();
+        ProxyDataSource proxyDataSource  = studentModel.getDataSource();
+        ProxyDataSource proxyDataSource1 = student2Model.getDataSource();
+        ProxyDataSource proxyDataSource2 = student3Model.getDataSource();
 
         MultiThreadUtil.run(100, 10, () -> {
             boolean be = proxyDataSource.isInTransaction();

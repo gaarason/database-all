@@ -16,19 +16,19 @@ import java.lang.annotation.*;
 public @interface HasOneOrMany {
 
     /**
-     * 关联model, 下级关系model
+     * `子表`model
      * @return
      */
     Class<? extends Model<?, ?>> sonModel();
 
     /**
-     * 下级关系model的外键
+     * `子表`中的`关联本表的外键`
      * @return
      */
     String sonModelForeignKey();
 
     /**
-     * 当前model的关联id, 一般为model主键
+     * `本表`中的`关联键`, 默认值为`本表`的主键(`@Primary()`修饰的键)
      * @return
      */
     String localModelLocalKey() default "";

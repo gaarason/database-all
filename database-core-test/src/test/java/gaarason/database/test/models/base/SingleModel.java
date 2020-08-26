@@ -17,7 +17,7 @@ public class SingleModel<T, K> extends Model<T, K> {
     private static ProxyDataSource proxyDataSource = proxyDataSource();
 
     @Override
-    public ProxyDataSource getProxyDataSource(){
+    public ProxyDataSource getDataSource(){
         return proxyDataSource;
     }
 

@@ -3,7 +3,6 @@ package gaarason.database.test;
 //import com.fasterxml.jackson.core.JsonProcessingException;
 import gaarason.database.connections.ProxyDataSource;
 import gaarason.database.eloquent.Record;
-import gaarason.database.eloquent.RecordList;
 import gaarason.database.test.models.StudentORMModel;
 import gaarason.database.test.parent.BaseTests;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +22,7 @@ public class ORMTests extends BaseTests {
     private static StudentORMModel studentModel = new StudentORMModel();
 
     protected List<DataSource> getDataSourceList() {
-        ProxyDataSource proxyDataSource = studentModel.getProxyDataSource();
+        ProxyDataSource proxyDataSource = studentModel.getDataSource();
         return proxyDataSource.getMasterDataSourceList();
     }
 

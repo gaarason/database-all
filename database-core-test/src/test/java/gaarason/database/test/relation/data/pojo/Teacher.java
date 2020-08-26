@@ -52,7 +52,7 @@ public class Teacher implements Serializable {
     @HasOneOrMany(sonModel = StudentModel.class, sonModelForeignKey = "teacher_id")
     private List<Student> students;
 
-    @HasOneOrMany(sonModel = StudentModel.class, sonModelForeignKey = "teacher_id")
+    @HasOneOrMany(sonModel = StudentModel.class, sonModelForeignKey = "teacher_id", localModelLocalKey = "id")
     private Student student;
 
     @HasOneOrMany(sonModel = RelationshipStudentTeacherModel.class, sonModelForeignKey = "teacher_id")

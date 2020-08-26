@@ -1,11 +1,12 @@
 package gaarason.database.query;
 
-import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.contracts.GaarasonDataSource;
 import gaarason.database.contracts.Grammar;
 import gaarason.database.contracts.builder.*;
 import gaarason.database.contracts.function.Chunk;
 import gaarason.database.contracts.function.ExecSqlWithinConnection;
 import gaarason.database.contracts.function.GenerateSqlPart;
+import gaarason.database.contracts.function.RelationshipRecordWith;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.Model;
 import gaarason.database.eloquent.Paginate;
@@ -24,10 +25,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T, K>, Union<T, K>, Support<T, K>,
-    From<T, K>, Execute<T, K>,
-    Select<T, K>, OrderBy<T, K>, Limit<T, K>, Group<T, K>, Value<T, K>, Data<T, K>, Transaction<T, K>, Aggregates<T, K>,
-    Paginator<T, K>,
-    Lock<T, K>, Native<T, K>, Join<T, K>, Ability<T, K> {
+    From<T, K>, Execute<T, K>, With<T, K>, Select<T, K>, OrderBy<T, K>, Limit<T, K>, Group<T, K>, Value<T, K>,
+    Data<T, K>, Transaction<T, K>, Aggregates<T, K>, Paginator<T, K>, Lock<T, K>, Native<T, K>, Join<T, K>,
+    Ability<T, K> {
 
     /**
      * 数据实体类
@@ -37,7 +37,7 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
     /**
      * 数据库连接
      */
-    private final ProxyDataSource proxyDataSource;
+    private final GaarasonDataSource gaarasonDataSource;
 
     /**
      * connection缓存
@@ -54,8 +54,8 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
      */
     protected Model<T, K> model;
 
-    public Builder(ProxyDataSource proxyDataSource, Model<T, K> model, Class<T> entityClass) {
-        this.proxyDataSource = proxyDataSource;
+    public Builder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
+        this.gaarasonDataSource = gaarasonDataSource;
         this.model = model;
         this.entityClass = entityClass;
         grammar = grammarFactory();
@@ -112,6 +112,41 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
     }
 
     /**
+     * 渴求式关联
+     * @param column 所关联的Model(当前模块的属性名)
+     * @return 关联的Model的查询构造器
+     */
+    @Override
+    public Builder<T, K> with(String column) {
+        return with(column, builder -> builder, record -> record);
+    }
+
+    /**
+     * 渴求式关联
+     * @param column         所关联的Model(当前模块的属性名)
+     * @param builderClosure 所关联的Model的查询构造器约束
+     * @return 关联的Model的查询构造器
+     */
+    @Override
+    public Builder<T, K> with(String column, GenerateSqlPart builderClosure) {
+        return with(column, builderClosure, record -> record);
+    }
+
+    /**
+     * 渴求式关联
+     * @param column         所关联的Model(当前模块的属性名)
+     * @param builderClosure 所关联的Model的查询构造器约束
+     * @param recordClosure  所关联的Model的再一级关联
+     * @return 关联的Model的查询构造器
+     */
+    @Override
+    public Builder<T, K> with(String column, GenerateSqlPart builderClosure,
+                              RelationshipRecordWith recordClosure) {
+        grammar.pushWith(column, builderClosure, recordClosure);
+        return this;
+    }
+
+    /**
      * 带总数的分页
      * @param currentPage 当前页
      * @param perPage     每页数量
@@ -147,13 +182,13 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
      */
     @Override
     public void begin() throws SQLRuntimeException, NestedTransactionException {
-        synchronized (proxyDataSource) {
-            if (proxyDataSource.isInTransaction()) {
+        synchronized (gaarasonDataSource) {
+            if (gaarasonDataSource.isInTransaction()) {
                 throw new NestedTransactionException();
             }
             try {
-                proxyDataSource.setInTransaction();
-                Connection connection = proxyDataSource.getConnection();
+                gaarasonDataSource.setInTransaction();
+                Connection connection = gaarasonDataSource.getConnection();
                 connection.setAutoCommit(false);
                 setLocalThreadConnection(connection);
             } catch (SQLException e) {
@@ -175,7 +210,7 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
             throw new SQLRuntimeException(e.getMessage(), e);
         } finally {
             removeLocalThreadConnection();
-            proxyDataSource.setOutTransaction();
+            gaarasonDataSource.setOutTransaction();
         }
     }
 
@@ -192,7 +227,7 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
             throw new SQLRuntimeException(e.getMessage(), e);
         } finally {
             removeLocalThreadConnection();
-            proxyDataSource.setOutTransaction();
+            gaarasonDataSource.setOutTransaction();
         }
     }
 
@@ -202,7 +237,7 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
      */
     @Override
     public boolean inTransaction() {
-        return proxyDataSource.isInTransaction();
+        return gaarasonDataSource.isInTransaction();
     }
 
     @Override
@@ -244,23 +279,9 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
         return model.delete(this);
     }
 
-    /**
-     * 绝对真删除
-     * @return 受影响的行数
-     * @throws SQLRuntimeException sql异常
-     */
     @Override
     public int forceDelete() throws SQLRuntimeException {
         return updateSql(SqlType.DELETE);
-    }
-
-    @Override
-    public Record<T, K> queryOrFail(String sql, Collection<String> parameters)
-        throws SQLRuntimeException, EntityNotFoundException {
-        return doSomethingInConnection((preparedStatement) -> {
-            ResultSet resultSet = preparedStatement.executeQuery();
-            return RecordFactory.newRecord(entityClass, model, resultSet, sql);
-        }, sql, parameters, false);
     }
 
     @Nullable
@@ -271,6 +292,15 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
         } catch (EntityNotFoundException e) {
             return null;
         }
+    }
+
+    @Override
+    public Record<T, K> queryOrFail(String sql, Collection<String> parameters)
+        throws SQLRuntimeException, EntityNotFoundException {
+        return doSomethingInConnection((preparedStatement) -> {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            return RecordFactory.newRecord(entityClass, model, resultSet, sql);
+        }, sql, parameters, false);
     }
 
     @Override
@@ -383,9 +413,15 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
      */
     Record<T, K> querySql() throws SQLRuntimeException, EntityNotFoundException {
         // sql组装执行
-        String       sql           = grammar.generateSql(SqlType.SELECT);
-        List<String> parameterList = grammar.getParameterList(SqlType.SELECT);
-        return queryOrFail(sql, parameterList);
+        String                sql           = grammar.generateSql(SqlType.SELECT);
+        List<String>          parameterList = grammar.getParameterList(SqlType.SELECT);
+        Map<String, Object[]> columnMap     = grammar.pullWith();
+        Record<T, K>          record        = queryOrFail(sql, parameterList);
+        for (String column : columnMap.keySet()) {
+            Object[] objects = columnMap.get(column);
+            record.with(column, (GenerateSqlPart) objects[0], (RelationshipRecordWith) objects[1]);
+        }
+        return record;
     }
 
     /**
@@ -396,9 +432,15 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
      */
     RecordList<T, K> querySqlList() throws SQLRuntimeException, EntityNotFoundException {
         // sql组装执行
-        String       sql           = grammar.generateSql(SqlType.SELECT);
-        List<String> parameterList = grammar.getParameterList(SqlType.SELECT);
-        return queryList(sql, parameterList);
+        String                sql           = grammar.generateSql(SqlType.SELECT);
+        List<String>          parameterList = grammar.getParameterList(SqlType.SELECT);
+        Map<String, Object[]> columnMap     = grammar.pullWith();
+        RecordList<T, K>      records       = queryList(sql, parameterList);
+        for (String column : columnMap.keySet()) {
+            Object[] objects = columnMap.get(column);
+            records.with(column, (GenerateSqlPart) objects[0], (RelationshipRecordWith) objects[1]);
+        }
+        return records;
     }
 
     @Override
@@ -408,14 +450,18 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
         do {
             Builder<T, K> cloneBuilder = clone();
             cloneBuilder.limit(offset, num);
-            String           sql           = cloneBuilder.grammar.generateSql(SqlType.SELECT);
-            List<String>     parameterList = cloneBuilder.grammar.getParameterList(SqlType.SELECT);
-            RecordList<T, K> records       = queryList(sql, parameterList);
+            String                sql           = cloneBuilder.grammar.generateSql(SqlType.SELECT);
+            List<String>          parameterList = cloneBuilder.grammar.getParameterList(SqlType.SELECT);
+            Map<String, Object[]> columnMap     = grammar.pullWith();
+            RecordList<T, K>      records       = queryList(sql, parameterList);
+            for (String column : columnMap.keySet()) {
+                Object[] objects = columnMap.get(column);
+                records.with(column, (GenerateSqlPart) objects[0], (RelationshipRecordWith) objects[1]);
+            }
             flag = chunk.deal(records) && (records.size() == num);
             offset += num;
         } while (flag);
     }
-
 
     /**
      * 执行sql, 返回收影响的行数
@@ -445,10 +491,10 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
         }
         // 否则根据读写规则, 取新的 Connection
         else {
-            synchronized (proxyDataSource) {
-                proxyDataSource.setWrite(isWrite);
+            synchronized (gaarasonDataSource) {
+                gaarasonDataSource.setWrite(isWrite);
                 try {
-                    return proxyDataSource.getConnection();
+                    return gaarasonDataSource.getConnection();
                 } catch (SQLException e) {
                     throw new SQLRuntimeException(e.getMessage(), e);
                 }
@@ -540,7 +586,7 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
         String processName        = ManagementFactory.getRuntimeMXBean().getName();
         String threadName         = Thread.currentThread().getName();
         String className          = getClass().toString();
-        int    dataSourceHashCode = proxyDataSource.hashCode();
+        int    dataSourceHashCode = gaarasonDataSource.hashCode();
         return processName + threadName + className + dataSourceHashCode;
     }
 

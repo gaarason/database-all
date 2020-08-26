@@ -1,6 +1,6 @@
 package ${namespace};\n
 \n
-import gaarason.database.connections.ProxyDataSource;\n
+import gaarason.database.contracts.GaarasonDataSource;\n
 import gaarason.database.eloquent.Model;\n
 import lombok.extern.slf4j.Slf4j;\n
 \n
@@ -11,12 +11,12 @@ import java.util.Collection;\n
 abstract public class ${model_name}<T, K> extends Model<T, K> {\n
 \n
     // todo\n
-    @Resource(name = "proxyDataSource")\n
-    protected ProxyDataSource proxyDataSource;\n
+    @Resource\n
+    protected GaarasonDataSource gaarasonDataSource;\n
 \n
     @Override\n
-    public ProxyDataSource getProxyDataSource(){\n
-        return proxyDataSource;\n
+    public GaarasonDataSource getProxyDataSource(){\n
+        return gaarasonDataSource;\n
     }\n
 \n
     /**\n

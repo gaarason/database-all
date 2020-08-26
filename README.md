@@ -32,6 +32,9 @@ List<Student> Students = studentModel.newQuery().where("id", "3").orWhere(
         builder2 -> builder2.whereBetween("id", "4", "10").where("age", ">", "11")
     )
 ).select("id", "name").get().toObjectList();
+
+// 关联关系 找出学生们的老师们的父亲们的那些房子
+List<Student> Students = studentModel.newQuery().whereIn("id", "1","2","3").get().with("teacher.father.house").toObjectList();
 ```
 ## spring boot 快速开始
 
