@@ -35,6 +35,7 @@ package com.demo.common.data.spring;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
 import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.contracts.GaarasonDataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.*;
@@ -46,27 +47,23 @@ import java.util.List;
 @Configuration
 public class BeanConfiguration {
 
-    // 单个主要连接
-    @Bean(name = "dataSourceMaster0")
-    @Primary
+    @Bean
     @ConfigurationProperties(prefix = "database.master0")
-    public DataSource dataSourceMaster0() {
+    @ConditionalOnMissingBean
+    public DataSource dataSourceDruidConfig() {
+        log.info("-------------------- dataSource druid config init ---------------------");
         return DruidDataSourceBuilder.create().build();
     }
 
-    // 主要连接的集合, 一主多从以及单机配置一个
     @Bean
-    public List<DataSource> dataSourceMasterList() {
-        List<DataSource> dataSources = new ArrayList<>();
-        dataSources.add(dataSourceMaster0());
-        return dataSources;
+    @ConditionalOnMissingBean
+    public GaarasonDataSource gaarasonDataSource() {
+        List<DataSource> dataSourceList = new ArrayList<>();
+        dataSourceList.add(dataSourceDruidConfig());
+        log.info("-------------------- ProxyDataSource(GaarasonDataSource) init ---------------------");
+        return new ProxyDataSource(dataSourceList);
     }
 
-    // 将被使用的bean
-    @Bean
-    public ProxyDataSource proxyDataSource(@Qualifier("dataSourceMasterList") List<DataSource> dataSourceMasterList) {
-        return new ProxyDataSource(dataSourceMasterList);
-    }
 
 }
 ```
@@ -124,7 +121,7 @@ package gaarason.database.spring;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
 import gaarason.database.connections.ProxyDataSource;
-import org.springframework.beans.factory.annotation.Qualifier;
+import gaarason.database.contracts.GaarasonDataSource;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.*;
 
@@ -136,60 +133,47 @@ import java.util.*;
 public class BeanConfiguration {
 
     // 主要写库1
-    @Bean(name = "dataSourceMaster0")
-    @Primary
+    @Bean
     @ConfigurationProperties(prefix = "database.master0")
     public DataSource dataSourceMaster0() {
         return DruidDataSourceBuilder.create().build();
     }
 
     // 写库2
-    @Bean(name = "dataSourceMaster1")
+    @Bean
     @ConfigurationProperties(prefix = "database.master1")
     public DataSource dataSourceMaster1() {
         return DruidDataSourceBuilder.create().build();
     }
 
     // 读库1
-    @Bean(name = "dataSourceSlave0")
+    @Bean
     @ConfigurationProperties(prefix = "database.slave0")
     public DataSource dataSourceSlave0() {
         return DruidDataSourceBuilder.create().build();
     }
 
     // 读库2
-    @Bean(name = "dataSourceSlave1")
+    @Bean
     @ConfigurationProperties(prefix = "database.slave1")
     public DataSource dataSourceSlave1() {
-        log.info("-------------------- database.slave1 init ---------------------");
         return DruidDataSourceBuilder.create().build();
     }
 
-    // 写连接集合
-    @Bean("dataSourceMasterList")
-    public List<DataSource> dataSourceMasterList() {
-        List<DataSource> dataSources = new ArrayList<>();
-        dataSources.add(dataSourceMaster0());
-        dataSources.add(dataSourceMaster1());
-        return dataSources;
-    }
 
-    // 读连接集合
-    @Bean("dataSourceSlaveList")
-    public List<DataSource> dataSourceSlaveList() {
-        List<DataSource> dataSources = new ArrayList<>();
-        dataSources.add(dataSourceSlave0());
-        dataSources.add(dataSourceSlave1());
-        return dataSources;
-    }
-
-    // 将被使用的bean
     @Bean
-    public ProxyDataSource proxyDataSource(@Qualifier("dataSourceMasterList") List<DataSource> dataSourceMasterList, @Qualifier(
-        "dataSourceSlaveList") List<DataSource> readDataSourceList) {
-        return readDataSourceList.isEmpty() ? new ProxyDataSource(dataSourceMasterList) :
-            new ProxyDataSource(dataSourceMasterList, readDataSourceList);
+    @ConditionalOnMissingBean
+    public GaarasonDataSource gaarasonDataSource() {
+        List<DataSource> dataSourceList = new ArrayList<>();
+        dataSourceList.add(dataSourceMaster0());
+        dataSourceList.add(dataSourceMaster1());
+        List<DataSource> readDataSourceList = new ArrayList<>();
+        readDataSourceList.add(dataSourceSlave0());
+        readDataSourceList.add(dataSourceSlave1());
+        log.info("-------------------- ProxyDataSource(GaarasonDataSource) init ---------------------");
+        return new ProxyDataSource(dataSourceList, readDataSourceList);
     }
+
 }
 ```
 
@@ -319,7 +303,7 @@ package com.demo.common.data.spring;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
 import gaarason.database.connections.ProxyDataSource;
-import org.springframework.beans.factory.annotation.Qualifier;
+import gaarason.database.contracts.GaarasonDataSource;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.*;
 
@@ -330,49 +314,35 @@ import java.util.List;
 @Configuration
 public class BeanConfiguration {
 
-    // 单个主要连接, 华东区域
-    @Bean(name = "dataSourceMasterHUADONG")
-    @Primary
+    // 单个 华东区域
+    @Bean
     @ConfigurationProperties(prefix = "database.huadong.master")
     public DataSource dataSourceMasterHUADONG() {
         return DruidDataSourceBuilder.create().build();
     }
 
-    // 主要连接的集合, 一主多从以及单机配置一个
-    @Bean
-    public List<DataSource> dataSourceMasterHUADONGList() {
-        List<DataSource> dataSources = new ArrayList<>();
-        dataSources.add(dataSourceMasterHUADONG());
-        return dataSources;
-    }
-
     // 将被使用的bean HUADONG
     @Bean
-    public ProxyDataSource proxyDataSourceHUADONG(@Qualifier("dataSourceMasterHUADONGList") List<DataSource> dataSourceMasterList) {
-        return new ProxyDataSource(dataSourceMasterList);
+    public GaarasonDataSource proxyDataSourceHUADONG() {
+        List<DataSource> dataSources = new ArrayList<>();
+        dataSources.add(dataSourceMasterHUADONG());
+        return new ProxyDataSource(dataSources);
     }
    
     //////////////// 另一个连接 ///////////////
     
-    // 单个主要连接, 华南区域
-    @Bean(name = "dataSourceMasterHUANAN")
-    @Primary
+    // 单个, 华南区域
+    @Bean
     @ConfigurationProperties(prefix = "database.huanan.master")
     public DataSource dataSourceMasterHUANAN() {
         return DruidDataSourceBuilder.create().build();
     }
 
-    // 主要连接的集合, 一主多从以及单机配置一个
-    @Bean
-    public List<DataSource> dataSourceMasterHUANANList() {
-        List<DataSource> dataSources = new ArrayList<>();
-        dataSources.add(dataSourceMaster1());
-        return dataSources;
-    }
-
     // 将被使用的bean HUANAN
     @Bean
-    public ProxyDataSource proxyDataSourceHUANAN(@Qualifier("dataSourceMasterHUANANList") List<DataSource> dataSourceMasterList) {
+    public GaarasonDataSource proxyDataSourceHUANAN() {
+        List<DataSource> dataSources = new ArrayList<>();
+        dataSources.add(dataSourceMasterHUANANList());
         return new ProxyDataSource(dataSourceMasterList);
     }
     
@@ -390,6 +360,7 @@ application.properties 省略
 package gaarason.database.models;
 
 import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.contracts.GaarasonDataSource;
 import gaarason.database.eloquent.annotations.Column;
 import gaarason.database.eloquent.Model;
 import gaarason.database.eloquent.annotations.Primary;
@@ -421,21 +392,19 @@ public class StudentSingle2Model extends Model<StudentSingle2Model.Entity, Integ
 
         @Column(name = "created_at")
         private Date createdAt;
-
-        @Column(name = "updated_at")
-        private Date updatedAt;
     }
 
     // 声明依赖的 ProxyDataSource 不需要则不用声明依赖
     @Resource(name = "proxyDataSourceHUADONG")
-    protected ProxyDataSource proxyDataSourceHUADONG;
+    protected GaarasonDataSource proxyDataSourceHUADONG;
     
     // 声明依赖的 ProxyDataSource 不需要则不用声明依赖
     @Resource(name = "proxyDataSourceHUANAN")
-    protected ProxyDataSource proxyDataSourceHUANAN;
+    protected GaarasonDataSource proxyDataSourceHUANAN;
 
-    public ProxyDataSource getProxyDataSource(){
+    public GaarasonDataSource getDataSource(){
         // 返回指定连接
+        // todo
         return proxyDataSourceHUADONG;
     }
 }
