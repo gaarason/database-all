@@ -57,7 +57,7 @@ public class GeneratorTests {
     // 推荐
     @Test
     public void run有参构造() {
-        String jdbcUrl = "jdbc:mysql://sakya.local/test_master_0?useUnicode=true&characterEncoding=utf-8" +
+        String jdbcUrl = "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8" +
                     "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
         String username = "root";
         String password = "root";
@@ -97,7 +97,7 @@ public class GeneratorTests {
     private DataSource dataSourceMaster0() {
         DruidDataSource druidDataSource = new DruidDataSource();
         druidDataSource.setUrl(
-            "jdbc:mysql://sakya.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
+            "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
         druidDataSource.setUsername("root");
         druidDataSource.setPassword("root");
 
@@ -166,7 +166,7 @@ public class GeneratorTests {
 ```
 3.配置连接 application.properties  
 ```$xslt
-spring.datasource.druid.url=jdbc:mysql://sakya.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai
+spring.datasource.druid.url=jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai
 spring.datasource.druid.username=root
 spring.datasource.druid.password=root
 spring.datasource.druid.driver-class-name=com.mysql.cj.jdbc.Driver

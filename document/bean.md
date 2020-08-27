@@ -80,7 +80,7 @@ maxWait=60000
 timeBetweenEvictionRunsMillis=60000
 minEvictableIdleTimeMillis=300000
 validationQuery=SELECT 1
-connectionInitSqls[0]=SET SESSION SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'
+connectionInitSqls[0]=SET SESSION SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'
 testWhileIdle=true
 testOnBorrow=false
 testOnReturn=false
@@ -189,7 +189,7 @@ maxWait=60000
 timeBetweenEvictionRunsMillis=60000
 minEvictableIdleTimeMillis=300000
 validationQuery=SELECT 1
-connectionInitSqls[0]=SET SESSION SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'
+connectionInitSqls[0]=SET SESSION SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'
 testWhileIdle=true
 testOnBorrow=false
 testOnReturn=false
@@ -429,7 +429,7 @@ public class StudentSingle2Model extends Model<StudentSingle2Model.Entity, Integ
         private static DataSource dataSourceMaster0() {
             DruidDataSource druidDataSource = new DruidDataSource();
             druidDataSource.setUrl(
-                "jdbc:mysql://sakya.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
+                "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
             druidDataSource.setDbType("com.alibaba.druid.pool.DruidDataSource");
             druidDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
             druidDataSource.setUsername("root");
@@ -443,7 +443,7 @@ public class StudentSingle2Model extends Model<StudentSingle2Model.Entity, Integ
             druidDataSource.setValidationQuery("SELECT 1");
             List<String> iniSql = new ArrayList<>();
             iniSql.add(
-                "SET SESSION SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'");
+                "SET SESSION SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'");
             druidDataSource.setConnectionInitSqls(iniSql);
             druidDataSource.setTestOnBorrow(false);
             druidDataSource.setTestOnReturn(false);

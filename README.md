@@ -55,7 +55,7 @@ List<Student> Students = studentModel.newQuery().whereIn("id", "1","2","3").get(
 ```
 3.配置连接 application.properties  
 ```$xslt
-spring.datasource.druid.url=jdbc:mysql://sakya.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai
+spring.datasource.druid.url=jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai
 spring.datasource.druid.username=root
 spring.datasource.druid.password=root
 spring.datasource.druid.driver-class-name=com.mysql.cj.jdbc.Driver

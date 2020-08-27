@@ -19,7 +19,7 @@ public class GeneratorTests {
 
     @Test
     public void run有参构造() {
-        String jdbcUrl = "jdbc:mysql://sakya.local/test_master_0?useUnicode=true&characterEncoding=utf-8" +
+        String jdbcUrl = "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8" +
             "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
         String    username  = "root";
         String    password  = "root";
@@ -59,7 +59,7 @@ public class GeneratorTests {
     private DataSource dataSourceMaster0() {
         DruidDataSource druidDataSource = new DruidDataSource();
         druidDataSource.setUrl(
-            "jdbc:mysql://sakya.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
+            "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
         druidDataSource.setUsername("root");
         druidDataSource.setPassword("root");
 

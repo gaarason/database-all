@@ -236,7 +236,13 @@ public class MySqlGrammar extends BaseGrammar {
         }
 
         sql += dealJoin() + dealWhere(sqlType) + dealGroup() + dealHaving(
-            sqlType) + dealOrderBy() + dealLimit() + dealLock() + dealUnion();
+            sqlType) + dealOrderBy() + dealLimit() + dealLock();
+
+        if (union != null) {
+            sql = FormatUtil.bracket(sql);
+        }
+
+        sql += dealUnion();
 
         return sql;
     }

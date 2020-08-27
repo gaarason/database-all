@@ -668,7 +668,6 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
 
     @Override
     public String max(String column) {
-
         String              alias    = UUID.randomUUID().toString();
         Map<String, Object> countMap = selectFunction("max", column, alias).firstOrFail().toMap();
         return countMap.get(alias).toString();
