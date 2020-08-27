@@ -260,6 +260,11 @@ public class MySqlGrammar extends BaseGrammar {
     }
 
     @Override
+    public boolean hasGroup() {
+        return null != group;
+    }
+
+    @Override
     public void forAggregates() {
         orderBy = null;
     }

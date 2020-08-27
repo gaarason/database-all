@@ -24,11 +24,8 @@ import java.util.*;
 public class ToObject<T, K> {
 
     /**
-     * 原数据是 records 还是 record
+     * 当前结果集
      */
-    private boolean isList = true;
-
-
     private RecordList<T, K> records;
 
     /**
@@ -47,7 +44,6 @@ public class ToObject<T, K> {
     public ToObject(Record<T, K> record, boolean attachedRelationship) {
         List<Record<T, K>> records = new ArrayList<>();
         records.add(record);
-        isList = false;
         this.attachedRelationship = attachedRelationship;
         this.records = RecordFactory.newRecordList(records);
     }
@@ -149,7 +145,6 @@ public class ToObject<T, K> {
             }
         }
         return list;
-
     }
 
     /**

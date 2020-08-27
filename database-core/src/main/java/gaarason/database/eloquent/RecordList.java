@@ -7,6 +7,7 @@ import gaarason.database.contracts.record.FriendlyListORM;
 import gaarason.database.contracts.record.RelationshipListORM;
 import gaarason.database.conversion.ToObject;
 import gaarason.database.support.Column;
+import gaarason.database.utils.EntityUtil;
 import gaarason.database.utils.StringUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -56,10 +57,17 @@ public class RecordList<T, K> extends ArrayList<Record<T, K>> implements Friendl
      * 转化为对象列表
      * @return 对象列表
      */
+    @Override
     public List<T> toObjectList(Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         ToObject<T, K> tkToObject = new ToObject<>(this, true);
         return tkToObject.toObjectList(cacheRelationRecordList);
     }
+
+    @Override
+    public <V> List<V> toObjectList(Class<V> clazz) {
+        return EntityUtil.entityAssignment(this.originalMetadataMapList, clazz);
+    }
+
 
     /**
      * 转化为map list

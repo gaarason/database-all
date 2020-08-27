@@ -27,12 +27,26 @@ public interface FriendlyORM<T, K> {
      * 元数据转实体对象
      * @return 实体对象
      */
-    T toObject() ;
+    T toObject();
 
     /**
      * 元数据转实体对象
      * @return 实体对象
      */
     T toObject(Map<String, RecordList<?, ?>> cacheRelationRecordList);
+
+    /**
+     * 元数据转实体对象, 不体现关联关系
+     * @return 实体对象
+     */
+    T toObjectWithoutRelationship();
+
+    /**
+     * 元数据转实体对象, 不体现关联关系
+     * @param clazz 自定义实体对象
+     * @param <V>   自定义实体对象
+     * @return 实体对象
+     */
+    <V> V toObject(Class<V> clazz);
 
 }

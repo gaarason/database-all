@@ -10,6 +10,7 @@ import gaarason.database.eloquent.RecordList;
 import gaarason.database.eloquent.enums.JoinType;
 import gaarason.database.eloquent.enums.OrderBy;
 import gaarason.database.eloquent.enums.SqlType;
+import gaarason.database.exception.AggregatesNotSupportedGroupException;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.InsertNotSuccessException;
 import gaarason.database.exception.SQLRuntimeException;
@@ -660,6 +661,10 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
 
     @Override
     public Long count(String column) {
+        if(grammar.hasGroup()){
+            throw new AggregatesNotSupportedGroupException("Not support group when using count(), please retry " +
+                "by selectFunction()");
+        }
         this.grammar.forAggregates();
         String              alias    = UUID.randomUUID().toString();
         Map<String, Object> countMap = selectFunction("count", column, alias).firstOrFail().toMap();
@@ -668,6 +673,10 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
 
     @Override
     public String max(String column) {
+        if(grammar.hasGroup()){
+            throw new AggregatesNotSupportedGroupException("Not support group when using max(), please retry " +
+                "by selectFunction()");
+        }
         String              alias    = UUID.randomUUID().toString();
         Map<String, Object> countMap = selectFunction("max", column, alias).firstOrFail().toMap();
         return countMap.get(alias).toString();
@@ -675,6 +684,10 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
 
     @Override
     public String min(String column) {
+        if(grammar.hasGroup()){
+            throw new AggregatesNotSupportedGroupException("Not support group when using min(), please retry " +
+                "by selectFunction()");
+        }
         String              alias    = UUID.randomUUID().toString();
         Map<String, Object> countMap = selectFunction("min", column, alias).firstOrFail().toMap();
         return countMap.get(alias).toString();
@@ -682,6 +695,10 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
 
     @Override
     public String avg(String column) {
+        if(grammar.hasGroup()){
+            throw new AggregatesNotSupportedGroupException("Not support group when using avg(), please retry " +
+                "by selectFunction()");
+        }
         String              alias    = UUID.randomUUID().toString();
         Map<String, Object> countMap = selectFunction("avg", column, alias).firstOrFail().toMap();
         return countMap.get(alias).toString();
@@ -689,6 +706,10 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
 
     @Override
     public String sum(String column) {
+        if(grammar.hasGroup()){
+            throw new AggregatesNotSupportedGroupException("Not support group when using sum(), please retry " +
+                "by selectFunction()");
+        }
         String              alias    = UUID.randomUUID().toString();
         Map<String, Object> countMap = selectFunction("sum", column, alias).firstOrFail().toMap();
         return countMap.get(alias).toString();

@@ -18,7 +18,10 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 记录对象
@@ -49,11 +52,6 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      */
     @Getter
     private String originalSql = "";
-
-    /**
-     * 原数据实体
-     */
-    private T originalEntity;
 
     /**
      * 数据实体
@@ -112,8 +110,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      */
     private void init(Map<String, Column> stringColumnMap) {
         this.metadataMap = stringColumnMap;
-//        this.sameLevelAllMetadataMapList.add(stringColumnMap);
-        entity = originalEntity = toObjectWithoutRelationship();
+        entity = toObjectWithoutRelationship();
         if (!stringColumnMap.isEmpty()) {
             hasBind = true;
             // 通知
@@ -127,6 +124,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      * 将元数据map转化为普通map
      * @return 普通map
      */
+    @Override
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         for (Column value : metadataMap.values()) {
@@ -139,6 +137,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      * 元数据转String
      * @return eg:age=16&name=alice&sex=
      */
+    @Override
     public String toSearch() {
         Map<String, Object> stringObjectMap = toMap();
         Set<String>         keySet          = stringObjectMap.keySet();
@@ -182,9 +181,15 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      * 元数据转实体对象
      * @return 实体对象
      */
+    @Override
     public T toObjectWithoutRelationship() {
         ToObject<T, K> tkToObject = new ToObject<>(this, false);
         return tkToObject.toObject();
+    }
+
+    @Override
+    public <V> V toObject(Class<V> clazz) {
+        return EntityUtil.entityAssignment(this.metadataMap, clazz);
     }
 
     /**
@@ -285,7 +290,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
         // 成功删除后后,刷新自身属性
         if (success) {
             this.metadataMap = new HashMap<>();
-            entity = originalEntity = toObjectWithoutRelationship();
+            entity = toObjectWithoutRelationship();
             hasBind = false;
             // 通知
             model.deleted(this);
@@ -405,7 +410,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
         // 更新元数据
         selfUpdateMetadataMap(entity, insertType);
         // 更新相关对象
-        this.entity = originalEntity = toObjectWithoutRelationship();
+        this.entity = toObjectWithoutRelationship();
     }
 
     /**

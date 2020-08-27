@@ -131,4 +131,12 @@ public class QuickStartTests {
         Assert.assertEquals(3, maps.size());
     }
 
+    @Test
+    public void 临时对象赋值() {
+        TestModel                 testModel = new TestModel();
+        List<TestModel.Inner>     inners    = testModel.newQuery().limit(3).get().toObjectList(TestModel.Inner.class);
+        System.out.println(inners);
+        Assert.assertEquals(3, inners.size());
+    }
+
 }

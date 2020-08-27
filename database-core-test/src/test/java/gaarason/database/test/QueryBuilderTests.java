@@ -5,10 +5,10 @@ import gaarason.database.eloquent.Paginate;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
 import gaarason.database.eloquent.enums.OrderBy;
+import gaarason.database.exception.AggregatesNotSupportedGroupException;
 import gaarason.database.exception.ConfirmOperationException;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.NestedTransactionException;
-import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.query.Builder;
 import gaarason.database.test.models.StudentModel;
 import gaarason.database.test.parent.BaseTests;
@@ -392,14 +392,11 @@ public class QueryBuilderTests extends BaseTests {
         Long count0 = studentModel.newQuery().where("sex", "1").count("id");
         Assert.assertEquals(count0.intValue(), 6);
 
-        Long count1 = studentModel.newQuery().select("id").where("sex", "1").group("id", "age").count("id");
-        Assert.assertEquals(count1.intValue(), 1);
-
         Long count = studentModel.newQuery().where("sex", "1").count("age");
         Assert.assertEquals(count.intValue(), 6);
 
-        String max0 = studentModel.newQuery().select("age").where("sex", "1").group("age").max("id");
-        Assert.assertEquals(max0, "10");
+//        String max0 = studentModel.newQuery().select("age").where("sex", "1").max("id");
+//        Assert.assertEquals(max0, "10");
 
         String max1 = studentModel.newQuery().where("sex", "1").max("id");
         Assert.assertEquals(max1, "10");
@@ -412,8 +409,42 @@ public class QueryBuilderTests extends BaseTests {
 
         String sum = studentModel.newQuery().where("sex", "2").sum("id");
         Assert.assertEquals(sum, "12");
+    }
+
+    // todo check
+    @Test
+    public void 查询_聚合函数_带group() {
+        Long count0 = studentModel.newQuery().where("sex", "1").count("*");
+        Assert.assertEquals(count0.intValue(), 6);
 
 
+        Assert.assertThrows(AggregatesNotSupportedGroupException.class, () -> {
+            Long count01 = studentModel.newQuery().where("sex", "1").group("sex").count("id");
+        });
+
+//        Long count02 = studentModel.newQuery().where("sex", "1").group("teacher_id").count("id");
+//        Assert.assertEquals(count02.intValue(), 5);
+//
+//        Long count1 = studentModel.newQuery().select("id").where("sex", "1").group("id", "age").count("id");
+//        Assert.assertEquals(count1.intValue(), 1);
+
+        Long count = studentModel.newQuery().where("sex", "1").count("age");
+        Assert.assertEquals(count.intValue(), 6);
+
+//        String max0 = studentModel.newQuery().select("age").where("sex", "1").group("age").max("id");
+//        Assert.assertEquals(max0, "10");
+
+        String max1 = studentModel.newQuery().where("sex", "1").max("id");
+        Assert.assertEquals(max1, "10");
+
+        String min = studentModel.newQuery().where("sex", "1").min("id");
+        Assert.assertEquals(min, "3");
+
+        String avg = studentModel.newQuery().where("sex", "1").avg("id");
+        Assert.assertEquals(avg, "7.1667");
+
+        String sum = studentModel.newQuery().where("sex", "2").sum("id");
+        Assert.assertEquals(sum, "12");
     }
 
     @Test
@@ -765,8 +796,14 @@ public class QueryBuilderTests extends BaseTests {
         idList2.add("9");
         idList2.add("7");
 
-        List<StudentModel.Entity> entityList2 = studentModel.newQuery().havingIn("id", idList).group("id").select("id").havingNotIn("id",
-            idList2).get().toObjectList();
+        List<StudentModel.Entity> entityList2 = studentModel.newQuery()
+            .havingIn("id", idList)
+            .group("id")
+            .select("id")
+            .havingNotIn("id",
+                idList2)
+            .get()
+            .toObjectList();
         System.out.println(entityList2);
         Assert.assertEquals(entityList2.size(), 3);
     }
@@ -1175,26 +1212,26 @@ public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(paginate2.getTotal().intValue(), 10);
 
 
-        Paginate<StudentModel.Entity> paginate3 =
-            studentModel.newQuery()
-                .select("id", "name")
-                .orderBy("id")
-                .where("sex", "1")
-                .orWhere((builder -> builder.where(
-                    "sex",
-                    "2")))
-                .group("id", "name")
-                .paginate(3, 4);
-        System.out.println(paginate3);
-        Assert.assertEquals(paginate3.getCurrentPage(), 3);
-        Assert.assertNotNull(paginate3.getFrom());
-        Assert.assertNotNull(paginate3.getTo());
-        Assert.assertEquals(paginate3.getFrom().intValue(), 9);
-        Assert.assertEquals(paginate3.getTo().intValue(), 10);
-        Assert.assertNotNull(paginate3.getLastPage());
-        Assert.assertNotNull(paginate3.getTotal());
-        Assert.assertEquals(paginate3.getLastPage().intValue(), 1);
-        Assert.assertEquals(paginate3.getTotal().intValue(), 1);
+//        Paginate<StudentModel.Entity> paginate3 =
+//            studentModel.newQuery()
+//                .select("id", "name")
+//                .orderBy("id")
+//                .where("sex", "1")
+//                .orWhere((builder -> builder.where(
+//                    "sex",
+//                    "2")))
+//                .group("id", "name")
+//                .paginate(3, 4);
+//        System.out.println(paginate3);
+//        Assert.assertEquals(paginate3.getCurrentPage(), 3);
+//        Assert.assertNotNull(paginate3.getFrom());
+//        Assert.assertNotNull(paginate3.getTo());
+//        Assert.assertEquals(paginate3.getFrom().intValue(), 9);
+//        Assert.assertEquals(paginate3.getTo().intValue(), 10);
+//        Assert.assertNotNull(paginate3.getLastPage());
+//        Assert.assertNotNull(paginate3.getTotal());
+//        Assert.assertEquals(paginate3.getLastPage().intValue(), 1);
+//        Assert.assertEquals(paginate3.getTotal().intValue(), 1);
 
         // 防止过界
         Paginate<StudentModel.Entity> paginate4 = studentModel.newQuery()

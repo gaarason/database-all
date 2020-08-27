@@ -45,6 +45,8 @@ public interface Grammar {
 
     boolean hasWhere();
 
+    boolean hasGroup();
+
     String generateSql(SqlType sqlType);
 
     /**

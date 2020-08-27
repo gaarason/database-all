@@ -42,4 +42,13 @@ public interface FriendlyListORM<T, K> {
      * @return 单个字段列表
      */
     List<Object> toList(FilterRecordAttribute<T, K> filterRecordAttribute);
+
+
+    /**
+     * 元数据转实体对象列表, 不体现关联关系
+     * @param clazz 自定义实体对象
+     * @param <V>   自定义实体对象
+     * @return 实体对象列表
+     */
+    <V> List<V> toObjectList(Class<V> clazz);
 }

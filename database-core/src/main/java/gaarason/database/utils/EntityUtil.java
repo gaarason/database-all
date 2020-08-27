@@ -269,8 +269,8 @@ public class EntityUtil {
      */
     public static String getFieldNameByColumn(Class<?> clazz, String columnName) {
         // 不存在注解时, 则查找类中是否存在小驼峰的属性名
-        String   fieldNameTemp = StringUtil.lineToHump(columnName, false);
-        String   fieldName     = null;
+        String fieldNameTemp = StringUtil.lineToHump(columnName, false);
+        String fieldName     = null;
         for (Field field : clazz.getDeclaredFields()) {
             field.setAccessible(true);
             // 优先精准匹配注解
@@ -366,6 +366,52 @@ public class EntityUtil {
                 throw new TypeNotSupportedException(e.getMessage(), e);
             }
 
+        }
+    }
+
+    /**
+     * 将数据库查询结果赋值给entityList
+     * @param stringColumnMapList 源数据
+     * @param entityClass         目标实体类
+     * @param <T>                 目标实体类
+     * @return 对象列表
+     * @throws TypeNotSupportedException 实体不支持
+     */
+    public static <T> List<T> entityAssignment(List<Map<String, gaarason.database.support.Column>> stringColumnMapList,
+                                               Class<T> entityClass)
+        throws TypeNotSupportedException {
+        List<T> entityList = new ArrayList<>();
+        for (Map<String, gaarason.database.support.Column> stringColumnMap : stringColumnMapList) {
+            T entity = entityAssignment(stringColumnMap, entityClass);
+            entityList.add(entity);
+        }
+        return entityList;
+    }
+
+    /**
+     * 将数据库查询结果赋值给entityList
+     * @param stringColumnMap 源数据
+     * @param entityClass     目标实体类
+     * @param <T>             目标实体类
+     * @return 对象列表
+     * @throws TypeNotSupportedException 实体不支持
+     */
+    public static <T> T entityAssignment(Map<String, gaarason.database.support.Column> stringColumnMap,
+                                         Class<T> entityClass) throws TypeNotSupportedException {
+        try {
+            T entity = entityClass.newInstance();
+            for (Field field : entityClass.getDeclaredFields()) {
+                field.setAccessible(true);
+                String                           columnName = EntityUtil.columnName(field);
+                gaarason.database.support.Column column     = stringColumnMap.get(columnName);
+                if (column != null) {
+                    Object value = EntityUtil.columnFill(field, column.getValue());
+                    field.set(entity, value);
+                }
+            }
+            return entity;
+        } catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
+            throw new TypeNotSupportedException(e.getMessage(), e);
         }
     }
 
