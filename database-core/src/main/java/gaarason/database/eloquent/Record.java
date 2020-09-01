@@ -34,24 +34,24 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      * 本表元数据
      */
     @Getter
-    private Map<String, Column> metadataMap;
+    protected Map<String, Column> metadataMap;
 
     /**
      * 数据模型
      */
     @Getter
-    private final Model<T, K> model;
+    protected final Model<T, K> model;
 
     /**
      * 数据实体类
      */
-    private final Class<T> entityClass;
+    protected final Class<T> entityClass;
 
     /**
      * 原Sql
      */
     @Getter
-    private String originalSql = "";
+    protected String originalSql = "";
 
     /**
      * 数据实体
@@ -70,15 +70,15 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
     /**
      * 是否已经绑定具体的数据
      */
-    private boolean hasBind;
+    protected boolean hasBind;
 
     @Getter
     @Setter
-    private Map<String, GenerateSqlPart> relationBuilderMap = new HashMap<>();
+    protected Map<String, GenerateSqlPart> relationBuilderMap = new HashMap<>();
 
     @Getter
     @Setter
-    private Map<String, RelationshipRecordWith> relationRecordMap = new HashMap<>();
+    protected Map<String, RelationshipRecordWith> relationRecordMap = new HashMap<>();
 
     /**
      * 根据查询结果集生成
@@ -108,7 +108,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      * 初始化数据
      * @param stringColumnMap 元数据
      */
-    private void init(Map<String, Column> stringColumnMap) {
+    protected void init(Map<String, Column> stringColumnMap) {
         this.metadataMap = stringColumnMap;
         entity = toObjectWithoutRelationship();
         if (!stringColumnMap.isEmpty()) {
@@ -358,7 +358,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      * 事件使用 creating created
      * @return 执行成功
      */
-    private boolean insert() {
+    protected boolean insert() {
         // aop阻止
         if (!model.creating(this)) {
             return false;
@@ -380,7 +380,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      * 事件使用 updating updated
      * @return 执行成功
      */
-    private boolean update() {
+    protected boolean update() {
         // 主键未知
         if (originalPrimaryKeyValue == null) {
             throw new PrimaryKeyNotFoundException();
@@ -406,7 +406,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
     /**
      * 更新自身数据
      */
-    private void selfUpdate(T entity, boolean insertType) {
+    protected void selfUpdate(T entity, boolean insertType) {
         // 更新元数据
         selfUpdateMetadataMap(entity, insertType);
         // 更新相关对象
@@ -418,7 +418,7 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      * @param entity     数据实体
      * @param insertType 是否为更新操作
      */
-    private void selfUpdateMetadataMap(T entity, boolean insertType) {
+    protected void selfUpdateMetadataMap(T entity, boolean insertType) {
         for (Field field : entityClass.getDeclaredFields()) {
             Object value = EntityUtil.fieldGet(field, entity);
             if (EntityUtil.effectiveField(field, value, insertType)) {

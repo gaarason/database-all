@@ -127,12 +127,5 @@ public class RecordList<T, K> extends ArrayList<Record<T, K>> implements Friendl
             tkRecord.getRelationRecordMap().put(column, recordClosure);
         }
         return this;
-
-
-//        for (Record<T, K> tkRecord : this) {
-//            // 赋值关联关系过滤
-//            tkRecord.with(column, builderClosure, recordClosure);
-//        }
-//        return this;
     }
 }

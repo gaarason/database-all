@@ -26,14 +26,14 @@ public class ToObject<T, K> {
     /**
      * 当前结果集
      */
-    private RecordList<T, K> records;
+    private final RecordList<T, K> records;
 
     /**
      * 是否启用关联关系
      * 在启用时, 需要手动指定(with)才会生效
      * 在不启用时, 即使手动指定(with)也不会生效
      */
-    private boolean attachedRelationship;
+    private final boolean attachedRelationship;
 
 
     /**

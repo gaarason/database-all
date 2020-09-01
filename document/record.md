@@ -58,7 +58,7 @@ List<Object> list = studentModel.newQuery().get().toList(
 
 ```java
 // 先获取新的 record
-Record<Student> record = studentModel.newRecord();
+Record<Student, Long> record = studentModel.newRecord();
 
 // 此处不应使用 toObject() 获取具体泛型对象
 Student student = record.getEntity();

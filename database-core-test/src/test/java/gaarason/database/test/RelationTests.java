@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import javax.sql.DataSource;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -32,20 +33,12 @@ public class RelationTests extends BaseTests {
         return super.hashCode();
     }
 
-    private static StudentModel studentModel = new StudentModel();
+    private static final StudentModel studentModel = new StudentModel();
 
-    private static TeacherModel teacherModel = new TeacherModel();
+    private static final TeacherModel teacherModel = new TeacherModel();
 
     private static RelationshipStudentTeacherModel relationshipStudentTeacherModel =
         new RelationshipStudentTeacherModel();
-
-//    private static StudentModel studentModel = new StudentModel();
-//
-//    private static TeacherModel teacherModel = new TeacherModel();
-//
-//    private static StudentBelongsToManyModel studentBelongsToManyModel = new StudentBelongsToManyModel();
-//
-//    private static StudentBelongsToModel studentBelongsToModel = new StudentBelongsToModel();
 
     protected List<DataSource> getDataSourceList() {
         ProxyDataSource proxyDataSource = studentModel.getDataSource();
