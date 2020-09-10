@@ -1,7 +1,7 @@
 package gaarason.database.test;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.connections.GaarasonDataSourceProvider;
 import gaarason.database.eloquent.annotations.Column;
 import gaarason.database.eloquent.Model;
 import gaarason.database.eloquent.annotations.Primary;
@@ -26,7 +26,7 @@ public class QuickStartTests {
      */
     public static class TestModel extends Model<TestModel.Inner, Integer> {
 
-        private static ProxyDataSource proxyDataSource = proxyDataSource();
+        private static GaarasonDataSourceProvider gaarasonDataSourceProvider = proxyDataSource();
 
         /**
          * step 2
@@ -80,9 +80,9 @@ public class QuickStartTests {
          * 定义 ProxyDataSource
          * @return ProxyDataSource
          */
-        private static ProxyDataSource proxyDataSource() {
+        private static GaarasonDataSourceProvider proxyDataSource() {
             List<DataSource> dataSources = dataSourceMasterList();
-            return new ProxyDataSource(dataSources);
+            return new GaarasonDataSourceProvider(dataSources);
         }
 
         /**
@@ -91,8 +91,8 @@ public class QuickStartTests {
          * @return ProxyDataSource
          */
         @Override
-        public ProxyDataSource getDataSource() {
-            return proxyDataSource;
+        public GaarasonDataSourceProvider getGaarasonDataSource() {
+            return gaarasonDataSourceProvider;
         }
 
         /**

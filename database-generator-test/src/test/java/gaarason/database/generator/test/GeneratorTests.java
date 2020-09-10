@@ -1,7 +1,7 @@
 package gaarason.database.generator.test;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.connections.GaarasonDataSourceProvider;
 import gaarason.database.eloquent.Model;
 import gaarason.database.generator.Generator;
 import lombok.extern.slf4j.Slf4j;
@@ -41,9 +41,9 @@ public class GeneratorTests {
 
     @Test
     public void run无参构造() {
-        ProxyDataSource proxyDataSource = proxyDataSource();
-        ToolModel       toolModel       = new ToolModel(proxyDataSource);
-        AutoGenerator   autoGenerator   = new AutoGenerator(toolModel);
+        GaarasonDataSourceProvider gaarasonDataSourceProvider = proxyDataSource();
+        ToolModel                  toolModel                  = new ToolModel(gaarasonDataSourceProvider);
+        AutoGenerator              autoGenerator              = new AutoGenerator(toolModel);
         // set
         autoGenerator.setStaticField(true);
         autoGenerator.setIsSpringBoot(true);
@@ -78,20 +78,20 @@ public class GeneratorTests {
         return dataSources;
     }
 
-    private ProxyDataSource proxyDataSource() {
+    private GaarasonDataSourceProvider proxyDataSource() {
         List<DataSource> dataSources = dataSourceMasterList();
-        return new ProxyDataSource(dataSources);
+        return new GaarasonDataSourceProvider(dataSources);
     }
 
     public static class ToolModel extends Model<ToolModel.Inner, Object> {
-        private ProxyDataSource proxyDataSource;
+        private GaarasonDataSourceProvider gaarasonDataSourceProvider;
 
-        public ToolModel(ProxyDataSource dataSource) {
-            proxyDataSource = dataSource;
+        public ToolModel(GaarasonDataSourceProvider dataSource) {
+            gaarasonDataSourceProvider = dataSource;
         }
 
-        public ProxyDataSource getDataSource() {
-            return proxyDataSource;
+        public GaarasonDataSourceProvider getGaarasonDataSource() {
+            return gaarasonDataSourceProvider;
         }
 
         public static class Inner {

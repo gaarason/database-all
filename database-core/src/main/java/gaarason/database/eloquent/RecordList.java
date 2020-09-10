@@ -5,7 +5,7 @@ import gaarason.database.contracts.function.GenerateSqlPart;
 import gaarason.database.contracts.function.RelationshipRecordWith;
 import gaarason.database.contracts.record.FriendlyListORM;
 import gaarason.database.contracts.record.RelationshipListORM;
-import gaarason.database.conversion.ToObject;
+import gaarason.database.support.RelationGetSupport;
 import gaarason.database.support.Column;
 import gaarason.database.utils.EntityUtil;
 import gaarason.database.utils.StringUtil;
@@ -43,14 +43,14 @@ public class RecordList<T, K> extends ArrayList<Record<T, K>> implements Friendl
      */
     @Override
     public List<T> toObjectList() {
-        ToObject<T, K> tkToObject = new ToObject<>(this, true);
-        return tkToObject.toObjectList();
+        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(this, true);
+        return tkRelationGetSupport.toObjectList();
     }
 
     @Override
     public List<T> toObjectListWithoutRelationship() {
-        ToObject<T, K> tkToObject = new ToObject<>(this, false);
-        return tkToObject.toObjectList();
+        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(this, false);
+        return tkRelationGetSupport.toObjectList();
     }
 
     /**
@@ -59,8 +59,8 @@ public class RecordList<T, K> extends ArrayList<Record<T, K>> implements Friendl
      */
     @Override
     public List<T> toObjectList(Map<String, RecordList<?, ?>> cacheRelationRecordList) {
-        ToObject<T, K> tkToObject = new ToObject<>(this, true);
-        return tkToObject.toObjectList(cacheRelationRecordList);
+        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(this, true);
+        return tkRelationGetSupport.toObjectList(cacheRelationRecordList);
     }
 
     @Override

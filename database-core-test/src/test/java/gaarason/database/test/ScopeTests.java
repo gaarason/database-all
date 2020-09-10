@@ -1,6 +1,6 @@
 package gaarason.database.test;
 
-import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.connections.GaarasonDataSourceProvider;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
 import gaarason.database.test.models.StudentSoftDeleteModel;
@@ -23,8 +23,8 @@ public class ScopeTests extends BaseTests {
     private static StudentSoftDeleteModel studentModel = new StudentSoftDeleteModel();
 
     protected List<DataSource> getDataSourceList() {
-        ProxyDataSource proxyDataSource = studentModel.getDataSource();
-        return proxyDataSource.getMasterDataSourceList();
+        GaarasonDataSourceProvider gaarasonDataSourceProvider = studentModel.getGaarasonDataSource();
+        return gaarasonDataSourceProvider.getMasterDataSourceList();
     }
 
     @Test

@@ -2,7 +2,9 @@ package gaarason.database.contracts.record;
 
 import gaarason.database.contracts.function.GenerateSqlPart;
 import gaarason.database.contracts.function.RelationshipRecordWith;
+import gaarason.database.contracts.record.extra.Relation;
 import gaarason.database.eloquent.Record;
+import gaarason.database.eloquent.record.extra.RelationProvider;
 
 /**
  * 关联关系
@@ -40,6 +42,11 @@ public interface RelationshipORM<T, K> {
      * @param recordClosure  所关联的Model的再一级关联
      * @return 关联的Model的查询构造器
      */
-    Record<T, K> with(String column, GenerateSqlPart builderClosure,
-                               RelationshipRecordWith recordClosure);
+    Record<T, K> with(String column, GenerateSqlPart builderClosure, RelationshipRecordWith recordClosure);
+
+    /**
+     *
+     * @return
+     */
+    Relation bind(String column);
 }

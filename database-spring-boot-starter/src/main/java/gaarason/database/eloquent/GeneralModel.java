@@ -12,7 +12,7 @@ public class GeneralModel extends Model<GeneralModel.Table, Object> {
     private GaarasonDataSource gaarasonDataSource;
 
     @Override
-    public GaarasonDataSource getDataSource() {
+    public GaarasonDataSource getGaarasonDataSource() {
         return gaarasonDataSource;
     }
 

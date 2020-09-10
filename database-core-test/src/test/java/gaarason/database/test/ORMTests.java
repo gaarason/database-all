@@ -1,7 +1,8 @@
 package gaarason.database.test;
 
 //import com.fasterxml.jackson.core.JsonProcessingException;
-import gaarason.database.connections.ProxyDataSource;
+
+import gaarason.database.connections.GaarasonDataSourceProvider;
 import gaarason.database.eloquent.Record;
 import gaarason.database.test.models.StudentORMModel;
 import gaarason.database.test.parent.BaseTests;
@@ -30,8 +31,8 @@ public class ORMTests extends BaseTests {
     private static TeacherModel teacherModel = new TeacherModel();
 
     protected List<DataSource> getDataSourceList() {
-        ProxyDataSource proxyDataSource = studentORMModel.getDataSource();
-        return proxyDataSource.getMasterDataSourceList();
+        GaarasonDataSourceProvider gaarasonDataSourceProvider = studentORMModel.getGaarasonDataSource();
+        return gaarasonDataSourceProvider.getMasterDataSourceList();
     }
 
     @Test
@@ -184,9 +185,41 @@ public class ORMTests extends BaseTests {
     }
 
     @Test
-    public void ORM新增_一对一(){
+    public void ORM新增_添加新模型到关联关系() {
+        // id = 1 的老师已经存在, 现在增加一位他的学生
+        String                   newName              = "肖邦";
+        String                   newTeacherName       = "肖邦de老师";
+        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
 
-        String newName = "肖邦";
+        Teacher teacher = teacherIntegerRecord.getEntity();
+
+        Student student = new Student();
+        student.setName(newName);
+        teacher.setStudent(student);
+
+        teacherIntegerRecord.save();
+
+        // todo check
+    }
+
+    @Test
+    public void ORM新增_模型均已存在_仅增加关系() {
+        // id = 1 的老师已经存在, 现在将一位已存在的学生与他关联
+        String                   newName              = "肖邦";
+        String                   newTeacherName       = "肖邦de老师";
+        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+
+        Record<Student, Long> studentLongRecord = studentModel.findOrFail(1L);
+
+        teacherIntegerRecord.bind("studentsBelongsToMany").attach(studentLongRecord);
+
+//        teacherIntegerRecord.attch("student", student);
+    }
+
+    @Test
+    public void ORM新增_一对一() {
+
+        String newName        = "肖邦";
         String newTeacherName = "肖邦de老师";
 
         // 先获取新的 record
@@ -208,14 +241,14 @@ public class ORMTests extends BaseTests {
     }
 
     @Test
-    public void ORM新增_反向一对一(){
+    public void ORM新增_反向一对一() {
 
-        String newName = "肖邦";
+        String newName        = "肖邦";
         String newTeacherName = "肖邦de老师";
 
         // 先获取新的 record
-        Record<Student, Long> record = studentModel.newRecord();
-        Student student1 = record.getEntity();
+        Record<Student, Long> record   = studentModel.newRecord();
+        Student               student1 = record.getEntity();
         student1.setName(newName);
         Teacher teacher = new Teacher();
         teacher.setName(newTeacherName);

@@ -1,4 +1,4 @@
-package gaarason.database.conversion;
+package gaarason.database.support;
 
 import gaarason.database.contracts.eloquent.relations.SubQuery;
 import gaarason.database.contracts.function.GenerateRecordList;
@@ -14,26 +14,24 @@ import gaarason.database.eloquent.relations.BelongsToQuery;
 import gaarason.database.eloquent.relations.HasOneOrManyQuery;
 import gaarason.database.exception.EntityNewInstanceException;
 import gaarason.database.exception.RelationAnnotationNotSupportedException;
-import gaarason.database.support.Column;
-import gaarason.database.support.RecordFactory;
 import gaarason.database.utils.EntityUtil;
 
 import java.lang.reflect.Field;
 import java.util.*;
 
-public class ToObject<T, K> {
+public class RelationGetSupport<T, K> {
 
     /**
      * 当前结果集
      */
-    private final RecordList<T, K> records;
+    protected final RecordList<T, K> records;
 
     /**
      * 是否启用关联关系
      * 在启用时, 需要手动指定(with)才会生效
      * 在不启用时, 即使手动指定(with)也不会生效
      */
-    private final boolean attachedRelationship;
+    protected final boolean attachedRelationship;
 
 
     /**
@@ -41,28 +39,26 @@ public class ToObject<T, K> {
      * @param record               结果集
      * @param attachedRelationship 是否启用关联关系
      */
-    public ToObject(Record<T, K> record, boolean attachedRelationship) {
+    public RelationGetSupport(Record<T, K> record, boolean attachedRelationship) {
         List<Record<T, K>> records = new ArrayList<>();
         records.add(record);
         this.attachedRelationship = attachedRelationship;
         this.records = RecordFactory.newRecordList(records);
     }
 
-    public ToObject(List<Record<T, K>> records, boolean attachedRelationship) {
+    public RelationGetSupport(List<Record<T, K>> records, boolean attachedRelationship) {
         this.attachedRelationship = attachedRelationship;
         this.records = RecordFactory.newRecordList(records);
     }
 
-    public ToObject(RecordList<T, K> records, boolean attachedRelationship) {
+    public RelationGetSupport(RecordList<T, K> records, boolean attachedRelationship) {
         this.attachedRelationship = attachedRelationship;
         this.records = records;
     }
 
-
     public T toObject() {
         return toObjectList().get(0);
     }
-
 
     public T toObject(Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         return toObjectList(cacheRelationRecordList).get(0);
@@ -71,7 +67,6 @@ public class ToObject<T, K> {
     public List<T> toObjectList() {
         Map<String, RecordList<?, ?>> cacheRelationRecordList = new HashMap<>();
         return toObjectList(cacheRelationRecordList);
-
     }
 
     /**
@@ -157,7 +152,7 @@ public class ToObject<T, K> {
      * @param sqlArr                  sql数组
      * @return 批量结果集
      */
-    private RecordList<?, ?> getRecordListInCache(Map<String, RecordList<?, ?>> cacheRelationRecordList, String key,
+    protected RecordList<?, ?> getRecordListInCache(Map<String, RecordList<?, ?>> cacheRelationRecordList, String key,
                                                   String tableName, GenerateRecordList closure,
                                                   RelationshipRecordWith relationshipRecordWith, String[] sqlArr) {
         // 缓存keyName

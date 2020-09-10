@@ -546,11 +546,11 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
      */
     private String generateSql(GenerateSqlPart closure, boolean wholeSql) {
         Builder<?, ?> subBuilder    = closure.generate(getNewSelf());
-        List<String>  parameterList = subBuilder.grammar.getParameterList(SqlType.SUBQUERY);
+        List<String>  parameterList = subBuilder.grammar.getParameterList(SqlType.SUB_QUERY);
         for (String parameter : parameterList) {
             grammar.pushWhereParameter(parameter);
         }
-        SqlType sqlType = wholeSql ? SqlType.SELECT : SqlType.SUBQUERY;
+        SqlType sqlType = wholeSql ? SqlType.SELECT : SqlType.SUB_QUERY;
         return FormatUtil.bracket(subBuilder.grammar.generateSql(sqlType));
     }
 

@@ -1,6 +1,6 @@
 package gaarason.database.test;
 
-import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.connections.GaarasonDataSourceProvider;
 import gaarason.database.eloquent.Paginate;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.enums.OrderBy;
@@ -18,7 +18,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import javax.sql.DataSource;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -41,8 +40,8 @@ public class RelationTests extends BaseTests {
         new RelationshipStudentTeacherModel();
 
     protected List<DataSource> getDataSourceList() {
-        ProxyDataSource proxyDataSource = studentModel.getDataSource();
-        return proxyDataSource.getMasterDataSourceList();
+        GaarasonDataSourceProvider gaarasonDataSourceProvider = studentModel.getGaarasonDataSource();
+        return gaarasonDataSourceProvider.getMasterDataSourceList();
     }
 
     @Test

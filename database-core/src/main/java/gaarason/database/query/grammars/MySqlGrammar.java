@@ -162,7 +162,7 @@ public class MySqlGrammar extends BaseGrammar {
     }
 
     private String dealWhere(SqlType sqlType) {
-        String whereKeyword = sqlType == SqlType.SUBQUERY ? "" : " where ";
+        String whereKeyword = sqlType == SqlType.SUB_QUERY ? "" : " where ";
         return null == where ? "" : whereKeyword + where;
     }
 
@@ -179,7 +179,7 @@ public class MySqlGrammar extends BaseGrammar {
     }
 
     private String dealHaving(SqlType sqlType) {
-        String havingKeyword = sqlType == SqlType.SUBQUERY ? "" : " having ";
+        String havingKeyword = sqlType == SqlType.SUB_QUERY ? "" : " having ";
         return having == null ? "" : havingKeyword + having;
     }
 
@@ -214,6 +214,8 @@ public class MySqlGrammar extends BaseGrammar {
     public String generateSql(SqlType sqlType) {
         String sql;
         switch (sqlType) {
+            case REPLACE:
+                return "replace into " + dealFrom() + dealColumn() + " values" + dealValue();
             case INSERT:
                 return "insert into " + dealFrom() + dealColumn() + " values" + dealValue();
             case SELECT:
@@ -225,10 +227,7 @@ public class MySqlGrammar extends BaseGrammar {
             case DELETE:
                 sql = "delete from " + dealFrom();
                 break;
-            case REPLACE:
-                sql = "replace into " + dealFrom();
-                break;
-            case SUBQUERY:
+            case SUB_QUERY:
                 sql = "";
                 break;
             default:

@@ -16,7 +16,7 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 @ToString
-public class ProxyDataSource implements GaarasonDataSource {
+public class GaarasonDataSourceProvider implements GaarasonDataSource {
 
     /**
      * 写连接
@@ -69,17 +69,17 @@ public class ProxyDataSource implements GaarasonDataSource {
         return slaveDataSourceList.get((new Random()).nextInt(slaveDataSourceList.size()));
     });
 
-    public ProxyDataSource(List<DataSource> masterDataSourceList, List<DataSource> slaveDataSourceList) {
+    public GaarasonDataSourceProvider(List<DataSource> masterDataSourceList, List<DataSource> slaveDataSourceList) {
         this.masterDataSourceList = masterDataSourceList;
         this.slaveDataSourceList = slaveDataSourceList;
         hasSlave = true;
     }
 
-    public ProxyDataSource(List<DataSource> masterDataSourceList) {
+    public GaarasonDataSourceProvider(List<DataSource> masterDataSourceList) {
         this.masterDataSourceList = masterDataSourceList;
     }
 
-    public ProxyDataSource() {
+    public GaarasonDataSourceProvider() {
     }
 
     /**

@@ -33,7 +33,7 @@ public class RecordFactory {
                                                 String sql)
         throws SQLException, EntityNotFoundException {
         if (!resultSet.next()) {
-            throw new EntityNotFoundException();
+            throw new EntityNotFoundException(sql);
         }
         final ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         Map<String, Column>     stringColumnMap   = JDBCResultToMap(resultSetMetaData, resultSet);

@@ -30,7 +30,7 @@ Eloquent ORM for Java
 ```java
 package temp.model.base;
 
-import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.connections.GaarasonDataSourceProvider;
 import gaarason.database.eloquent.Model;
 
 import javax.annotation.Resource;
@@ -42,7 +42,7 @@ import javax.annotation.Resource;
  */
 abstract public class BaseModel<T, K> extends Model<T, K> {
 
-    @Resource(name = "proxyDataSource")
+    @Resource(name = "gaarasonDataSourceProvider")
     protected ProxyDataSource dataSource;
 
     @Override

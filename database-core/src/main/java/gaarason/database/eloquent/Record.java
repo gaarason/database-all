@@ -5,11 +5,13 @@ import gaarason.database.contracts.function.RelationshipRecordWith;
 import gaarason.database.contracts.record.FriendlyORM;
 import gaarason.database.contracts.record.OperationORM;
 import gaarason.database.contracts.record.RelationshipORM;
-import gaarason.database.conversion.ToObject;
+import gaarason.database.contracts.record.extra.Relation;
 import gaarason.database.core.lang.Nullable;
+import gaarason.database.eloquent.record.extra.RelationProvider;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.RelationNotFoundException;
 import gaarason.database.support.Column;
+import gaarason.database.support.RelationGetSupport;
 import gaarason.database.utils.EntityUtil;
 import gaarason.database.utils.ObjectUtil;
 import gaarason.database.utils.StringUtil;
@@ -28,7 +30,8 @@ import java.util.Set;
  * @param <T> 实体类
  * @param <K> 主键类型
  */
-public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, RelationshipORM<T, K>, Serializable {
+public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>,
+    RelationshipORM<T, K>, Serializable {
 
     /**
      * 本表元数据
@@ -160,8 +163,8 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      */
     @Override
     public T toObject() {
-        ToObject<T, K> tkToObject = new ToObject<>(this, true);
-        return tkToObject.toObject();
+        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(this, true);
+        return tkRelationGetSupport.toObject();
 
     }
 
@@ -171,8 +174,8 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      */
     @Override
     public T toObject(Map<String, RecordList<?, ?>> cacheRelationRecordList) {
-        ToObject<T, K> tkToObject = new ToObject<>(this, true);
-        return tkToObject.toObject(cacheRelationRecordList);
+        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(this, true);
+        return tkRelationGetSupport.toObject(cacheRelationRecordList);
 
     }
 
@@ -183,8 +186,8 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
      */
     @Override
     public T toObjectWithoutRelationship() {
-        ToObject<T, K> tkToObject = new ToObject<>(this, false);
-        return tkToObject.toObject();
+        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(this, false);
+        return tkRelationGetSupport.toObject();
     }
 
     @Override
@@ -267,6 +270,11 @@ public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>, Rela
         relationBuilderMap.put(column, builderClosure);
         relationRecordMap.put(column, recordClosure);
         return this;
+    }
+
+    @Override
+    public Relation bind(String column) {
+        return new RelationProvider<>(this, column);
     }
 
     /**

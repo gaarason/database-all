@@ -50,7 +50,7 @@ public class BelongsToManyQuery extends BaseSubQuery {
             .whereIn(belongsToManyTemplate.foreignKeyForLocalModel,
                 getColumnInMapList(stringColumnMapList, belongsToManyTemplate.localModelLocalKey))
             .toSql(SqlType.SELECT), generateSqlPart.generate(belongsToManyTemplate.targetModel.newQuery()).toSql(
-            SqlType.SUBQUERY)};
+            SqlType.SUB_QUERY)};
     }
 
     @Override

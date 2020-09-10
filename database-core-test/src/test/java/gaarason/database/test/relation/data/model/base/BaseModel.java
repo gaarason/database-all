@@ -1,11 +1,10 @@
 package gaarason.database.test.relation.data.model.base;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.connections.GaarasonDataSourceProvider;
 import gaarason.database.eloquent.Model;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,11 +14,11 @@ import java.util.Properties;
 @Slf4j
 abstract public class BaseModel<T, K> extends Model<T, K> {
 
-    private static ProxyDataSource proxyDataSource = proxyDataSource();
+    private static GaarasonDataSourceProvider gaarasonDataSourceProvider = proxyDataSource();
 
     @Override
-    public ProxyDataSource getDataSource(){
-        return proxyDataSource;
+    public GaarasonDataSourceProvider getGaarasonDataSource(){
+        return gaarasonDataSourceProvider;
     }
 
     @Override
@@ -64,9 +63,9 @@ abstract public class BaseModel<T, K> extends Model<T, K> {
         return dataSources;
     }
 
-    private static ProxyDataSource proxyDataSource() {
+    private static GaarasonDataSourceProvider proxyDataSource() {
         List<DataSource> dataSources = dataSourceMasterList();
-        return new ProxyDataSource(dataSources);
+        return new GaarasonDataSourceProvider(dataSources);
     }
 
 }

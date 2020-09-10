@@ -14,7 +14,7 @@ abstract public class BaseModel<T, K> extends Model<T, K> {
     protected GaarasonDataSource gaarasonDataSource;
 
     @Override
-    public GaarasonDataSource getDataSource() {
+    public GaarasonDataSource getGaarasonDataSource() {
         return gaarasonDataSource;
     }
 

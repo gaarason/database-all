@@ -12,11 +12,11 @@ public class GaarasonDataSourceBuilder {
     }
 
     public GaarasonDataSource build(List<DataSource> masterDataSourceList) {
-        return new ProxyDataSource(masterDataSourceList);
+        return new GaarasonDataSourceProvider(masterDataSourceList);
     }
 
     public GaarasonDataSource build(List<DataSource> masterDataSourceList, List<DataSource> slaveDataSourceList) {
-        return new ProxyDataSource(masterDataSourceList, slaveDataSourceList);
+        return new GaarasonDataSourceProvider(masterDataSourceList, slaveDataSourceList);
     }
 
 }

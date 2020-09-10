@@ -1,6 +1,6 @@
 package gaarason.database.test;
 
-import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.connections.GaarasonDataSourceProvider;
 import gaarason.database.eloquent.Record;
 import gaarason.database.test.models.PeopleModel;
 import gaarason.database.test.parent.BaseTests;
@@ -22,8 +22,8 @@ public class IncrementTypeTests extends BaseTests {
     private static PeopleModel peopleModel = new PeopleModel();
 
     protected List<DataSource> getDataSourceList() {
-        ProxyDataSource proxyDataSource = peopleModel.getDataSource();
-        return proxyDataSource.getMasterDataSourceList();
+        GaarasonDataSourceProvider gaarasonDataSourceProvider = peopleModel.getGaarasonDataSource();
+        return gaarasonDataSourceProvider.getMasterDataSourceList();
     }
 
     @Test

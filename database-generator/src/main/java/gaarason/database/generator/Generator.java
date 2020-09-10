@@ -1,7 +1,7 @@
 package gaarason.database.generator;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.connections.GaarasonDataSourceProvider;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.Model;
 import gaarason.database.generator.element.field.Field;
@@ -165,18 +165,18 @@ public class Generator {
         List<DataSource> dataSources = new ArrayList<>();
         dataSources.add(druidDataSource);
 
-        model = new ToolModel(new ProxyDataSource(dataSources));
+        model = new ToolModel(new GaarasonDataSourceProvider(dataSources));
     }
 
     protected static class ToolModel extends Model<ToolModel.Inner, Object> {
-        private ProxyDataSource proxyDataSource;
+        private GaarasonDataSourceProvider gaarasonDataSourceProvider;
 
-        public ToolModel(ProxyDataSource dataSource) {
-            proxyDataSource = dataSource;
+        public ToolModel(GaarasonDataSourceProvider dataSource) {
+            gaarasonDataSourceProvider = dataSource;
         }
 
-        public ProxyDataSource getDataSource() {
-            return proxyDataSource;
+        public GaarasonDataSourceProvider getGaarasonDataSource() {
+            return gaarasonDataSourceProvider;
         }
 
         public static class Inner {

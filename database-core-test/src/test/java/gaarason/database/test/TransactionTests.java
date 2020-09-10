@@ -1,6 +1,6 @@
 package gaarason.database.test;
 
-import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.connections.GaarasonDataSourceProvider;
 import gaarason.database.exception.NestedTransactionException;
 import gaarason.database.test.models.Student2Model;
 import gaarason.database.test.models.Student3Model;
@@ -32,8 +32,8 @@ public class TransactionTests extends BaseTests {
     private static Student3Model student3Model = new Student3Model();
 
     protected List<DataSource> getDataSourceList() {
-        ProxyDataSource proxyDataSource = studentModel.getDataSource();
-        return proxyDataSource.getMasterDataSourceList();
+        GaarasonDataSourceProvider gaarasonDataSourceProvider = studentModel.getGaarasonDataSource();
+        return gaarasonDataSourceProvider.getMasterDataSourceList();
     }
 
 

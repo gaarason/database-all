@@ -34,7 +34,7 @@ bean配置 如下
 package com.demo.common.data.spring;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
-import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.connections.GaarasonDataSourceProvider;
 import gaarason.database.contracts.GaarasonDataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -61,7 +61,7 @@ public class BeanConfiguration {
         List<DataSource> dataSourceList = new ArrayList<>();
         dataSourceList.add(dataSourceDruidConfig());
         log.info("-------------------- ProxyDataSource(GaarasonDataSource) init ---------------------");
-        return new ProxyDataSource(dataSourceList);
+        return GaarasonDataSourceBuilder.create().build(dataSourceList);
     }
 
 
@@ -120,8 +120,8 @@ database.master0.useGlobalDataSourceStat=${useGlobalDataSourceStat}
 package gaarason.database.spring;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
-import gaarason.database.connections.ProxyDataSource;
 import gaarason.database.contracts.GaarasonDataSource;
+import gaarason.database.connections.GaarasonDataSourceBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.*;
 
@@ -171,7 +171,7 @@ public class BeanConfiguration {
         readDataSourceList.add(dataSourceSlave0());
         readDataSourceList.add(dataSourceSlave1());
         log.info("-------------------- ProxyDataSource(GaarasonDataSource) init ---------------------");
-        return new ProxyDataSource(dataSourceList, readDataSourceList);
+        return GaarasonDataSourceBuilder.create().build(dataSourceList, readDataSourceList);
     }
 
 }
@@ -302,8 +302,8 @@ database.slave1.useGlobalDataSourceStat=${useGlobalDataSourceStat}
 package com.demo.common.data.spring;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
-import gaarason.database.connections.ProxyDataSource;
 import gaarason.database.contracts.GaarasonDataSource;
+import gaarason.database.connections.GaarasonDataSourceBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.*;
 
@@ -326,7 +326,8 @@ public class BeanConfiguration {
     public GaarasonDataSource proxyDataSourceHUADONG() {
         List<DataSource> dataSources = new ArrayList<>();
         dataSources.add(dataSourceMasterHUADONG());
-        return new ProxyDataSource(dataSources);
+        return GaarasonDataSourceBuilder.create().build(dataSources);
+
     }
    
     //////////////// 另一个连接 ///////////////
@@ -343,7 +344,7 @@ public class BeanConfiguration {
     public GaarasonDataSource proxyDataSourceHUANAN() {
         List<DataSource> dataSources = new ArrayList<>();
         dataSources.add(dataSourceMasterHUANANList());
-        return new ProxyDataSource(dataSourceMasterList);
+        return GaarasonDataSourceBuilder.create().build(dataSources);
     }
     
 
@@ -359,7 +360,7 @@ application.properties 省略
 ```java
 package gaarason.database.models;
 
-import gaarason.database.connections.ProxyDataSource;
+import gaarason.database.connections.GaarasonDataSourceProvider;
 import gaarason.database.contracts.GaarasonDataSource;
 import gaarason.database.eloquent.annotations.Column;
 import gaarason.database.eloquent.Model;
@@ -402,7 +403,8 @@ public class StudentSingle2Model extends Model<StudentSingle2Model.Entity, Integ
     @Resource(name = "proxyDataSourceHUANAN")
     protected GaarasonDataSource proxyDataSourceHUANAN;
 
-    public GaarasonDataSource getDataSource(){
+    @Override
+    public GaarasonDataSource getGaarasonDataSource(){
         // 返回指定连接
         // todo
         return proxyDataSourceHUADONG;
@@ -419,7 +421,7 @@ public class StudentSingle2Model extends Model<StudentSingle2Model.Entity, Integ
      */
     public static class TestModel extends Model<TestModel.Inner, Integer> {
 
-        private static ProxyDataSource proxyDataSource = proxyDataSource();
+        private static GaarasonDataSource gaarasonDataSource = getGaarasonDataSource();
 
         /**
          * step 2
@@ -470,22 +472,22 @@ public class StudentSingle2Model extends Model<StudentSingle2Model.Entity, Integ
 
         /**
          * step 4
-         * 定义 ProxyDataSource
-         * @return ProxyDataSource
+         * 定义 GaarasonDataSource
+         * @return GaarasonDataSource
          */
-        private static ProxyDataSource proxyDataSource() {
+        private static GaarasonDataSource getGaarasonDataSource() {
             List<DataSource> dataSources = dataSourceMasterList();
-            return new ProxyDataSource(dataSources);
+            return GaarasonDataSourceBuilder.create().build(dataSources);
         }
 
         /**
          * step 5
-         * 使用 ProxyDataSource
-         * @return ProxyDataSource
+         * 使用 GaarasonDataSource
+         * @return GaarasonDataSource
          */
         @Override
-        public ProxyDataSource getProxyDataSource() {
-            return proxyDataSource;
+        public GaarasonDataSource getGaarasonDataSource() {
+            return gaarasonDataSource;
         }
 
         /**
