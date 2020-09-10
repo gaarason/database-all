@@ -370,7 +370,7 @@ abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T,
             // 执行
             return closure.exec(preparedStatement);
         } catch (EntityNotFoundException e) {
-            throw e;
+            throw new EntityNotFoundException(String.format(sql.replace(" ? ", "\"%s\""), parameters.toArray()));
         } catch (Throwable e) {
             throw new SQLRuntimeException(sql, parameters, e.getMessage(), e);
         } finally {

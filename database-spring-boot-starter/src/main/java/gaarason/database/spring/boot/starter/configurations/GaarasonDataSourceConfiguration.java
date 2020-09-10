@@ -2,6 +2,7 @@ package gaarason.database.spring.boot.starter.configurations;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
+import gaarason.database.connections.GaarasonDataSourceBuilder;
 import gaarason.database.connections.ProxyDataSource;
 import gaarason.database.contracts.GaarasonDataSource;
 import gaarason.database.eloquent.GeneralModel;
@@ -41,7 +42,7 @@ public class GaarasonDataSourceConfiguration {
         List<DataSource> dataSourceList = new ArrayList<>();
         dataSourceList.add(dataSourceDruidConfig());
         log.info("-------------------- ProxyDataSource(GaarasonDataSource) init ---------------------");
-        return new ProxyDataSource(dataSourceList);
+        return GaarasonDataSourceBuilder.create().build(dataSourceList);
     }
 
 }

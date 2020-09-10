@@ -12,7 +12,7 @@ import gaarason.database.query.Builder;
  * @param <T> 实体类
  * @param <K> 主键类型
  */
-public interface Repository<T, K> extends Eventing<T, K>, SoftDeleting<T, K> {
+public interface Repository<T, K> extends Eventing<T, K>, SoftDeleting<T, K>, Shortcut<T, K> {
     /**
      * 新的查询构造器
      * @return 查询构造器

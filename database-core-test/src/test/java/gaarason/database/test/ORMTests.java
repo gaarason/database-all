@@ -6,6 +6,7 @@ import gaarason.database.eloquent.Record;
 import gaarason.database.test.models.StudentORMModel;
 import gaarason.database.test.parent.BaseTests;
 import gaarason.database.test.relation.data.model.StudentModel;
+import gaarason.database.test.relation.data.model.TeacherModel;
 import gaarason.database.test.relation.data.pojo.Student;
 import gaarason.database.test.relation.data.pojo.Teacher;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,8 @@ public class ORMTests extends BaseTests {
     private static StudentORMModel studentORMModel = new StudentORMModel();
 
     private static StudentModel studentModel = new StudentModel();
+
+    private static TeacherModel teacherModel = new TeacherModel();
 
     protected List<DataSource> getDataSourceList() {
         ProxyDataSource proxyDataSource = studentORMModel.getDataSource();
@@ -182,6 +185,30 @@ public class ORMTests extends BaseTests {
 
     @Test
     public void ORM新增_一对一(){
+
+        String newName = "肖邦";
+        String newTeacherName = "肖邦de老师";
+
+        // 先获取新的 record
+        Teacher teacher = teacherModel.getEntity();
+        teacher.setName(newTeacherName);
+        Student student = new Student();
+        student.setName(newName);
+        teacher.setStudent(student);
+
+        teacherModel.save();
+
+        Student studentCheck = studentModel.newQuery().where("name", newName).with("teacher").firstOrFail().toObject();
+        System.out.println(studentCheck);
+        Assert.assertEquals(studentCheck.getName(), newName);
+        // todo
+//        Assert.assertNotNull(student.getTeacher());
+//        Assert.assertEquals(student.getTeacher().getName(), newTeacherName);
+
+    }
+
+    @Test
+    public void ORM新增_反向一对一(){
 
         String newName = "肖邦";
         String newTeacherName = "肖邦de老师";
