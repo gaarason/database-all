@@ -1,5 +1,6 @@
 package gaarason.database.eloquent.record.extra;
 
+import gaarason.database.contracts.eloquent.relations.SubQuery;
 import gaarason.database.contracts.function.GenerateSqlPart;
 import gaarason.database.contracts.record.extra.Relation;
 import gaarason.database.eloquent.Record;
@@ -15,18 +16,17 @@ public class RelationProvider<T, K> implements Relation {
 
     private final String column;
 
+//    private final SubQuery subQuery;
+
     public RelationProvider(Record<T, K> record, String column) {
         this.record = record;
-        checkColumn(column);
+        presetColumn(column);
         this.column = column;
     }
 
     @Override
     public boolean attach(Record<?, ?> targetRecord) {
         // 获取关系类型
-
-        // 获取关系键的值
-        ObjectUtil.checkProperties(record.getModel().getEntityClass(), column);
 
 
         return true;
@@ -128,7 +128,7 @@ public class RelationProvider<T, K> implements Relation {
     }
 
 
-    private void checkColumn(String column) {
+    private void presetColumn(String column) {
         Class<T> entityClass = record.getModel().getEntityClass();
         if (column.contains(".") || !ObjectUtil.checkProperties(entityClass, column)) {
             throw new RelationNotFoundException("实体类[" + entityClass + "]中检测属性[" + column + "]不通过");
