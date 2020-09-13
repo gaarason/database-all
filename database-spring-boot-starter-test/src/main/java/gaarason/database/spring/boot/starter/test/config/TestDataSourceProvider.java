@@ -1,6 +1,6 @@
 package gaarason.database.spring.boot.starter.test.config;
 
-import gaarason.database.connections.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceProvider;
 
 import javax.sql.DataSource;
 

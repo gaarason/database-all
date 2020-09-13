@@ -1,12 +1,12 @@
 package gaarason.database.query;
 
-import gaarason.database.contracts.GaarasonDataSource;
-import gaarason.database.contracts.Grammar;
-import gaarason.database.contracts.builder.*;
-import gaarason.database.contracts.function.Chunk;
-import gaarason.database.contracts.function.ExecSqlWithinConnection;
-import gaarason.database.contracts.function.GenerateSqlPart;
-import gaarason.database.contracts.function.RelationshipRecordWith;
+import gaarason.database.contract.GaarasonDataSource;
+import gaarason.database.contract.Grammar;
+import gaarason.database.contract.builder.*;
+import gaarason.database.contract.function.Chunk;
+import gaarason.database.contract.function.ExecSqlWithinConnection;
+import gaarason.database.contract.function.GenerateSqlPart;
+import gaarason.database.contract.function.RelationshipRecordWith;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.Model;
 import gaarason.database.eloquent.Paginate;

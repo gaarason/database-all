@@ -1,8 +1,8 @@
 package gaarason.database.query;
 
-import gaarason.database.contracts.GaarasonDataSource;
-import gaarason.database.contracts.Grammar;
-import gaarason.database.contracts.function.GenerateSqlPart;
+import gaarason.database.contract.GaarasonDataSource;
+import gaarason.database.contract.Grammar;
+import gaarason.database.contract.function.GenerateSqlPart;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.Model;
 import gaarason.database.eloquent.Record;

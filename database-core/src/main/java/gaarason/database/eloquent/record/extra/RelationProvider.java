@@ -1,8 +1,7 @@
 package gaarason.database.eloquent.record.extra;
 
-import gaarason.database.contracts.eloquent.relations.SubQuery;
-import gaarason.database.contracts.function.GenerateSqlPart;
-import gaarason.database.contracts.record.extra.Relation;
+import gaarason.database.contract.function.GenerateSqlPart;
+import gaarason.database.contract.record.extra.Relation;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
 import gaarason.database.exception.RelationNotFoundException;

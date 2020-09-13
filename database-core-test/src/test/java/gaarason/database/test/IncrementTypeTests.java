@@ -1,6 +1,6 @@
 package gaarason.database.test;
 
-import gaarason.database.connections.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceProvider;
 import gaarason.database.eloquent.Record;
 import gaarason.database.test.models.PeopleModel;
 import gaarason.database.test.parent.BaseTests;

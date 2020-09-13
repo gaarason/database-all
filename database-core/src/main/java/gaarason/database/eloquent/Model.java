@@ -1,6 +1,6 @@
 package gaarason.database.eloquent;
 
-import gaarason.database.contracts.GaarasonDataSource;
+import gaarason.database.contract.GaarasonDataSource;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.repository.BaseShortcut;
 import gaarason.database.exception.EntityNotFoundException;

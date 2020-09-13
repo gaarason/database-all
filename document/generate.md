@@ -38,7 +38,7 @@ Eloquent ORM for Java
 package gaarason.database.generator.test;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import gaarason.database.connections.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceProvider;
 import gaarason.database.eloquent.Model;
 import gaarason.database.generator.Generator;
 import lombok.extern.slf4j.Slf4j;

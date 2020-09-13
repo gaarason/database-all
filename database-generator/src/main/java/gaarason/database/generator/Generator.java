@@ -1,7 +1,7 @@
 package gaarason.database.generator;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import gaarason.database.connections.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceProvider;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.Model;
 import gaarason.database.generator.element.field.Field;

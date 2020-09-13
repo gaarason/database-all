@@ -1,7 +1,7 @@
 package gaarason.database.test;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import gaarason.database.connections.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceProvider;
 import gaarason.database.eloquent.annotations.Column;
 import gaarason.database.eloquent.Model;
 import gaarason.database.eloquent.annotations.Primary;

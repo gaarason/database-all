@@ -1,10 +1,10 @@
 package gaarason.database.eloquent;
 
-import gaarason.database.contracts.function.FilterRecordAttribute;
-import gaarason.database.contracts.function.GenerateSqlPart;
-import gaarason.database.contracts.function.RelationshipRecordWith;
-import gaarason.database.contracts.record.FriendlyListORM;
-import gaarason.database.contracts.record.RelationshipListORM;
+import gaarason.database.contract.function.FilterRecordAttribute;
+import gaarason.database.contract.function.GenerateSqlPart;
+import gaarason.database.contract.function.RelationshipRecordWith;
+import gaarason.database.contract.record.FriendlyListORM;
+import gaarason.database.contract.record.RelationshipListORM;
 import gaarason.database.support.RelationGetSupport;
 import gaarason.database.support.Column;
 import gaarason.database.utils.EntityUtil;

@@ -1,17 +1,17 @@
 package gaarason.database.support;
 
-import gaarason.database.contracts.eloquent.relations.SubQuery;
-import gaarason.database.contracts.function.GenerateRecordList;
-import gaarason.database.contracts.function.GenerateSqlPart;
-import gaarason.database.contracts.function.RelationshipRecordWith;
+import gaarason.database.contract.eloquent.relation.SubQuery;
+import gaarason.database.contract.function.GenerateRecordList;
+import gaarason.database.contract.function.GenerateSqlPart;
+import gaarason.database.contract.function.RelationshipRecordWith;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
 import gaarason.database.eloquent.annotations.BelongsTo;
 import gaarason.database.eloquent.annotations.BelongsToMany;
 import gaarason.database.eloquent.annotations.HasOneOrMany;
-import gaarason.database.eloquent.relations.BelongsToManyQuery;
-import gaarason.database.eloquent.relations.BelongsToQuery;
-import gaarason.database.eloquent.relations.HasOneOrManyQuery;
+import gaarason.database.eloquent.relation.BelongsToManyQuery;
+import gaarason.database.eloquent.relation.BelongsToQuery;
+import gaarason.database.eloquent.relation.HasOneOrManyQuery;
 import gaarason.database.exception.EntityNewInstanceException;
 import gaarason.database.exception.RelationAnnotationNotSupportedException;
 import gaarason.database.utils.EntityUtil;

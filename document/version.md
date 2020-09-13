@@ -26,9 +26,9 @@ Eloquent ORM for Java
 - `gaarason.database.query.Builder<T>` 升级为 `gaarason.database.query.Builder<T, K>`
 - `gaarason.database.eloquent.Record<T>` 升级为 `gaarason.database.eloquent.Record<T, K>`
 - `gaarason.database.eloquent.RecordList<T>` 升级为 `gaarason.database.eloquent.RecordList<T, K>`
-- `gaarason.database.contracts.eloquent.Repository<T> :: Record<T> findOrFail(String id)` 升级为 `gaarason.database.contracts.eloquent.Repository<T, K> :: Record<T, K> findOrFail(K id)`
-- `gaarason.database.contracts.eloquent.Repository<T> :: Record<T> find(String id)` 升级为 `gaarason.database.contracts.eloquent.Repository<T, K> :: Record<T, K> find(K id)`
-- `gaarason.database.contracts.builder.Transaction<T> :: boolean transaction(Runnable runnable, int maxAttempts)`  升级为 `gaarason.database.contracts.builder.Transaction<T> :: boolean transaction(Runnable runnable, int maxAttempts, boolean throwException)`
+- `gaarason.database.contract.eloquent.Repository<T> :: Record<T> findOrFail(String id)` 升级为 `gaarason.database.contract.eloquent.Repository<T, K> :: Record<T, K> findOrFail(K id)`
+- `gaarason.database.contract.eloquent.Repository<T> :: Record<T> find(String id)` 升级为 `gaarason.database.contract.eloquent.Repository<T, K> :: Record<T, K> find(K id)`
+- `gaarason.database.contract.builder.Transaction<T> :: boolean transaction(Runnable runnable, int maxAttempts)`  升级为 `gaarason.database.contract.builder.Transaction<T> :: boolean transaction(Runnable runnable, int maxAttempts, boolean throwException)`
 
 有影响
 - ORM新增,现在会赋值数据库自增主键到原对象

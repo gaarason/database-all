@@ -1,6 +1,6 @@
 package gaarason.database.eloquent.repository;
 
-import gaarason.database.contracts.eloquent.Repository;
+import gaarason.database.contract.eloquent.Repository;
 import gaarason.database.eloquent.annotations.Primary;
 import gaarason.database.exception.InvalidPrimaryKeyTypeException;
 import gaarason.database.utils.EntityUtil;

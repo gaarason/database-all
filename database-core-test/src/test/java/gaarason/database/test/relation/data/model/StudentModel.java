@@ -1,8 +1,6 @@
 package gaarason.database.test.relation.data.model;
 
-import gaarason.database.contracts.eloquent.Repository;
-import gaarason.database.eloquent.Model;
-import gaarason.database.eloquent.Record;
+import gaarason.database.contract.eloquent.Repository;
 import gaarason.database.query.Builder;
 import gaarason.database.test.relation.data.model.base.BaseModel;
 import gaarason.database.test.relation.data.pojo.Student;

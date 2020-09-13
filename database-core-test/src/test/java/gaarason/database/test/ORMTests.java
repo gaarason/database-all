@@ -2,7 +2,7 @@ package gaarason.database.test;
 
 //import com.fasterxml.jackson.core.JsonProcessingException;
 
-import gaarason.database.connections.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceProvider;
 import gaarason.database.eloquent.Record;
 import gaarason.database.test.models.StudentORMModel;
 import gaarason.database.test.parent.BaseTests;

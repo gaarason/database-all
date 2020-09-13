@@ -1,6 +1,6 @@
 package gaarason.database.test;
 
-import gaarason.database.connections.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceProvider;
 import gaarason.database.exception.NestedTransactionException;
 import gaarason.database.test.models.Student2Model;
 import gaarason.database.test.models.Student3Model;

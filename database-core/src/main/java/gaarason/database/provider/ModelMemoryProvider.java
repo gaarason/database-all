@@ -1,15 +1,16 @@
 package gaarason.database.provider;
 
-import gaarason.database.contracts.eloquent.relations.SubQuery;
+import gaarason.database.contract.eloquent.relation.SubQuery;
+import gaarason.database.contract.provider.ModelMemory;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.Model;
 import gaarason.database.eloquent.annotations.BelongsTo;
 import gaarason.database.eloquent.annotations.BelongsToMany;
 import gaarason.database.eloquent.annotations.Column;
 import gaarason.database.eloquent.annotations.HasOneOrMany;
-import gaarason.database.eloquent.relations.BelongsToManyQuery;
-import gaarason.database.eloquent.relations.BelongsToQuery;
-import gaarason.database.eloquent.relations.HasOneOrManyQuery;
+import gaarason.database.eloquent.relation.BelongsToManyQuery;
+import gaarason.database.eloquent.relation.BelongsToQuery;
+import gaarason.database.eloquent.relation.HasOneOrManyQuery;
 import gaarason.database.utils.StringUtil;
 
 import java.lang.annotation.Annotation;
@@ -21,7 +22,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ModelMemoryProvider {
+public class ModelMemoryProvider implements ModelMemory {
 
     /**
      * 允许的java属性
@@ -189,7 +190,6 @@ public class ModelMemoryProvider {
             information.primaryKeyName = information.primaryKeyName;
 
 //            FieldInfo fieldInfo = new FieldInfo();
-
             fieldDeal(information);
 //            information.classFieldMap
 
@@ -275,6 +275,7 @@ public class ModelMemoryProvider {
         for (Class<? extends Annotation> relationAnnotation : relationAnnotations) {
             if (field.isAnnotationPresent(relationAnnotation)) {
                 hasRelationAnnotation = true;
+                break;
             }
         }
         return isNotPrimitive && isNotBasicType && hasRelationAnnotation;

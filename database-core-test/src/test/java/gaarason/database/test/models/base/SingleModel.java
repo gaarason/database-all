@@ -1,7 +1,7 @@
 package gaarason.database.test.models.base;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import gaarason.database.connections.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceProvider;
 import gaarason.database.eloquent.Model;
 import lombok.extern.slf4j.Slf4j;
 

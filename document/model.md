@@ -30,7 +30,7 @@ Eloquent ORM for Java
 ```java
 package temp.model.base;
 
-import gaarason.database.connections.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceProvider;
 import gaarason.database.eloquent.Model;
 
 import javax.annotation.Resource;

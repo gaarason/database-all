@@ -1,8 +1,8 @@
 package gaarason.database.query.grammars;
 
-import gaarason.database.contracts.Grammar;
-import gaarason.database.contracts.function.GenerateSqlPart;
-import gaarason.database.contracts.function.RelationshipRecordWith;
+import gaarason.database.contract.Grammar;
+import gaarason.database.contract.function.GenerateSqlPart;
+import gaarason.database.contract.function.RelationshipRecordWith;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.utils.ObjectUtil;
 

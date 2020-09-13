@@ -1,11 +1,11 @@
 package gaarason.database.eloquent;
 
-import gaarason.database.contracts.function.GenerateSqlPart;
-import gaarason.database.contracts.function.RelationshipRecordWith;
-import gaarason.database.contracts.record.FriendlyORM;
-import gaarason.database.contracts.record.OperationORM;
-import gaarason.database.contracts.record.RelationshipORM;
-import gaarason.database.contracts.record.extra.Relation;
+import gaarason.database.contract.function.GenerateSqlPart;
+import gaarason.database.contract.function.RelationshipRecordWith;
+import gaarason.database.contract.record.FriendlyORM;
+import gaarason.database.contract.record.OperationORM;
+import gaarason.database.contract.record.RelationshipORM;
+import gaarason.database.contract.record.extra.Relation;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.record.extra.RelationProvider;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
