@@ -8,7 +8,10 @@ import gaarason.database.support.Column;
 import java.util.List;
 import java.util.Map;
 
-public interface SubQuery {
+/**
+ * 关联关系字段处理, 目前是 @HasOnePrMany @BelongsTo @BelongsToMany 所属范围
+ */
+public interface RelationSubQuery {
 
     /**
      * 批量关联查询的sql预生成, 可以作为缓存key
@@ -34,5 +37,14 @@ public interface SubQuery {
      */
     List<?> filterBatchRecord(Record<?, ?> record, RecordList<?, ?> relationshipRecordList,
                               Map<String, RecordList<?, ?>> cacheRelationRecordList);
+
+    /**
+     * 增加关联关系
+     * @param record 当前record
+     * @param targetRecords 目标的recordList
+     * @param stringStringMap 仅 @BelongsToMany 时有效, 增加额外信息到中间表
+     * @return 成功
+     */
+    void attach(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap);
 
 }

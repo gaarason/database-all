@@ -15,19 +15,16 @@ import gaarason.database.eloquent.RecordList;
 import gaarason.database.eloquent.enums.SqlType;
 import gaarason.database.exception.*;
 import gaarason.database.support.RecordFactory;
-import gaarason.database.utils.ExceptionUtil;
-import gaarason.database.utils.FormatUtil;
-import gaarason.database.utils.ObjectUtil;
+import gaarason.database.util.ExceptionUtil;
+import gaarason.database.util.FormatUtil;
+import gaarason.database.util.ObjectUtil;
 
 import java.lang.management.ManagementFactory;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-abstract public class Builder<T, K> implements Cloneable, Where<T, K>, Having<T, K>, Union<T, K>, Support<T, K>,
-    From<T, K>, Execute<T, K>, With<T, K>, Select<T, K>, OrderBy<T, K>, Limit<T, K>, Group<T, K>, Value<T, K>,
-    Data<T, K>, Transaction<T, K>, Aggregates<T, K>, Paginator<T, K>, Lock<T, K>, Native<T, K>, Join<T, K>,
-    Ability<T, K> {
+abstract public class Builder<T, K> implements gaarason.database.contract.Builder<T, K> {
 
     /**
      * 数据实体类

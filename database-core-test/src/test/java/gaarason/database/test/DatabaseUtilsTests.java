@@ -2,7 +2,7 @@ package gaarason.database.test;
 
 import gaarason.database.test.relation.data.pojo.Teacher;
 import gaarason.database.test.utils.MultiThreadUtil;
-import gaarason.database.utils.*;
+import gaarason.database.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;

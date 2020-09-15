@@ -60,7 +60,7 @@ public interface Where<T, K> {
      * @param valueList 值所在的list
      * @return 查询构建器
      */
-    Builder<T, K> whereIn(String column, Collection<Object> valueList);
+    Builder<T, K> whereIn(String column, Collection<?> valueList);
 
     /**
      * 列值在范围内
@@ -92,7 +92,7 @@ public interface Where<T, K> {
      * @param valueList 值所在的list
      * @return 查询构建器
      */
-    Builder<T, K> whereNotIn(String column, Collection<Object> valueList);
+    Builder<T, K> whereNotIn(String column, Collection<?> valueList);
 
     /**
      * 列值不在范围内(子查询)

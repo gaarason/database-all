@@ -1,4 +1,4 @@
-package gaarason.database.utils;
+package gaarason.database.util;
 
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.Record;
@@ -8,11 +8,10 @@ import gaarason.database.eloquent.annotations.Table;
 import gaarason.database.exception.ColumnNotFoundException;
 import gaarason.database.exception.IllegalAccessRuntimeException;
 import gaarason.database.exception.TypeNotSupportedException;
+import gaarason.database.provider.ModelMemoryProvider;
 
-import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -380,8 +379,7 @@ public class EntityUtil {
      * @param stringColumnMap 元数据map
      * @param entity          数据表实体对象
      */
-    public static <T, K> void fieldAssignment(Field field,
-                                              Map<String, gaarason.database.support.Column> stringColumnMap,
+    public static <T, K> void fieldAssignment(Field field, Map<String, gaarason.database.support.Column> stringColumnMap,
                                               T entity, Record<T, K> record)
             throws TypeNotSupportedException {
         String columnName = EntityUtil.columnName(field);

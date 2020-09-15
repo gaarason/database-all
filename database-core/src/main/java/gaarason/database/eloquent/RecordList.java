@@ -3,19 +3,19 @@ package gaarason.database.eloquent;
 import gaarason.database.contract.function.FilterRecordAttribute;
 import gaarason.database.contract.function.GenerateSqlPart;
 import gaarason.database.contract.function.RelationshipRecordWith;
-import gaarason.database.contract.record.FriendlyListORM;
-import gaarason.database.contract.record.RelationshipListORM;
+import gaarason.database.contract.record.FriendlyListTrait;
+import gaarason.database.contract.record.RelationshipListTrait;
 import gaarason.database.support.RelationGetSupport;
 import gaarason.database.support.Column;
-import gaarason.database.utils.EntityUtil;
-import gaarason.database.utils.StringUtil;
+import gaarason.database.util.EntityUtil;
+import gaarason.database.util.StringUtil;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.*;
 
-public class RecordList<T, K> extends ArrayList<Record<T, K>> implements FriendlyListORM<T, K>,
-    RelationshipListORM<T, K> {
+public class RecordList<T, K> extends ArrayList<Record<T, K>> implements FriendlyListTrait<T, K>,
+    RelationshipListTrait<T, K> {
 
     /**
      * 元数据
@@ -87,10 +87,10 @@ public class RecordList<T, K> extends ArrayList<Record<T, K>> implements Friendl
      * @return 单个字段列表
      */
     @Override
-    public List<Object> toList(FilterRecordAttribute<T, K> filterRecordAttribute) {
-        List<Object> list = new ArrayList<>();
+    public <V> List<V> toList(FilterRecordAttribute<T, K, V> filterRecordAttribute) {
+        List<V> list = new ArrayList<>();
         for (Record<T, K> record : this) {
-            Object result = filterRecordAttribute.filter(record);
+            V result = filterRecordAttribute.filter(record);
             if (null == result)
                 continue;
             list.add(result);

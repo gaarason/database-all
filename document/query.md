@@ -184,7 +184,7 @@ int num = studentModel.newQuery().select(columnNameList).value(valueList).insert
 当数据库主键为`bigint unsigned`时, 可以使用雪花id生成器  
 默认使用本机mac地址转化为机器id(范围0-1023, 一旦出现机器id重复, 建议自行实现), 兼容10ms以内时间回拨, 单个进程每秒500w个id
 ```java
-long id = gaarason.database.utils.SnowFlakeIdUtil.getId();
+long id = gaarason.database.util.SnowFlakeIdUtil.getId();
 ```
 
 ## 更新

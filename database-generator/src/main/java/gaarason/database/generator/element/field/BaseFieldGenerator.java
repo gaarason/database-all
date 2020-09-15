@@ -1,15 +1,8 @@
 package gaarason.database.generator.element.field;
 
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.generator.element.JavaVisibility;
-import gaarason.database.utils.StringUtil;
-import lombok.Data;
+import gaarason.database.util.StringUtil;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**

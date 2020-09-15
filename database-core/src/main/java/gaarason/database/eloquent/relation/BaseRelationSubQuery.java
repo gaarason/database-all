@@ -1,17 +1,17 @@
 package gaarason.database.eloquent.relation;
 
-import gaarason.database.contract.eloquent.relation.SubQuery;
+import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.eloquent.Model;
 import gaarason.database.exception.ModelNewInstanceException;
 import gaarason.database.support.Column;
-import gaarason.database.utils.EntityUtil;
+import gaarason.database.util.EntityUtil;
 
 import java.util.*;
 
 /**
  * 关联关系
  */
-abstract public class BaseSubQuery implements SubQuery {
+abstract public class BaseRelationSubQuery implements RelationSubQuery {
 
     /**
      * 获取 model 实例

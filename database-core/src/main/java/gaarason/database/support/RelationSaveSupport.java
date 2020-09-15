@@ -1,6 +1,6 @@
 package gaarason.database.support;
 
-import gaarason.database.contract.eloquent.relation.SubQuery;
+import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
 
@@ -88,7 +88,7 @@ return true;
 
 
     static class Info<T> {
-        protected SubQuery subQuery;
+        protected RelationSubQuery            relationSubQuery;
         protected Map<SubQueryValue, List<T>> tMap = new HashMap<>();
     }
 

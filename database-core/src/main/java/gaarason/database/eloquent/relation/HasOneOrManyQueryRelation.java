@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class HasOneOrManyQuery extends BaseSubQuery {
+public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
     private final HasOneOrManyTemplate hasOneOrManyTemplate;
 
@@ -35,7 +35,7 @@ public class HasOneOrManyQuery extends BaseSubQuery {
         }
     }
 
-    public HasOneOrManyQuery(Field field) {
+    public HasOneOrManyQueryRelation(Field field) {
         hasOneOrManyTemplate = new HasOneOrManyTemplate(field);
     }
 
@@ -61,6 +61,26 @@ public class HasOneOrManyQuery extends BaseSubQuery {
         String value = String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
 
         return findObjList(relationshipRecordList.toObjectList(cacheRelationRecordList), column, value);
+    }
+
+    @Override
+    public void attach(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
+        if (targetRecords.size() == 0)
+            return;
+
+        // 应该更新的子表的主键列表
+        List<String> targetRecordPrimaryKeyIds = targetRecords.toList(
+            recordTemp -> String.valueOf(
+                recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName())));
+
+        // 当前表(子表)的关联键值
+        String relationKeyValue = String.valueOf(
+            record.getMetadataMap().get(record.getModel().getPrimaryKeyColumnName()));
+
+        // 执行插入
+        targetRecords.get(0).getModel().newQuery()
+            .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetRecordPrimaryKeyIds)
+            .data(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue).update();
     }
 
 }

@@ -11,7 +11,7 @@ import java.util.Map;
  * @param <T> 实体类
  * @param <K> 主键类型
  */
-public interface FriendlyListORM<T, K> {
+public interface FriendlyListTrait<T, K> {
 
     /**
      * 转化为对象列表
@@ -41,7 +41,7 @@ public interface FriendlyListORM<T, K> {
      * 过滤成list
      * @return 单个字段列表
      */
-    List<Object> toList(FilterRecordAttribute<T, K> filterRecordAttribute);
+    <V> List<V> toList(FilterRecordAttribute<T, K, V> filterRecordAttribute);
 
 
     /**

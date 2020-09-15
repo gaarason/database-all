@@ -1,4 +1,4 @@
 @NonNullApi
-package gaarason.database.utils;
+package gaarason.database.util;
 
 import gaarason.database.core.lang.NonNullApi;

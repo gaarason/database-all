@@ -3,7 +3,7 @@ package gaarason.database.generator.element.field;
 import gaarason.database.generator.element.JavaClassification;
 import gaarason.database.generator.element.JavaVisibility;
 import gaarason.database.query.range.mysql.MysqlNumericRange;
-import gaarason.database.utils.StringUtil;
+import gaarason.database.util.StringUtil;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

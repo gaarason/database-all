@@ -3,7 +3,7 @@ package gaarason.database.query.grammars;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.enums.SqlType;
 import gaarason.database.exception.InvalidSQLTypeException;
-import gaarason.database.utils.FormatUtil;
+import gaarason.database.util.FormatUtil;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -4,7 +4,7 @@ import gaarason.database.contract.Grammar;
 import gaarason.database.contract.function.GenerateSqlPart;
 import gaarason.database.contract.function.RelationshipRecordWith;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
-import gaarason.database.utils.ObjectUtil;
+import gaarason.database.util.ObjectUtil;
 
 import java.io.Serializable;
 import java.util.HashMap;

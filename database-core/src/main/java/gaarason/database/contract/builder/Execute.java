@@ -133,6 +133,13 @@ public interface Execute<T, K> {
 
     /**
      * 批量插入数据
+     * @return 数据库自增id列表
+     * @throws SQLRuntimeException 数据库异常
+     */
+    List<K> insertGetIds() throws SQLRuntimeException;
+
+    /**
+     * 批量插入数据
      * @param entityList 数据实体对象列表
      * @return 数据库自增id列表
      * @throws SQLRuntimeException 数据库异常

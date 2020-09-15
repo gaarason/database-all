@@ -1,4 +1,4 @@
-package gaarason.database.utils;
+package gaarason.database.util;
 
 import gaarason.database.contract.Grammar;
 
@@ -63,7 +63,7 @@ public class FormatUtil {
      * @param somethingList eg:[1,2,3]
      * @return eg: ? , ? , ?
      */
-    public static String value(Collection<Object> somethingList, Grammar grammar) {
+    public static String value(Collection<?> somethingList, Grammar grammar) {
         StringBuilder StringBuilder = new StringBuilder();
         for (Object value : somethingList) {
             StringBuilder.append(FormatUtil.value(value.toString(), grammar)).append(',');

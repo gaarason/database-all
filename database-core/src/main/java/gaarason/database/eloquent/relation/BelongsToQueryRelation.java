@@ -6,6 +6,7 @@ import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
 import gaarason.database.eloquent.annotations.BelongsTo;
 import gaarason.database.eloquent.enums.SqlType;
+import gaarason.database.exception.RelationAttachException;
 import gaarason.database.support.Column;
 
 import java.lang.reflect.Field;
@@ -13,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class BelongsToQuery extends BaseSubQuery {
+public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
     private final BelongsToTemplate belongsToTemplate;
 
@@ -34,7 +35,7 @@ public class BelongsToQuery extends BaseSubQuery {
         }
     }
 
-    public BelongsToQuery(Field field) {
+    public BelongsToQueryRelation(Field field) {
         belongsToTemplate = new BelongsToTemplate(field);
     }
 
@@ -61,5 +62,23 @@ public class BelongsToQuery extends BaseSubQuery {
             record.getMetadataMap().get(belongsToTemplate.localModelForeignKey).getValue());
 
         return findObjList(relationshipRecordList.toObjectList(cacheRelationRecordList), column, value);
+    }
+
+    @Override
+    public void attach(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
+        if(targetRecords.size() == 0)
+            return;
+        else if(targetRecords.size() > 1){
+            throw new RelationAttachException("The relationship \"@BelongsTo\" could only attach a relationship with " +
+                "one, but now more than one.");
+        }
+
+        // 目标表(父表)model的关联键值
+        String parentModelLocalKeyValue = String.valueOf(targetRecords.get(0).getMetadataMap().get(belongsToTemplate.parentModelLocalKey));
+
+        // 执行更新
+        record.getModel().newQuery().data(belongsToTemplate.localModelForeignKey, parentModelLocalKeyValue).update();
+
+
     }
 }

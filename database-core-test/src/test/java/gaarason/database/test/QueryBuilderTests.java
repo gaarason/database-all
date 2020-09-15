@@ -146,6 +146,34 @@ public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
+    public void 新增_使用ValueList单次新增多条记录() {
+        List<String> columnNameList = new ArrayList<>();
+        columnNameList.add("name");
+        columnNameList.add("age");
+        columnNameList.add("sex");
+        List<List<String>> valuesList = new ArrayList<>();
+        for (int i = 1; i < 10; i++) {
+            List<String> valueList = new ArrayList<>();
+            valueList.add("testNAme=" + i);
+            valueList.add("11");
+            valueList.add("1");
+            valuesList.add(valueList);
+        }
+
+
+        List<Integer> integers = studentModel.newQuery().select(columnNameList).valueList(valuesList).insertGetIds();
+        Assert.assertEquals(integers.size(), valuesList.size());
+
+        List<StudentModel.Entity> entityList = studentModel.newQuery()
+            .whereIn(studentModel.getPrimaryKeyColumnName(), integers)
+            .orderBy("id", OrderBy.DESC)
+            .get().toObjectList();
+        System.out.println(entityList);
+        Assert.assertEquals(entityList.size(), valuesList.size());
+
+    }
+
+    @Test
     public void 更新_普通更新() {
         int update = studentModel.newQuery().data("name", "xxcc").where("id", "3").update();
         Assert.assertEquals(update, 1);

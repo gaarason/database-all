@@ -1,4 +1,4 @@
-package gaarason.database.utils;
+package gaarason.database.util;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;

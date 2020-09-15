@@ -42,7 +42,7 @@ public interface Having<T, K> {
      * @param valueList 值所在的list
      * @return 查询构建器
      */
-    Builder<T, K> havingIn(String column, Collection<Object> valueList);
+    Builder<T, K> havingIn(String column, Collection<?> valueList);
 
     /**
      * 列值在范围内
@@ -74,7 +74,7 @@ public interface Having<T, K> {
      * @param valueList 值所在的list
      * @return 查询构建器
      */
-    Builder<T, K> havingNotIn(String column, Collection<Object> valueList);
+    Builder<T, K> havingNotIn(String column, Collection<?> valueList);
 
     /**
      * 列值在范围内

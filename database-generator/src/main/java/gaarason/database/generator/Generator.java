@@ -6,7 +6,7 @@ import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.Model;
 import gaarason.database.generator.element.field.Field;
 import gaarason.database.generator.element.field.MysqlFieldGenerator;
-import gaarason.database.utils.StringUtil;
+import gaarason.database.util.StringUtil;
 import lombok.Setter;
 
 import javax.sql.DataSource;

@@ -15,8 +15,8 @@ import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.InsertNotSuccessException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.query.grammars.MySqlGrammar;
-import gaarason.database.utils.EntityUtil;
-import gaarason.database.utils.FormatUtil;
+import gaarason.database.util.EntityUtil;
+import gaarason.database.util.FormatUtil;
 
 import java.util.*;
 
@@ -65,7 +65,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereIn(String column, Collection<Object> valueList) {
+    public Builder<T, K> whereIn(String column, Collection<?> valueList) {
         String sqlPart = FormatUtil.column(column) + "in" + FormatUtil.bracket(formatValue(valueList));
         return whereRaw(sqlPart);
     }
@@ -89,7 +89,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereNotIn(String column, Collection<Object> valueList) {
+    public Builder<T, K> whereNotIn(String column, Collection<?> valueList) {
         String sqlPart = FormatUtil.column(column) + "not in" + FormatUtil.bracket(formatValue(valueList));
         return whereRaw(sqlPart);
     }
@@ -204,7 +204,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingIn(String column, Collection<Object> valueList) {
+    public Builder<T, K> havingIn(String column, Collection<?> valueList) {
         String sqlPart = FormatUtil.column(column) + "in" + FormatUtil.bracket(formatValue(valueList));
         return havingRaw(sqlPart);
     }
@@ -228,7 +228,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingNotIn(String column, Collection<Object> valueList) {
+    public Builder<T, K> havingNotIn(String column, Collection<?> valueList) {
         String sqlPart = FormatUtil.column(column) + "not in" + FormatUtil.bracket(formatValue(valueList));
         return havingRaw(sqlPart);
     }
@@ -533,13 +533,18 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
     }
 
     @Override
-    public List<K> insertGetIds(List<T> entityList) throws SQLRuntimeException {
-        // entityList处理
-        beforeBatchInsert(entityList);
+    public List<K> insertGetIds() throws SQLRuntimeException {
         // sql 组装
         String       sql           = grammar.generateSql(SqlType.INSERT);
         List<String> parameterList = grammar.getParameterList(SqlType.INSERT);
         return executeGetIds(sql, parameterList);
+    }
+
+    @Override
+    public List<K> insertGetIds(List<T> entityList) throws SQLRuntimeException {
+        // entityList处理
+        beforeBatchInsert(entityList);
+        return insertGetIds();
     }
 
     /**
@@ -599,7 +604,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
      * @param valueList 参数
      * @return 参数占位符?
      */
-    private String formatValue(Collection<Object> valueList) {
+    private String formatValue(Collection<?> valueList) {
         return FormatUtil.value(valueList, grammar);
     }
 
@@ -661,7 +666,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
 
     @Override
     public Long count(String column) {
-        if(grammar.hasGroup()){
+        if (grammar.hasGroup()) {
             throw new AggregatesNotSupportedGroupException("Not support group when using count(), please retry " +
                 "by selectFunction()");
         }
@@ -673,7 +678,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
 
     @Override
     public String max(String column) {
-        if(grammar.hasGroup()){
+        if (grammar.hasGroup()) {
             throw new AggregatesNotSupportedGroupException("Not support group when using max(), please retry " +
                 "by selectFunction()");
         }
@@ -684,7 +689,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
 
     @Override
     public String min(String column) {
-        if(grammar.hasGroup()){
+        if (grammar.hasGroup()) {
             throw new AggregatesNotSupportedGroupException("Not support group when using min(), please retry " +
                 "by selectFunction()");
         }
@@ -695,7 +700,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
 
     @Override
     public String avg(String column) {
-        if(grammar.hasGroup()){
+        if (grammar.hasGroup()) {
             throw new AggregatesNotSupportedGroupException("Not support group when using avg(), please retry " +
                 "by selectFunction()");
         }
@@ -706,7 +711,7 @@ public class MySqlBuilder<T, K> extends Builder<T, K> {
 
     @Override
     public String sum(String column) {
-        if(grammar.hasGroup()){
+        if (grammar.hasGroup()) {
             throw new AggregatesNotSupportedGroupException("Not support group when using sum(), please retry " +
                 "by selectFunction()");
         }

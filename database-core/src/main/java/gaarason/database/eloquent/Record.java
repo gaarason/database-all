@@ -2,19 +2,19 @@ package gaarason.database.eloquent;
 
 import gaarason.database.contract.function.GenerateSqlPart;
 import gaarason.database.contract.function.RelationshipRecordWith;
-import gaarason.database.contract.record.FriendlyORM;
-import gaarason.database.contract.record.OperationORM;
-import gaarason.database.contract.record.RelationshipORM;
-import gaarason.database.contract.record.extra.Relation;
+import gaarason.database.contract.record.FriendlyTrait;
+import gaarason.database.contract.record.OperationTrait;
+import gaarason.database.contract.record.RelationshipTrait;
+import gaarason.database.contract.record.bind.Relation;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.record.extra.RelationProvider;
+import gaarason.database.eloquent.record.bind.RelationProvider;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.RelationNotFoundException;
 import gaarason.database.support.Column;
 import gaarason.database.support.RelationGetSupport;
-import gaarason.database.utils.EntityUtil;
-import gaarason.database.utils.ObjectUtil;
-import gaarason.database.utils.StringUtil;
+import gaarason.database.util.EntityUtil;
+import gaarason.database.util.ObjectUtil;
+import gaarason.database.util.StringUtil;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,11 +30,11 @@ import java.util.Set;
  * @param <T> 实体类
  * @param <K> 主键类型
  */
-public class Record<T, K> implements FriendlyORM<T, K>, OperationORM<T, K>,
-    RelationshipORM<T, K>, Serializable {
+public class Record<T, K> implements FriendlyTrait<T, K>, OperationTrait<T, K>, RelationshipTrait<T, K>, Serializable {
 
     /**
      * 本表元数据
+     * <数据库字段名 -> 字段信息>
      */
     @Getter
     protected Map<String, Column> metadataMap;

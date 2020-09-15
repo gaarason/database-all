@@ -1092,7 +1092,7 @@ public class RelationTests extends BaseTests {
             student.getTeachersBelongsToMany().add(teacher);
 
             // 查询学生关系 select * from relationship_student_teacher where teacher_id = ?
-            List<Object> studentIds = relationshipStudentTeacherModel.newQuery()
+            List<String> studentIds = relationshipStudentTeacherModel.newQuery()
                 .where("teacher_id",
                     relationshipStudentTeacher.getTeacherId().toString())
                 .get()
