@@ -3,7 +3,7 @@ package gaarason.database.provider;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.contract.provider.ModelMemory;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.Model;
+import gaarason.database.contract.eloquent.Model;
 import gaarason.database.eloquent.annotations.BelongsTo;
 import gaarason.database.eloquent.annotations.BelongsToMany;
 import gaarason.database.eloquent.annotations.Column;

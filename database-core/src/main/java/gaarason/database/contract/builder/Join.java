@@ -1,7 +1,7 @@
 package gaarason.database.contract.builder;
 
 import gaarason.database.eloquent.enums.JoinType;
-import gaarason.database.query.Builder;
+import gaarason.database.contract.eloquent.Builder;
 
 /**
  * 连接

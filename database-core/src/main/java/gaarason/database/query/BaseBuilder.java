@@ -2,13 +2,13 @@ package gaarason.database.query;
 
 import gaarason.database.contract.GaarasonDataSource;
 import gaarason.database.contract.Grammar;
-import gaarason.database.contract.builder.*;
+import gaarason.database.contract.eloquent.Builder;
+import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.Chunk;
 import gaarason.database.contract.function.ExecSqlWithinConnection;
 import gaarason.database.contract.function.GenerateSqlPart;
 import gaarason.database.contract.function.RelationshipRecordWith;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.Model;
 import gaarason.database.eloquent.Paginate;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
@@ -24,7 +24,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-abstract public class Builder<T, K> implements gaarason.database.contract.Builder<T, K> {
+abstract public class BaseBuilder<T, K> implements Builder<T, K> {
 
     /**
      * 数据实体类
@@ -51,11 +51,21 @@ abstract public class Builder<T, K> implements gaarason.database.contract.Builde
      */
     protected Model<T, K> model;
 
-    public Builder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
+    public BaseBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
         this.gaarasonDataSource = gaarasonDataSource;
         this.model = model;
         this.entityClass = entityClass;
         grammar = grammarFactory();
+    }
+
+    @Override
+    public Grammar getGrammar() {
+        return grammar;
+    }
+
+    @Override
+    public void setGrammar(Grammar grammar) {
+        this.grammar = grammar;
     }
 
     /**
@@ -101,7 +111,7 @@ abstract public class Builder<T, K> implements gaarason.database.contract.Builde
             // 浅拷贝
             Builder<T, K> builder = (Builder<T, K>) super.clone();
             // 深拷贝
-            builder.grammar = grammar.deepCopy();
+            builder.setGrammar(grammar.deepCopy());
             return builder;
         } catch (CloneNotSupportedException e) {
             throw new CloneNotSupportedRuntimeException(e.getMessage(), e);
@@ -447,8 +457,8 @@ abstract public class Builder<T, K> implements gaarason.database.contract.Builde
         do {
             Builder<T, K> cloneBuilder = clone();
             cloneBuilder.limit(offset, num);
-            String                sql           = cloneBuilder.grammar.generateSql(SqlType.SELECT);
-            List<String>          parameterList = cloneBuilder.grammar.getParameterList(SqlType.SELECT);
+            String                sql           = cloneBuilder.getGrammar().generateSql(SqlType.SELECT);
+            List<String>          parameterList = cloneBuilder.getGrammar().getParameterList(SqlType.SELECT);
             Map<String, Object[]> columnMap     = grammar.pullWith();
             RecordList<T, K>      records       = queryList(sql, parameterList);
             for (String column : columnMap.keySet()) {
@@ -543,12 +553,12 @@ abstract public class Builder<T, K> implements gaarason.database.contract.Builde
      */
     private String generateSql(GenerateSqlPart closure, boolean wholeSql) {
         Builder<?, ?> subBuilder    = closure.generate(getNewSelf());
-        List<String>  parameterList = subBuilder.grammar.getParameterList(SqlType.SUB_QUERY);
+        List<String>  parameterList = subBuilder.getGrammar().getParameterList(SqlType.SUB_QUERY);
         for (String parameter : parameterList) {
             grammar.pushWhereParameter(parameter);
         }
         SqlType sqlType = wholeSql ? SqlType.SELECT : SqlType.SUB_QUERY;
-        return FormatUtil.bracket(subBuilder.grammar.generateSql(sqlType));
+        return FormatUtil.bracket(subBuilder.getGrammar().generateSql(sqlType));
     }
 
     /**

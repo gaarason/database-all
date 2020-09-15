@@ -40,10 +40,10 @@ List<Student> Students = studentModel.newQuery().whereIn("id", "1","2","3").get(
 
 1.引入仓库 pom.xml  
 ```$xslt
-<repository>
+<query>
     <id>jitpack.io</id>
     <url>https://jitpack.io</url>
-</repository>
+</query>
 ```
 2.引入依赖 pom.xml  
 ```$xslt

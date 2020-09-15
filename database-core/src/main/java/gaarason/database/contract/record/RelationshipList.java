@@ -9,7 +9,7 @@ import gaarason.database.eloquent.RecordList;
  * @param <T> 实体类
  * @param <K> 主键类型
  */
-public interface RelationshipListTrait<T, K> {
+public interface RelationshipList<T, K> {
 
 
     /**

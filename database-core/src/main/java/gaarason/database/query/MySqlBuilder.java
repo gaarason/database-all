@@ -2,9 +2,10 @@ package gaarason.database.query;
 
 import gaarason.database.contract.GaarasonDataSource;
 import gaarason.database.contract.Grammar;
+import gaarason.database.contract.eloquent.Builder;
+import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.GenerateSqlPart;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.Model;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
 import gaarason.database.eloquent.enums.JoinType;
@@ -20,7 +21,7 @@ import gaarason.database.util.FormatUtil;
 
 import java.util.*;
 
-public class MySqlBuilder<T, K> extends Builder<T, K> {
+public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
 
     public MySqlBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
         super(gaarasonDataSource, model, entityClass);

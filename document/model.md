@@ -141,7 +141,7 @@ public class StudentModel extends BaseModel<Student, Long> {
 
 ### 软删除
 
-- 软删除相关实现, 重写 `gaarason.database.eloquent.repository.BaseSoftDeleting`的相关方法  
+- 软删除相关实现, 重写 `gaarason.database.eloquent.query.BaseSoftDeleting`的相关方法  
 - 开启软删除, 重写`softDeleting`方法结果为`true`
 
 ```java

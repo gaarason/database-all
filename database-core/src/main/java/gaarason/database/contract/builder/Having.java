@@ -1,7 +1,7 @@
 package gaarason.database.contract.builder;
 
 import gaarason.database.contract.function.GenerateSqlPart;
-import gaarason.database.query.Builder;
+import gaarason.database.contract.eloquent.Builder;
 
 import java.util.Collection;
 

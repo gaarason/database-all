@@ -3,8 +3,8 @@ package gaarason.database.eloquent;
 import gaarason.database.contract.function.FilterRecordAttribute;
 import gaarason.database.contract.function.GenerateSqlPart;
 import gaarason.database.contract.function.RelationshipRecordWith;
-import gaarason.database.contract.record.FriendlyListTrait;
-import gaarason.database.contract.record.RelationshipListTrait;
+import gaarason.database.contract.record.FriendlyList;
+import gaarason.database.contract.record.RelationshipList;
 import gaarason.database.support.RelationGetSupport;
 import gaarason.database.support.Column;
 import gaarason.database.util.EntityUtil;
@@ -14,8 +14,8 @@ import lombok.Setter;
 
 import java.util.*;
 
-public class RecordList<T, K> extends ArrayList<Record<T, K>> implements FriendlyListTrait<T, K>,
-    RelationshipListTrait<T, K> {
+public class RecordList<T, K> extends ArrayList<Record<T, K>> implements FriendlyList<T, K>,
+    RelationshipList<T, K> {
 
     /**
      * 元数据

@@ -1,4 +1,4 @@
-package gaarason.database.contract.eloquent;
+package gaarason.database.contract.model;
 
 import gaarason.database.eloquent.Record;
 
@@ -9,7 +9,7 @@ import java.util.Collection;
  * @param <T> 实体类
  * @param <K> 主键类型
  */
-public interface Eventing<T, K> {
+public interface Event<T, K> {
 
     /**
      * sql日志记录

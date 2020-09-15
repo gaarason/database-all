@@ -1,13 +1,13 @@
-package gaarason.database.contract.eloquent;
+package gaarason.database.contract.model;
 
-import gaarason.database.contract.record.OperationTrait;
+import gaarason.database.contract.record.Operation;
 
 /**
  * 快捷方式
  * @param <T> 实体类
  * @param <K> 主键类型
  */
-public interface Shortcut<T, K> extends OperationTrait<T, K> {
+public interface Shortcut<T, K> extends Operation<T, K> {
 
     /**
      * 实体对象

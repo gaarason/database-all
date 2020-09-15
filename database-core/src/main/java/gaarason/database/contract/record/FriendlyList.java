@@ -11,7 +11,7 @@ import java.util.Map;
  * @param <T> 实体类
  * @param <K> 主键类型
  */
-public interface FriendlyListTrait<T, K> {
+public interface FriendlyList<T, K> {
 
     /**
      * 转化为对象列表

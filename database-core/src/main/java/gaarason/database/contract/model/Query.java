@@ -1,18 +1,18 @@
-package gaarason.database.contract.eloquent;
+package gaarason.database.contract.model;
 
+import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
-import gaarason.database.query.Builder;
 
 /**
  * model接口
  * @param <T> 实体类
  * @param <K> 主键类型
  */
-public interface Repository<T, K> extends Eventing<T, K>, SoftDeleting<T, K>, Shortcut<T, K> {
+public interface Query<T, K> {
     /**
      * 新的查询构造器
      * @return 查询构造器
@@ -39,9 +39,9 @@ public interface Repository<T, K> extends Eventing<T, K>, SoftDeleting<T, K>, Sh
 
     /**
      * 查询全部
-     * @param column
-     * @return
-     * @throws SQLRuntimeException
+     * @param column 返回字段
+     * @return 批量结果集
+     * @throws SQLRuntimeException SQL异常
      */
     RecordList<T, K> all(String... column) throws SQLRuntimeException;
 

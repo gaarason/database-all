@@ -1,6 +1,6 @@
 package gaarason.database.contract.builder;
 
-import gaarason.database.query.Builder;
+import gaarason.database.contract.eloquent.Builder;
 
 import java.util.Map;
 

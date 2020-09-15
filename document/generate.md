@@ -20,10 +20,10 @@ Eloquent ORM for Java
 
 1.引入仓库 pom.xml  
 ```$xslt
-<repository>
+<query>
     <id>jitpack.io</id>
     <url>https://jitpack.io</url>
-</repository>
+</query>
 ```
 2.引入依赖 pom.xml  
 ```$xslt
@@ -151,10 +151,10 @@ public class GeneratorTests {
 
 1.引入仓库 pom.xml  
 ```$xslt
-<repository>
+<query>
     <id>jitpack.io</id>
     <url>https://jitpack.io</url>
-</repository>
+</query>
 ```
 2.引入依赖 pom.xml  
 ```$xslt

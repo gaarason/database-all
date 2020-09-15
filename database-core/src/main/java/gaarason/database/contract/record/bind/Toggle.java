@@ -5,7 +5,7 @@ import gaarason.database.eloquent.RecordList;
 import java.util.Collection;
 import java.util.Map;
 
-public interface ToggleTrait {
+public interface Toggle {
 
 
 

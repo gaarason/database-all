@@ -2,7 +2,7 @@ package gaarason.database.contract.builder;
 
 import gaarason.database.contract.function.GenerateSqlPart;
 import gaarason.database.contract.function.RelationshipRecordWith;
-import gaarason.database.query.Builder;
+import gaarason.database.contract.eloquent.Builder;
 
 /**
  * 限制

@@ -1,8 +1,8 @@
 package gaarason.database.contract.record;
 
+import gaarason.database.contract.eloquent.extra.Bind;
 import gaarason.database.contract.function.GenerateSqlPart;
 import gaarason.database.contract.function.RelationshipRecordWith;
-import gaarason.database.contract.record.bind.Relation;
 import gaarason.database.eloquent.Record;
 
 /**
@@ -10,7 +10,7 @@ import gaarason.database.eloquent.Record;
  * @param <T> 实体类
  * @param <K> 主键类型
  */
-public interface RelationshipTrait<T, K> {
+public interface Relationship<T, K> {
 
 
     /**
@@ -44,8 +44,7 @@ public interface RelationshipTrait<T, K> {
     Record<T, K> with(String column, GenerateSqlPart builderClosure, RelationshipRecordWith recordClosure);
 
     /**
-     *
      * @return
      */
-    Relation bind(String column);
+    Bind bind(String column);
 }

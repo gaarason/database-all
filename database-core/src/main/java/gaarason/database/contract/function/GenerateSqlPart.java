@@ -1,6 +1,6 @@
 package gaarason.database.contract.function;
 
-import gaarason.database.query.Builder;
+import gaarason.database.contract.eloquent.Builder;
 
 import java.io.Serializable;
 

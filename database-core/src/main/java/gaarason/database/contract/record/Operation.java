@@ -2,7 +2,7 @@ package gaarason.database.contract.record;
 
 import gaarason.database.eloquent.Record;
 
-public interface OperationTrait<T, K> {
+public interface Operation<T, K> {
     /**
      * 新增或者更新
      * 新增情况下: saving -> creating -> created -> saved

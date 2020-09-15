@@ -1,13 +1,13 @@
-package gaarason.database.contract.eloquent;
+package gaarason.database.contract.model;
 
-import gaarason.database.query.Builder;
+import gaarason.database.contract.eloquent.Builder;
 
 /**
  * 软删除
  * @param <T> 实体类
  * @param <K> 主键类型
  */
-public interface SoftDeleting<T, K> {
+public interface SoftDelete<T, K> {
 
     /**
      * 删除(软/硬删除)

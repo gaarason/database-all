@@ -9,7 +9,7 @@ import java.util.Map;
  * @param <T> 实体类
  * @param <K> 主键类型
  */
-public interface FriendlyTrait<T, K> {
+public interface Friendly<T, K> {
 
     /**
      * 将元数据map转化为普通map

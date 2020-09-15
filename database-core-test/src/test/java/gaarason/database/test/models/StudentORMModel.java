@@ -9,7 +9,7 @@ import lombok.Data;
 
 import java.util.Date;
 
-public class StudentTraitModel extends SingleModel<StudentTraitModel.Entity, Integer> {
+public class StudentORMModel extends SingleModel<StudentORMModel.Entity, Integer> {
 
     @Data
     @Table(name = "student")
@@ -72,7 +72,7 @@ public class StudentTraitModel extends SingleModel<StudentTraitModel.Entity, Int
         System.out.println("已经从数据库中查询到数据");
     }
 
-    public StudentTraitModel.Entity getById(String id){
+    public StudentORMModel.Entity getById(String id){
         return newQuery().where("id", id).firstOrFail().toObject();
     }
 

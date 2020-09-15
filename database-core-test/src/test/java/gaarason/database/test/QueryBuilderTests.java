@@ -9,7 +9,7 @@ import gaarason.database.exception.AggregatesNotSupportedGroupException;
 import gaarason.database.exception.ConfirmOperationException;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.NestedTransactionException;
-import gaarason.database.query.Builder;
+import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.test.models.StudentModel;
 import gaarason.database.test.parent.BaseTests;
 import gaarason.database.test.utils.MultiThreadUtil;

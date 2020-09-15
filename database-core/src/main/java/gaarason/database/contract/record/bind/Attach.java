@@ -6,7 +6,7 @@ import gaarason.database.eloquent.RecordList;
 import java.util.Collection;
 import java.util.Map;
 
-public interface AttachTrait {
+public interface Attach {
 
     /**
      * 新增关系, 连接模型的中间表中插入记录

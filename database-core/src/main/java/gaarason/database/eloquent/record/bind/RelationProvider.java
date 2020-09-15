@@ -1,7 +1,7 @@
 package gaarason.database.eloquent.record.bind;
 
+import gaarason.database.contract.eloquent.extra.Bind;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
-import gaarason.database.contract.record.bind.Relation;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
 import gaarason.database.exception.RelationNotFoundException;
@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RelationProvider<T, K> implements Relation {
+public class RelationProvider<T, K> implements Bind {
 
     private final Record<T, K> record;
 

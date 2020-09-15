@@ -1,11 +1,12 @@
 package gaarason.database.eloquent;
 
+import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.GenerateSqlPart;
 import gaarason.database.contract.function.RelationshipRecordWith;
-import gaarason.database.contract.record.FriendlyTrait;
-import gaarason.database.contract.record.OperationTrait;
-import gaarason.database.contract.record.RelationshipTrait;
-import gaarason.database.contract.record.bind.Relation;
+import gaarason.database.contract.record.Friendly;
+import gaarason.database.contract.record.Operation;
+import gaarason.database.contract.record.Relationship;
+import gaarason.database.contract.eloquent.extra.Bind;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.record.bind.RelationProvider;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
@@ -30,7 +31,7 @@ import java.util.Set;
  * @param <T> 实体类
  * @param <K> 主键类型
  */
-public class Record<T, K> implements FriendlyTrait<T, K>, OperationTrait<T, K>, RelationshipTrait<T, K>, Serializable {
+public class Record<T, K> implements Friendly<T, K>, Operation<T, K>, Relationship<T, K>, Serializable {
 
     /**
      * 本表元数据
@@ -43,7 +44,7 @@ public class Record<T, K> implements FriendlyTrait<T, K>, OperationTrait<T, K>, 
      * 数据模型
      */
     @Getter
-    protected final Model<T, K> model;
+    protected final gaarason.database.contract.eloquent.Model<T, K> model;
 
     /**
      * 数据实体类
@@ -101,7 +102,7 @@ public class Record<T, K> implements FriendlyTrait<T, K>, OperationTrait<T, K>, 
      * @param entityClass 数据实体类
      * @param model       数据模型
      */
-    public Record(Class<T> entityClass, Model<T, K> model) {
+    public Record(Class<T> entityClass, gaarason.database.contract.eloquent.Model<T, K> model) {
         this.entityClass = entityClass;
         this.model = model;
         init(new HashMap<>());
@@ -273,7 +274,7 @@ public class Record<T, K> implements FriendlyTrait<T, K>, OperationTrait<T, K>, 
     }
 
     @Override
-    public Relation bind(String column) {
+    public Bind bind(String column) {
         return new RelationProvider<>(this, column);
     }
 

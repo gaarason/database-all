@@ -26,8 +26,8 @@ Eloquent ORM for Java
 - `gaarason.database.query.Builder<T>` 升级为 `gaarason.database.query.Builder<T, K>`
 - `gaarason.database.eloquent.Record<T>` 升级为 `gaarason.database.eloquent.Record<T, K>`
 - `gaarason.database.eloquent.RecordList<T>` 升级为 `gaarason.database.eloquent.RecordList<T, K>`
-- `gaarason.database.contract.eloquent.Repository<T> :: Record<T> findOrFail(String id)` 升级为 `gaarason.database.contract.eloquent.Repository<T, K> :: Record<T, K> findOrFail(K id)`
-- `gaarason.database.contract.eloquent.Repository<T> :: Record<T> find(String id)` 升级为 `gaarason.database.contract.eloquent.Repository<T, K> :: Record<T, K> find(K id)`
+- `gaarason.database.contract.model.Query<T> :: Record<T> findOrFail(String id)` 升级为 `gaarason.database.contract.model.Query<T, K> :: Record<T, K> findOrFail(K id)`
+- `gaarason.database.contract.model.Query<T> :: Record<T> find(String id)` 升级为 `gaarason.database.contract.model.Query<T, K> :: Record<T, K> find(K id)`
 - `gaarason.database.contract.builder.Transaction<T> :: boolean transaction(Runnable runnable, int maxAttempts)`  升级为 `gaarason.database.contract.builder.Transaction<T> :: boolean transaction(Runnable runnable, int maxAttempts, boolean throwException)`
 
 有影响

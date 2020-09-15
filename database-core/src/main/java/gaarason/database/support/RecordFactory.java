@@ -1,6 +1,6 @@
 package gaarason.database.support;
 
-import gaarason.database.eloquent.Model;
+import gaarason.database.contract.eloquent.Model;
 import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.RecordList;
 import gaarason.database.exception.EntityNotFoundException;
