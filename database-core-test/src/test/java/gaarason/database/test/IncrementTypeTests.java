@@ -1,7 +1,7 @@
 package gaarason.database.test;
 
 import gaarason.database.connection.GaarasonDataSourceProvider;
-import gaarason.database.eloquent.Record;
+import gaarason.database.contract.eloquent.Record;
 import gaarason.database.test.models.PeopleModel;
 import gaarason.database.test.parent.BaseTests;
 import lombok.extern.slf4j.Slf4j;
@@ -53,11 +53,13 @@ public class IncrementTypeTests extends BaseTests {
 
         List<String> vList = new ArrayList<>();
         vList.add("aaaccc");
-        Long       qwww      = peopleModel.newQuery().select("name").value(vList).insertGetId();;
+        Long qwww = peopleModel.newQuery().select("name").value(vList).insertGetId();
+        ;
         Assert.assertNotNull(qwww);
         Assert.assertEquals(21, qwww.intValue());
 
-        Long       dd      = peopleModel.newQuery().value(new ArrayList<>()).insertGetId();;
+        Long dd = peopleModel.newQuery().value(new ArrayList<>()).insertGetId();
+        ;
         Assert.assertNotNull(dd);
         Assert.assertEquals(22, dd.intValue());
 
@@ -97,8 +99,8 @@ public class IncrementTypeTests extends BaseTests {
             entity.setUpdatedAt(new Date(1312312312));
             entityList.add(entity);
         }
-        int        insert = peopleModel.newQuery().insert(entityList);
-        List<Long> longs  = peopleModel.newQuery().insertGetIds(entityList);
+        int insert = peopleModel.newQuery().insert(entityList);
+        List<Long> longs = peopleModel.newQuery().insertGetIds(entityList);
         Assert.assertEquals(9901, insert);
         Assert.assertEquals(9901, longs.size());
         System.out.println(longs);

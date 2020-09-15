@@ -1,6 +1,6 @@
 package gaarason.database.eloquent;
 
-import gaarason.database.contract.GaarasonDataSource;
+import gaarason.database.contract.connection.GaarasonDataSource;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;

@@ -1,9 +1,9 @@
 package gaarason.database.eloquent.relation;
 
-import gaarason.database.contract.function.GenerateSqlPart;
-import gaarason.database.eloquent.Model;
-import gaarason.database.eloquent.Record;
-import gaarason.database.eloquent.RecordList;
+import gaarason.database.contract.eloquent.Model;
+import gaarason.database.contract.eloquent.Record;
+import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.eloquent.annotations.HasOneOrMany;
 import gaarason.database.eloquent.enums.SqlType;
 import gaarason.database.support.Column;
@@ -17,34 +17,16 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
     private final HasOneOrManyTemplate hasOneOrManyTemplate;
 
-    static class HasOneOrManyTemplate {
-        Model<?, ?> sonModel;
-
-        String sonModelForeignKey;
-
-        String localModelLocalKey;
-
-        HasOneOrManyTemplate(Field field) {
-            HasOneOrMany hasOneOrMany = field.getAnnotation(HasOneOrMany.class);
-            sonModel = getModelInstance(hasOneOrMany.sonModel());
-            sonModelForeignKey = hasOneOrMany.sonModelForeignKey();
-            localModelLocalKey = hasOneOrMany.localModelLocalKey();
-            localModelLocalKey = "".equals(
-                localModelLocalKey) ? sonModel.getPrimaryKeyColumnName() : localModelLocalKey;
-
-        }
-    }
-
     public HasOneOrManyQueryRelation(Field field) {
         hasOneOrManyTemplate = new HasOneOrManyTemplate(field);
     }
 
     @Override
-    public String[] dealBatchSql(List<Map<String, Column>> stringColumnMapList, GenerateSqlPart generateSqlPart) {
-        return new String[]{generateSqlPart.generate(hasOneOrManyTemplate.sonModel.newQuery())
-            .whereIn(hasOneOrManyTemplate.sonModelForeignKey,
-                getColumnInMapList(stringColumnMapList, hasOneOrManyTemplate.localModelLocalKey))
-            .toSql(SqlType.SELECT)};
+    public String[] dealBatchSql(List<Map<String, Column>> stringColumnMapList, GenerateSqlPartFunctionalInterface generateSqlPart) {
+        return new String[]{generateSqlPart.execute(hasOneOrManyTemplate.sonModel.newQuery())
+                .whereIn(hasOneOrManyTemplate.sonModelForeignKey,
+                        getColumnInMapList(stringColumnMapList, hasOneOrManyTemplate.localModelLocalKey))
+                .toSql(SqlType.SELECT)};
     }
 
     @Override
@@ -70,17 +52,35 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
         // 应该更新的子表的主键列表
         List<String> targetRecordPrimaryKeyIds = targetRecords.toList(
-            recordTemp -> String.valueOf(
-                recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName())));
+                recordTemp -> String.valueOf(
+                        recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName())));
 
         // 当前表(子表)的关联键值
         String relationKeyValue = String.valueOf(
-            record.getMetadataMap().get(record.getModel().getPrimaryKeyColumnName()));
+                record.getMetadataMap().get(record.getModel().getPrimaryKeyColumnName()));
 
         // 执行插入
         targetRecords.get(0).getModel().newQuery()
-            .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetRecordPrimaryKeyIds)
-            .data(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue).update();
+                .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetRecordPrimaryKeyIds)
+                .data(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue).update();
+    }
+
+    static class HasOneOrManyTemplate {
+        Model<?, ?> sonModel;
+
+        String sonModelForeignKey;
+
+        String localModelLocalKey;
+
+        HasOneOrManyTemplate(Field field) {
+            HasOneOrMany hasOneOrMany = field.getAnnotation(HasOneOrMany.class);
+            sonModel = getModelInstance(hasOneOrMany.sonModel());
+            sonModelForeignKey = hasOneOrMany.sonModelForeignKey();
+            localModelLocalKey = hasOneOrMany.localModelLocalKey();
+            localModelLocalKey = "".equals(
+                    localModelLocalKey) ? sonModel.getPrimaryKeyColumnName() : localModelLocalKey;
+
+        }
     }
 
 }

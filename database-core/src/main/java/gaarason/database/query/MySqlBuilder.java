@@ -1,13 +1,13 @@
 package gaarason.database.query;
 
-import gaarason.database.contract.GaarasonDataSource;
-import gaarason.database.contract.Grammar;
+import gaarason.database.contract.connection.GaarasonDataSource;
+import gaarason.database.contract.query.Grammar;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
-import gaarason.database.contract.function.GenerateSqlPart;
+import gaarason.database.contract.eloquent.Record;
+import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.Record;
-import gaarason.database.eloquent.RecordList;
 import gaarason.database.eloquent.enums.JoinType;
 import gaarason.database.eloquent.enums.OrderBy;
 import gaarason.database.eloquent.enums.SqlType;
@@ -59,9 +59,9 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereSubQuery(String column, String symbol, GenerateSqlPart closure) {
+    public Builder<T, K> whereSubQuery(String column, String symbol, GenerateSqlPartFunctionalInterface closure) {
         String completeSql = generateSql(closure);
-        String sqlPart     = FormatUtil.column(column) + symbol + completeSql;
+        String sqlPart = FormatUtil.column(column) + symbol + completeSql;
         return whereRaw(sqlPart);
     }
 
@@ -84,7 +84,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereIn(String column, GenerateSqlPart closure) {
+    public Builder<T, K> whereIn(String column, GenerateSqlPartFunctionalInterface closure) {
         String sqlPart = generateSql(closure);
         return whereInRaw(column, sqlPart);
     }
@@ -102,7 +102,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereNotIn(String column, GenerateSqlPart closure) {
+    public Builder<T, K> whereNotIn(String column, GenerateSqlPartFunctionalInterface closure) {
         String sqlPart = generateSql(closure);
         return whereNotInRaw(column, sqlPart);
     }
@@ -122,7 +122,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     @Override
     public Builder<T, K> whereNotBetween(String column, String min, String max) {
         String sqlPart =
-            FormatUtil.column(column) + "not between" + formatValue(min) + "and" + formatValue(max);
+                FormatUtil.column(column) + "not between" + formatValue(min) + "and" + formatValue(max);
         return whereRaw(sqlPart);
     }
 
@@ -145,7 +145,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereExists(GenerateSqlPart closure) {
+    public Builder<T, K> whereExists(GenerateSqlPartFunctionalInterface closure) {
         String sql = generateSql(closure);
         return whereExistsRaw(sql);
     }
@@ -157,7 +157,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereNotExists(GenerateSqlPart closure) {
+    public Builder<T, K> whereNotExists(GenerateSqlPartFunctionalInterface closure) {
         String sql = generateSql(closure);
         return whereNotExistsRaw(sql);
     }
@@ -174,14 +174,14 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> andWhere(GenerateSqlPart closure) {
+    public Builder<T, K> andWhere(GenerateSqlPartFunctionalInterface closure) {
         String sqlPart = generateSqlPart(closure);
         grammar.pushWhere(sqlPart, "and");
         return this;
     }
 
     @Override
-    public Builder<T, K> orWhere(GenerateSqlPart closure) {
+    public Builder<T, K> orWhere(GenerateSqlPartFunctionalInterface closure) {
         String sqlPart = generateSqlPart(closure);
         grammar.pushWhere(sqlPart, "or");
         return this;
@@ -223,7 +223,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingIn(String column, GenerateSqlPart closure) {
+    public Builder<T, K> havingIn(String column, GenerateSqlPartFunctionalInterface closure) {
         String sqlPart = generateSql(closure);
         return havingInRaw(column, sqlPart);
     }
@@ -247,7 +247,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingNotIn(String column, GenerateSqlPart closure) {
+    public Builder<T, K> havingNotIn(String column, GenerateSqlPartFunctionalInterface closure) {
         String sqlPart = generateSql(closure);
         return havingNotInRaw(column, sqlPart);
     }
@@ -261,7 +261,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     @Override
     public Builder<T, K> havingNotBetween(String column, String min, String max) {
         String sqlPart =
-            FormatUtil.column(column) + "not between" + formatValue(min) + "and" + formatValue(max);
+                FormatUtil.column(column) + "not between" + formatValue(min) + "and" + formatValue(max);
         return havingRaw(sqlPart);
     }
 
@@ -284,7 +284,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingExists(GenerateSqlPart Closure) {
+    public Builder<T, K> havingExists(GenerateSqlPartFunctionalInterface Closure) {
         String sql = generateSql(Closure);
         return havingExistsRaw(sql);
     }
@@ -296,7 +296,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingNotExists(GenerateSqlPart Closure) {
+    public Builder<T, K> havingNotExists(GenerateSqlPartFunctionalInterface Closure) {
         String sql = generateSql(Closure);
         return havingNotExistsRaw(sql);
     }
@@ -313,14 +313,14 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> andHaving(GenerateSqlPart closure) {
+    public Builder<T, K> andHaving(GenerateSqlPartFunctionalInterface closure) {
         String sqlPart = generateSqlPart(closure);
         grammar.pushHaving(sqlPart, "and");
         return this;
     }
 
     @Override
-    public Builder<T, K> orHaving(GenerateSqlPart closure) {
+    public Builder<T, K> orHaving(GenerateSqlPartFunctionalInterface closure) {
         String sqlPart = generateSqlPart(closure);
         grammar.pushHaving(sqlPart, "or");
         return this;
@@ -358,16 +358,16 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     @Override
     public Builder<T, K> selectFunction(String function, String parameter, @Nullable String alias) {
         String sqlPart = function + FormatUtil.bracket(parameter) + (alias == null ? "" :
-            " as " + FormatUtil.quotes(alias));
+                " as " + FormatUtil.quotes(alias));
         grammar.pushSelect(sqlPart);
         return this;
     }
 
     @Override
-    public Builder<T, K> selectFunction(String function, GenerateSqlPart closure, @Nullable String alias) {
+    public Builder<T, K> selectFunction(String function, GenerateSqlPartFunctionalInterface closure, @Nullable String alias) {
         String completeSql = generateSql(closure);
         String sqlPart = function + FormatUtil.bracket(completeSql) + (alias == null ? "" :
-            " as " + FormatUtil.quotes(alias));
+                " as " + FormatUtil.quotes(alias));
         grammar.pushSelect(sqlPart);
         return this;
     }
@@ -428,7 +428,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
 
     @Override
     public String toSql(SqlType sqlType) {
-        String       sql           = grammar.generateSql(sqlType);
+        String sql = grammar.generateSql(sqlType);
         List<String> parameterList = grammar.getParameterList(sqlType);
         return String.format(sql.replace(" ? ", "\"%s\""), parameterList.toArray());
     }
@@ -492,7 +492,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
 
     @Override
     public K insertGetId() throws SQLRuntimeException {
-        String       sql           = grammar.generateSql(SqlType.INSERT);
+        String sql = grammar.generateSql(SqlType.INSERT);
         List<String> parameterList = grammar.getParameterList(SqlType.INSERT);
         return executeGetId(sql, parameterList);
     }
@@ -536,7 +536,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     @Override
     public List<K> insertGetIds() throws SQLRuntimeException {
         // sql 组装
-        String       sql           = grammar.generateSql(SqlType.INSERT);
+        String sql = grammar.generateSql(SqlType.INSERT);
         List<String> parameterList = grammar.getParameterList(SqlType.INSERT);
         return executeGetIds(sql, parameterList);
     }
@@ -554,8 +554,8 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
      */
     private void beforeBatchInsert(List<T> entityList) {
         // 获取entity所有有效字段
-        List<String>       columnNameList = EntityUtil.columnNameList(entityList.get(0), true);
-        List<List<String>> valueListList  = new ArrayList<>();
+        List<String> columnNameList = EntityUtil.columnNameList(entityList.get(0), true);
+        List<List<String>> valueListList = new ArrayList<>();
         for (T entity : entityList) {
             // 获取entity所有有效字段的值
             List<String> valueList = EntityUtil.valueList(entity, columnNameList);
@@ -669,10 +669,10 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     public Long count(String column) {
         if (grammar.hasGroup()) {
             throw new AggregatesNotSupportedGroupException("Not support group when using count(), please retry " +
-                "by selectFunction()");
+                    "by selectFunction()");
         }
         this.grammar.forAggregates();
-        String              alias    = UUID.randomUUID().toString();
+        String alias = UUID.randomUUID().toString();
         Map<String, Object> countMap = selectFunction("count", column, alias).firstOrFail().toMap();
         return (Long) countMap.get(alias);
     }
@@ -681,9 +681,9 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     public String max(String column) {
         if (grammar.hasGroup()) {
             throw new AggregatesNotSupportedGroupException("Not support group when using max(), please retry " +
-                "by selectFunction()");
+                    "by selectFunction()");
         }
-        String              alias    = UUID.randomUUID().toString();
+        String alias = UUID.randomUUID().toString();
         Map<String, Object> countMap = selectFunction("max", column, alias).firstOrFail().toMap();
         return countMap.get(alias).toString();
     }
@@ -692,9 +692,9 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     public String min(String column) {
         if (grammar.hasGroup()) {
             throw new AggregatesNotSupportedGroupException("Not support group when using min(), please retry " +
-                "by selectFunction()");
+                    "by selectFunction()");
         }
-        String              alias    = UUID.randomUUID().toString();
+        String alias = UUID.randomUUID().toString();
         Map<String, Object> countMap = selectFunction("min", column, alias).firstOrFail().toMap();
         return countMap.get(alias).toString();
     }
@@ -703,9 +703,9 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     public String avg(String column) {
         if (grammar.hasGroup()) {
             throw new AggregatesNotSupportedGroupException("Not support group when using avg(), please retry " +
-                "by selectFunction()");
+                    "by selectFunction()");
         }
-        String              alias    = UUID.randomUUID().toString();
+        String alias = UUID.randomUUID().toString();
         Map<String, Object> countMap = selectFunction("avg", column, alias).firstOrFail().toMap();
         return countMap.get(alias).toString();
     }
@@ -714,9 +714,9 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     public String sum(String column) {
         if (grammar.hasGroup()) {
             throw new AggregatesNotSupportedGroupException("Not support group when using sum(), please retry " +
-                "by selectFunction()");
+                    "by selectFunction()");
         }
-        String              alias    = UUID.randomUUID().toString();
+        String alias = UUID.randomUUID().toString();
         Map<String, Object> countMap = selectFunction("sum", column, alias).firstOrFail().toMap();
         return countMap.get(alias).toString();
     }
@@ -734,14 +734,14 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> union(GenerateSqlPart closure) {
+    public Builder<T, K> union(GenerateSqlPartFunctionalInterface closure) {
         String sqlPart = generateSql(closure);
         grammar.pushUnion(sqlPart, "union");
         return this;
     }
 
     @Override
-    public Builder<T, K> unionAll(GenerateSqlPart closure) {
+    public Builder<T, K> unionAll(GenerateSqlPartFunctionalInterface closure) {
         String sqlPart = generateSql(closure);
         grammar.pushUnion(sqlPart, "union all");
         return this;
@@ -755,9 +755,9 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     @Override
     public Builder<T, K> join(JoinType joinType, String table, String column1, String symbol, String column2) {
         String sqlPart =
-            FormatUtil.spaces(joinType.getOperation()) + "join " + FormatUtil.backQuote(table) + FormatUtil.spaces(
-                "on") +
-                FormatUtil.column(column1) + symbol + FormatUtil.column(column2);
+                FormatUtil.spaces(joinType.getOperation()) + "join " + FormatUtil.backQuote(table) + FormatUtil.spaces(
+                        "on") +
+                        FormatUtil.column(column1) + symbol + FormatUtil.column(column2);
         grammar.pushJoin(sqlPart);
         return this;
     }
@@ -766,9 +766,9 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     public Builder<T, K> inRandomOrder(String field) {
         Builder<T, K> sameSubBuilder1 = model.newQuery();
         Builder<T, K> sameSubBuilder2 = model.newQuery();
-        String        maxSql          = sameSubBuilder1.selectFunction("max", field, null).toSql(SqlType.SELECT);
-        String        minSql          = sameSubBuilder2.selectFunction("min", field, null).toSql(SqlType.SELECT);
-        String        floorSql        = "rand()*((" + maxSql + ")-(" + minSql + "))+(" + minSql + ")";
+        String maxSql = sameSubBuilder1.selectFunction("max", field, null).toSql(SqlType.SELECT);
+        String minSql = sameSubBuilder2.selectFunction("min", field, null).toSql(SqlType.SELECT);
+        String floorSql = "rand()*((" + maxSql + ")-(" + minSql + "))+(" + minSql + ")";
         // select floor(rand()*((select max(`$key`) from $from)-(select min(`$key`) from $from))+(select min(`$key`) from $from))
         // select * from `student` where `id`in(select floor(rand()*((select max(`id`) from `student`)-(select min
         // (`id`) from `student`))+(select min(`id`) from `student`))) limit 5

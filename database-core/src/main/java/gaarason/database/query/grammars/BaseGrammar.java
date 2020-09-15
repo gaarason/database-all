@@ -1,8 +1,8 @@
 package gaarason.database.query.grammars;
 
-import gaarason.database.contract.Grammar;
-import gaarason.database.contract.function.GenerateSqlPart;
-import gaarason.database.contract.function.RelationshipRecordWith;
+import gaarason.database.contract.query.Grammar;
+import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.util.ObjectUtil;
 
@@ -24,7 +24,7 @@ abstract public class BaseGrammar implements Grammar, Serializable {
      * @param recordClosure  所关联的Model的再一级关联
      */
     @Override
-    public void pushWith(String column, GenerateSqlPart builderClosure, RelationshipRecordWith recordClosure) {
+    public void pushWith(String column, GenerateSqlPartFunctionalInterface builderClosure, RelationshipRecordWithFunctionalInterface recordClosure) {
         withMap.put(column, new Object[]{builderClosure, recordClosure});
     }
 

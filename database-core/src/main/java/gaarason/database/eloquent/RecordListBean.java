@@ -1,41 +1,61 @@
 package gaarason.database.eloquent;
 
-import gaarason.database.contract.function.FilterRecordAttribute;
-import gaarason.database.contract.function.GenerateSqlPart;
-import gaarason.database.contract.function.RelationshipRecordWith;
-import gaarason.database.contract.record.FriendlyList;
-import gaarason.database.contract.record.RelationshipList;
-import gaarason.database.support.RelationGetSupport;
+import gaarason.database.contract.eloquent.Record;
+import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.contract.function.FilterRecordAttributeFunctionalInterface;
+import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.support.Column;
+import gaarason.database.support.RelationGetSupport;
 import gaarason.database.util.EntityUtil;
 import gaarason.database.util.StringUtil;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.*;
 
-public class RecordList<T, K> extends ArrayList<Record<T, K>> implements FriendlyList<T, K>,
-    RelationshipList<T, K> {
+public class RecordListBean<T, K> extends ArrayList<Record<T, K>> implements RecordList<T, K> {
 
     /**
      * 元数据
      */
-    @Getter
-    @Setter
-    private List<Map<String, Column>> originalMetadataMapList = new ArrayList<>();
+    protected List<Map<String, Column>> originalMetadataMapList = new ArrayList<>();
 
     /**
      * sql
      */
-    @Getter
-    @Setter
-    private String originalSql = "";
+    protected String originalSql = "";
+
+    protected Map<String, Set<String>> cacheMap = new HashMap<>();
 
 
-    @Getter
-    @Setter
-    private Map<String, Set<String>> cacheMap = new HashMap<>();
+    @Override
+    public List<Map<String, Column>> getOriginalMetadataMapList() {
+        return originalMetadataMapList;
+    }
 
+    @Override
+    public void setOriginalMetadataMapList(List<Map<String, Column>> originalMetadataMapList) {
+        this.originalMetadataMapList = originalMetadataMapList;
+    }
+
+    @Override
+    public String getOriginalSql() {
+        return originalSql;
+    }
+
+    @Override
+    public void setOriginalSql(String originalSql) {
+        this.originalSql = originalSql;
+    }
+
+    @Override
+    public Map<String, Set<String>> getCacheMap() {
+        return cacheMap;
+    }
+
+    @Override
+    public void setCacheMap(Map<String, Set<String>> cacheMap) {
+        this.cacheMap = cacheMap;
+    }
 
     /**
      * 转化为对象列表
@@ -87,10 +107,10 @@ public class RecordList<T, K> extends ArrayList<Record<T, K>> implements Friendl
      * @return 单个字段列表
      */
     @Override
-    public <V> List<V> toList(FilterRecordAttribute<T, K, V> filterRecordAttribute) {
+    public <V> List<V> toList(FilterRecordAttributeFunctionalInterface<T, K, V> filterRecordAttributeFunctionalInterface) {
         List<V> list = new ArrayList<>();
         for (Record<T, K> record : this) {
-            V result = filterRecordAttribute.filter(record);
+            V result = filterRecordAttributeFunctionalInterface.execute(record);
             if (null == result)
                 continue;
             list.add(result);
@@ -100,25 +120,25 @@ public class RecordList<T, K> extends ArrayList<Record<T, K>> implements Friendl
 
 
     @Override
-    public RecordList<T, K> with(String column) {
+    public RecordListBean<T, K> with(String column) {
         return with(column, builder -> builder);
     }
 
     @Override
-    public RecordList<T, K> with(String column, GenerateSqlPart builderClosure) {
+    public RecordListBean<T, K> with(String column, GenerateSqlPartFunctionalInterface builderClosure) {
         return with(column, builderClosure, record -> record);
     }
 
     @Override
-    public RecordList<T, K> with(String column, GenerateSqlPart builderClosure,
-                                 RelationshipRecordWith recordClosure) {
+    public RecordListBean<T, K> with(String column, GenerateSqlPartFunctionalInterface builderClosure,
+                                     RelationshipRecordWithFunctionalInterface recordClosure) {
         String[] columnArr = column.split("\\.");
         // 快捷类型
         if (columnArr.length > 1) {
-            String lastLevelColumn  = columnArr[columnArr.length - 1];
+            String lastLevelColumn = columnArr[columnArr.length - 1];
             String otherLevelColumn = StringUtil.rtrim(column, "." + lastLevelColumn);
             return with(otherLevelColumn, builder -> builder,
-                record -> record.with(lastLevelColumn, builderClosure, recordClosure));
+                    record -> record.with(lastLevelColumn, builderClosure, recordClosure));
         }
         for (Record<T, K> tkRecord : this) {
             // 赋值关联关系过滤

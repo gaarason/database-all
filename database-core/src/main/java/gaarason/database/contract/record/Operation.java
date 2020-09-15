@@ -1,6 +1,6 @@
 package gaarason.database.contract.record;
 
-import gaarason.database.eloquent.Record;
+import gaarason.database.contract.eloquent.Record;
 
 public interface Operation<T, K> {
     /**
@@ -38,5 +38,5 @@ public interface Operation<T, K> {
      * retrieved
      * @return 执行成功
      */
-    Record<T, K> refresh() ;
+    Record<T, K> refresh();
 }

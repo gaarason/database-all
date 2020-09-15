@@ -1,21 +1,17 @@
 package gaarason.database.eloquent;
 
-import gaarason.database.contract.GaarasonDataSource;
+import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
+import gaarason.database.contract.eloquent.Record;
+import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.annotations.Primary;
 import gaarason.database.exception.EntityNotFoundException;
-import gaarason.database.exception.InvalidPrimaryKeyTypeException;
-import gaarason.database.exception.MethodNotSupportedException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.query.MySqlBuilder;
-import gaarason.database.util.EntityUtil;
+import gaarason.database.support.ModelShadow;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-
-abstract public class GaarasonModel<T, K> implements Model<T, K> {
+abstract public class ModelBean<T, K> implements Model<T, K> {
 
     /**
      * 主键列名(并非一定是实体的属性名)
@@ -47,85 +43,49 @@ abstract public class GaarasonModel<T, K> implements Model<T, K> {
      */
     protected Class<T> entityClass;
 
-    GaarasonModel() {
-        // 泛型初始化
-        genericInitialization();
-        // entity分析
-        analysisEntityClass();
+
+    ModelBean() {
+
+//        ModelShadow.init(this);
+
+//        // 泛型初始化
+//        genericInitialization();
+//        // entity分析
+//        analysisEntityClass();
     }
 
-    /**
-     * 泛型初始化
-     */
-    @SuppressWarnings("unchecked")
-    protected void genericInitialization() {
-        entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-        primaryKeyClass =
-            (Class<K>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
-    }
-
-    /**
-     * 实体类型分析
-     */
-    protected void analysisEntityClass() {
-        tableName = EntityUtil.tableName(entityClass);
-        Field[] fields = entityClass.getDeclaredFields();
-        for (Field field : fields) {
-            if (field.isAnnotationPresent(Primary.class)) {
-                Primary primary = field.getAnnotation(Primary.class);
-                primaryKeyIncrement = primary.increment();
-                primaryKeyColumnName = EntityUtil.columnName(field);
-                primaryKeyName = field.getName();
-                // 主键类型检测
-                if (!primaryKeyClass.equals(field.getType())) {
-                    throw new InvalidPrimaryKeyTypeException(
-                        "The primary key type [" + field.getType() + "] of the entity does not match with the " +
-                            "generic [" + primaryKeyClass + "]");
-                }
-                break;
-            }
-        }
-    }
-
-
-    protected ThreadLocal<Record<T, K>> newRecordForShortcut = new ThreadLocal<>();
-
-    @Override
-    public T getEntity() {
-        Record<T, K> newRecord = newRecord();
-        newRecordForShortcut.set(newRecord);
-        return newRecord.getEntity();
-    }
-
-    @Override
-    public boolean save() {
-        try {
-            return newRecordForShortcut.get().save();
-        } finally {
-            newRecordForShortcut.remove();
-        }
-    }
-
-    @Override
-    public boolean delete() {
-        throw new MethodNotSupportedException();
-    }
-
-    @Override
-    public boolean restore() {
-        throw new MethodNotSupportedException();
-    }
-
-    @Override
-    public boolean restore(boolean refresh) {
-        throw new MethodNotSupportedException();
-    }
-
-    @Override
-    public Record<T, K> refresh() {
-        throw new MethodNotSupportedException();
-    }
-
+//    /**
+//     * 泛型初始化
+//     */
+//    @SuppressWarnings("unchecked")
+//    protected void genericInitialization() {
+//        entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+//        primaryKeyClass =
+//                (Class<K>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+//    }
+//
+//    /**
+//     * 实体类型分析
+//     */
+//    protected void analysisEntityClass() {
+//        tableName = EntityUtil.tableName(entityClass);
+//        Field[] fields = entityClass.getDeclaredFields();
+//        for (Field field : fields) {
+//            if (field.isAnnotationPresent(Primary.class)) {
+//                Primary primary = field.getAnnotation(Primary.class);
+//                primaryKeyIncrement = primary.increment();
+//                primaryKeyColumnName = EntityUtil.columnName(field);
+//                primaryKeyName = field.getName();
+//                // 主键类型检测
+//                if (!primaryKeyClass.equals(field.getType())) {
+//                    throw new InvalidPrimaryKeyTypeException(
+//                            "The primary key type [" + field.getType() + "] of the entity does not match with the " +
+//                                    "generic [" + primaryKeyClass + "]");
+//                }
+//                break;
+//            }
+//        }
+//    }
 
     /**
      * 是否启用软删除
@@ -211,7 +171,7 @@ abstract public class GaarasonModel<T, K> implements Model<T, K> {
     protected Builder<T, K> theBuilder() {
         // todo 按连接类型,等等信息选择 builder
         GaarasonDataSource gaarasonDataSource = getGaarasonDataSource();
-        return apply(new MySqlBuilder<>(gaarasonDataSource, this, entityClass));
+        return apply(new MySqlBuilder<>(gaarasonDataSource, this, getEntityClass()));
     }
 
 
@@ -257,7 +217,7 @@ abstract public class GaarasonModel<T, K> implements Model<T, K> {
      * @return 记录对象
      */
     public Record<T, K> newRecord() {
-        return new Record<>(entityClass, this);
+        return new RecordBean<>(getEntityClass(), this);
     }
 
 
@@ -266,41 +226,41 @@ abstract public class GaarasonModel<T, K> implements Model<T, K> {
     }
 
     public Record<T, K> findOrFail(K id) throws EntityNotFoundException, SQLRuntimeException {
-        return newQuery().where(primaryKeyColumnName, id.toString()).firstOrFail();
+        return newQuery().where(getPrimaryKeyColumnName(), id.toString()).firstOrFail();
     }
 
     @Nullable
     public Record<T, K> find(K id) {
-        return newQuery().where(primaryKeyColumnName, id.toString()).first();
+        return newQuery().where(getPrimaryKeyColumnName(), id.toString()).first();
     }
 
     @Override
     public String getPrimaryKeyColumnName() {
-        return primaryKeyColumnName;
+        return ModelShadow.get(this).getPrimaryKeyColumnName();
     }
 
     @Override
     public String getPrimaryKeyName() {
-        return primaryKeyName;
+        return ModelShadow.get(this).getPrimaryKeyName();
     }
 
     @Override
     public boolean isPrimaryKeyIncrement() {
-        return primaryKeyIncrement;
+        return ModelShadow.get(this).isPrimaryKeyIncrement();
     }
 
     @Override
     public Class<K> getPrimaryKeyClass() {
-        return primaryKeyClass;
+        return ModelShadow.get(this).getPrimaryKeyClass();
     }
 
     @Override
     public String getTableName() {
-        return tableName;
+        return ModelShadow.get(this).getTableName();
     }
 
     @Override
     public Class<T> getEntityClass() {
-        return entityClass;
+        return ModelShadow.get(this).getEntityClass();
     }
 }

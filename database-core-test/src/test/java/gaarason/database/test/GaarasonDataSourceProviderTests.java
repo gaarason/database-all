@@ -37,7 +37,7 @@ public class GaarasonDataSourceProviderTests extends BaseTests {
 
     @Test
     public void 事物状态在各个proxyDataSource中相互独立() throws InterruptedException {
-        GaarasonDataSourceProvider gaarasonDataSourceProvider  = studentModel.getGaarasonDataSource();
+        GaarasonDataSourceProvider gaarasonDataSourceProvider = studentModel.getGaarasonDataSource();
         GaarasonDataSourceProvider gaarasonDataSourceProvider1 = student2Model.getGaarasonDataSource();
 
         gaarasonDataSourceProvider.setInTransaction();
@@ -68,7 +68,7 @@ public class GaarasonDataSourceProviderTests extends BaseTests {
 
     @Test
     public void 多个proxyDataSource的事物状态在各个线程中相互独立() throws InterruptedException {
-        GaarasonDataSourceProvider gaarasonDataSourceProvider  = studentModel.getGaarasonDataSource();
+        GaarasonDataSourceProvider gaarasonDataSourceProvider = studentModel.getGaarasonDataSource();
         GaarasonDataSourceProvider gaarasonDataSourceProvider1 = student2Model.getGaarasonDataSource();
         GaarasonDataSourceProvider gaarasonDataSourceProvider2 = student3Model.getGaarasonDataSource();
 

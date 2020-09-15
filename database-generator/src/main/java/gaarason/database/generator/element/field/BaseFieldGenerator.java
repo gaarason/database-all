@@ -13,15 +13,6 @@ abstract class BaseFieldGenerator {
     final protected static Pattern tinyintPattern = Pattern.compile("tinyint\\((\\d)\\)");
 
     /**
-     * 生成Field
-     * @param disInsertable 不可新增的字段
-     * @param disUpdatable 不可更新的字段
-     * @return Field
-     */
-    abstract public Field toField(String[] disInsertable , String[] disUpdatable);
-
-
-    /**
      * 将不合法的java标识符转换
      * @param name 未验证的java标识符
      * @return 合法的java标识符
@@ -38,13 +29,13 @@ abstract class BaseFieldGenerator {
     @Nullable
     protected static String newlineCharactersToReplace(@Nullable String str) {
         return null != str ? str
-            .replace("\\\r\\\n", "")
-            .replace("\\r\\n", "")
-            .replace("\r\n", "")
-            .replace("\\\n", "")
-            .replace("\\n", "")
-            .replace("\n", "")
-            .replace("\"", "\\\"") : null;
+                .replace("\\\r\\\n", "")
+                .replace("\\r\\n", "")
+                .replace("\r\n", "")
+                .replace("\\\n", "")
+                .replace("\\n", "")
+                .replace("\n", "")
+                .replace("\"", "\\\"") : null;
     }
 
     /**
@@ -53,8 +44,16 @@ abstract class BaseFieldGenerator {
      * @return 类名
      */
     protected static String cutClassName(Class classType) {
-        String   className = classType.getName();
-        String[] split     = className.split("\\.");
+        String className = classType.getName();
+        String[] split = className.split("\\.");
         return split[split.length - 1];
     }
+
+    /**
+     * 生成Field
+     * @param disInsertable 不可新增的字段
+     * @param disUpdatable  不可更新的字段
+     * @return Field
+     */
+    abstract public Field toField(String[] disInsertable, String[] disUpdatable);
 }

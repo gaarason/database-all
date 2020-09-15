@@ -1,0 +1,13 @@
+package gaarason.database.contract.function;
+
+import gaarason.database.contract.eloquent.RecordList;
+
+@FunctionalInterface
+public interface ChunkFunctionalInterface<T, K> {
+
+    /**
+     * 分块处理
+     * @param records 结果集
+     */
+    boolean execute(RecordList<T, K> records);
+}

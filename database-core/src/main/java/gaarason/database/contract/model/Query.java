@@ -1,9 +1,9 @@
 package gaarason.database.contract.model;
 
 import gaarason.database.contract.eloquent.Builder;
+import gaarason.database.contract.eloquent.Record;
+import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.Record;
-import gaarason.database.eloquent.RecordList;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 

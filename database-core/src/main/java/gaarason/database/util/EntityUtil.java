@@ -1,14 +1,13 @@
 package gaarason.database.util;
 
+import gaarason.database.contract.eloquent.Record;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.Record;
 import gaarason.database.eloquent.annotations.Column;
 import gaarason.database.eloquent.annotations.Primary;
 import gaarason.database.eloquent.annotations.Table;
 import gaarason.database.exception.ColumnNotFoundException;
 import gaarason.database.exception.IllegalAccessRuntimeException;
 import gaarason.database.exception.TypeNotSupportedException;
-import gaarason.database.provider.ModelMemoryProvider;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -23,7 +22,6 @@ public class EntityUtil {
 
     /**
      * 通过entity解析对应的字段和值组成的map, 忽略不符合规则的字段
-     *
      * @param entity     数据表实体对象
      * @param insertType 新增?
      * @param <T>        数据表实体类
@@ -44,7 +42,6 @@ public class EntityUtil {
     /**
      * 通过entity解析对应的字段组成的list
      * 忽略不符合规则的字段
-     *
      * @param entity     数据表实体对象
      * @param <T>        数据表实体类
      * @param insertType 新增?
@@ -63,7 +60,6 @@ public class EntityUtil {
 
     /**
      * 通过entity解析对应的字段的值组成的list, 忽略不符合规则的字段
-     *
      * @param entity     数据表实体对象
      * @param <T>        数据表实体类
      * @param insertType 新增?
@@ -82,7 +78,6 @@ public class EntityUtil {
 
     /**
      * 通过entity解析对应的字段的值组成的list, 忽略不符合规则的字段
-     *
      * @param entity         数据表实体对象
      * @param <T>            数据表实体类
      * @param columnNameList 有效的属性名
@@ -101,7 +96,6 @@ public class EntityUtil {
 
     /**
      * 通过entity解析对应的表名
-     *
      * @param entityClass 数据表实体类
      * @return 数据表名
      */
@@ -116,7 +110,6 @@ public class EntityUtil {
 
     /**
      * 是否有效字段
-     *
      * @param field      字段
      * @param value      字段值
      * @param insertType 是否是新增,会通过字段上的注解column(insertable, updatable)进行忽略
@@ -137,7 +130,7 @@ public class EntityUtil {
             return false;
         }
         // 非基本类型
-        if(!field.getType().isPrimitive() && !Arrays.asList(allowType).contains(field.getType())){
+        if (!field.getType().isPrimitive() && !Arrays.asList(allowType).contains(field.getType())) {
             return false;
         }
         return value != null;
@@ -145,7 +138,6 @@ public class EntityUtil {
 
     /**
      * 是否主键字段
-     *
      * @param field     字段
      * @param increment 自增
      * @return 有效
@@ -160,7 +152,6 @@ public class EntityUtil {
 
     /**
      * 获取属性的值
-     *
      * @param field 属性
      * @param obj   对象
      * @return 值
@@ -177,7 +168,6 @@ public class EntityUtil {
 
     /**
      * 获取类属性对应的数据库字段名
-     *
      * @param field 属性
      * @return 数据库字段名
      */
@@ -193,7 +183,6 @@ public class EntityUtil {
 
     /**
      * 获取数据库字段名对应的类属性名
-     *
      * @param columnName 列名
      * @return 数据库字段名
      */
@@ -222,7 +211,6 @@ public class EntityUtil {
 
     /**
      * 获取数据库字段名对应的类属性的值
-     *
      * @param columnName 列名
      * @return 类属性的值
      */
@@ -258,7 +246,6 @@ public class EntityUtil {
 
     /**
      * 获取数据库字段名对应的类属性的名
-     *
      * @param columnName 列名
      * @return 类属性的名
      */
@@ -291,7 +278,6 @@ public class EntityUtil {
 
     /**
      * 获取数据库字段名对应的类属性的名
-     *
      * @param columnName 列名
      * @return 类属性的名
      */
@@ -323,7 +309,6 @@ public class EntityUtil {
 
     /**
      * 设置entity对象的自增属性值
-     *
      * @param <T>    数据表实体类
      * @param <K>    数据表主键类型
      * @param entity 数据表实体对象
@@ -347,7 +332,6 @@ public class EntityUtil {
 
     /**
      * 用数据库字段填充类属性
-     *
      * @param field 属性
      * @param value 值
      * @return 数据库字段值, 且对应实体entity的数据类型
@@ -374,7 +358,6 @@ public class EntityUtil {
     /**
      * 将数据库查询结果赋值给entity的field
      * 需要 field.setAccessible(true)
-     *
      * @param field           属性
      * @param stringColumnMap 元数据map
      * @param entity          数据表实体对象
@@ -389,8 +372,8 @@ public class EntityUtil {
                 Object value = EntityUtil.columnFill(field, column.getValue());
                 field.set(entity, value);
                 // 主键值记录
-                if (field.isAnnotationPresent(Primary.class)) {
-                    record.setOriginalPrimaryKeyValue(value);
+                if (field.isAnnotationPresent(Primary.class) && value != null) {
+                    record.setOriginalPrimaryKeyValue(ObjectUtil.typeCast(value));
                 }
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 throw new TypeNotSupportedException(e.getMessage(), e);
@@ -401,7 +384,6 @@ public class EntityUtil {
 
     /**
      * 将数据库查询结果赋值给entityList
-     *
      * @param stringColumnMapList 源数据
      * @param entityClass         目标实体类
      * @param <T>                 目标实体类
@@ -421,7 +403,6 @@ public class EntityUtil {
 
     /**
      * 将数据库查询结果赋值给entityList
-     *
      * @param stringColumnMap 源数据
      * @param entityClass     目标实体类
      * @param <T>             目标实体类
@@ -449,7 +430,6 @@ public class EntityUtil {
 
     /**
      * 格式化值到字符串
-     *
      * @param value 原值
      * @return 字符串
      */

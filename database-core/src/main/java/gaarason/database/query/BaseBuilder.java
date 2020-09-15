@@ -1,17 +1,17 @@
 package gaarason.database.query;
 
-import gaarason.database.contract.GaarasonDataSource;
-import gaarason.database.contract.Grammar;
+import gaarason.database.contract.connection.GaarasonDataSource;
+import gaarason.database.contract.query.Grammar;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
-import gaarason.database.contract.function.Chunk;
-import gaarason.database.contract.function.ExecSqlWithinConnection;
-import gaarason.database.contract.function.GenerateSqlPart;
-import gaarason.database.contract.function.RelationshipRecordWith;
+import gaarason.database.contract.eloquent.Record;
+import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.contract.function.ChunkFunctionalInterface;
+import gaarason.database.contract.function.ExecSqlWithinConnectionFunctionalInterface;
+import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.Paginate;
-import gaarason.database.eloquent.Record;
-import gaarason.database.eloquent.RecordList;
 import gaarason.database.eloquent.enums.SqlType;
 import gaarason.database.exception.*;
 import gaarason.database.support.RecordFactory;
@@ -27,35 +27,44 @@ import java.util.concurrent.ConcurrentHashMap;
 abstract public class BaseBuilder<T, K> implements Builder<T, K> {
 
     /**
-     * 数据实体类
+     * connection缓存
      */
-    Class<T> entityClass;
-
+    private static Map<String, Connection> localThreadConnectionMap = new ConcurrentHashMap<>();
     /**
      * 数据库连接
      */
     private final GaarasonDataSource gaarasonDataSource;
-
-    /**
-     * connection缓存
-     */
-    private static Map<String, Connection> localThreadConnectionMap = new ConcurrentHashMap<>();
-
-    /**
-     * sql生成器
-     */
-    Grammar grammar;
-
     /**
      * 数据模型
      */
     protected Model<T, K> model;
+    /**
+     * 数据实体类
+     */
+    Class<T> entityClass;
+    /**
+     * sql生成器
+     */
+    Grammar grammar;
 
     public BaseBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
         this.gaarasonDataSource = gaarasonDataSource;
         this.model = model;
         this.entityClass = entityClass;
         grammar = grammarFactory();
+    }
+
+    /**
+     * 关闭数据库连接
+     * @param connection 数据库连接
+     * @throws SQLRuntimeException 关闭连接出错
+     */
+    private static void connectionClose(Connection connection) throws SQLRuntimeException {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            throw new SQLRuntimeException(e.getMessage(), e);
+        }
     }
 
     @Override
@@ -81,7 +90,7 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
      * @param closure 闭包
      * @return sqlPart eg:(`id`="3" and `age` between "12" and "19")
      */
-    String generateSqlPart(GenerateSqlPart closure) {
+    String generateSqlPart(GenerateSqlPartFunctionalInterface closure) {
         return generateSql(closure, false);
     }
 
@@ -90,7 +99,7 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
      * @param closure 闭包
      * @return sqlPart eg:(select * from `student` where `id`="3" and `age` between "12" and "19")
      */
-    String generateSql(GenerateSqlPart closure) {
+    String generateSql(GenerateSqlPartFunctionalInterface closure) {
         return generateSql(closure, true);
     }
 
@@ -135,7 +144,7 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
      * @return 关联的Model的查询构造器
      */
     @Override
-    public Builder<T, K> with(String column, GenerateSqlPart builderClosure) {
+    public Builder<T, K> with(String column, GenerateSqlPartFunctionalInterface builderClosure) {
         return with(column, builderClosure, record -> record);
     }
 
@@ -147,8 +156,8 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
      * @return 关联的Model的查询构造器
      */
     @Override
-    public Builder<T, K> with(String column, GenerateSqlPart builderClosure,
-                              RelationshipRecordWith recordClosure) {
+    public Builder<T, K> with(String column, GenerateSqlPartFunctionalInterface builderClosure,
+                              RelationshipRecordWithFunctionalInterface recordClosure) {
         grammar.pushWith(column, builderClosure, recordClosure);
         return this;
     }
@@ -163,9 +172,9 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
      */
     @Override
     public Paginate<T> paginate(int currentPage, int perPage)
-        throws SQLRuntimeException, CloneNotSupportedRuntimeException {
-        Long    count = clone().count("*");
-        List<T> list  = limit((currentPage - 1) * perPage, perPage).get().toObjectList();
+            throws SQLRuntimeException, CloneNotSupportedRuntimeException {
+        Long count = clone().count("*");
+        List<T> list = limit((currentPage - 1) * perPage, perPage).get().toObjectList();
         return new Paginate<>(list, currentPage, perPage, count.intValue());
     }
 
@@ -303,7 +312,7 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
 
     @Override
     public Record<T, K> queryOrFail(String sql, Collection<String> parameters)
-        throws SQLRuntimeException, EntityNotFoundException {
+            throws SQLRuntimeException, EntityNotFoundException {
         return doSomethingInConnection((preparedStatement) -> {
             ResultSet resultSet = preparedStatement.executeQuery();
             return RecordFactory.newRecord(entityClass, model, resultSet, sql);
@@ -367,7 +376,7 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
      * @return 响应
      * @throws SQLRuntimeException 数据库异常
      */
-    protected <U> U doSomethingInConnection(ExecSqlWithinConnection<U> closure, String sql,
+    protected <U> U doSomethingInConnection(ExecSqlWithinConnectionFunctionalInterface<U> closure, String sql,
                                             Collection<String> parameters, boolean isWrite) throws SQLRuntimeException {
         // 获取连接
         Connection connection = theConnection(isWrite);
@@ -375,7 +384,7 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
             // 参数准备
             PreparedStatement preparedStatement = executeSql(connection, sql, parameters);
             // 执行
-            return closure.exec(preparedStatement);
+            return closure.execute(preparedStatement);
         } catch (EntityNotFoundException e) {
             throw new EntityNotFoundException(String.format(sql.replace(" ? ", "\"%s\""), parameters.toArray()));
         } catch (Throwable e) {
@@ -409,7 +418,7 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
             return ObjectUtil.typeCast(generatedKeys.getString(1));
         }
         throw new PrimaryKeyTypeNotSupportException("Primary key type [" + primaryKeyClass + "] not support get " +
-            "generated keys yet.");
+                "generated keys yet.");
     }
 
     /**
@@ -420,13 +429,13 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
      */
     Record<T, K> querySql() throws SQLRuntimeException, EntityNotFoundException {
         // sql组装执行
-        String                sql           = grammar.generateSql(SqlType.SELECT);
-        List<String>          parameterList = grammar.getParameterList(SqlType.SELECT);
-        Map<String, Object[]> columnMap     = grammar.pullWith();
-        Record<T, K>          record        = queryOrFail(sql, parameterList);
+        String sql = grammar.generateSql(SqlType.SELECT);
+        List<String> parameterList = grammar.getParameterList(SqlType.SELECT);
+        Map<String, Object[]> columnMap = grammar.pullWith();
+        Record<T, K> record = queryOrFail(sql, parameterList);
         for (String column : columnMap.keySet()) {
             Object[] objects = columnMap.get(column);
-            record.with(column, (GenerateSqlPart) objects[0], (RelationshipRecordWith) objects[1]);
+            record.with(column, (GenerateSqlPartFunctionalInterface) objects[0], (RelationshipRecordWithFunctionalInterface) objects[1]);
         }
         return record;
     }
@@ -439,33 +448,33 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
      */
     RecordList<T, K> querySqlList() throws SQLRuntimeException, EntityNotFoundException {
         // sql组装执行
-        String                sql           = grammar.generateSql(SqlType.SELECT);
-        List<String>          parameterList = grammar.getParameterList(SqlType.SELECT);
-        Map<String, Object[]> columnMap     = grammar.pullWith();
-        RecordList<T, K>      records       = queryList(sql, parameterList);
+        String sql = grammar.generateSql(SqlType.SELECT);
+        List<String> parameterList = grammar.getParameterList(SqlType.SELECT);
+        Map<String, Object[]> columnMap = grammar.pullWith();
+        RecordList<T, K> records = queryList(sql, parameterList);
         for (String column : columnMap.keySet()) {
             Object[] objects = columnMap.get(column);
-            records.with(column, (GenerateSqlPart) objects[0], (RelationshipRecordWith) objects[1]);
+            records.with(column, (GenerateSqlPartFunctionalInterface) objects[0], (RelationshipRecordWithFunctionalInterface) objects[1]);
         }
         return records;
     }
 
     @Override
-    public void dealChunk(int num, Chunk<T, K> chunk) throws SQLRuntimeException {
-        int     offset = 0;
+    public void dealChunk(int num, ChunkFunctionalInterface<T, K> chunkFunctionalInterface) throws SQLRuntimeException {
+        int offset = 0;
         boolean flag;
         do {
             Builder<T, K> cloneBuilder = clone();
             cloneBuilder.limit(offset, num);
-            String                sql           = cloneBuilder.getGrammar().generateSql(SqlType.SELECT);
-            List<String>          parameterList = cloneBuilder.getGrammar().getParameterList(SqlType.SELECT);
-            Map<String, Object[]> columnMap     = grammar.pullWith();
-            RecordList<T, K>      records       = queryList(sql, parameterList);
+            String sql = cloneBuilder.getGrammar().generateSql(SqlType.SELECT);
+            List<String> parameterList = cloneBuilder.getGrammar().getParameterList(SqlType.SELECT);
+            Map<String, Object[]> columnMap = grammar.pullWith();
+            RecordList<T, K> records = queryList(sql, parameterList);
             for (String column : columnMap.keySet()) {
                 Object[] objects = columnMap.get(column);
-                records.with(column, (GenerateSqlPart) objects[0], (RelationshipRecordWith) objects[1]);
+                records.with(column, (GenerateSqlPartFunctionalInterface) objects[0], (RelationshipRecordWithFunctionalInterface) objects[1]);
             }
-            flag = chunk.deal(records) && (records.size() == num);
+            flag = chunkFunctionalInterface.execute(records) && (records.size() == num);
             offset += num;
         } while (flag);
     }
@@ -478,9 +487,9 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
     int updateSql(SqlType sqlType) throws SQLRuntimeException {
         if (sqlType != SqlType.INSERT && !grammar.hasWhere())
             throw new ConfirmOperationException("You made a risky operation without where conditions, use where(1) " +
-                "for sure");
+                    "for sure");
         // sql组装执行
-        String       sql           = grammar.generateSql(sqlType);
+        String sql = grammar.generateSql(sqlType);
         List<String> parameterList = grammar.getParameterList(sqlType);
         return execute(sql, parameterList);
     }
@@ -510,19 +519,6 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
     }
 
     /**
-     * 关闭数据库连接
-     * @param connection 数据库连接
-     * @throws SQLRuntimeException 关闭连接出错
-     */
-    private static void connectionClose(Connection connection) throws SQLRuntimeException {
-        try {
-            connection.close();
-        } catch (SQLException e) {
-            throw new SQLRuntimeException(e.getMessage(), e);
-        }
-    }
-
-    /**
      * 执行sql
      * @param connection    数据库连接
      * @param sql           查询语句
@@ -531,7 +527,7 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
      * @throws SQLException sql错误
      */
     private PreparedStatement executeSql(Connection connection, String sql, Collection<String> parameterList)
-        throws SQLException {
+            throws SQLException {
         // 日志记录
         model.log(sql, parameterList);
         // 预执行 ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY
@@ -551,14 +547,27 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
      * @param wholeSql 是否生成完整sql
      * @return sql
      */
-    private String generateSql(GenerateSqlPart closure, boolean wholeSql) {
-        Builder<?, ?> subBuilder    = closure.generate(getNewSelf());
-        List<String>  parameterList = subBuilder.getGrammar().getParameterList(SqlType.SUB_QUERY);
+    private String generateSql(GenerateSqlPartFunctionalInterface closure, boolean wholeSql) {
+        Builder<?, ?> subBuilder = closure.execute(getNewSelf());
+        List<String> parameterList = subBuilder.getGrammar().getParameterList(SqlType.SUB_QUERY);
         for (String parameter : parameterList) {
             grammar.pushWhereParameter(parameter);
         }
         SqlType sqlType = wholeSql ? SqlType.SELECT : SqlType.SUB_QUERY;
         return FormatUtil.bracket(subBuilder.getGrammar().generateSql(sqlType));
+    }
+
+    /**
+     * 从线程内取出数据库连接
+     * @return 数据库连接
+     */
+    private Connection getLocalThreadConnection() {
+        Connection connection = localThreadConnectionMap.get(localThreadConnectionListName());
+        if (connection == null) {
+            throw new InternalConcurrentException(
+                    "Get an null value in localThreadConnectionList with key[" + localThreadConnectionListName() + "].");
+        }
+        return connection;
     }
 
     /**
@@ -570,19 +579,6 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
     }
 
     /**
-     * 从线程内取出数据库连接
-     * @return 数据库连接
-     */
-    private Connection getLocalThreadConnection() {
-        Connection connection = localThreadConnectionMap.get(localThreadConnectionListName());
-        if (connection == null) {
-            throw new InternalConcurrentException(
-                "Get an null value in localThreadConnectionList with key[" + localThreadConnectionListName() + "].");
-        }
-        return connection;
-    }
-
-    /**
      * 移除线程内的数据库连接
      */
     private void removeLocalThreadConnection() {
@@ -590,10 +586,10 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
     }
 
     private String localThreadConnectionListName() {
-        String processName        = ManagementFactory.getRuntimeMXBean().getName();
-        String threadName         = Thread.currentThread().getName();
-        String className          = getClass().toString();
-        int    dataSourceHashCode = gaarasonDataSource.hashCode();
+        String processName = ManagementFactory.getRuntimeMXBean().getName();
+        String threadName = Thread.currentThread().getName();
+        String className = getClass().toString();
+        int dataSourceHashCode = gaarasonDataSource.hashCode();
         return processName + threadName + className + dataSourceHashCode;
     }
 

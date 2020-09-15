@@ -1,27 +1,27 @@
-package gaarason.database.eloquent.record.bind;
+package gaarason.database.eloquent.record;
 
+import gaarason.database.contract.eloquent.Record;
+import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.extra.Bind;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
-import gaarason.database.eloquent.Record;
-import gaarason.database.eloquent.RecordList;
 import gaarason.database.exception.RelationNotFoundException;
-import gaarason.database.provider.ModelMemoryProvider;
+import gaarason.database.support.ModelShadow;
 import gaarason.database.util.ObjectUtil;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RelationProvider<T, K> implements Bind {
+public class BindBean<T, K> implements Bind {
 
     private final Record<T, K> record;
 
     private final RelationSubQuery relationSubQuery;
 
-    public RelationProvider(Record<T, K> record, String columnName) {
+    public BindBean(Record<T, K> record, String columnName) {
         this.record = record;
         presetColumn(columnName);
-        ModelMemoryProvider.ModelInformation<?, ?> modelInformation = ModelMemoryProvider.get(record.getModel());
+        ModelShadow.ModelInformation<?, ?> modelInformation = ModelShadow.get(record.getModel());
         relationSubQuery = modelInformation.getRelationFieldMap().get(columnName).getRelationSubQuery();
     }
 

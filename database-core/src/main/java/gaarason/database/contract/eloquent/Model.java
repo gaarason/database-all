@@ -2,10 +2,9 @@ package gaarason.database.contract.eloquent;
 
 import gaarason.database.contract.model.Event;
 import gaarason.database.contract.model.Query;
-import gaarason.database.contract.model.Shortcut;
 import gaarason.database.contract.model.SoftDelete;
 
-public interface Model<T, K> extends Query<T, K>, Event<T, K>, SoftDelete<T, K>, Shortcut<T, K> {
+public interface Model<T, K> extends Query<T, K>, Event<T, K>, SoftDelete<T, K> {
 
     /**
      * 主键列名(并非一定是实体的属性名)

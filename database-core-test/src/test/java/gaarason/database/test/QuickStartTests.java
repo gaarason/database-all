@@ -2,8 +2,8 @@ package gaarason.database.test;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import gaarason.database.connection.GaarasonDataSourceProvider;
-import gaarason.database.eloquent.annotations.Column;
 import gaarason.database.eloquent.Model;
+import gaarason.database.eloquent.annotations.Column;
 import gaarason.database.eloquent.annotations.Primary;
 import gaarason.database.eloquent.annotations.Table;
 import lombok.Data;
@@ -19,6 +19,22 @@ import java.util.*;
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
 public class QuickStartTests {
+
+    @Test
+    public void testSelect() {
+        TestModel testModel = new TestModel();
+        List<Map<String, Object>> maps = testModel.newQuery().limit(3).get().toMapList();
+        System.out.println(maps);
+        Assert.assertEquals(3, maps.size());
+    }
+
+    @Test
+    public void 临时对象赋值() {
+        TestModel testModel = new TestModel();
+        List<TestModel.Inner> inners = testModel.newQuery().limit(3).get().toObjectList(TestModel.Inner.class);
+        System.out.println(inners);
+        Assert.assertEquals(3, inners.size());
+    }
 
     /**
      * step 1
@@ -36,7 +52,7 @@ public class QuickStartTests {
         private static DataSource dataSourceMaster0() {
             DruidDataSource druidDataSource = new DruidDataSource();
             druidDataSource.setUrl(
-                "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
+                    "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
             druidDataSource.setDbType("com.alibaba.druid.pool.DruidDataSource");
             druidDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
             druidDataSource.setUsername("root");
@@ -50,7 +66,7 @@ public class QuickStartTests {
             druidDataSource.setValidationQuery("SELECT 1");
             List<String> iniSql = new ArrayList<>();
             iniSql.add(
-                "SET SESSION SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'");
+                    "SET SESSION SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'");
             druidDataSource.setConnectionInitSqls(iniSql);
             druidDataSource.setTestOnBorrow(false);
             druidDataSource.setTestOnReturn(false);
@@ -121,22 +137,6 @@ public class QuickStartTests {
             @Column(name = "updated_at", insertable = false, updatable = false)
             private Date updatedAt;
         }
-    }
-
-    @Test
-    public void testSelect() {
-        TestModel                 testModel = new TestModel();
-        List<Map<String, Object>> maps      = testModel.newQuery().limit(3).get().toMapList();
-        System.out.println(maps);
-        Assert.assertEquals(3, maps.size());
-    }
-
-    @Test
-    public void 临时对象赋值() {
-        TestModel                 testModel = new TestModel();
-        List<TestModel.Inner>     inners    = testModel.newQuery().limit(3).get().toObjectList(TestModel.Inner.class);
-        System.out.println(inners);
-        Assert.assertEquals(3, inners.size());
     }
 
 }

@@ -1,13 +1,13 @@
 package gaarason.database.contract.function;
 
-import gaarason.database.eloquent.RecordList;
+import gaarason.database.contract.eloquent.RecordList;
 
 @FunctionalInterface
-public interface GenerateRecordList {
+public interface GenerateRecordListFunctionalInterface {
 
     /**
      * RecordList关联关系
      * @return Record 查询结果集
      */
-    RecordList<?, ?> generate();
+    RecordList<?, ?> execute();
 }

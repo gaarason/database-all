@@ -11,7 +11,7 @@ public interface OrderBy<T, K> {
 
     /**
      * 排序
-     * @param column 列名
+     * @param column      列名
      * @param orderByType 正序|倒序
      * @return 查询构造器
      */

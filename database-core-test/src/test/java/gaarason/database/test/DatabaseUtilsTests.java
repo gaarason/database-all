@@ -1,5 +1,7 @@
 package gaarason.database.test;
 
+import gaarason.database.contract.eloquent.Model;
+import gaarason.database.support.ModelShadow;
 import gaarason.database.test.relation.data.pojo.Teacher;
 import gaarason.database.test.utils.MultiThreadUtil;
 import gaarason.database.util.*;
@@ -8,10 +10,12 @@ import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+import org.reflections.Reflections;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
@@ -35,7 +39,7 @@ public class DatabaseUtilsTests {
     public void testFormatUtil() {
         // 给字段加上反引号
         Assert.assertEquals(FormatUtil.column(" sum(order.amount) AS sum_price  "), "sum(`order`.`amount`) as " +
-            "`sum_price`");
+                "`sum_price`");
 
         // 给字段加上单引号
         Assert.assertEquals(FormatUtil.quotes(" alice  "), "'alice'");
@@ -97,8 +101,8 @@ public class DatabaseUtilsTests {
         Assert.assertEquals(a * b, ids.size());
 
         // 去重
-        LinkedHashSet<Long> hashSet               = new LinkedHashSet<>(ids);
-        ArrayList<Long>     listWithoutDuplicates = new ArrayList<>(hashSet);
+        LinkedHashSet<Long> hashSet = new LinkedHashSet<>(ids);
+        ArrayList<Long> listWithoutDuplicates = new ArrayList<>(hashSet);
         Assert.assertEquals("存在重复的id", ids.size(), listWithoutDuplicates.size());
         System.out.println("没有重复id");
     }
@@ -127,8 +131,18 @@ public class DatabaseUtilsTests {
         Assert.assertFalse(o3);
 
         boolean o4 = ObjectUtil.checkProperties(Teacher.class, "student.teacher.students.teacher.students" +
-            ".teacher.id");
+                ".teacher.id");
         Assert.assertTrue(o4);
+    }
+
+    @Test
+    public void test(){
+        Reflections reflections = new Reflections("");
+        Set<Class<? extends Model>> subTypesOf = reflections.getSubTypesOf(Model.class);
+        System.out.println(subTypesOf);
+
+//        ModelShadow.test();
+
     }
 
 }

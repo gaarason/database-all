@@ -9,11 +9,11 @@ import java.util.regex.Pattern;
 
 public class StringUtil {
     final private static String[] javaKeywords = {"abstract", "case", "continue", "enum", "for", "instanceof", "new",
-        "return", "switch", "transient", "assert", "catch", "default", "extends", "goto", "int", "package", "short",
-        "synchronized", "try", "boolean", "char", "do", "final", "if", "interface", "private", "static", "this", "void",
-        "break", "class", "double", "finally", "implements", "long", "protected", "strictfp", "throw", "volatile", "byte",
-        "const", "else", "float", "import", "native", "public", "super", "throws", "while", "byValue", "cast", "false",
-        "future", "generic", "inner", "null", "operator", "outer", "rest", "true", "var"};
+            "return", "switch", "transient", "assert", "catch", "default", "extends", "goto", "int", "package", "short",
+            "synchronized", "try", "boolean", "char", "do", "final", "if", "interface", "private", "static", "this", "void",
+            "break", "class", "double", "finally", "implements", "long", "protected", "strictfp", "throw", "volatile", "byte",
+            "const", "else", "float", "import", "native", "public", "super", "throws", "while", "byValue", "cast", "false",
+            "future", "generic", "inner", "null", "operator", "outer", "rest", "true", "var"};
 
     final private static Pattern linePattern = Pattern.compile("_(\\w)");
 
@@ -30,8 +30,8 @@ public class StringUtil {
         if (firstIsUpperCase.length != 0 && firstIsUpperCase[0]) {
             str = "_" + str;
         }
-        Matcher      matcher = linePattern.matcher(str);
-        StringBuffer sb      = new StringBuffer();
+        Matcher matcher = linePattern.matcher(str);
+        StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
             matcher.appendReplacement(sb, matcher.group(1).toUpperCase());
         }
@@ -45,8 +45,8 @@ public class StringUtil {
      * @return 处理后的字符
      */
     public static String humpToLine(String str) {
-        Matcher      matcher = humpPattern.matcher(str);
-        StringBuffer sb      = new StringBuffer();
+        Matcher matcher = humpPattern.matcher(str);
+        StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
             matcher.appendReplacement(sb, "_" + matcher.group(0).toLowerCase());
         }
@@ -78,7 +78,7 @@ public class StringUtil {
         if ("".equals(str) || str.length() < length)
             return str;
         return str.substring(str.length() - length).equals(character) ? rtrim(str.substring(0, str.length() - length),
-            character) : str;
+                character) : str;
     }
 
     /**
@@ -127,9 +127,9 @@ public class StringUtil {
             // 获得密文
             byte[] md = mdInst.digest();
             // 把密文转换成十六进制的字符串形式
-            int    j   = md.length;
+            int j = md.length;
             char[] str = new char[j * 2];
-            int    k   = 0;
+            int k = 0;
             for (byte byte0 : md) {
                 str[k++] = hexDigits[byte0 >>> 4 & 0xf];
                 str[k++] = hexDigits[byte0 & 0xf];

@@ -1,8 +1,8 @@
 package gaarason.database.support;
 
+import gaarason.database.contract.eloquent.Record;
+import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
-import gaarason.database.eloquent.Record;
-import gaarason.database.eloquent.RecordList;
 
 import java.util.*;
 
@@ -26,7 +26,7 @@ public class RelationSaveSupport<T, K> {
     protected final boolean attachedRelationship;
 
 
-    protected Map<String , Object> map = new LinkedHashMap<>();
+    protected Map<String, Object> map = new LinkedHashMap<>();
 
 
     /**
@@ -52,10 +52,11 @@ public class RelationSaveSupport<T, K> {
     }
 
 
-    public boolean save(){
+    public boolean save() {
         return saveMany().get(0);
     }
-    public List<Boolean> saveMany(){
+
+    public List<Boolean> saveMany() {
 
         Info info = new Info();
 
@@ -69,31 +70,29 @@ public class RelationSaveSupport<T, K> {
         // 1. 遍历检索
 
 
-
         // 暂不支持belongTo
 
         // 存在则开始事物, 搞起
 
 
-return true;
+        return true;
         // return toObjectList().get(0);
     }
 
 
-    protected void save并更新entity(){
-
+    protected void save并更新entity() {
 
 
     }
 
 
     static class Info<T> {
-        protected RelationSubQuery            relationSubQuery;
+        protected RelationSubQuery relationSubQuery;
         protected Map<SubQueryValue, List<T>> tMap = new HashMap<>();
     }
 
 
-    static class SubQueryValue{
+    static class SubQueryValue {
 
     }
 }

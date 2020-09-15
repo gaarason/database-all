@@ -1,9 +1,9 @@
 package gaarason.database.contract.builder;
 
-import gaarason.database.contract.function.Chunk;
+import gaarason.database.contract.eloquent.Record;
+import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.contract.function.ChunkFunctionalInterface;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.Record;
-import gaarason.database.eloquent.RecordList;
 import gaarason.database.eloquent.enums.SqlType;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.InsertNotSuccessException;
@@ -68,10 +68,10 @@ public interface Execute<T, K> {
     /**
      * 分块获取所有数据, 并处理
      * @param num   单次获取的数据量
-     * @param chunk 对单次获取的数据量的处理
+     * @param chunkFunctionalInterface 对单次获取的数据量的处理
      * @throws SQLRuntimeException 数据库异常
      */
-    void dealChunk(int num, Chunk<T, K> chunk) throws SQLRuntimeException;
+    void dealChunk(int num, ChunkFunctionalInterface<T, K> chunkFunctionalInterface) throws SQLRuntimeException;
 
     /**
      * 插入数据

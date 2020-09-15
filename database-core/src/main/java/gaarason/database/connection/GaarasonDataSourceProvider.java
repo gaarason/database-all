@@ -1,6 +1,6 @@
 package gaarason.database.connection;
 
-import gaarason.database.contract.GaarasonDataSource;
+import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.exception.InternalConcurrentException;
 import lombok.Getter;
 import lombok.Setter;
@@ -39,31 +39,16 @@ public class GaarasonDataSourceProvider implements GaarasonDataSource {
      * 单前线程中的 ProxyDataSource对象 是否处于数据库事物中
      */
     protected ThreadLocal<Boolean> inTransaction = ThreadLocal.withInitial(() -> false);
-
-    public boolean isInTransaction() {
-        return inTransaction.get();
-    }
-
-    public void setInTransaction() {
-        inTransaction.set(true);
-    }
-
-    public void setOutTransaction() {
-        inTransaction.remove();
-    }
-
     /**
      * 是否写连接
      */
     @Setter
     @Getter
     protected boolean isWrite = false;
-
     protected ThreadLocal<DataSource> masterDataSource = ThreadLocal.withInitial(() -> {
         // TODO 权重选择
         return masterDataSourceList.get((new Random()).nextInt(masterDataSourceList.size()));
     });
-
     protected ThreadLocal<DataSource> slaveDataSource = ThreadLocal.withInitial(() -> {
         // TODO 权重选择
         return slaveDataSourceList.get((new Random()).nextInt(slaveDataSourceList.size()));
@@ -82,6 +67,18 @@ public class GaarasonDataSourceProvider implements GaarasonDataSource {
     public GaarasonDataSourceProvider() {
     }
 
+    public boolean isInTransaction() {
+        return inTransaction.get();
+    }
+
+    public void setInTransaction() {
+        inTransaction.set(true);
+    }
+
+    public void setOutTransaction() {
+        inTransaction.remove();
+    }
+
     /**
      * 得到 DataSource
      * @return DataSource
@@ -94,7 +91,7 @@ public class GaarasonDataSourceProvider implements GaarasonDataSource {
     @Override
     public Connection getConnection() throws SQLException {
         DataSource realDataSource = getRealDataSource();
-        Connection connection     = realDataSource.getConnection();
+        Connection connection = realDataSource.getConnection();
         if (null == connection) {
             throw new InternalConcurrentException("Get an null value in ProxyDataSource object.");
         }
@@ -127,13 +124,13 @@ public class GaarasonDataSourceProvider implements GaarasonDataSource {
     }
 
     @Override
-    public void setLoginTimeout(int seconds) throws SQLException {
-        getRealDataSource().setLoginTimeout(seconds);
+    public int getLoginTimeout() throws SQLException {
+        return getRealDataSource().getLoginTimeout();
     }
 
     @Override
-    public int getLoginTimeout() throws SQLException {
-        return getRealDataSource().getLoginTimeout();
+    public void setLoginTimeout(int seconds) throws SQLException {
+        getRealDataSource().setLoginTimeout(seconds);
     }
 
     @Override

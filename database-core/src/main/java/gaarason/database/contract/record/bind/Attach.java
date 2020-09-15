@@ -1,7 +1,7 @@
 package gaarason.database.contract.record.bind;
 
-import gaarason.database.eloquent.Record;
-import gaarason.database.eloquent.RecordList;
+import gaarason.database.contract.eloquent.Record;
+import gaarason.database.contract.eloquent.RecordList;
 
 import java.util.Collection;
 import java.util.Map;

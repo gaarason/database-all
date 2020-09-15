@@ -1,6 +1,6 @@
 package gaarason.database.connection;
 
-import gaarason.database.contract.GaarasonDataSource;
+import gaarason.database.contract.connection.GaarasonDataSource;
 
 import javax.sql.DataSource;
 import java.util.List;

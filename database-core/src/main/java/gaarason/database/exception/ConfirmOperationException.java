@@ -7,7 +7,7 @@ import gaarason.database.exception.base.BaseException;
  */
 public class ConfirmOperationException extends BaseException {
 
-    public ConfirmOperationException(String message){
+    public ConfirmOperationException(String message) {
         super(message);
     }
 }

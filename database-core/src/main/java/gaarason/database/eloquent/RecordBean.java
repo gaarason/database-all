@@ -1,14 +1,13 @@
 package gaarason.database.eloquent;
 
 import gaarason.database.contract.eloquent.Model;
-import gaarason.database.contract.function.GenerateSqlPart;
-import gaarason.database.contract.function.RelationshipRecordWith;
-import gaarason.database.contract.record.Friendly;
-import gaarason.database.contract.record.Operation;
-import gaarason.database.contract.record.Relationship;
+import gaarason.database.contract.eloquent.Record;
+import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.extra.Bind;
+import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.record.bind.RelationProvider;
+import gaarason.database.eloquent.record.BindBean;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.RelationNotFoundException;
 import gaarason.database.support.Column;
@@ -16,73 +15,48 @@ import gaarason.database.support.RelationGetSupport;
 import gaarason.database.util.EntityUtil;
 import gaarason.database.util.ObjectUtil;
 import gaarason.database.util.StringUtil;
-import lombok.Getter;
-import lombok.Setter;
 
-import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * 记录对象
- * @param <T> 实体类
- * @param <K> 主键类型
- */
-public class Record<T, K> implements Friendly<T, K>, Operation<T, K>, Relationship<T, K>, Serializable {
-
-    /**
-     * 本表元数据
-     * <数据库字段名 -> 字段信息>
-     */
-    @Getter
-    protected Map<String, Column> metadataMap;
+public class RecordBean<T, K> implements Record<T, K> {
 
     /**
      * 数据模型
      */
-    @Getter
     protected final gaarason.database.contract.eloquent.Model<T, K> model;
-
     /**
      * 数据实体类
      */
     protected final Class<T> entityClass;
-
+    /**
+     * 本表元数据
+     * <数据库字段名 -> 字段信息>
+     */
+    protected Map<String, Column> metadataMap;
     /**
      * 原Sql
      */
-    @Getter
     protected String originalSql = "";
 
     /**
      * 数据实体
      */
-    @Getter
     protected T entity;
-
-    /**
-     * 主键值
-     */
-    @Nullable
-    @Setter
-    @Getter
-    Object originalPrimaryKeyValue;
-
     /**
      * 是否已经绑定具体的数据
      */
     protected boolean hasBind;
-
-    @Getter
-    @Setter
-    protected Map<String, GenerateSqlPart> relationBuilderMap = new HashMap<>();
-
-    @Getter
-    @Setter
-    protected Map<String, RelationshipRecordWith> relationRecordMap = new HashMap<>();
+    protected Map<String, GenerateSqlPartFunctionalInterface> relationBuilderMap = new HashMap<>();
+    protected Map<String, RelationshipRecordWithFunctionalInterface> relationRecordMap = new HashMap<>();
+    /**
+     * 主键值
+     */
+    @Nullable
+    protected K originalPrimaryKeyValue;
 
     /**
      * 根据查询结果集生成
@@ -90,7 +64,7 @@ public class Record<T, K> implements Friendly<T, K>, Operation<T, K>, Relationsh
      * @param model           数据模型
      * @param stringColumnMap 元数据
      */
-    public Record(Class<T> entityClass, Model<T, K> model, Map<String, Column> stringColumnMap, String originalSql) {
+    public RecordBean(Class<T> entityClass, Model<T, K> model, Map<String, Column> stringColumnMap, String originalSql) {
         this.entityClass = entityClass;
         this.model = model;
         this.originalSql = originalSql;
@@ -102,10 +76,61 @@ public class Record<T, K> implements Friendly<T, K>, Operation<T, K>, Relationsh
      * @param entityClass 数据实体类
      * @param model       数据模型
      */
-    public Record(Class<T> entityClass, gaarason.database.contract.eloquent.Model<T, K> model) {
+    public RecordBean(Class<T> entityClass, Model<T, K> model) {
         this.entityClass = entityClass;
         this.model = model;
         init(new HashMap<>());
+    }
+
+
+    @Override
+    public Map<String, Column> getMetadataMap() {
+        return metadataMap;
+    }
+
+    @Override
+    public Model<T, K> getModel() {
+        return model;
+    }
+
+    @Override
+    public String getOriginalSql() {
+        return originalSql;
+    }
+
+    @Override
+    public T getEntity() {
+        return entity;
+    }
+
+    @Override
+    public K getOriginalPrimaryKeyValue() {
+        return originalPrimaryKeyValue;
+    }
+
+    @Override
+    public void setOriginalPrimaryKeyValue(K value) {
+        originalPrimaryKeyValue = value;
+    }
+
+    @Override
+    public Map<String, GenerateSqlPartFunctionalInterface> getRelationBuilderMap() {
+        return relationBuilderMap;
+    }
+
+    @Override
+    public void setRelationBuilderMap(Map<String, GenerateSqlPartFunctionalInterface> relationBuilderMap) {
+        this.relationBuilderMap = relationBuilderMap;
+    }
+
+    @Override
+    public Map<String, RelationshipRecordWithFunctionalInterface> getRelationRecordMap() {
+        return relationRecordMap;
+    }
+
+    @Override
+    public void setRelationRecordMap(Map<String, RelationshipRecordWithFunctionalInterface> relationRecordMap) {
+        this.relationRecordMap = relationRecordMap;
     }
 
     /**
@@ -144,8 +169,8 @@ public class Record<T, K> implements Friendly<T, K>, Operation<T, K>, Relationsh
     @Override
     public String toSearch() {
         Map<String, Object> stringObjectMap = toMap();
-        Set<String>         keySet          = stringObjectMap.keySet();
-        String[]            keyArray        = keySet.toArray(new String[0]);
+        Set<String> keySet = stringObjectMap.keySet();
+        String[] keyArray = keySet.toArray(new String[0]);
         Arrays.sort(keyArray);
         StringBuilder sb = new StringBuilder();
         for (String key : keyArray) {
@@ -247,13 +272,13 @@ public class Record<T, K> implements Friendly<T, K>, Operation<T, K>, Relationsh
     }
 
     @Override
-    public Record<T, K> with(String column, GenerateSqlPart builderClosure) {
+    public Record<T, K> with(String column, GenerateSqlPartFunctionalInterface builderClosure) {
         return with(column, builderClosure, record -> record);
     }
 
     @Override
-    public Record<T, K> with(String column, GenerateSqlPart builderClosure,
-                             RelationshipRecordWith recordClosure) {
+    public Record<T, K> with(String column, GenerateSqlPartFunctionalInterface builderClosure,
+                             RelationshipRecordWithFunctionalInterface recordClosure) {
         // 效验参数
         if (!ObjectUtil.checkProperties(entityClass, column)) {
             throw new RelationNotFoundException(entityClass + " 不存在关联属性 : " + column);
@@ -262,10 +287,10 @@ public class Record<T, K> implements Friendly<T, K>, Operation<T, K>, Relationsh
         String[] columnArr = column.split("\\.");
         // 快捷类型
         if (columnArr.length > 1) {
-            String lastLevelColumn  = columnArr[columnArr.length - 1];
+            String lastLevelColumn = columnArr[columnArr.length - 1];
             String otherLevelColumn = StringUtil.rtrim(column, "." + lastLevelColumn);
             return with(otherLevelColumn, builder -> builder,
-                record -> record.with(lastLevelColumn, builderClosure, recordClosure));
+                    record -> record.with(lastLevelColumn, builderClosure, recordClosure));
         }
 
         relationBuilderMap.put(column, builderClosure);
@@ -275,7 +300,7 @@ public class Record<T, K> implements Friendly<T, K>, Operation<T, K>, Relationsh
 
     @Override
     public Bind bind(String column) {
-        return new RelationProvider<>(this, column);
+        return new BindBean<>(this, column);
     }
 
     /**
@@ -294,8 +319,8 @@ public class Record<T, K> implements Friendly<T, K>, Operation<T, K>, Relationsh
         }
         // 执行
         boolean success = model.newQuery()
-            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-            .delete() > 0;
+                .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
+                .delete() > 0;
         // 成功删除后后,刷新自身属性
         if (success) {
             this.metadataMap = new HashMap<>();
@@ -334,8 +359,8 @@ public class Record<T, K> implements Friendly<T, K>, Operation<T, K>, Relationsh
         }
         // 执行
         boolean success = model.onlyTrashed()
-            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-            .restore() > 0;
+                .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
+                .restore() > 0;
         // 成功恢复后,刷新自身属性
         if (success && refresh) {
             refresh();
@@ -356,8 +381,8 @@ public class Record<T, K> implements Friendly<T, K>, Operation<T, K>, Relationsh
         }
         // 刷新自身属性
         init(model.withTrashed()
-            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-            .firstOrFail().metadataMap);
+                .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
+                .firstOrFail().getMetadataMap());
         // 响应
         return this;
     }
@@ -400,8 +425,8 @@ public class Record<T, K> implements Friendly<T, K>, Operation<T, K>, Relationsh
         }
         // 执行
         boolean success = model.newQuery()
-            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-            .update(entity) > 0;
+                .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
+                .update(entity) > 0;
         // 成功更新后,刷新自身属性
         if (success) {
             selfUpdate(entity, false);

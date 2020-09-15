@@ -1,6 +1,6 @@
 package gaarason.database.contract.record.bind;
 
-import gaarason.database.eloquent.Record;
+import gaarason.database.contract.eloquent.Record;
 
 public interface Detach {
 

@@ -35,7 +35,7 @@ package com.demo.common.data.spring;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
 import gaarason.database.connection.GaarasonDataSourceProvider;
-import gaarason.database.contract.GaarasonDataSource;
+import gaarason.database.contract.connection.GaarasonDataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.*;
@@ -120,7 +120,7 @@ database.master0.useGlobalDataSourceStat=${useGlobalDataSourceStat}
 package gaarason.database.spring;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
-import gaarason.database.contract.GaarasonDataSource;
+import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.connection.GaarasonDataSourceBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.*;
@@ -302,7 +302,7 @@ database.slave1.useGlobalDataSourceStat=${useGlobalDataSourceStat}
 package com.demo.common.data.spring;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
-import gaarason.database.contract.GaarasonDataSource;
+import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.connection.GaarasonDataSourceBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.*;
@@ -361,7 +361,7 @@ application.properties 省略
 package gaarason.database.models;
 
 import gaarason.database.connection.GaarasonDataSourceProvider;
-import gaarason.database.contract.GaarasonDataSource;
+import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.eloquent.annotations.Column;
 import gaarason.database.eloquent.Model;
 import gaarason.database.eloquent.annotations.Primary;

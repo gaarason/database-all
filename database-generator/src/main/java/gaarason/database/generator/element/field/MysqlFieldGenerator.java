@@ -18,164 +18,125 @@ import java.util.regex.Matcher;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class MysqlFieldGenerator extends BaseFieldGenerator {
+    final public static String TABLE_CATALOG = "TABLE_CATALOG";
+    final public static String IS_NULLABLE = "IS_NULLABLE";
+    final public static String TABLE_NAME = "TABLE_NAME";
+    final public static String TABLE_SCHEMA = "TABLE_SCHEMA";
+    final public static String EXTRA = "EXTRA";
+    final public static String COLUMN_NAME = "COLUMN_NAME";
+    final public static String COLUMN_KEY = "COLUMN_KEY";
+    final public static String CHARACTER_OCTET_LENGTH = "CHARACTER_OCTET_LENGTH";
+    final public static String NUMERIC_PRECISION = "NUMERIC_PRECISION";
+    final public static String PRIVILEGES = "PRIVILEGES";
+    final public static String COLUMN_COMMENT = "COLUMN_COMMENT";
+    final public static String DATETIME_PRECISION = "DATETIME_PRECISION";
+    final public static String COLLATION_NAME = "COLLATION_NAME";
+    final public static String NUMERIC_SCALE = "NUMERIC_SCALE";
+    final public static String COLUMN_TYPE = "COLUMN_TYPE";
+    final public static String ORDINAL_POSITION = "ORDINAL_POSITION";
+    final public static String CHARACTER_MAXIMUM_LENGTH = "CHARACTER_MAXIMUM_LENGTH";
+    final public static String DATA_TYPE = "DATA_TYPE";
+    final public static String CHARACTER_SET_NAME = "CHARACTER_SET_NAME";
+    final public static String COLUMN_DEFAULT = "COLUMN_DEFAULT";
     /**
      * TABLE_CATALOG
      * def
      */
     private String tableCatalog;
-
-    final public static String TABLE_CATALOG = "TABLE_CATALOG";
-
     /**
      * IS_NULLABLE
      * NO
      */
     private String isNullable;
-
-    final public static String IS_NULLABLE = "IS_NULLABLE";
-
     /**
      * TABLE_NAME
      * student
      */
     private String tableName;
-
-    final public static String TABLE_NAME = "TABLE_NAME";
-
     /**
      * TABLE_SCHEMA
      * test_master_0
      */
     private String tableSchema;
-
-    final public static String TABLE_SCHEMA = "TABLE_SCHEMA";
-
     /**
      * EXTRA
      * auto_increment
      */
     private String extra;
-
-    final public static String EXTRA = "EXTRA";
-
     /**
      * 字段名称 COLUMN_NAME
      * id
      */
     private String columnName;
-
-    final public static String COLUMN_NAME = "COLUMN_NAME";
-
     /**
      * 索引类型 COLUMN_KEY
      * PRI
      */
     private String columnKey;
-
-    final public static String COLUMN_KEY = "COLUMN_KEY";
-
     /**
      * CHARACTER_OCTET_LENGTH
      * null
      */
     private String characterOctetLength;
-
-    final public static String CHARACTER_OCTET_LENGTH = "CHARACTER_OCTET_LENGTH";
-
     /**
      * NUMERIC_PRECISION
      * 10
      */
     private String numericPrecision;
-
-    final public static String NUMERIC_PRECISION = "NUMERIC_PRECISION";
-
     /**
      * PRIVILEGES
      * select,insert,update,references
      */
     private String privileges;
-
-    final public static String PRIVILEGES = "PRIVILEGES";
-
     /**
      * 字段注释 COLUMN_COMMENT
      */
     private String columnComment;
-
-    final public static String COLUMN_COMMENT = "COLUMN_COMMENT";
-
     /**
      * DATETIME_PRECISION
      * null
      */
     private String datetimePrecision;
-
-    final public static String DATETIME_PRECISION = "DATETIME_PRECISION";
-
     /**
      * COLLATION_NAME
      * utf8mb4_general_ci
      */
     private String collationName;
-
-    final public static String COLLATION_NAME = "COLLATION_NAME";
-
     /**
      * NUMERIC_SCALE
      * null
      */
     private String numericScale;
-
-    final public static String NUMERIC_SCALE = "NUMERIC_SCALE";
-
     /**
      * COLUMN_TYPE
      * varchar(12)
      */
     private String columnType;
-
-    final public static String COLUMN_TYPE = "COLUMN_TYPE";
-
     /**
      * ORDINAL_POSITION
      * 1
      */
     private String ordinalPosition;
-
-    final public static String ORDINAL_POSITION = "ORDINAL_POSITION";
-
     /**
      * CHARACTER_MAXIMUM_LENGTH
      * 12
      */
     private String characterMaximumLength;
-
-    final public static String CHARACTER_MAXIMUM_LENGTH = "CHARACTER_MAXIMUM_LENGTH";
-
     /**
      * DATA_TYPE
      * varchar
      */
     private String dataType;
-
-    final public static String DATA_TYPE = "DATA_TYPE";
-
     /**
      * CHARACTER_SET_NAME
      * utf8mb4
      */
     private String characterSetName;
-
-    final public static String CHARACTER_SET_NAME = "CHARACTER_SET_NAME";
-
     /**
      * COLUMN_DEFAULT
      * 默认值
      */
     private String columnDefault;
-
-    final public static String COLUMN_DEFAULT = "COLUMN_DEFAULT";
 
     /**
      * 生成Field

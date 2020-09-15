@@ -1,12 +1,8 @@
 package gaarason.database.core.lang;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import javax.annotation.Nonnull;
 import javax.annotation.meta.TypeQualifierDefault;
+import java.lang.annotation.*;
 
 /**
  * A common Spring annotation to declare that parameters and return values
@@ -17,13 +13,12 @@ import javax.annotation.meta.TypeQualifierDefault;
  *
  * <p>Should be used at package level in association with {@link Nullable}
  * annotations at parameter and return value level.
- *
  * @author Sebastien Deleuze
  * @author Juergen Hoeller
- * @since 5.0
  * @see NonNullFields
  * @see Nullable
  * @see NonNull
+ * @since 5.0
  */
 @Target(ElementType.PACKAGE)
 @Retention(RetentionPolicy.RUNTIME)

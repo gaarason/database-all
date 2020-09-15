@@ -5,10 +5,9 @@ import java.lang.annotation.*;
 
 @Documented
 @Inherited
-@Target({ ElementType.TYPE})
+@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Table
-{
+public @interface Table {
     /**
      * 表名
      * @return

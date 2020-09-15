@@ -1,8 +1,8 @@
 package gaarason.database.contract.eloquent.relation;
 
-import gaarason.database.contract.function.GenerateSqlPart;
-import gaarason.database.eloquent.Record;
-import gaarason.database.eloquent.RecordList;
+import gaarason.database.contract.eloquent.Record;
+import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.support.Column;
 
 import java.util.List;
@@ -19,7 +19,7 @@ public interface RelationSubQuery {
      * @param generateSqlPart     Builder
      * @return sql数组
      */
-    String[] dealBatchSql(List<Map<String, Column>> stringColumnMapList, GenerateSqlPart generateSqlPart);
+    String[] dealBatchSql(List<Map<String, Column>> stringColumnMapList, GenerateSqlPartFunctionalInterface generateSqlPart);
 
     /**
      * 批量关联查询
@@ -40,8 +40,8 @@ public interface RelationSubQuery {
 
     /**
      * 增加关联关系
-     * @param record 当前record
-     * @param targetRecords 目标的recordList
+     * @param record          当前record
+     * @param targetRecords   目标的recordList
      * @param stringStringMap 仅 @BelongsToMany 时有效, 增加额外信息到中间表
      * @return 成功
      */

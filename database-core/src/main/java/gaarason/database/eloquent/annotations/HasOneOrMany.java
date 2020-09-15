@@ -1,6 +1,6 @@
 package gaarason.database.eloquent.annotations;
 
-import gaarason.database.eloquent.Model;
+import gaarason.database.contract.eloquent.Model;
 
 import java.lang.annotation.*;
 

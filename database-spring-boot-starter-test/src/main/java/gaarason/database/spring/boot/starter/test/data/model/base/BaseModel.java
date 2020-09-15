@@ -1,6 +1,6 @@
 package gaarason.database.spring.boot.starter.test.data.model.base;
 
-import gaarason.database.contract.GaarasonDataSource;
+import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.eloquent.Model;
 import lombok.extern.slf4j.Slf4j;
 

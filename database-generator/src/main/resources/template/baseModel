@@ -1,6 +1,6 @@
 package ${namespace};\n
 \n
-import gaarason.database.contract.GaarasonDataSource;\n
+import gaarason.database.contract.connection.GaarasonDataSource;\n
 import gaarason.database.eloquent.Model;\n
 import lombok.extern.slf4j.Slf4j;\n
 \n

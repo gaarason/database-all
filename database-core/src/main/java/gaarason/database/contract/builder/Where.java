@@ -1,7 +1,7 @@
 package gaarason.database.contract.builder;
 
-import gaarason.database.contract.function.GenerateSqlPart;
 import gaarason.database.contract.eloquent.Builder;
+import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 
 import java.util.Collection;
 
@@ -52,7 +52,7 @@ public interface Where<T, K> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> whereSubQuery(String column, String symbol, GenerateSqlPart closure);
+    Builder<T, K> whereSubQuery(String column, String symbol, GenerateSqlPartFunctionalInterface closure);
 
     /**
      * 列值在范围内
@@ -84,7 +84,7 @@ public interface Where<T, K> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> whereIn(String column, GenerateSqlPart closure);
+    Builder<T, K> whereIn(String column, GenerateSqlPartFunctionalInterface closure);
 
     /**
      * 列值不在范围内
@@ -108,7 +108,7 @@ public interface Where<T, K> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> whereNotIn(String column, GenerateSqlPart closure);
+    Builder<T, K> whereNotIn(String column, GenerateSqlPartFunctionalInterface closure);
 
     /**
      * 列值在范围内
@@ -162,7 +162,7 @@ public interface Where<T, K> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> whereExists(GenerateSqlPart closure);
+    Builder<T, K> whereExists(GenerateSqlPartFunctionalInterface closure);
 
     /**
      * not exists一个闭包
@@ -176,7 +176,7 @@ public interface Where<T, K> {
      * @param closure 完整sql
      * @return 查询构建器
      */
-    Builder<T, K> whereNotExists(GenerateSqlPart closure);
+    Builder<T, K> whereNotExists(GenerateSqlPartFunctionalInterface closure);
 
     /**
      * 比较字段与字段
@@ -200,13 +200,13 @@ public interface Where<T, K> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> andWhere(GenerateSqlPart closure);
+    Builder<T, K> andWhere(GenerateSqlPartFunctionalInterface closure);
 
     /**
      * 或
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> orWhere(GenerateSqlPart closure);
+    Builder<T, K> orWhere(GenerateSqlPartFunctionalInterface closure);
 
 }

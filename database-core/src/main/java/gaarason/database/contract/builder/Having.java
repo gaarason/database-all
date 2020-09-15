@@ -1,7 +1,7 @@
 package gaarason.database.contract.builder;
 
-import gaarason.database.contract.function.GenerateSqlPart;
 import gaarason.database.contract.eloquent.Builder;
+import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 
 import java.util.Collection;
 
@@ -66,7 +66,7 @@ public interface Having<T, K> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> havingIn(String column, GenerateSqlPart closure);
+    Builder<T, K> havingIn(String column, GenerateSqlPartFunctionalInterface closure);
 
     /**
      * 列值不在范围内
@@ -98,7 +98,7 @@ public interface Having<T, K> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> havingNotIn(String column, GenerateSqlPart closure);
+    Builder<T, K> havingNotIn(String column, GenerateSqlPartFunctionalInterface closure);
 
     /**
      * 列值在2值之间
@@ -144,7 +144,7 @@ public interface Having<T, K> {
      * @param Closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> havingExists(GenerateSqlPart Closure);
+    Builder<T, K> havingExists(GenerateSqlPartFunctionalInterface Closure);
 
     /**
      * not exists一个闭包
@@ -158,7 +158,7 @@ public interface Having<T, K> {
      * @param Closure 完整sql
      * @return 查询构建器
      */
-    Builder<T, K> havingNotExists(GenerateSqlPart Closure);
+    Builder<T, K> havingNotExists(GenerateSqlPartFunctionalInterface Closure);
 
     /**
      * 比较字段与字段
@@ -182,12 +182,12 @@ public interface Having<T, K> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> andHaving(GenerateSqlPart closure);
+    Builder<T, K> andHaving(GenerateSqlPartFunctionalInterface closure);
 
     /**
      * 或
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> orHaving(GenerateSqlPart closure);
+    Builder<T, K> orHaving(GenerateSqlPartFunctionalInterface closure);
 }

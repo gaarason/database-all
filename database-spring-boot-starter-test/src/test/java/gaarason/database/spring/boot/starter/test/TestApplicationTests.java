@@ -1,7 +1,7 @@
 package gaarason.database.spring.boot.starter.test;
 
+import gaarason.database.contract.eloquent.Record;
 import gaarason.database.eloquent.GeneralModel;
-import gaarason.database.eloquent.Record;
 import gaarason.database.generator.GeneralGenerator;
 import gaarason.database.generator.Generator;
 import lombok.extern.slf4j.Slf4j;
@@ -48,9 +48,9 @@ public class TestApplicationTests {
     @Test
     public void run有参构造() {
         String jdbcUrl = "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8" +
-            "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
+                "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
         String username = "root";
-        String    password  = "root";
+        String password = "root";
         Generator generator = new Generator(jdbcUrl, username, password);
 
         // set
@@ -80,7 +80,7 @@ public class TestApplicationTests {
     public void 简单插入_返回自增id() {
         List<String> vList = new ArrayList<>();
         vList.add("aaaccc");
-        Object       id      = generalModel.newQuery().from("student").select("name").value(vList).insertGetId();
+        Object id = generalModel.newQuery().from("student").select("name").value(vList).insertGetId();
         Assert.assertNotNull(id);
 
         Object studentId = generalModel.newQuery().from("student").insertGetId();

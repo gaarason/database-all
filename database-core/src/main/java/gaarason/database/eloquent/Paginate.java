@@ -8,23 +8,17 @@ import java.util.List;
 @Data
 public class Paginate<T> {
 
-    private int currentPage;
-
-    private int perPage;
-
-    @Nullable
-    private Integer lastPage;
-
-    @Nullable
-    private Integer from;
-
-    @Nullable
-    private Integer to;
-
-    @Nullable
-    private Integer total;
-
     List<T> itemList;
+    protected int currentPage;
+    protected int perPage;
+    @Nullable
+    protected Integer lastPage;
+    @Nullable
+    protected Integer from;
+    @Nullable
+    protected Integer to;
+    @Nullable
+    protected Integer total;
 
     public Paginate(List<T> itemList, int currentPage, int perPage) {
         this.currentPage = currentPage;
@@ -45,7 +39,7 @@ public class Paginate<T> {
     }
 
     @Nullable
-    private Integer theFrom(List<T> itemList, int currentPage, int perPage) {
+    protected Integer theFrom(List<T> itemList, int currentPage, int perPage) {
         if (itemList.isEmpty()) {
             return null;
         }
@@ -53,7 +47,7 @@ public class Paginate<T> {
     }
 
     @Nullable
-    private Integer theTo(List<T> itemList, int currentPage, int perPage) {
+    protected Integer theTo(List<T> itemList, int currentPage, int perPage) {
         if (itemList.isEmpty()) {
             return null;
         }

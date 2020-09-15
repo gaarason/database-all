@@ -12,8 +12,8 @@ public class SnowFlakeIdUtil {
      * 初始化
      */
     private static final SnowFlakeIdGenerator GENERATOR =
-        new SnowFlakeIdGenerator(MachineInformation.random(SnowFlakeIdGenerator.MAX_WORKER_ID),
-            0);
+            new SnowFlakeIdGenerator(MachineInformation.random(SnowFlakeIdGenerator.MAX_WORKER_ID),
+                    0);
 
     /**
      * 获取id
@@ -99,13 +99,6 @@ public class SnowFlakeIdUtil {
          */
         private long lastTimestamp = -1L;
 
-        private void informationReport() {
-            long effectiveAge =
-                ((1L << (64 - 1 - SEQUENCE_BITS - WORKER_ID_BITS - DATA_CENTER_ID_BITS)) - (getSystemCurrentTimeMillis() - INITIAL_TIME_STAMP)) / (1000L * 3600 * 24 * 365);
-            System.out.println(
-                "雪花算法信息 : 尚可使用 " + effectiveAge + " 年, 当前 workerID " + workerId + " , 当前 dataCenterID " + dataCenterId);
-        }
-
         /**
          * 构造函数
          * @param workerId     工作ID (0~1023)
@@ -123,6 +116,33 @@ public class SnowFlakeIdUtil {
             informationReport();
         }
 
+        /**
+         * 阻塞到下一个毫秒(大于lastTimestamp)，直到获得新的时间戳
+         * @param lastTimestamp 上次生成ID的时间截
+         * @return 当前时间戳(大于上次生成ID的时间截)
+         */
+        private static long tilNextMillis(long lastTimestamp) {
+            long timestamp = System.currentTimeMillis();
+            while (timestamp <= lastTimestamp) {
+                timestamp = System.currentTimeMillis();
+            }
+            return timestamp;
+        }
+
+        /**
+         * 获取当前毫秒时间
+         * @return 当前时间戳
+         */
+        private static long getSystemCurrentTimeMillis() {
+            return System.currentTimeMillis();
+        }
+
+        private void informationReport() {
+            long effectiveAge =
+                    ((1L << (64 - 1 - SEQUENCE_BITS - WORKER_ID_BITS - DATA_CENTER_ID_BITS)) - (getSystemCurrentTimeMillis() - INITIAL_TIME_STAMP)) / (1000L * 3600 * 24 * 365);
+            System.out.println(
+                    "雪花算法信息 : 尚可使用 " + effectiveAge + " 年, 当前 workerID " + workerId + " , 当前 dataCenterID " + dataCenterId);
+        }
 
         /**
          * 获得下一个ID (用同步锁保证线程安全,在高并发场景同步锁性能和资源消耗优于CAS；并且测试中单线程即使用CAS也没有提升性能)
@@ -140,7 +160,7 @@ public class SnowFlakeIdUtil {
                     // 当前仍然时间小于上一次ID生成的时间戳,抛异常并上报
                     if (currentTimestamp < lastTimestamp) {
                         throw new RuntimeException(
-                            "当前时间 " + currentTimestamp + " 等待后仍然小于上一次记录的时间戳 " + lastTimestamp + " !");
+                                "当前时间 " + currentTimestamp + " 等待后仍然小于上一次记录的时间戳 " + lastTimestamp + " !");
                     }
                 } else {
                     throw new RuntimeException("当前时间 " + currentTimestamp + " 小于上一次记录的时间戳 " + lastTimestamp + " !");
@@ -164,30 +184,9 @@ public class SnowFlakeIdUtil {
             lastTimestamp = currentTimestamp;
             // 移位并通过或运算拼到一起组成64位的ID
             return ((currentTimestamp - INITIAL_TIME_STAMP) << TIMESTAMP_OFFSET)
-                | (dataCenterId << DATA_CENTER_ID_OFFSET)
-                | (workerId << WORKER_ID_OFFSET)
-                | sequence;
-        }
-
-        /**
-         * 阻塞到下一个毫秒(大于lastTimestamp)，直到获得新的时间戳
-         * @param lastTimestamp 上次生成ID的时间截
-         * @return 当前时间戳(大于上次生成ID的时间截)
-         */
-        private static long tilNextMillis(long lastTimestamp) {
-            long timestamp = System.currentTimeMillis();
-            while (timestamp <= lastTimestamp) {
-                timestamp = System.currentTimeMillis();
-            }
-            return timestamp;
-        }
-
-        /**
-         * 获取当前毫秒时间
-         * @return 当前时间戳
-         */
-        private static long getSystemCurrentTimeMillis() {
-            return System.currentTimeMillis();
+                    | (dataCenterId << DATA_CENTER_ID_OFFSET)
+                    | (workerId << WORKER_ID_OFFSET)
+                    | sequence;
         }
     }
 
@@ -201,14 +200,14 @@ public class SnowFlakeIdUtil {
         public static long getIdWithMAC(long maxId) {
             long id;
             try {
-                InetAddress      ip      = InetAddress.getLocalHost();
+                InetAddress ip = InetAddress.getLocalHost();
                 NetworkInterface network = NetworkInterface.getByInetAddress(ip);
                 if (network == null) {
                     id = 1L;
                 } else {
                     byte[] mac = network.getHardwareAddress();
                     id = ((0x000000FF & (long) mac[mac.length - 1])
-                        | (0x0000FF00 & (((long) mac[mac.length - 2]) << 8))) >> 6;
+                            | (0x0000FF00 & (((long) mac[mac.length - 2]) << 8))) >> 6;
                     id = id % (maxId + 1);
                 }
             } catch (Exception e) {
@@ -222,9 +221,9 @@ public class SnowFlakeIdUtil {
          * @param maxId 支持最大标识id
          * @return ID
          */
-        public static long random(long maxId){
+        public static long random(long maxId) {
             double v = Math.random() * maxId;
-            return (long)v;
+            return (long) v;
         }
     }
 }

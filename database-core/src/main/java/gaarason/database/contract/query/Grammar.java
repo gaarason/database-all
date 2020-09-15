@@ -1,7 +1,7 @@
-package gaarason.database.contract;
+package gaarason.database.contract.query;
 
-import gaarason.database.contract.function.GenerateSqlPart;
-import gaarason.database.contract.function.RelationshipRecordWith;
+import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.eloquent.enums.SqlType;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.util.ObjectUtil;
@@ -70,7 +70,7 @@ public interface Grammar {
      * @param builderClosure 所关联的Model的查询构造器约束
      * @param recordClosure  所关联的Model的再一级关联
      */
-    void pushWith(String column, GenerateSqlPart builderClosure, RelationshipRecordWith recordClosure);
+    void pushWith(String column, GenerateSqlPartFunctionalInterface builderClosure, RelationshipRecordWithFunctionalInterface recordClosure);
 
     /**
      * 拉取with信息

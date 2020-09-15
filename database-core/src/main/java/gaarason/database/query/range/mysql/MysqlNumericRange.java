@@ -16,8 +16,8 @@ public enum MysqlNumericRange {
     MEDIUMINT_UNSIGNED("mediumint unsigned", 16777215, 0, Integer.class),
     INT("int", Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.class),
     INT_UNSIGNED("int unsigned",
-        Long.parseLong(String.valueOf(Integer.MAX_VALUE)) - Long.parseLong(String.valueOf(Integer.MIN_VALUE)), 0,
-        Long.class),
+            Long.parseLong(String.valueOf(Integer.MAX_VALUE)) - Long.parseLong(String.valueOf(Integer.MIN_VALUE)), 0,
+            Long.class),
     BIGINT("bigint", Long.MAX_VALUE, Long.MIN_VALUE, Long.class),
     // 缩减了 bigint unsigned 的值为原值的一半
     BIGINT_UNSIGNED("bigint unsigned", Long.MAX_VALUE, 0, Long.class);

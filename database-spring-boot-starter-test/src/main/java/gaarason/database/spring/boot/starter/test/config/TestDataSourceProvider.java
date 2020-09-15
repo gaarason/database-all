@@ -6,7 +6,7 @@ import javax.sql.DataSource;
 
 public class TestDataSourceProvider extends GaarasonDataSourceProvider {
 
-    public TestDataSourceProvider(){
+    public TestDataSourceProvider() {
         hasSlave = true;
     }
 

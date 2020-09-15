@@ -16,21 +16,10 @@ public class SingleModel<T, K> extends Model<T, K> {
 
     private static GaarasonDataSourceProvider gaarasonDataSourceProvider = proxyDataSource();
 
-    @Override
-    public GaarasonDataSourceProvider getGaarasonDataSource(){
-        return gaarasonDataSourceProvider;
-    }
-
-    @Override
-    public void log(String sql, Collection<String> parameterList) {
-        String format = String.format(sql.replace(" ? ", "\"%s\""), parameterList.toArray());
-        log.info("SQL complete         : {}", format);
-    }
-
     private static DataSource dataSourceMaster0() {
         DruidDataSource druidDataSource = new DruidDataSource();
         druidDataSource.setUrl(
-            "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
+                "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
         druidDataSource.setDbType("com.alibaba.druid.pool.DruidDataSource");
         druidDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         druidDataSource.setUsername("root");
@@ -66,5 +55,16 @@ public class SingleModel<T, K> extends Model<T, K> {
     private static GaarasonDataSourceProvider proxyDataSource() {
         List<DataSource> dataSources = dataSourceMasterList();
         return new GaarasonDataSourceProvider(dataSources);
+    }
+
+    @Override
+    public GaarasonDataSourceProvider getGaarasonDataSource() {
+        return gaarasonDataSourceProvider;
+    }
+
+    @Override
+    public void log(String sql, Collection<String> parameterList) {
+        String format = String.format(sql.replace(" ? ", "\"%s\""), parameterList.toArray());
+        log.info("SQL complete         : {}", format);
     }
 }

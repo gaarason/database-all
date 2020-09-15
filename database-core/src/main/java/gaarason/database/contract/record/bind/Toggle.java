@@ -1,13 +1,11 @@
 package gaarason.database.contract.record.bind;
 
-import gaarason.database.eloquent.RecordList;
+import gaarason.database.contract.eloquent.RecordList;
 
 import java.util.Collection;
 import java.util.Map;
 
 public interface Toggle {
-
-
 
     boolean toggle(RecordList<?, ?> targetRecords);
 

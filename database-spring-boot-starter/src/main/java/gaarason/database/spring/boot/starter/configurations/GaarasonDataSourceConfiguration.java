@@ -3,7 +3,7 @@ package gaarason.database.spring.boot.starter.configurations;
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
 import gaarason.database.connection.GaarasonDataSourceBuilder;
-import gaarason.database.contract.GaarasonDataSource;
+import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.generator.GeneralGenerator;
 import gaarason.database.spring.boot.starter.properties.DefaultProperties;

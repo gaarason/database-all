@@ -9,7 +9,7 @@ public class PrimaryAnnotation {
     @Override
     public String toString() {
         return "@Primary(" +
-            (!increment ? "increment = " + increment : "") +
-            ")";
+                (!increment ? "increment = " + increment : "") +
+                ")";
     }
 }

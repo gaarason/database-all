@@ -3,7 +3,7 @@ package gaarason.database.test;
 //import com.fasterxml.jackson.core.JsonProcessingException;
 
 import gaarason.database.connection.GaarasonDataSourceProvider;
-import gaarason.database.eloquent.Record;
+import gaarason.database.contract.eloquent.Record;
 import gaarason.database.test.models.StudentModel;
 import gaarason.database.test.models.StudentORMModel;
 import gaarason.database.test.parent.BaseTests;
@@ -38,7 +38,7 @@ public class ORMTests extends BaseTests {
     @Test
     public void ORM查询() {
         Record<StudentORMModel.Entity, Integer> record = studentORMModel.findOrFail(3);
-        StudentORMModel.Entity                  entity = record.getEntity();
+        StudentORMModel.Entity entity = record.getEntity();
         Assert.assertEquals(entity.getAge(), Byte.valueOf("16"));
         Assert.assertEquals(entity.getName(), "小腾");
 
@@ -83,7 +83,7 @@ public class ORMTests extends BaseTests {
     @Test
     public void ORM新增() {
         Record<StudentORMModel.Entity, Integer> record = studentORMModel.newRecord();
-        StudentORMModel.Entity                  entity = record.getEntity();
+        StudentORMModel.Entity entity = record.getEntity();
         entity.setId(15);
         entity.setName("小超超");
         entity.setAge(Byte.valueOf("44"));
@@ -114,7 +114,7 @@ public class ORMTests extends BaseTests {
     @Test
     public void ORM新增_自增id() {
         Record<StudentORMModel.Entity, Integer> record = studentORMModel.newRecord();
-        StudentORMModel.Entity                  entity = record.getEntity();
+        StudentORMModel.Entity entity = record.getEntity();
         entity.setName("小超超");
         entity.setAge(Byte.valueOf("44"));
         entity.setSex(Byte.valueOf("1"));
@@ -162,11 +162,11 @@ public class ORMTests extends BaseTests {
 
     @Test
     public void ORM多线程兼容性() throws InterruptedException {
-        int            count          = 100;
+        int count = 100;
         CountDownLatch countDownLatch = new CountDownLatch(count);
         for (int i = 0; i < count; i++) {
             Record<StudentORMModel.Entity, Integer> record = studentORMModel.findOrFail(3);
-            StudentORMModel.Entity                  entity = record.getEntity();
+            StudentORMModel.Entity entity = record.getEntity();
             Assert.assertEquals(entity.getAge(), Byte.valueOf("16"));
             Assert.assertEquals(entity.getName(), "小腾");
 
@@ -187,8 +187,8 @@ public class ORMTests extends BaseTests {
     @Test
     public void ORM新增_添加新模型到关联关系() {
         // id = 1 的老师已经存在, 现在增加一位他的学生
-        String                   newName              = "肖邦";
-        String                   newTeacherName       = "肖邦de老师";
+        String newName = "肖邦";
+        String newTeacherName = "肖邦de老师";
         Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
 
         Teacher teacher = teacherIntegerRecord.getEntity();
@@ -205,8 +205,8 @@ public class ORMTests extends BaseTests {
     @Test
     public void ORM新增_模型均已存在_仅增加关系() {
         // id = 1 的老师已经存在, 现在将一位已存在的学生与他关联
-        String                   newName              = "肖邦";
-        String                   newTeacherName       = "肖邦de老师";
+        String newName = "肖邦";
+        String newTeacherName = "肖邦de老师";
         Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
 
         Record<StudentModel.Entity, Integer> orFail = studentModel.findOrFail(1);
@@ -219,17 +219,17 @@ public class ORMTests extends BaseTests {
     @Test
     public void ORM新增_一对一() {
 
-        String newName        = "肖邦";
+        String newName = "肖邦";
         String newTeacherName = "肖邦de老师";
 
         // 先获取新的 record
-        Teacher teacher = teacherModel.getEntity();
-        teacher.setName(newTeacherName);
-        Student student = new Student();
-        student.setName(newName);
-        teacher.setStudent(student);
-
-        teacherModel.save();
+//        Teacher teacher = teacherModel.getEntity();
+//        teacher.setName(newTeacherName);
+//        Student student = new Student();
+//        student.setName(newName);
+//        teacher.setStudent(student);
+//
+//        teacherModel.save();
 
 //        Student studentCheck = studentModel.newQuery().where("name", newName).with("teacher").firstOrFail().toObject();
 //        System.out.println(studentCheck);
@@ -243,7 +243,7 @@ public class ORMTests extends BaseTests {
     @Test
     public void ORM新增_反向一对一() {
 
-        String newName        = "肖邦";
+        String newName = "肖邦";
         String newTeacherName = "肖邦de老师";
 
         // 先获取新的 record

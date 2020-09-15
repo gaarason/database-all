@@ -6,11 +6,6 @@ import gaarason.database.generator.element.JavaVisibility;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.math.BigInteger;
-import java.util.Date;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class Field extends JavaElement {
@@ -107,7 +102,13 @@ public class Field extends JavaElement {
      */
     private long max = 0;
 
-
+    /**
+     * 缩进
+     * @return 缩进所需的空格符或者制表符
+     */
+    private static String indentation() {
+        return "    ";
+    }
 
     /**
      * @return eg:private String name;
@@ -121,8 +122,8 @@ public class Field extends JavaElement {
      */
     public String toAnnotationDatabasePrimary() {
         return primary ? indentation() + "@Primary(" +
-            (!increment ? "increment = " + increment : "") +
-            ")\n" : "";
+                (!increment ? "increment = " + increment : "") +
+                ")\n" : "";
     }
 
     /**
@@ -131,16 +132,16 @@ public class Field extends JavaElement {
     public String toAnnotationDatabaseColumn() {
         return indentation() + "@Column(" +
 
-            "name = \"" + columnName + "\"" +
-            (unique ? ", unique = " + unique : "") +
-            (unsigned ? ", unsigned = " + unsigned : "") +
-            (nullable ? ", nullable = " + nullable : "") +
-            (!insertable ? ", insertable = " + insertable : "") +
-            (!updatable ? ", updatable = " + updatable : "") +
-            (length != null && length != 255 ? ", length = " + length + "L" : "") +
-            (!"".equals(comment) ? ", comment = \"" + comment + "\"" : "") +
+                "name = \"" + columnName + "\"" +
+                (unique ? ", unique = " + unique : "") +
+                (unsigned ? ", unsigned = " + unsigned : "") +
+                (nullable ? ", nullable = " + nullable : "") +
+                (!insertable ? ", insertable = " + insertable : "") +
+                (!updatable ? ", updatable = " + updatable : "") +
+                (length != null && length != 255 ? ", length = " + length + "L" : "") +
+                (!"".equals(comment) ? ", comment = \"" + comment + "\"" : "") +
 
-            ")\n";
+                ")\n";
     }
 
     /**
@@ -152,11 +153,11 @@ public class Field extends JavaElement {
 
         return indentation() + "@ApiModelProperty(" +
 
-            "value = \"" + value + "\"" +
-            (defaultValue != null ? ", example = \"" + defaultValue + "\"" : "") +
-            (isRequired() ? ", required = true" : "") +
+                "value = \"" + value + "\"" +
+                (defaultValue != null ? ", example = \"" + defaultValue + "\"" : "") +
+                (isRequired() ? ", required = true" : "") +
 
-            ")\n";
+                ")\n";
     }
 
     /**
@@ -169,23 +170,23 @@ public class Field extends JavaElement {
         // 字段没有注释的情况下, 使用字段名
         String describe = "".equals(comment) ? columnName : comment;
 
-        switch (javaClassification){
+        switch (javaClassification) {
             case NUMERIC:
                 return indentation() + "@Max(value = " + max + "L, " +
-                    "message = \"" + describe + "[" + columnName + "]需要小于等于" + max  + "\"" +
-                    ")\n" +
-                    indentation() + "@Min(value = " + min + "L, " +
-                    "message = \"" + describe + "[" + columnName + "]需要大于等于" + min  + "\"" +
-                    ")\n";
+                        "message = \"" + describe + "[" + columnName + "]需要小于等于" + max + "\"" +
+                        ")\n" +
+                        indentation() + "@Min(value = " + min + "L, " +
+                        "message = \"" + describe + "[" + columnName + "]需要大于等于" + min + "\"" +
+                        ")\n";
             case STRING:
-                if(max == 0)
+                if (max == 0)
                     return "";
                 else
-                return indentation() + "@Length(" +
-                    "min = " + min + ", " +
-                    "max = " + max + ", " +
-                    "message = \"" + describe + "[" + columnName + "]长度需要在" + min + "和" + max + "之间"  + "\"" +
-                    ")\n";
+                    return indentation() + "@Length(" +
+                            "min = " + min + ", " +
+                            "max = " + max + ", " +
+                            "message = \"" + describe + "[" + columnName + "]长度需要在" + min + "和" + max + "之间" + "\"" +
+                            ")\n";
             default:
                 return "";
         }
@@ -198,16 +199,6 @@ public class Field extends JavaElement {
     private boolean isRequired() {
         // 列不可为null, 且没有默认值, 则 require = true
         return (!nullable) && (defaultValue == null);
-    }
-
-
-
-    /**
-     * 缩进
-     * @return 缩进所需的空格符或者制表符
-     */
-    private static String indentation(){
-        return "    ";
     }
 
 }

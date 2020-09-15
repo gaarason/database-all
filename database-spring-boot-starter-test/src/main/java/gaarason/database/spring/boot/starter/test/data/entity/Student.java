@@ -6,14 +6,15 @@ import gaarason.database.eloquent.annotations.Table;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.math.BigInteger;
 import java.util.Date;
 
 @Data
 @Table(name = "student")
 public class Student implements Serializable {
 
-    /** auto generator start **/
+    /**
+     * auto generator start
+     **/
 
     final public static String ID = "id";
     final public static String NAME = "name";
@@ -27,25 +28,25 @@ public class Student implements Serializable {
     @Primary()
     @Column(name = "id", unsigned = true)
     private Long id;
-    
+
     @Column(name = "name", length = 20, comment = "姓名")
     private String name;
-    
+
     @Column(name = "age", unsigned = true, comment = "年龄")
     private Integer age;
-    
+
     @Column(name = "sex", unsigned = true, comment = "性别1男2女")
     private Integer sex;
-    
+
     @Column(name = "teacher_id", unsigned = true, comment = "教师id")
     private Long teacherId;
-    
+
     @Column(name = "is_deleted")
     private Boolean isDeleted;
-    
+
     @Column(name = "created_at", insertable = false, updatable = false, comment = "新增时间")
     private Date createdAt;
-    
+
     @Column(name = "updated_at", insertable = false, updatable = false, comment = "更新时间")
     private Date updatedAt;
 

@@ -1,7 +1,7 @@
 package gaarason.database.contract.record;
 
-import gaarason.database.contract.function.FilterRecordAttribute;
-import gaarason.database.eloquent.RecordList;
+import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.contract.function.FilterRecordAttributeFunctionalInterface;
 
 import java.util.List;
 import java.util.Map;
@@ -41,7 +41,7 @@ public interface FriendlyList<T, K> {
      * 过滤成list
      * @return 单个字段列表
      */
-    <V> List<V> toList(FilterRecordAttribute<T, K, V> filterRecordAttribute);
+    <V> List<V> toList(FilterRecordAttributeFunctionalInterface<T, K, V> filterRecordAttributeFunctionalInterface);
 
 
     /**

@@ -15,7 +15,7 @@ import java.util.Date;
 @Table(name = "relationship_student_teacher")
 public class RelationshipStudentTeacher implements Serializable {
 
-    final public static String ID         = "id";
+    final public static String ID = "id";
 
     final public static String STUDENT_ID = "student_id";
 

@@ -1,6 +1,6 @@
 package gaarason.database.contract.record;
 
-import gaarason.database.eloquent.RecordList;
+import gaarason.database.contract.eloquent.RecordList;
 
 import java.util.Map;
 

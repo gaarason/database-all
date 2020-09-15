@@ -1,4 +1,4 @@
-package gaarason.database.contract;
+package gaarason.database.contract.connection;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -22,16 +22,15 @@ public interface GaarasonDataSource extends DataSource {
     void setOutTransaction();
 
     /**
-     * 设置读写
-     */
-    void setWrite(boolean bool);
-
-    /**
      * 获取读写
      * @return
      */
     boolean isWrite();
 
+    /**
+     * 设置读写
+     */
+    void setWrite(boolean bool);
 
     /**
      * 得到 DataSource

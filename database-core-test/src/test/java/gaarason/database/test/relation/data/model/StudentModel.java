@@ -1,7 +1,7 @@
 package gaarason.database.test.relation.data.model;
 
-import gaarason.database.contract.model.Query;
 import gaarason.database.contract.eloquent.Builder;
+import gaarason.database.contract.model.Query;
 import gaarason.database.test.relation.data.model.base.BaseModel;
 import gaarason.database.test.relation.data.pojo.Student;
 import gaarason.database.test.relation.data.pojo.Teacher;
@@ -30,7 +30,7 @@ public class StudentModel extends BaseModel<Student, Long> {
         return null;
     }
 
-    public Teacher teacher(){
+    public Teacher teacher() {
         hasMany(TeacherModel.class, "teacher_id", "id");
         return null;
     }

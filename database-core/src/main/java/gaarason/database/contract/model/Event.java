@@ -1,6 +1,6 @@
 package gaarason.database.contract.model;
 
-import gaarason.database.eloquent.Record;
+import gaarason.database.contract.eloquent.Record;
 
 import java.util.Collection;
 

@@ -37,10 +37,10 @@ public class JavaElement {
      * @param numberOfSpaces 每个注解前面的空格数量
      * @return eg:@ApiModelProperty(value = "消息id", example = "39e0f74f-93fd-224c-0078-988542600fd3", required = true)
      */
-    public String toAnnotationsString(int numberOfSpaces){
+    public String toAnnotationsString(int numberOfSpaces) {
         // 对齐用的空格
         StringBuilder spaceBuilder = new StringBuilder();
-        for (int i = 0 ; i < numberOfSpaces; i++){
+        for (int i = 0; i < numberOfSpaces; i++) {
             spaceBuilder.append(" ");
         }
         String spaces = spaceBuilder.toString();
@@ -55,7 +55,7 @@ public class JavaElement {
                 // eg:value = "消息id",
                 stringBuilder.append(attribute.getName()).append(" = ").append(attribute.getValue()).append(", ");
             }
-            if(annotation.getAttributes().size() > 0){
+            if (annotation.getAttributes().size() > 0) {
                 stringBuilder.deleteCharAt(stringBuilder.length() - 1).deleteCharAt(stringBuilder.length() - 1);
             }
             stringBuilder.append(")\n");

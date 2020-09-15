@@ -1,17 +1,19 @@
 package gaarason.database.util;
 
+import gaarason.database.core.lang.Nullable;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.TypeCastException;
 import gaarason.database.exception.TypeNotSupportedException;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.net.JarURLConnection;
+import java.net.URL;
 import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 public class ObjectUtil {
 
@@ -26,7 +28,7 @@ public class ObjectUtil {
     public static <T> T deepCopy(T original) {
         try {
             ByteArrayOutputStream bis = new ByteArrayOutputStream();
-            ObjectOutputStream    oos = new ObjectOutputStream(bis);
+            ObjectOutputStream oos = new ObjectOutputStream(bis);
             oos.writeObject(original);
             oos.flush();
             ObjectInputStream input = new ObjectInputStream(new ByteArrayInputStream(bis.toByteArray()));
@@ -67,8 +69,8 @@ public class ObjectUtil {
                 Field field = tempClass.getDeclaredField(attr);
 
                 tempClass = field.getType();
-                boolean             contains  =
-                    new ArrayList<>(Arrays.asList(tempClass.getInterfaces())).contains(Collection.class);
+                boolean contains =
+                        new ArrayList<>(Arrays.asList(tempClass.getInterfaces())).contains(Collection.class);
                 // 如果是集合类型, 那么使用泛型对象
                 if (contains) {
                     Type genericType = field.getGenericType();

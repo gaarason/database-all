@@ -1,8 +1,8 @@
 package gaarason.database.test;
 
 import gaarason.database.connection.GaarasonDataSourceProvider;
-import gaarason.database.eloquent.Record;
-import gaarason.database.eloquent.RecordList;
+import gaarason.database.contract.eloquent.Record;
+import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.test.models.StudentSoftDeleteModel;
 import gaarason.database.test.parent.BaseTests;
 import lombok.extern.slf4j.Slf4j;
