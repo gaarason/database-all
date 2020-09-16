@@ -29,13 +29,13 @@ abstract class BaseFieldGenerator {
     @Nullable
     protected static String newlineCharactersToReplace(@Nullable String str) {
         return null != str ? str
-                .replace("\\\r\\\n", "")
-                .replace("\\r\\n", "")
-                .replace("\r\n", "")
-                .replace("\\\n", "")
-                .replace("\\n", "")
-                .replace("\n", "")
-                .replace("\"", "\\\"") : null;
+            .replace("\\\r\\\n", "")
+            .replace("\\r\\n", "")
+            .replace("\r\n", "")
+            .replace("\\\n", "")
+            .replace("\\n", "")
+            .replace("\n", "")
+            .replace("\"", "\\\"") : null;
     }
 
     /**
@@ -44,8 +44,8 @@ abstract class BaseFieldGenerator {
      * @return 类名
      */
     protected static String cutClassName(Class classType) {
-        String className = classType.getName();
-        String[] split = className.split("\\.");
+        String   className = classType.getName();
+        String[] split     = className.split("\\.");
         return split[split.length - 1];
     }
 

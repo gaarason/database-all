@@ -11,7 +11,7 @@ import java.util.RandomAccess;
 import java.util.Set;
 
 public interface RecordList<T, K> extends FriendlyList<T, K>, RelationshipList<T, K>, List<Record<T, K>>,
-        RandomAccess, Cloneable, Serializable {
+    RandomAccess, Cloneable, Serializable {
 
     /**
      * 元数据
@@ -20,22 +20,10 @@ public interface RecordList<T, K> extends FriendlyList<T, K>, RelationshipList<T
     List<Map<String, Column>> getOriginalMetadataMapList();
 
     /**
-     * 元数据
-     * @param originalMetadataMapList 元数据
-     */
-    void setOriginalMetadataMapList(List<Map<String, Column>> originalMetadataMapList);
-
-    /**
      * 原始sql
      * @return sql
      */
     String getOriginalSql();
-
-    /**
-     * 原始sql
-     * @param originalSql 原始sql
-     */
-    void setOriginalSql(String originalSql);
 
     /**
      * 内存缓存

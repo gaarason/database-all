@@ -5,7 +5,7 @@ import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.extra.Bind;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.exception.RelationNotFoundException;
-import gaarason.database.support.ModelShadow;
+import gaarason.database.provider.ModelShadow;
 import gaarason.database.util.ObjectUtil;
 
 import java.util.Collection;
@@ -21,8 +21,8 @@ public class BindBean<T, K> implements Bind {
     public BindBean(Record<T, K> record, String columnName) {
         this.record = record;
         presetColumn(columnName);
-        ModelShadow.ModelInformation<?, ?> modelInformation = ModelShadow.get(record.getModel());
-        relationSubQuery = modelInformation.getRelationFieldMap().get(columnName).getRelationSubQuery();
+        ModelShadow.ModelInfo<?, ?> modelInfo = ModelShadow.get(record.getModel());
+        relationSubQuery = modelInfo.getRelationFieldMap().get(columnName).getRelationSubQuery();
     }
 
     @Override

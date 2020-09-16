@@ -18,125 +18,164 @@ import java.util.regex.Matcher;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class MysqlFieldGenerator extends BaseFieldGenerator {
-    final public static String TABLE_CATALOG = "TABLE_CATALOG";
-    final public static String IS_NULLABLE = "IS_NULLABLE";
-    final public static String TABLE_NAME = "TABLE_NAME";
-    final public static String TABLE_SCHEMA = "TABLE_SCHEMA";
-    final public static String EXTRA = "EXTRA";
-    final public static String COLUMN_NAME = "COLUMN_NAME";
-    final public static String COLUMN_KEY = "COLUMN_KEY";
-    final public static String CHARACTER_OCTET_LENGTH = "CHARACTER_OCTET_LENGTH";
-    final public static String NUMERIC_PRECISION = "NUMERIC_PRECISION";
-    final public static String PRIVILEGES = "PRIVILEGES";
-    final public static String COLUMN_COMMENT = "COLUMN_COMMENT";
-    final public static String DATETIME_PRECISION = "DATETIME_PRECISION";
-    final public static String COLLATION_NAME = "COLLATION_NAME";
-    final public static String NUMERIC_SCALE = "NUMERIC_SCALE";
-    final public static String COLUMN_TYPE = "COLUMN_TYPE";
-    final public static String ORDINAL_POSITION = "ORDINAL_POSITION";
+    final public static String TABLE_CATALOG            = "TABLE_CATALOG";
+
+    final public static String IS_NULLABLE              = "IS_NULLABLE";
+
+    final public static String TABLE_NAME               = "TABLE_NAME";
+
+    final public static String TABLE_SCHEMA             = "TABLE_SCHEMA";
+
+    final public static String EXTRA                    = "EXTRA";
+
+    final public static String COLUMN_NAME              = "COLUMN_NAME";
+
+    final public static String COLUMN_KEY               = "COLUMN_KEY";
+
+    final public static String CHARACTER_OCTET_LENGTH   = "CHARACTER_OCTET_LENGTH";
+
+    final public static String NUMERIC_PRECISION        = "NUMERIC_PRECISION";
+
+    final public static String PRIVILEGES               = "PRIVILEGES";
+
+    final public static String COLUMN_COMMENT           = "COLUMN_COMMENT";
+
+    final public static String DATETIME_PRECISION       = "DATETIME_PRECISION";
+
+    final public static String COLLATION_NAME           = "COLLATION_NAME";
+
+    final public static String NUMERIC_SCALE            = "NUMERIC_SCALE";
+
+    final public static String COLUMN_TYPE              = "COLUMN_TYPE";
+
+    final public static String ORDINAL_POSITION         = "ORDINAL_POSITION";
+
     final public static String CHARACTER_MAXIMUM_LENGTH = "CHARACTER_MAXIMUM_LENGTH";
-    final public static String DATA_TYPE = "DATA_TYPE";
-    final public static String CHARACTER_SET_NAME = "CHARACTER_SET_NAME";
-    final public static String COLUMN_DEFAULT = "COLUMN_DEFAULT";
+
+    final public static String DATA_TYPE                = "DATA_TYPE";
+
+    final public static String CHARACTER_SET_NAME       = "CHARACTER_SET_NAME";
+
+    final public static String COLUMN_DEFAULT           = "COLUMN_DEFAULT";
+
     /**
      * TABLE_CATALOG
      * def
      */
-    private String tableCatalog;
+    private             String tableCatalog;
+
     /**
      * IS_NULLABLE
      * NO
      */
-    private String isNullable;
+    private             String isNullable;
+
     /**
      * TABLE_NAME
      * student
      */
-    private String tableName;
+    private             String tableName;
+
     /**
      * TABLE_SCHEMA
      * test_master_0
      */
-    private String tableSchema;
+    private             String tableSchema;
+
     /**
      * EXTRA
      * auto_increment
      */
-    private String extra;
+    private             String extra;
+
     /**
      * 字段名称 COLUMN_NAME
      * id
      */
-    private String columnName;
+    private             String columnName;
+
     /**
      * 索引类型 COLUMN_KEY
      * PRI
      */
-    private String columnKey;
+    private             String columnKey;
+
     /**
      * CHARACTER_OCTET_LENGTH
      * null
      */
-    private String characterOctetLength;
+    private             String characterOctetLength;
+
     /**
      * NUMERIC_PRECISION
      * 10
      */
-    private String numericPrecision;
+    private             String numericPrecision;
+
     /**
      * PRIVILEGES
      * select,insert,update,references
      */
-    private String privileges;
+    private             String privileges;
+
     /**
      * 字段注释 COLUMN_COMMENT
      */
-    private String columnComment;
+    private             String columnComment;
+
     /**
      * DATETIME_PRECISION
      * null
      */
-    private String datetimePrecision;
+    private             String datetimePrecision;
+
     /**
      * COLLATION_NAME
      * utf8mb4_general_ci
      */
-    private String collationName;
+    private             String collationName;
+
     /**
      * NUMERIC_SCALE
      * null
      */
-    private String numericScale;
+    private             String numericScale;
+
     /**
      * COLUMN_TYPE
      * varchar(12)
      */
-    private String columnType;
+    private             String columnType;
+
     /**
      * ORDINAL_POSITION
      * 1
      */
-    private String ordinalPosition;
+    private             String ordinalPosition;
+
     /**
      * CHARACTER_MAXIMUM_LENGTH
      * 12
      */
-    private String characterMaximumLength;
+    private             String characterMaximumLength;
+
     /**
      * DATA_TYPE
      * varchar
      */
-    private String dataType;
+    private             String dataType;
+
     /**
      * CHARACTER_SET_NAME
      * utf8mb4
      */
-    private String characterSetName;
+    private             String characterSetName;
+
     /**
      * COLUMN_DEFAULT
      * 默认值
      */
-    private String columnDefault;
+    private             String columnDefault;
 
     /**
      * 生成Field

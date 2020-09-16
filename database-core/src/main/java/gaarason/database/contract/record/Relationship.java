@@ -41,7 +41,8 @@ public interface Relationship<T, K> {
      * @param recordClosure  所关联的Model的再一级关联
      * @return 关联的Model的查询构造器
      */
-    Record<T, K> with(String column, GenerateSqlPartFunctionalInterface builderClosure, RelationshipRecordWithFunctionalInterface recordClosure);
+    Record<T, K> with(String column, GenerateSqlPartFunctionalInterface builderClosure,
+                      RelationshipRecordWithFunctionalInterface recordClosure);
 
     /**
      * @return

@@ -9,83 +9,9 @@ import gaarason.database.core.lang.Nullable;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.query.MySqlBuilder;
-import gaarason.database.support.ModelShadow;
+import gaarason.database.provider.ModelShadow;
 
 abstract public class ModelBean<T, K> implements Model<T, K> {
-
-    /**
-     * 主键列名(并非一定是实体的属性名)
-     */
-    protected String primaryKeyColumnName;
-
-    /**
-     * 主键名(实体的属性名)
-     */
-    protected String primaryKeyName;
-
-    /**
-     * 主键自增
-     */
-    protected boolean primaryKeyIncrement;
-
-    /**
-     * 主键类型
-     */
-    protected Class<K> primaryKeyClass;
-
-    /**
-     * 数据库表名
-     */
-    protected String tableName;
-
-    /**
-     * 实体类型
-     */
-    protected Class<T> entityClass;
-
-
-    ModelBean() {
-
-//        ModelShadow.init(this);
-
-//        // 泛型初始化
-//        genericInitialization();
-//        // entity分析
-//        analysisEntityClass();
-    }
-
-//    /**
-//     * 泛型初始化
-//     */
-//    @SuppressWarnings("unchecked")
-//    protected void genericInitialization() {
-//        entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-//        primaryKeyClass =
-//                (Class<K>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
-//    }
-//
-//    /**
-//     * 实体类型分析
-//     */
-//    protected void analysisEntityClass() {
-//        tableName = EntityUtil.tableName(entityClass);
-//        Field[] fields = entityClass.getDeclaredFields();
-//        for (Field field : fields) {
-//            if (field.isAnnotationPresent(Primary.class)) {
-//                Primary primary = field.getAnnotation(Primary.class);
-//                primaryKeyIncrement = primary.increment();
-//                primaryKeyColumnName = EntityUtil.columnName(field);
-//                primaryKeyName = field.getName();
-//                // 主键类型检测
-//                if (!primaryKeyClass.equals(field.getType())) {
-//                    throw new InvalidPrimaryKeyTypeException(
-//                            "The primary key type [" + field.getType() + "] of the entity does not match with the " +
-//                                    "generic [" + primaryKeyClass + "]");
-//                }
-//                break;
-//            }
-//        }
-//    }
 
     /**
      * 是否启用软删除
@@ -99,6 +25,7 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
      * @param builder 查询构造器
      * @return 删除的行数
      */
+    @Override
     public int delete(Builder<T, K> builder) {
         return softDeleting() ? softDelete(builder) : builder.forceDelete();
     }
@@ -108,6 +35,7 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
      * @param builder 查询构造器
      * @return 删除的行数
      */
+    @Override
     public int restore(Builder<T, K> builder) {
         return softDeleteRestore(builder);
     }
@@ -184,6 +112,7 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
      * 新的查询构造器
      * @return 查询构造器
      */
+    @Override
     public Builder<T, K> newQuery() {
         Builder<T, K> builder = theBuilder();
         if (softDeleting()) {
@@ -196,6 +125,7 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
      * 包含软删除模型
      * @return 查询构造器
      */
+    @Override
     public Builder<T, K> withTrashed() {
         Builder<T, K> builder = theBuilder();
         scopeSoftDeleteWithTrashed(builder);
@@ -206,6 +136,7 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
      * 只获取软删除模型
      * @return 查询构造器
      */
+    @Override
     public Builder<T, K> onlyTrashed() {
         Builder<T, K> builder = theBuilder();
         scopeSoftDeleteOnlyTrashed(builder);
@@ -216,19 +147,22 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
      * 新的记录对象
      * @return 记录对象
      */
+    @Override
     public Record<T, K> newRecord() {
         return new RecordBean<>(getEntityClass(), this);
     }
 
-
+    @Override
     public RecordList<T, K> all(String... column) throws SQLRuntimeException {
         return newQuery().select(column).get();
     }
 
+    @Override
     public Record<T, K> findOrFail(K id) throws EntityNotFoundException, SQLRuntimeException {
         return newQuery().where(getPrimaryKeyColumnName(), id.toString()).firstOrFail();
     }
 
+    @Override
     @Nullable
     public Record<T, K> find(K id) {
         return newQuery().where(getPrimaryKeyColumnName(), id.toString()).first();

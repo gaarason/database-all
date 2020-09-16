@@ -9,4 +9,7 @@ public class ModelNewInstanceException extends BaseException {
     public ModelNewInstanceException(String message, Throwable e) {
         super(message, e);
     }
+    public ModelNewInstanceException() {
+        super();
+    }
 }

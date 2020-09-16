@@ -25,7 +25,7 @@ public interface Native<T, K> {
      * @throws EntityNotFoundException 没有数据
      */
     Record<T, K> queryOrFail(String sql, Collection<String> parameters)
-            throws SQLRuntimeException, EntityNotFoundException;
+        throws SQLRuntimeException, EntityNotFoundException;
 
     /**
      * 获取第一条数据, 数据为空时抛出异常

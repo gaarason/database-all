@@ -87,7 +87,8 @@ public class RelationSaveSupport<T, K> {
 
 
     static class Info<T> {
-        protected RelationSubQuery relationSubQuery;
+        protected RelationSubQuery            relationSubQuery;
+
         protected Map<SubQueryValue, List<T>> tMap = new HashMap<>();
     }
 

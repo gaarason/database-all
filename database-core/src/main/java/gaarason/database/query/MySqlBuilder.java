@@ -1,12 +1,12 @@
 package gaarason.database.query;
 
 import gaarason.database.contract.connection.GaarasonDataSource;
-import gaarason.database.contract.query.Grammar;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.query.Grammar;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.enums.JoinType;
 import gaarason.database.eloquent.enums.OrderBy;
@@ -61,7 +61,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     @Override
     public Builder<T, K> whereSubQuery(String column, String symbol, GenerateSqlPartFunctionalInterface closure) {
         String completeSql = generateSql(closure);
-        String sqlPart = FormatUtil.column(column) + symbol + completeSql;
+        String sqlPart     = FormatUtil.column(column) + symbol + completeSql;
         return whereRaw(sqlPart);
     }
 
@@ -122,7 +122,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     @Override
     public Builder<T, K> whereNotBetween(String column, String min, String max) {
         String sqlPart =
-                FormatUtil.column(column) + "not between" + formatValue(min) + "and" + formatValue(max);
+            FormatUtil.column(column) + "not between" + formatValue(min) + "and" + formatValue(max);
         return whereRaw(sqlPart);
     }
 
@@ -261,7 +261,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     @Override
     public Builder<T, K> havingNotBetween(String column, String min, String max) {
         String sqlPart =
-                FormatUtil.column(column) + "not between" + formatValue(min) + "and" + formatValue(max);
+            FormatUtil.column(column) + "not between" + formatValue(min) + "and" + formatValue(max);
         return havingRaw(sqlPart);
     }
 
@@ -358,16 +358,17 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     @Override
     public Builder<T, K> selectFunction(String function, String parameter, @Nullable String alias) {
         String sqlPart = function + FormatUtil.bracket(parameter) + (alias == null ? "" :
-                " as " + FormatUtil.quotes(alias));
+            " as " + FormatUtil.quotes(alias));
         grammar.pushSelect(sqlPart);
         return this;
     }
 
     @Override
-    public Builder<T, K> selectFunction(String function, GenerateSqlPartFunctionalInterface closure, @Nullable String alias) {
+    public Builder<T, K> selectFunction(String function, GenerateSqlPartFunctionalInterface closure,
+                                        @Nullable String alias) {
         String completeSql = generateSql(closure);
         String sqlPart = function + FormatUtil.bracket(completeSql) + (alias == null ? "" :
-                " as " + FormatUtil.quotes(alias));
+            " as " + FormatUtil.quotes(alias));
         grammar.pushSelect(sqlPart);
         return this;
     }
@@ -428,7 +429,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
 
     @Override
     public String toSql(SqlType sqlType) {
-        String sql = grammar.generateSql(sqlType);
+        String       sql           = grammar.generateSql(sqlType);
         List<String> parameterList = grammar.getParameterList(sqlType);
         return String.format(sql.replace(" ? ", "\"%s\""), parameterList.toArray());
     }
@@ -492,7 +493,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
 
     @Override
     public K insertGetId() throws SQLRuntimeException {
-        String sql = grammar.generateSql(SqlType.INSERT);
+        String       sql           = grammar.generateSql(SqlType.INSERT);
         List<String> parameterList = grammar.getParameterList(SqlType.INSERT);
         return executeGetId(sql, parameterList);
     }
@@ -536,7 +537,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     @Override
     public List<K> insertGetIds() throws SQLRuntimeException {
         // sql 组装
-        String sql = grammar.generateSql(SqlType.INSERT);
+        String       sql           = grammar.generateSql(SqlType.INSERT);
         List<String> parameterList = grammar.getParameterList(SqlType.INSERT);
         return executeGetIds(sql, parameterList);
     }
@@ -554,8 +555,8 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
      */
     private void beforeBatchInsert(List<T> entityList) {
         // 获取entity所有有效字段
-        List<String> columnNameList = EntityUtil.columnNameList(entityList.get(0), true);
-        List<List<String>> valueListList = new ArrayList<>();
+        List<String>       columnNameList = EntityUtil.columnNameList(entityList.get(0), true);
+        List<List<String>> valueListList  = new ArrayList<>();
         for (T entity : entityList) {
             // 获取entity所有有效字段的值
             List<String> valueList = EntityUtil.valueList(entity, columnNameList);
@@ -669,10 +670,10 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     public Long count(String column) {
         if (grammar.hasGroup()) {
             throw new AggregatesNotSupportedGroupException("Not support group when using count(), please retry " +
-                    "by selectFunction()");
+                "by selectFunction()");
         }
         this.grammar.forAggregates();
-        String alias = UUID.randomUUID().toString();
+        String              alias    = UUID.randomUUID().toString();
         Map<String, Object> countMap = selectFunction("count", column, alias).firstOrFail().toMap();
         return (Long) countMap.get(alias);
     }
@@ -681,9 +682,9 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     public String max(String column) {
         if (grammar.hasGroup()) {
             throw new AggregatesNotSupportedGroupException("Not support group when using max(), please retry " +
-                    "by selectFunction()");
+                "by selectFunction()");
         }
-        String alias = UUID.randomUUID().toString();
+        String              alias    = UUID.randomUUID().toString();
         Map<String, Object> countMap = selectFunction("max", column, alias).firstOrFail().toMap();
         return countMap.get(alias).toString();
     }
@@ -692,9 +693,9 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     public String min(String column) {
         if (grammar.hasGroup()) {
             throw new AggregatesNotSupportedGroupException("Not support group when using min(), please retry " +
-                    "by selectFunction()");
+                "by selectFunction()");
         }
-        String alias = UUID.randomUUID().toString();
+        String              alias    = UUID.randomUUID().toString();
         Map<String, Object> countMap = selectFunction("min", column, alias).firstOrFail().toMap();
         return countMap.get(alias).toString();
     }
@@ -703,9 +704,9 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     public String avg(String column) {
         if (grammar.hasGroup()) {
             throw new AggregatesNotSupportedGroupException("Not support group when using avg(), please retry " +
-                    "by selectFunction()");
+                "by selectFunction()");
         }
-        String alias = UUID.randomUUID().toString();
+        String              alias    = UUID.randomUUID().toString();
         Map<String, Object> countMap = selectFunction("avg", column, alias).firstOrFail().toMap();
         return countMap.get(alias).toString();
     }
@@ -714,9 +715,9 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     public String sum(String column) {
         if (grammar.hasGroup()) {
             throw new AggregatesNotSupportedGroupException("Not support group when using sum(), please retry " +
-                    "by selectFunction()");
+                "by selectFunction()");
         }
-        String alias = UUID.randomUUID().toString();
+        String              alias    = UUID.randomUUID().toString();
         Map<String, Object> countMap = selectFunction("sum", column, alias).firstOrFail().toMap();
         return countMap.get(alias).toString();
     }
@@ -755,9 +756,9 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     @Override
     public Builder<T, K> join(JoinType joinType, String table, String column1, String symbol, String column2) {
         String sqlPart =
-                FormatUtil.spaces(joinType.getOperation()) + "join " + FormatUtil.backQuote(table) + FormatUtil.spaces(
-                        "on") +
-                        FormatUtil.column(column1) + symbol + FormatUtil.column(column2);
+            FormatUtil.spaces(joinType.getOperation()) + "join " + FormatUtil.backQuote(table) + FormatUtil.spaces(
+                "on") +
+                FormatUtil.column(column1) + symbol + FormatUtil.column(column2);
         grammar.pushJoin(sqlPart);
         return this;
     }
@@ -766,9 +767,9 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     public Builder<T, K> inRandomOrder(String field) {
         Builder<T, K> sameSubBuilder1 = model.newQuery();
         Builder<T, K> sameSubBuilder2 = model.newQuery();
-        String maxSql = sameSubBuilder1.selectFunction("max", field, null).toSql(SqlType.SELECT);
-        String minSql = sameSubBuilder2.selectFunction("min", field, null).toSql(SqlType.SELECT);
-        String floorSql = "rand()*((" + maxSql + ")-(" + minSql + "))+(" + minSql + ")";
+        String        maxSql          = sameSubBuilder1.selectFunction("max", field, null).toSql(SqlType.SELECT);
+        String        minSql          = sameSubBuilder2.selectFunction("min", field, null).toSql(SqlType.SELECT);
+        String        floorSql        = "rand()*((" + maxSql + ")-(" + minSql + "))+(" + minSql + ")";
         // select floor(rand()*((select max(`$key`) from $from)-(select min(`$key`) from $from))+(select min(`$key`) from $from))
         // select * from `student` where `id`in(select floor(rand()*((select max(`id`) from `student`)-(select min
         // (`id`) from `student`))+(select min(`id`) from `student`))) limit 5

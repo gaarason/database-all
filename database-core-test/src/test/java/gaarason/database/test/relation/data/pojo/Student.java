@@ -62,8 +62,8 @@ public class Student implements Serializable {
 
 
     @BelongsToMany(targetModel = TeacherModel.class, relationModel = RelationshipStudentTeacherModel.class,
-            foreignKeyForLocalModel = "student_id", foreignKeyForTargetModel = "teacher_id", localModelLocalKey = "id",
-            targetModelLocalKey = "id")
+        foreignKeyForLocalModel = "student_id", foreignKeyForTargetModel = "teacher_id", localModelLocalKey = "id",
+        targetModelLocalKey = "id")
     private List<Teacher> teachersBelongsToMany;
 
 

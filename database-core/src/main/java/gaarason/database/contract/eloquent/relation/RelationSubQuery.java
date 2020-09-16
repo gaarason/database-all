@@ -19,7 +19,8 @@ public interface RelationSubQuery {
      * @param generateSqlPart     Builder
      * @return sql数组
      */
-    String[] dealBatchSql(List<Map<String, Column>> stringColumnMapList, GenerateSqlPartFunctionalInterface generateSqlPart);
+    String[] dealBatchSql(List<Map<String, Column>> stringColumnMapList,
+                          GenerateSqlPartFunctionalInterface generateSqlPart);
 
     /**
      * 批量关联查询
@@ -43,7 +44,6 @@ public interface RelationSubQuery {
      * @param record          当前record
      * @param targetRecords   目标的recordList
      * @param stringStringMap 仅 @BelongsToMany 时有效, 增加额外信息到中间表
-     * @return 成功
      */
     void attach(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap);
 

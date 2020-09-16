@@ -8,6 +8,7 @@ import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.exception.EntityNewInstanceException;
 import gaarason.database.exception.RelationAnnotationNotSupportedException;
+import gaarason.database.provider.ModelShadow;
 import gaarason.database.util.EntityUtil;
 
 import java.lang.reflect.Field;
@@ -76,7 +77,7 @@ public class RelationGetSupport<T, K> {
         for (Record<T, K> record : records) {
 
             // 内存获取
-            ModelShadow.ModelInformation<?, ?> modelInformation = ModelShadow.get(records.get(0).getModel());
+            ModelShadow.ModelInfo<?, ?> modelInfo = ModelShadow.get(records.get(0).getModel());
 
             Class<T> entityClass = record.getModel().getEntityClass();
             // 某个字段的总数据集
@@ -86,14 +87,16 @@ public class RelationGetSupport<T, K> {
                 T entity = entityClass.newInstance();
                 for (Field field : fields) {
 
-                    ModelShadow.FieldInfo fieldInfo = modelInformation.getRelationFieldMap().get(field.getName());
+                    ModelShadow.FieldInfo fieldInfo = modelInfo.getRelationFieldMap().get(field.getName());
                     field.setAccessible(true); // 设置属性是可访问
                     // 普通赋值
                     EntityUtil.fieldAssignment(field, record.getMetadataMap(), entity, record);
 
                     // 获取关系的预处理
-                    GenerateSqlPartFunctionalInterface generateSqlPart = record.getRelationBuilderMap().get(field.getName());
-                    RelationshipRecordWithFunctionalInterface relationshipRecordWith = record.getRelationRecordMap().get(field.getName());
+                    GenerateSqlPartFunctionalInterface        generateSqlPart        = record.getRelationBuilderMap()
+                        .get(field.getName());
+                    RelationshipRecordWithFunctionalInterface relationshipRecordWith = record.getRelationRecordMap()
+                        .get(field.getName());
 
                     if (generateSqlPart == null || relationshipRecordWith == null || !attachedRelationship) {
                         continue;
@@ -110,12 +113,12 @@ public class RelationGetSupport<T, K> {
 
                     // 本级关系查询
                     RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
-                            field.getName(), record.getModel().getTableName(), () -> relationSubQuery.dealBatch(sqlArr),
-                            relationshipRecordWith, sqlArr);
+                        field.getName(), record.getModel().getTableName(), () -> relationSubQuery.dealBatch(sqlArr),
+                        relationshipRecordWith, sqlArr);
 
                     // 递归处理下级关系, 并筛选当前 record 所需要的属性
                     List<?> objects = relationSubQuery.filterBatchRecord(record, relationshipRecordList,
-                            cacheRelationRecordList);
+                        cacheRelationRecordList);
 
                     // 是否是集合
                     if (fieldInfo.isCollection()) {
@@ -146,13 +149,14 @@ public class RelationGetSupport<T, K> {
      */
     protected RecordList<?, ?> getRecordListInCache(Map<String, RecordList<?, ?>> cacheRelationRecordList, String key,
                                                     String tableName, GenerateRecordListFunctionalInterface closure,
-                                                    RelationshipRecordWithFunctionalInterface relationshipRecordWith, String[] sqlArr) {
+                                                    RelationshipRecordWithFunctionalInterface relationshipRecordWith,
+                                                    String[] sqlArr) {
         // 缓存keyName
         String cacheKeyName = key + "|" + Arrays.toString(sqlArr) + "|" + tableName;
 
         // 有缓存有直接返回, 没有就执行后返回
         RecordList<?, ?> recordList = cacheRelationRecordList.computeIfAbsent(cacheKeyName,
-                theKey -> closure.execute());
+            theKey -> closure.execute());
 
         // 使用复制结果
         RecordList<?, ?> recordsCopy = RecordFactory.copyRecordList(recordList);

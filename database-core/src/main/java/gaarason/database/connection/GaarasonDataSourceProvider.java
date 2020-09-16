@@ -38,18 +38,21 @@ public class GaarasonDataSourceProvider implements GaarasonDataSource {
     /**
      * 单前线程中的 ProxyDataSource对象 是否处于数据库事物中
      */
-    protected ThreadLocal<Boolean> inTransaction = ThreadLocal.withInitial(() -> false);
+    protected ThreadLocal<Boolean>    inTransaction    = ThreadLocal.withInitial(() -> false);
+
     /**
      * 是否写连接
      */
     @Setter
     @Getter
-    protected boolean isWrite = false;
+    protected boolean                 isWrite          = false;
+
     protected ThreadLocal<DataSource> masterDataSource = ThreadLocal.withInitial(() -> {
         // TODO 权重选择
         return masterDataSourceList.get((new Random()).nextInt(masterDataSourceList.size()));
     });
-    protected ThreadLocal<DataSource> slaveDataSource = ThreadLocal.withInitial(() -> {
+
+    protected ThreadLocal<DataSource> slaveDataSource  = ThreadLocal.withInitial(() -> {
         // TODO 权重选择
         return slaveDataSourceList.get((new Random()).nextInt(slaveDataSourceList.size()));
     });
@@ -91,7 +94,7 @@ public class GaarasonDataSourceProvider implements GaarasonDataSource {
     @Override
     public Connection getConnection() throws SQLException {
         DataSource realDataSource = getRealDataSource();
-        Connection connection = realDataSource.getConnection();
+        Connection connection     = realDataSource.getConnection();
         if (null == connection) {
             throw new InternalConcurrentException("Get an null value in ProxyDataSource object.");
         }

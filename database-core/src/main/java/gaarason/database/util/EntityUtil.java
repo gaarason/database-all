@@ -18,7 +18,7 @@ import java.util.*;
 public class EntityUtil {
 
     public final static Class<?>[] allowType = new Class[]{Boolean.class, Byte.class, Character.class, Short.class,
-            Integer.class, Long.class, Float.class, Double.class, BigInteger.class, Date.class};
+        Integer.class, Long.class, Float.class, Double.class, BigInteger.class, Date.class};
 
     /**
      * 通过entity解析对应的字段和值组成的map, 忽略不符合规则的字段
@@ -29,7 +29,7 @@ public class EntityUtil {
      */
     public static <T> Map<String, String> columnValueMap(T entity, boolean insertType) {
         Map<String, String> columnValueMap = new HashMap<>();
-        Field[] fields = entity.getClass().getDeclaredFields();
+        Field[]             fields         = entity.getClass().getDeclaredFields();
         for (Field field : fields) {
             Object value = fieldGet(field, entity);
             if (effectiveField(field, value, insertType)) {
@@ -49,7 +49,7 @@ public class EntityUtil {
      */
     public static <T> List<String> columnNameList(T entity, boolean insertType) {
         List<String> columnList = new ArrayList<>();
-        Field[] fields = entity.getClass().getDeclaredFields();
+        Field[]      fields     = entity.getClass().getDeclaredFields();
         for (Field field : fields) {
             Object value = fieldGet(field, entity);
             if (effectiveField(field, value, insertType))
@@ -67,7 +67,7 @@ public class EntityUtil {
      */
     public static <T> List<String> valueList(T entity, boolean insertType) {
         List<String> valueList = new ArrayList<>();
-        Field[] fields = entity.getClass().getDeclaredFields();
+        Field[]      fields    = entity.getClass().getDeclaredFields();
         for (Field field : fields) {
             Object value = fieldGet(field, entity);
             if (effectiveField(field, value, insertType))
@@ -85,7 +85,7 @@ public class EntityUtil {
      */
     public static <T> List<String> valueList(T entity, List<String> columnNameList) {
         List<String> valueList = new ArrayList<>();
-        Field[] fields = entity.getClass().getDeclaredFields();
+        Field[]      fields    = entity.getClass().getDeclaredFields();
         for (Field field : fields) {
             if (columnNameList.contains(columnName(field))) {
                 valueList.add(valueFormat(fieldGet(field, entity)));
@@ -189,7 +189,7 @@ public class EntityUtil {
     public static String fieldName(Class<?> obj, String columnName) {
         // 不存在注解时, 则查找类中是否存在小驼峰的属性名
         String fieldNameTemp = StringUtil.lineToHump(columnName, false);
-        String fieldName = null;
+        String fieldName     = null;
         for (Field field : obj.getDeclaredFields()) {
             // 优先精准匹配注解
             if (field.isAnnotationPresent(Column.class)) {
@@ -216,9 +216,9 @@ public class EntityUtil {
      */
     public static Object getFieldValueByColumn(Object obj, String columnName) {
         // 不存在注解时, 则查找类中是否存在小驼峰的属性名
-        String fieldNameTemp = StringUtil.lineToHump(columnName, false);
-        Object value = null;
-        Class<?> clazz = obj.getClass();
+        String   fieldNameTemp = StringUtil.lineToHump(columnName, false);
+        Object   value         = null;
+        Class<?> clazz         = obj.getClass();
         try {
             for (Field field : clazz.getDeclaredFields()) {
                 field.setAccessible(true);
@@ -251,9 +251,9 @@ public class EntityUtil {
      */
     public static String getFieldNameByColumn(Object obj, String columnName) {
         // 不存在注解时, 则查找类中是否存在小驼峰的属性名
-        String fieldNameTemp = StringUtil.lineToHump(columnName, false);
-        String fieldName = null;
-        Class<?> clazz = obj.getClass();
+        String   fieldNameTemp = StringUtil.lineToHump(columnName, false);
+        String   fieldName     = null;
+        Class<?> clazz         = obj.getClass();
         for (Field field : clazz.getDeclaredFields()) {
             field.setAccessible(true);
             // 优先精准匹配注解
@@ -284,7 +284,7 @@ public class EntityUtil {
     public static String getFieldNameByColumn(Class<?> clazz, String columnName) {
         // 不存在注解时, 则查找类中是否存在小驼峰的属性名
         String fieldNameTemp = StringUtil.lineToHump(columnName, false);
-        String fieldName = null;
+        String fieldName     = null;
         for (Field field : clazz.getDeclaredFields()) {
             field.setAccessible(true);
             // 优先精准匹配注解
@@ -362,11 +362,12 @@ public class EntityUtil {
      * @param stringColumnMap 元数据map
      * @param entity          数据表实体对象
      */
-    public static <T, K> void fieldAssignment(Field field, Map<String, gaarason.database.support.Column> stringColumnMap,
+    public static <T, K> void fieldAssignment(Field field,
+                                              Map<String, gaarason.database.support.Column> stringColumnMap,
                                               T entity, Record<T, K> record)
-            throws TypeNotSupportedException {
-        String columnName = EntityUtil.columnName(field);
-        gaarason.database.support.Column column = stringColumnMap.get(columnName);
+        throws TypeNotSupportedException {
+        String                           columnName = EntityUtil.columnName(field);
+        gaarason.database.support.Column column     = stringColumnMap.get(columnName);
         if (column != null) {
             try {
                 Object value = EntityUtil.columnFill(field, column.getValue());
@@ -392,7 +393,7 @@ public class EntityUtil {
      */
     public static <T> List<T> entityAssignment(List<Map<String, gaarason.database.support.Column>> stringColumnMapList,
                                                Class<T> entityClass)
-            throws TypeNotSupportedException {
+        throws TypeNotSupportedException {
         List<T> entityList = new ArrayList<>();
         for (Map<String, gaarason.database.support.Column> stringColumnMap : stringColumnMapList) {
             T entity = entityAssignment(stringColumnMap, entityClass);
@@ -415,8 +416,8 @@ public class EntityUtil {
             T entity = entityClass.newInstance();
             for (Field field : entityClass.getDeclaredFields()) {
                 field.setAccessible(true);
-                String columnName = EntityUtil.columnName(field);
-                gaarason.database.support.Column column = stringColumnMap.get(columnName);
+                String                           columnName = EntityUtil.columnName(field);
+                gaarason.database.support.Column column     = stringColumnMap.get(columnName);
                 if (column != null) {
                     Object value = EntityUtil.columnFill(field, column.getValue());
                     field.set(entity, value);

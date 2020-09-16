@@ -99,8 +99,8 @@ public class IncrementTypeTests extends BaseTests {
             entity.setUpdatedAt(new Date(1312312312));
             entityList.add(entity);
         }
-        int insert = peopleModel.newQuery().insert(entityList);
-        List<Long> longs = peopleModel.newQuery().insertGetIds(entityList);
+        int        insert = peopleModel.newQuery().insert(entityList);
+        List<Long> longs  = peopleModel.newQuery().insertGetIds(entityList);
         Assert.assertEquals(9901, insert);
         Assert.assertEquals(9901, longs.size());
         System.out.println(longs);

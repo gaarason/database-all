@@ -67,7 +67,7 @@ public interface Execute<T, K> {
 
     /**
      * 分块获取所有数据, 并处理
-     * @param num   单次获取的数据量
+     * @param num                      单次获取的数据量
      * @param chunkFunctionalInterface 对单次获取的数据量的处理
      * @throws SQLRuntimeException 数据库异常
      */

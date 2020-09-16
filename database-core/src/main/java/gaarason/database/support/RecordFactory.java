@@ -33,12 +33,12 @@ public class RecordFactory {
      */
     public static <T, K> Record<T, K> newRecord(Class<T> entityClass, Model<T, K> model, ResultSet resultSet,
                                                 String sql)
-            throws SQLException, EntityNotFoundException {
+        throws SQLException, EntityNotFoundException {
         if (!resultSet.next()) {
             throw new EntityNotFoundException(sql);
         }
         final ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-        Map<String, Column> stringColumnMap = JDBCResultToMap(resultSetMetaData, resultSet);
+        Map<String, Column>     stringColumnMap   = JDBCResultToMap(resultSetMetaData, resultSet);
         return new RecordBean<>(entityClass, model, stringColumnMap, sql);
     }
 
@@ -55,7 +55,7 @@ public class RecordFactory {
      */
     public static <T, K> RecordList<T, K> newRecordList(Class<T> entityClass, Model<T, K> model, ResultSet resultSet,
                                                         String sql) throws SQLException {
-        RecordList<T, K> recordList = new RecordListBean<>();
+        RecordList<T, K> recordList = new RecordListBean<>(sql);
         // 总的数据源
         final ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         while (resultSet.next()) {
@@ -64,8 +64,6 @@ public class RecordFactory {
             recordList.add(new RecordBean<>(entityClass, model, stringColumnMap, sql));
             recordList.getOriginalMetadataMapList().add(stringColumnMap);
         }
-        // 设置原始sql
-        recordList.setOriginalSql(sql);
         return recordList;
     }
 
@@ -79,14 +77,13 @@ public class RecordFactory {
      * @return 批量结果集(RecordList全新, Record为引用地址)
      */
     public static <T, K> RecordList<T, K> newRecordList(List<Record<T, K>> records) {
-        RecordList<T, K> recordList = new RecordListBean<>();
-        String sql = records.size() > 0 ? records.get(0).getOriginalSql() : "";
+        String           sql        = records.size() > 0 ? records.get(0).getOriginalSql() : "";
+        RecordList<T, K> recordList = new RecordListBean<>(sql);
         for (Record<T, K> record : records) {
             // 此处不应使用, deepCopyRecord
             recordList.add(record);
             recordList.getOriginalMetadataMapList().add(copy(record.getMetadataMap()));
         }
-        recordList.setOriginalSql(sql);
         return recordList;
     }
 
@@ -98,10 +95,10 @@ public class RecordFactory {
      * @return 单个结果集
      */
     public static <T, K> Record<T, K> copyRecord(Record<T, K> originalRecord) {
-        Model<T, K> model = originalRecord.getModel();
-        Class<T> entityClass = model.getEntityClass();
+        Model<T, K>         model       = originalRecord.getModel();
+        Class<T>            entityClass = model.getEntityClass();
         Map<String, Column> metadataMap = copy(originalRecord.getMetadataMap());
-        String originalSql = originalRecord.getOriginalSql();
+        String              originalSql = originalRecord.getOriginalSql();
         return new RecordBean<>(entityClass, model, metadataMap, originalSql);
     }
 
@@ -113,17 +110,16 @@ public class RecordFactory {
      * @return 批量结果集
      */
     public static <T, K> RecordList<T, K> copyRecordList(RecordList<T, K> originalRecordList) {
-        RecordList<T, K> recordList = new RecordListBean<>();
+        RecordList<T, K> recordList = new RecordListBean<>(originalRecordList.getOriginalSql());
         for (Record<T, K> originalRecord : originalRecordList) {
-            Model<T, K> model = originalRecord.getModel();
-            Class<T> entityClass = model.getEntityClass();
+            Model<T, K>         model       = originalRecord.getModel();
+            Class<T>            entityClass = model.getEntityClass();
             Map<String, Column> metadataMap = copy(originalRecord.getMetadataMap());
-            String originalSql = originalRecord.getOriginalSql();
+            String              originalSql = originalRecord.getOriginalSql();
             recordList.add(new RecordBean<>(entityClass, model, metadataMap, originalSql));
         }
         // 使用引用
         recordList.getOriginalMetadataMapList().addAll(copy(originalRecordList.getOriginalMetadataMapList()));
-        recordList.setOriginalSql(originalRecordList.getOriginalSql());
         recordList.setCacheMap(copy(originalRecordList.getCacheMap()));
         return recordList;
     }
@@ -136,9 +132,9 @@ public class RecordFactory {
      * @throws SQLException 数据库异常
      */
     private static Map<String, Column> JDBCResultToMap(ResultSetMetaData resultSetMetaData, ResultSet resultSet)
-            throws SQLException {
-        Map<String, Column> map = new HashMap<>();
-        final int columnCountMoreOne = resultSetMetaData.getColumnCount() + 1;
+        throws SQLException {
+        Map<String, Column> map                = new HashMap<>();
+        final int           columnCountMoreOne = resultSetMetaData.getColumnCount() + 1;
         for (int i = 1; i < columnCountMoreOne; i++) {
             Column column = new Column();
             column.setName(resultSetMetaData.getColumnLabel(i));

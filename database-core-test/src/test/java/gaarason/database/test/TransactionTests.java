@@ -50,9 +50,9 @@ public class TransactionTests extends BaseTests {
                         studentModel.newQuery().transaction(() -> {
                             studentModel.newQuery().where("id", "1").data("name", "dddddd").update();
                             StudentModel.Entity entity = studentModel.newQuery()
-                                    .where("id", "1")
-                                    .firstOrFail()
-                                    .toObject();
+                                .where("id", "1")
+                                .firstOrFail()
+                                .toObject();
                             Assert.assertEquals(entity.getName(), "dddddd");
                             throw new RuntimeException("业务上抛了个异常");
                         }, 1, true);
@@ -85,9 +85,9 @@ public class TransactionTests extends BaseTests {
                             student3Model.newQuery().transaction(() -> {
                                 student3Model.newQuery().where("id", "1").data("name", "dddddd").update();
                                 Student3Model.Entity entity = student3Model.newQuery()
-                                        .where("id", "1")
-                                        .firstOrFail()
-                                        .toObject();
+                                    .where("id", "1")
+                                    .firstOrFail()
+                                    .toObject();
 //                                try {
 //                                    Thread.sleep(2);
 //                                } catch (InterruptedException e) {
@@ -101,19 +101,19 @@ public class TransactionTests extends BaseTests {
                         }
                         // student3Model 回滚
                         Student3Model.Entity entity = student3Model.newQuery()
-                                .where("id", "1")
-                                .firstOrFail()
-                                .toObject();
+                            .where("id", "1")
+                            .firstOrFail()
+                            .toObject();
                         // student2Model 不受影响
                         Student2Model.Entity id = student2Model.newQuery()
-                                .where("id", "4")
-                                .firstOrFail().toObject();
+                            .where("id", "4")
+                            .firstOrFail().toObject();
                     }, 1, true);
 
                     //  第2层事物结束
                     StudentModel.Entity id = studentModel.newQuery()
-                            .where("id", "9")
-                            .firstOrFail().toObject();
+                        .where("id", "9")
+                        .firstOrFail().toObject();
                 }, 3, true);
 
                 // 第1层事物结束
@@ -138,9 +138,9 @@ public class TransactionTests extends BaseTests {
                 try {
                     studentModel.newQuery().data("name", "tesxxt").where("id", "9").update();
                     StudentModel.Entity entity = studentModel.newQuery()
-                            .where("id", "9")
-                            .firstOrFail()
-                            .toObject();
+                        .where("id", "9")
+                        .firstOrFail()
+                        .toObject();
                     Assert.assertEquals(entity.getName(), "tesxxt");
                     throw new RuntimeException("业务上抛了个异常");
                     // 第1层事物结束
@@ -151,9 +151,9 @@ public class TransactionTests extends BaseTests {
         }, 1, true);
 
         StudentModel.Entity entity = studentModel.newQuery()
-                .where("id", "9")
-                .firstOrFail()
-                .toObject();
+            .where("id", "9")
+            .firstOrFail()
+            .toObject();
         Assert.assertEquals(entity.getName(), "tesxxt");
 //        Assert.assertEquals(entity.getName(), "vv");
     }
@@ -172,9 +172,9 @@ public class TransactionTests extends BaseTests {
                 // 3层事物
                 student3Model.newQuery().transaction(() -> {
                     Student3Model.Entity entity = student3Model.newQuery()
-                            .where("id", "1")
-                            .firstOrFail()
-                            .toObject();
+                        .where("id", "1")
+                        .firstOrFail()
+                        .toObject();
                 }, 1, true);
 
                 try {
@@ -183,9 +183,9 @@ public class TransactionTests extends BaseTests {
                         System.out.println("student3Model 1层事物中 student2Model 2层事物中 studentModel 3层事物中");
                         student3Model.newQuery().where("id", "1").data("name", "ddddddxx").update();
                         Student3Model.Entity entity = student3Model.newQuery()
-                                .where("id", "1")
-                                .firstOrFail()
-                                .toObject();
+                            .where("id", "1")
+                            .firstOrFail()
+                            .toObject();
                         Assert.assertEquals(entity.getName(), "ddddddxx");
                         throw new RuntimeException("业务上抛了个异常");
                     }, 1, true);
@@ -198,26 +198,26 @@ public class TransactionTests extends BaseTests {
 
                 // student2Model 不受影响
                 Student2Model.Entity id = student2Model.newQuery()
-                        .where("id", "4")
-                        .firstOrFail().toObject();
+                    .where("id", "4")
+                    .firstOrFail().toObject();
                 Assert.assertEquals(id.getName(), "testttt");
 
             }, 1, true);
             StudentModel.Entity id = studentModel.newQuery()
-                    .where("id", "9")
-                    .firstOrFail().toObject();
+                .where("id", "9")
+                .firstOrFail().toObject();
             Assert.assertEquals(id.getName(), "testttt");
         }, 3, true);
 
         // 事物结束后
         StudentModel.Entity id = studentModel.newQuery()
-                .where("id", "9")
-                .firstOrFail().toObject();
+            .where("id", "9")
+            .firstOrFail().toObject();
         Assert.assertEquals(id.getName(), "testttt");
 
         Student2Model.Entity id2 = student2Model.newQuery()
-                .where("id", "4")
-                .firstOrFail().toObject();
+            .where("id", "4")
+            .firstOrFail().toObject();
         Assert.assertEquals(id2.getName(), "testttt");
 
         Student3Model.Entity entity = student3Model.newQuery().where("id", "1").firstOrFail().toObject();
@@ -227,7 +227,7 @@ public class TransactionTests extends BaseTests {
 
     @Test
     public void 事物_多线程下_多个数据连接嵌套事物() throws InterruptedException {
-        int count = 100;
+        int            count          = 100;
         CountDownLatch countDownLatch = new CountDownLatch(count);
         for (int i = 0; i < count; i++) {
             new Thread(() -> {
@@ -242,9 +242,9 @@ public class TransactionTests extends BaseTests {
                             student3Model.newQuery().transaction(() -> {
                                 student3Model.newQuery().where("id", "1").data("name", "dddddd").update();
                                 Student3Model.Entity entity = student3Model.newQuery()
-                                        .where("id", "1")
-                                        .firstOrFail()
-                                        .toObject();
+                                    .where("id", "1")
+                                    .firstOrFail()
+                                    .toObject();
 //                                Assert.assertEquals(entity.getName(), "dddddd");
                                 throw new RuntimeException("业务上抛了个异常");
                             }, 1, true);
@@ -253,21 +253,21 @@ public class TransactionTests extends BaseTests {
                         }
                         // student3Model 回滚
                         Student3Model.Entity entity = student3Model.newQuery()
-                                .where("id", "1")
-                                .firstOrFail()
-                                .toObject();
+                            .where("id", "1")
+                            .firstOrFail()
+                            .toObject();
 //                        Assert.assertNotEquals(entity.getName(), "dddddd");
 
                         // student2Model 不受影响
                         Student2Model.Entity id = student2Model.newQuery()
-                                .where("id", "4")
-                                .firstOrFail().toObject();
+                            .where("id", "4")
+                            .firstOrFail().toObject();
 //                        Assert.assertEquals(id.getName(), "testttt");
 
                     }, 1, true);
                     StudentModel.Entity id = studentModel.newQuery()
-                            .where("id", "9")
-                            .firstOrFail().toObject();
+                        .where("id", "9")
+                        .firstOrFail().toObject();
 //                    Assert.assertEquals(id.getName(), "testttt");
                 }, 3, false);
 

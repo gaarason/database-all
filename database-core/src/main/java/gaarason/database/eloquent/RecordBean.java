@@ -28,35 +28,42 @@ public class RecordBean<T, K> implements Record<T, K> {
      * 数据模型
      */
     protected final gaarason.database.contract.eloquent.Model<T, K> model;
+
     /**
      * 数据实体类
      */
-    protected final Class<T> entityClass;
+    protected final Class<T>                                        entityClass;
+
     /**
      * 本表元数据
      * <数据库字段名 -> 字段信息>
      */
-    protected Map<String, Column> metadataMap;
+    protected       Map<String, Column>                             metadataMap;
+
     /**
      * 原Sql
      */
-    protected String originalSql = "";
+    protected       String                                          originalSql = "";
 
     /**
      * 数据实体
      */
-    protected T entity;
+    protected T                                                      entity;
+
     /**
      * 是否已经绑定具体的数据
      */
-    protected boolean hasBind;
-    protected Map<String, GenerateSqlPartFunctionalInterface> relationBuilderMap = new HashMap<>();
-    protected Map<String, RelationshipRecordWithFunctionalInterface> relationRecordMap = new HashMap<>();
+    protected boolean                                                hasBind;
+
+    protected Map<String, GenerateSqlPartFunctionalInterface>        relationBuilderMap = new HashMap<>();
+
+    protected Map<String, RelationshipRecordWithFunctionalInterface> relationRecordMap  = new HashMap<>();
+
     /**
      * 主键值
      */
     @Nullable
-    protected K originalPrimaryKeyValue;
+    protected K                                                      originalPrimaryKeyValue;
 
     /**
      * 根据查询结果集生成
@@ -64,7 +71,8 @@ public class RecordBean<T, K> implements Record<T, K> {
      * @param model           数据模型
      * @param stringColumnMap 元数据
      */
-    public RecordBean(Class<T> entityClass, Model<T, K> model, Map<String, Column> stringColumnMap, String originalSql) {
+    public RecordBean(Class<T> entityClass, Model<T, K> model, Map<String, Column> stringColumnMap,
+                      String originalSql) {
         this.entityClass = entityClass;
         this.model = model;
         this.originalSql = originalSql;
@@ -169,8 +177,8 @@ public class RecordBean<T, K> implements Record<T, K> {
     @Override
     public String toSearch() {
         Map<String, Object> stringObjectMap = toMap();
-        Set<String> keySet = stringObjectMap.keySet();
-        String[] keyArray = keySet.toArray(new String[0]);
+        Set<String>         keySet          = stringObjectMap.keySet();
+        String[]            keyArray        = keySet.toArray(new String[0]);
         Arrays.sort(keyArray);
         StringBuilder sb = new StringBuilder();
         for (String key : keyArray) {
@@ -287,10 +295,10 @@ public class RecordBean<T, K> implements Record<T, K> {
         String[] columnArr = column.split("\\.");
         // 快捷类型
         if (columnArr.length > 1) {
-            String lastLevelColumn = columnArr[columnArr.length - 1];
+            String lastLevelColumn  = columnArr[columnArr.length - 1];
             String otherLevelColumn = StringUtil.rtrim(column, "." + lastLevelColumn);
             return with(otherLevelColumn, builder -> builder,
-                    record -> record.with(lastLevelColumn, builderClosure, recordClosure));
+                record -> record.with(lastLevelColumn, builderClosure, recordClosure));
         }
 
         relationBuilderMap.put(column, builderClosure);
@@ -319,8 +327,8 @@ public class RecordBean<T, K> implements Record<T, K> {
         }
         // 执行
         boolean success = model.newQuery()
-                .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-                .delete() > 0;
+            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
+            .delete() > 0;
         // 成功删除后后,刷新自身属性
         if (success) {
             this.metadataMap = new HashMap<>();
@@ -359,8 +367,8 @@ public class RecordBean<T, K> implements Record<T, K> {
         }
         // 执行
         boolean success = model.onlyTrashed()
-                .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-                .restore() > 0;
+            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
+            .restore() > 0;
         // 成功恢复后,刷新自身属性
         if (success && refresh) {
             refresh();
@@ -381,8 +389,8 @@ public class RecordBean<T, K> implements Record<T, K> {
         }
         // 刷新自身属性
         init(model.withTrashed()
-                .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-                .firstOrFail().getMetadataMap());
+            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
+            .firstOrFail().getMetadataMap());
         // 响应
         return this;
     }
@@ -425,8 +433,8 @@ public class RecordBean<T, K> implements Record<T, K> {
         }
         // 执行
         boolean success = model.newQuery()
-                .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-                .update(entity) > 0;
+            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
+            .update(entity) > 0;
         // 成功更新后,刷新自身属性
         if (success) {
             selfUpdate(entity, false);

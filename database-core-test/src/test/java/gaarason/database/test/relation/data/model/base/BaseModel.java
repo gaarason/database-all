@@ -19,7 +19,7 @@ abstract public class BaseModel<T, K> extends Model<T, K> {
     private static DataSource dataSourceMaster0() {
         DruidDataSource druidDataSource = new DruidDataSource();
         druidDataSource.setUrl(
-                "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
+            "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
         druidDataSource.setDbType("com.alibaba.druid.pool.DruidDataSource");
         druidDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         druidDataSource.setUsername("root");
@@ -32,7 +32,8 @@ abstract public class BaseModel<T, K> extends Model<T, K> {
         druidDataSource.setMinEvictableIdleTimeMillis(300000);
         druidDataSource.setValidationQuery("SELECT 1");
         List<String> iniSql = new ArrayList<>();
-        iniSql.add("SET SESSION SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'");
+        iniSql.add(
+            "SET SESSION SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'");
         druidDataSource.setConnectionInitSqls(iniSql);
         druidDataSource.setTestOnBorrow(false);
         druidDataSource.setTestOnReturn(false);

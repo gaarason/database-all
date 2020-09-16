@@ -1,9 +1,8 @@
-package gaarason.database.support;
+package gaarason.database.provider;
 
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.annotations.Column;
 import gaarason.database.eloquent.annotations.*;
 import gaarason.database.eloquent.relation.BelongsToManyQueryRelation;
 import gaarason.database.eloquent.relation.BelongsToQueryRelation;
@@ -12,8 +11,8 @@ import gaarason.database.exception.InvalidEntityException;
 import gaarason.database.exception.InvalidPrimaryKeyTypeException;
 import gaarason.database.util.EntityUtil;
 import gaarason.database.util.ObjectUtil;
+import gaarason.database.util.ReflectionUtil;
 import lombok.Data;
-import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -26,60 +25,54 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Model信息大全
  */
-public class ModelShadow {
-
-    /**
-     * 反射
-     */
-    public final static Reflections reflections = new Reflections("");
+final public class ModelShadow {
 
     /**
      * 允许的java属性
      */
     public final static Class<?>[] basicType = new Class[]{Boolean.class, Byte.class, Character.class, Short.class,
-            Integer.class, Long.class, Float.class, Double.class, BigInteger.class, Date.class};
+        Integer.class, Long.class, Float.class, Double.class, BigInteger.class, Date.class};
 
     /**
      * 关联关系注解
      */
     public final static Class<? extends Annotation>[] relationAnnotations = new Class[]{HasOneOrMany.class,
-            BelongsTo.class, BelongsToMany.class};
+        BelongsTo.class, BelongsToMany.class};
 
     /**
      * Model Class做为索引
      */
-    protected static Map<Class<?>, ModelInformation<?, ?>> ModelMap = new ConcurrentHashMap<>();
+    protected static volatile Map<Class<? extends Model<?, ?>>, ModelInfo<?, ?>> modelIndexMap = new ConcurrentHashMap<>();
 
     /**
      * Entity Class作为索引
      */
-    protected static Map<Class<?>, ModelInformation<?, ?>> EntityMap = new ConcurrentHashMap<>();
+    protected static volatile Map<Class<?>, ModelInfo<?, ?>> entityIndexMap = new ConcurrentHashMap<>();
 
-
+    /**
+     * 初始化
+     */
     static {
-        Set<Class<? extends Model>> modelClasses = reflections.getSubTypesOf(Model.class);
+        Set<Class<? extends Model<?, ?>>> modelClasses =
+            ObjectUtil.typeCast(ReflectionUtil.reflections.getSubTypesOf(Model.class));
 
-        // 一轮初始化
-        for (Class<? extends Model> modelClass : modelClasses) {
-            initModelInformation(modelClass);
+        // 一轮初始化Model基础信息, 不存在依赖递归等复杂情况
+        // 并过滤不需要的model, 比如抽象类等
+        for (Class<? extends Model<?, ?>> modelClass : modelClasses) {
+            initModelInformation(ObjectUtil.typeCast(modelClass));
         }
-        // 二轮补充
-        for (Class<?> modelClass : ModelMap.keySet()) {
-            ModelInformation<?, ?> modelInformation = ModelMap.get(modelClass);
-            primitiveFieldDeal(modelInformation);
+        // 二轮补充基础字段信息
+        // Model实例化存储
+        for (Class<? extends Model<?, ?>> modelClass : modelIndexMap.keySet()) {
+            ModelInfo<?, ?> modelInfo = modelIndexMap.get(modelClass);
+            primitiveFieldDeal(modelInfo);
         }
-
-        // 三轮补充
-        for (Class<?> modelClass : ModelMap.keySet()) {
-            ModelInformation<?, ?> modelInformation = ModelMap.get(modelClass);
-            relationFieldDeal(modelInformation);
+        // 三轮补充关联关系字段信息
+        // RelationSubQuery实例化存储
+        for (Class<?> modelClass : modelIndexMap.keySet()) {
+            ModelInfo<?, ?> modelInfo = modelIndexMap.get(modelClass);
+            relationFieldDeal(modelInfo);
         }
-    }
-
-    // todo
-    public static void newInstance() {
-        // 正确的实例化一个model
-        System.out.println("test");
     }
 
     /**
@@ -89,9 +82,25 @@ public class ModelShadow {
      * @param <K>   主键类型
      * @return 格式化后的Model信息
      */
-    public static <T, K> ModelInformation<T, K> get(Model<T, K> model) {
+    public static <T, K> ModelInfo<T, K> get(Model<T, K> model) {
         // 类型转化
-        return ObjectUtil.typeCast(ModelMap.get(model.getClass()));
+        return getByModel(ObjectUtil.typeCast(model.getClass()));
+    }
+
+    /**
+     * 查询Model信息
+     * @param modelClass 模型类
+     * @param <T>        实体类
+     * @param <K>        主键类型
+     * @return 格式化后的Model信息
+     */
+    public static <T, K> ModelInfo<T, K> getByModel(Class<? extends Model<T, K>> modelClass) {
+        // 类型转化
+        ModelInfo<?, ?> result = modelIndexMap.get(modelClass);
+        if (null == result) {
+            throw new InvalidEntityException("Model class[" + modelClass + "] have no information in the Shadow.");
+        }
+        return ObjectUtil.typeCast(result);
     }
 
     /**
@@ -99,10 +108,10 @@ public class ModelShadow {
      * @param entityClass 实体类
      * @return 格式化后的Model信息
      */
-    public static <T, K> ModelInformation<T, K> get(Class<K> entityClass) {
-        ModelInformation<?, ?> result = EntityMap.get(entityClass);
+    public static <T, K> ModelInfo<T, K> getByEntity(Class<T> entityClass) {
+        ModelInfo<?, ?> result = entityIndexMap.get(entityClass);
         if (null == result) {
-            throw new InvalidEntityException("Entity[" + entityClass + "] have no information in the Shadow.");
+            throw new InvalidEntityException("Entity class[" + entityClass + "] have no information in the Shadow.");
         }
         return ObjectUtil.typeCast(result);
     }
@@ -113,42 +122,46 @@ public class ModelShadow {
      * @param <T>        实体类
      * @param <K>        主键类型
      */
-    protected static <T, K> void initModelInformation(Class<? extends Model> modelClass) {
-        ModelInformation<T, K> modelInformation = new ModelInformation<>();
-        modelInformation.modelClass = modelClass;
+    private static <T, K> void initModelInformation(Class<? extends Model<T, K>> modelClass) {
+        ModelInfo<T, K> modelInfo = new ModelInfo<>();
+        modelInfo.modelClass = modelClass;
         try {
             // 模型信息
-            modelDeal(modelInformation);
+            modelDeal(modelInfo);
         } catch (Throwable e) {
             // 父类, 抽象类跳过
             return;
         }
         // 建立实体类索引
-        EntityMap.put(modelInformation.entityClass, modelInformation);
-        ModelMap.put(modelClass, modelInformation);
+        entityIndexMap.put(modelInfo.entityClass, modelInfo);
+        modelIndexMap.put(modelClass, modelInfo);
     }
 
     /**
      * 补充Model信息
-     * @param modelInformation Model信息
-     * @param <T>              实体类
-     * @param <K>              主键类型
+     * @param modelInfo Model信息
+     * @param <T>       实体类
+     * @param <K>       主键类型
      */
     @SuppressWarnings("unchecked")
-    protected static <T, K> void modelDeal(ModelInformation<T, K> modelInformation) {
-        modelInformation.entityClass = (Class<T>) ((ParameterizedType) modelInformation.modelClass.getGenericSuperclass()).getActualTypeArguments()[0];
-        modelInformation.primaryKeyClass = (Class<K>) ((ParameterizedType) modelInformation.modelClass.getGenericSuperclass()).getActualTypeArguments()[1];
-        modelInformation.tableName = EntityUtil.tableName(modelInformation.entityClass);
+    protected static <T, K> void modelDeal(ModelInfo<T, K> modelInfo) {
+        modelInfo.entityClass = (Class<T>) ((ParameterizedType) modelInfo.modelClass.getGenericSuperclass())
+            .getActualTypeArguments()[0];
+        modelInfo.primaryKeyClass = (Class<K>) ((ParameterizedType) modelInfo.modelClass.getGenericSuperclass())
+            .getActualTypeArguments()[1];
+        modelInfo.tableName = EntityUtil.tableName(modelInfo.entityClass);
     }
 
     /**
      * 补充基本字段信息
-     * @param modelInformation Model信息
-     * @param <T>              实体类
-     * @param <K>              主键类型
+     * @param modelInfo Model信息
+     * @param <T>       实体类
+     * @param <K>       主键类型
      */
-    protected static <T, K> void primitiveFieldDeal(ModelInformation<T, K> modelInformation) {
-        Class<T> entityClass = modelInformation.entityClass;
+    protected static <T, K> void primitiveFieldDeal(ModelInfo<T, K> modelInfo) {
+        Class<T> entityClass = modelInfo.entityClass;
+//        modelInfo.model = ModelUtil.getNewInstance(modelInfo.modelClass);
+        modelInfo.model = ModelInstanceProvider.getModel(modelInfo.modelClass);
         Field[] fields = entityClass.getDeclaredFields();
 
         for (Field field : fields) {
@@ -169,21 +182,21 @@ public class ModelShadow {
                 // 主键处理
                 if (field.isAnnotationPresent(Primary.class)) {
                     Primary primary = field.getAnnotation(Primary.class);
-                    modelInformation.primaryKeyIncrement = primary.increment();
-                    modelInformation.primaryKeyColumnName = fieldInfo.columnName;
-                    modelInformation.primaryKeyName = field.getName();
+                    modelInfo.primaryKeyIncrement = primary.increment();
+                    modelInfo.primaryKeyColumnName = fieldInfo.columnName;
+                    modelInfo.primaryKeyName = field.getName();
                     // 主键类型检测
-                    if (!modelInformation.primaryKeyClass.equals(field.getType())) {
+                    if (!modelInfo.primaryKeyClass.equals(field.getType())) {
                         throw new InvalidPrimaryKeyTypeException(
-                                "The primary key type [" + field.getType() + "] of the entity does not match with the " +
-                                        "generic [" + modelInformation.primaryKeyClass + "]");
+                            "The primary key type [" + field.getType() + "] of the entity does not match with the " +
+                                "generic [" + modelInfo.primaryKeyClass + "]");
                     }
                 }
 
                 // 属性名 索引键入
-                modelInformation.javaFieldMap.put(fieldInfo.name, fieldInfo);
+                modelInfo.javaFieldMap.put(fieldInfo.name, fieldInfo);
                 // 数据库字段名 索引键入
-                modelInformation.columnFieldMap.put(fieldInfo.columnName, fieldInfo);
+                modelInfo.columnFieldMap.put(fieldInfo.columnName, fieldInfo);
 
             }
         }
@@ -191,14 +204,14 @@ public class ModelShadow {
 
     /**
      * 补充关系字段信息
-     * @param modelInformation Model信息
-     * @param <T>              实体类
-     * @param <K>              主键类型
+     * @param modelInfo Model信息
+     * @param <T>       实体类
+     * @param <K>       主键类型
      */
-    protected static <T, K> void relationFieldDeal(ModelInformation<T, K> modelInformation) {
+    protected static <T, K> void relationFieldDeal(ModelInfo<T, K> modelInfo) {
 
-        Class<T> entityClass = modelInformation.entityClass;
-        Field[] fields = entityClass.getDeclaredFields();
+        Class<T> entityClass = modelInfo.entityClass;
+        Field[]  fields      = entityClass.getDeclaredFields();
 
         for (Field field : fields) {
             // 静态属性, 不处理
@@ -216,10 +229,10 @@ public class ModelShadow {
                 } else if (field.isAnnotationPresent(HasOneOrMany.class)) {
                     fieldInfo.relationSubQuery = new HasOneOrManyQueryRelation(field);
                 } else {
-                    break;
+                    continue;
                 }
                 // 关联关系记录
-                modelInformation.relationFieldMap.put(fieldInfo.name, fieldInfo);
+                modelInfo.relationFieldMap.put(fieldInfo.name, fieldInfo);
             }
         }
     }
@@ -229,7 +242,7 @@ public class ModelShadow {
      * @param field 字段
      * @return FieldInfo
      */
-    protected static FieldInfo newFieldInfo(Field field){
+    protected static FieldInfo newFieldInfo(Field field) {
         // 设置属性是可访问
         field.setAccessible(true);
 
@@ -267,12 +280,12 @@ public class ModelShadow {
      * 格式化后的Model信息
      */
     @Data
-    public static class ModelInformation<T, K> {
+    public static class ModelInfo<T, K> {
 
         /**
          * model类
          */
-        protected Class<?> modelClass;
+        protected Class<? extends Model<T, K>> modelClass;
 
         /**
          * model对象

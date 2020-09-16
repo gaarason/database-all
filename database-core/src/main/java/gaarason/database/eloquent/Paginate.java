@@ -8,17 +8,23 @@ import java.util.List;
 @Data
 public class Paginate<T> {
 
-    List<T> itemList;
-    protected int currentPage;
-    protected int perPage;
+    protected int     currentPage;
+
+    protected int     perPage;
+
     @Nullable
     protected Integer lastPage;
+
     @Nullable
     protected Integer from;
+
     @Nullable
     protected Integer to;
+
     @Nullable
     protected Integer total;
+
+    List<T> itemList;
 
     public Paginate(List<T> itemList, int currentPage, int perPage) {
         this.currentPage = currentPage;

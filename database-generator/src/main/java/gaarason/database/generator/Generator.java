@@ -17,94 +17,115 @@ import java.util.concurrent.*;
 
 public class Generator {
 
-    final private static String entityTemplateStr = fileGetContent(getAbsoluteReadFileName("entity"));
-    final private static String fieldTemplateStr = fileGetContent(getAbsoluteReadFileName("field"));
-    final private static String baseModelTemplateStr = fileGetContent(getAbsoluteReadFileName("baseModel"));
-    final private static String modelTemplateStr = fileGetContent(getAbsoluteReadFileName("model"));
+    final private static String   entityTemplateStr    = fileGetContent(getAbsoluteReadFileName("entity"));
+
+    final private static String   fieldTemplateStr     = fileGetContent(getAbsoluteReadFileName("field"));
+
+    final private static String   baseModelTemplateStr = fileGetContent(getAbsoluteReadFileName("baseModel"));
+
+    final private static String   modelTemplateStr     = fileGetContent(getAbsoluteReadFileName("model"));
+
     /**
      * 输出目录
      */
     @Setter
-    private String outputDir = "./";
+    private              String   outputDir            = "./";
+
     /**
      * 命名空间
      */
     @Setter
-    private String namespace = "data";
+    private              String   namespace            = "data";
+
     /**
      * entity目录
      */
     @Setter
-    private String entityDir = "entity";
+    private              String   entityDir            = "entity";
+
     /**
      * entity前缀
      */
     @Setter
-    private String entityPrefix = "";
+    private              String   entityPrefix         = "";
+
     /**
      * entity后缀
      */
     @Setter
-    private String entitySuffix = "";
+    private              String   entitySuffix         = "";
+
     /**
      * model目录
      */
     @Setter
-    private String modelDir = "model";
+    private              String   modelDir             = "model";
+
     /**
      * model前缀
      */
     @Setter
-    private String modelPrefix = "";
+    private              String   modelPrefix          = "";
+
     /**
      * model后缀
      */
     @Setter
-    private String modelSuffix = "Model";
+    private              String   modelSuffix          = "Model";
+
     /**
      * baseModel目录
      */
     @Setter
-    private String baseModelDir = "base";
+    private              String   baseModelDir         = "base";
+
     /**
      * baseModel类名
      */
     @Setter
-    private String baseModelName = "BaseModel";
+    private              String   baseModelName        = "BaseModel";
+
     /**
      * 是否使用spring boot注解 model
      */
     @Setter
-    private Boolean isSpringBoot = false;
+    private              Boolean  isSpringBoot         = false;
+
     /**
      * 是否使用swagger注解 entity
      */
     @Setter
-    private Boolean isSwagger = false;
+    private              Boolean  isSwagger            = false;
+
     /**
      * 是否使用 org.hibernate.validator.constraints.* 注解 entity
      */
     @Setter
-    private Boolean isValidator = false;
+    private              Boolean  isValidator          = false;
+
     /**
      * 是否生成静态字段名
      */
     @Setter
-    private Boolean staticField = false;
+    private              Boolean  staticField          = false;
+
     /**
      * 生成并发线程数
      */
     @Setter
-    private int corePoolSize = 20;
+    private              int      corePoolSize         = 20;
+
     /**
      * 新增时,不可通过代码更改的字段
      */
-    private String[] disInsertable = {};
+    private              String[] disInsertable        = {};
+
     /**
      * 更新时,不可通过代码更改的字段
      */
-    private String[] disUpdatable = {};
-    private String baseModelNamespace;
+    private              String[] disUpdatable         = {};
+
+    private              String   baseModelNamespace;
 
     private String modelNamespace;
 
@@ -161,10 +182,10 @@ public class Generator {
     }
 
     private static String fileGetContent(String fileName) {
-        InputStream is = Generator.class.getResourceAsStream(fileName);
-        BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-        String s;
-        StringBuilder configContentStr = new StringBuilder();
+        InputStream    is               = Generator.class.getResourceAsStream(fileName);
+        BufferedReader br               = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+        String         s;
+        StringBuilder  configContentStr = new StringBuilder();
         try {
             while ((s = br.readLine()) != null) {
                 configContentStr.append(s);
@@ -181,7 +202,7 @@ public class Generator {
             File file = new File(path);
             if (file.exists() || file.mkdirs()) {
                 OutputStreamWriter outputStreamWriter = new OutputStreamWriter(
-                        new FileOutputStream(path + fileName + ".java"), StandardCharsets.UTF_8);
+                    new FileOutputStream(path + fileName + ".java"), StandardCharsets.UTF_8);
 
                 outputStreamWriter.write(content.replaceAll("\\\\n", "\n"));
                 outputStreamWriter.flush();
@@ -238,10 +259,10 @@ public class Generator {
     private void init() {
         if (getModel() == null) {
             throw new RuntimeException("使用无参构造`public void Generator()`时,需要重写`getModel`方法,否则请使用`public void " +
-                    "Generator(String jdbcUrl, String username, String password)`");
+                "Generator(String jdbcUrl, String username, String password)`");
         }
         baseModelNamespace = namespace + ("".equals(modelDir) ? "" : ("." + modelDir)) + ("".equals(
-                baseModelDir) ? "" : ("." + baseModelDir));
+            baseModelDir) ? "" : ("." + baseModelDir));
         modelNamespace = namespace + ("".equals(modelDir) ? "" : ("." + modelDir));
         entityNamespace = namespace + ("".equals(entityDir) ? "" : ("." + entityDir));
     }
@@ -260,7 +281,7 @@ public class Generator {
         filePutContent(getAbsoluteWriteFilePath(baseModelNamespace), baseModelName, baseDaoTemplateStrReplace);
 
         ThreadPoolExecutor threadPool = new ThreadPoolExecutor(corePoolSize, corePoolSize + 1, 1,
-                TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(65535));
+            TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(65535));
 
         CountDownLatch countDownLatch = new CountDownLatch(tables.size());
 
@@ -276,7 +297,7 @@ public class Generator {
                     Map<String, Object> tableInfo = showTableInfo(tableName);
                     // 表注释
                     String entityComment = tableInfo.get("TABLE_COMMENT") == null ? tableName : tableInfo.get(
-                            "TABLE_COMMENT").toString();
+                        "TABLE_COMMENT").toString();
                     // entity文件内容
                     String entityTemplateStrReplace = fillPojoTemplate(tableName, entityName, entityComment);
                     // entity写入文件
@@ -284,13 +305,13 @@ public class Generator {
 
                     // 主键的java类型
                     String primaryKeyType = Optional.ofNullable(tablePrimaryKeyTypeMap.get(tableName))
-                            .map(Object::toString)
-                            .orElse("Object");
+                        .map(Object::toString)
+                        .orElse("Object");
                     // model文件名
                     String modelName = modelName(tableName);
                     // model文件内容
                     String modelTemplateStrReplace = fillModelTemplate(tableName, modelName, entityName,
-                            primaryKeyType);
+                        primaryKeyType);
                     // model写入文件
                     filePutContent(getAbsoluteWriteFilePath(modelNamespace), modelName, modelTemplateStrReplace);
                 }
@@ -334,7 +355,7 @@ public class Generator {
         parameterMap.put("${primary_key_type}", primaryKeyType);
         parameterMap.put("${model_name}", modelName);
         parameterMap.put("${is_spring_boot}", isSpringBoot ? "import org.springframework.stereotype.Repository;" +
-                "\n\n@Repository" : "");
+            "\n\n@Repository" : "");
 
         return fillTemplate(modelTemplateStr, parameterMap);
     }
@@ -352,13 +373,13 @@ public class Generator {
         parameterMap.put("${entity_name}", entityName);
         parameterMap.put("${table}", tableName);
         parameterMap.put("${swagger_import}", isSwagger ?
-                "import io.swagger.annotations.ApiModel;\n" +
-                        "import io.swagger.annotations.ApiModelProperty;\n" : "");
+            "import io.swagger.annotations.ApiModel;\n" +
+                "import io.swagger.annotations.ApiModelProperty;\n" : "");
         parameterMap.put("${validator_import}", isValidator ?
-                "import org.hibernate.validator.constraints.Length;\n" +
-                        "\n" +
-                        "import javax.validation.constraints.Max;\n" +
-                        "import javax.validation.constraints.Min;\n" : "\n");
+            "import org.hibernate.validator.constraints.Length;\n" +
+                "\n" +
+                "import javax.validation.constraints.Max;\n" +
+                "import javax.validation.constraints.Min;\n" : "\n");
         parameterMap.put("${swagger_annotation}", isSwagger ? "@ApiModel(\"" + comment + "\")\n" : "");
         parameterMap.put("${static_fields}", staticField ? fillStaticFieldsTemplate(tableName) : "");
         parameterMap.put("${fields}", fillFieldsTemplate(tableName));
@@ -405,8 +426,8 @@ public class Generator {
 
             // 每个字段的填充(避免静态字段与普通属性名一样导致冲突, 一样时使用$前缀)
             String fieldTemplateStrReplace =
-                    "    final public static String " + (staticName.equals(columnName) ? "$" : "") + staticName +
-                            " = \"" + columnName + "\";\n";
+                "    final public static String " + (staticName.equals(columnName) ? "$" : "") + staticName +
+                    " = \"" + columnName + "\";\n";
             // 追加
             str.append(fieldTemplateStrReplace);
         }
@@ -433,18 +454,18 @@ public class Generator {
         mysqlFieldGenerator.setColumnName(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_NAME));
         mysqlFieldGenerator.setColumnKey(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_KEY));
         mysqlFieldGenerator.setCharacterOctetLength(
-                getValue(fieldStringObjectMap, MysqlFieldGenerator.CHARACTER_OCTET_LENGTH));
+            getValue(fieldStringObjectMap, MysqlFieldGenerator.CHARACTER_OCTET_LENGTH));
         mysqlFieldGenerator.setNumericPrecision(getValue(fieldStringObjectMap, MysqlFieldGenerator.NUMERIC_PRECISION));
         mysqlFieldGenerator.setPrivileges(getValue(fieldStringObjectMap, MysqlFieldGenerator.PRIVILEGES));
         mysqlFieldGenerator.setColumnComment(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_COMMENT));
         mysqlFieldGenerator.setDatetimePrecision(
-                getValue(fieldStringObjectMap, MysqlFieldGenerator.DATETIME_PRECISION));
+            getValue(fieldStringObjectMap, MysqlFieldGenerator.DATETIME_PRECISION));
         mysqlFieldGenerator.setCollationName(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLLATION_NAME));
         mysqlFieldGenerator.setNumericScale(getValue(fieldStringObjectMap, MysqlFieldGenerator.NUMERIC_SCALE));
         mysqlFieldGenerator.setColumnType(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_TYPE));
         mysqlFieldGenerator.setOrdinalPosition(getValue(fieldStringObjectMap, MysqlFieldGenerator.ORDINAL_POSITION));
         mysqlFieldGenerator.setCharacterMaximumLength(
-                getValue(fieldStringObjectMap, MysqlFieldGenerator.CHARACTER_MAXIMUM_LENGTH));
+            getValue(fieldStringObjectMap, MysqlFieldGenerator.CHARACTER_MAXIMUM_LENGTH));
         mysqlFieldGenerator.setDataType(getValue(fieldStringObjectMap, MysqlFieldGenerator.DATA_TYPE));
         mysqlFieldGenerator.setCharacterSetName(getValue(fieldStringObjectMap, MysqlFieldGenerator.CHARACTER_SET_NAME));
         mysqlFieldGenerator.setColumnDefault(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_DEFAULT));
@@ -462,9 +483,9 @@ public class Generator {
         parameterMap.put("${column}", field.toAnnotationDatabaseColumn());
         parameterMap.put("${field}", field.toFieldName());
         parameterMap.put("${apiModelProperty}", isSwagger ? field.toAnnotationSwaggerAnnotationsApiModelProperty() :
-                "");
+            "");
         parameterMap.put("${validator}", isValidator ? field.toAnnotationOrgHibernateValidatorConstraintValidator() :
-                "");
+            "");
 
         return fillTemplate(fieldTemplateStr, parameterMap);
     }
@@ -499,7 +520,7 @@ public class Generator {
         parameters.add(DBName());
         parameters.add(tableName);
         return getModel().newQuery().queryOrFail("select * from information_schema.tables where table_schema = ? and" +
-                " table_name = ? ", parameters).toMap();
+            " table_name = ? ", parameters).toMap();
     }
 
     /**
@@ -522,9 +543,9 @@ public class Generator {
         parameters.add(DBName());
         parameters.add(tableName);
         return getModel().newQuery()
-                .queryList("select * from information_schema.`columns` where table_schema = ? and table_name = ? ",
-                        parameters)
-                .toMapList();
+            .queryList("select * from information_schema.`columns` where table_schema = ? and table_name = ? ",
+                parameters)
+            .toMapList();
     }
 
     /**
@@ -532,9 +553,9 @@ public class Generator {
      */
     @SuppressWarnings("unchecked")
     private String DBName() {
-        String name = "";
-        Model model = getModel();
-        Map<String, Object> map = model.newQuery().queryOrFail("select database()", new ArrayList<>()).toMap();
+        String              name  = "";
+        Model               model = getModel();
+        Map<String, Object> map   = model.newQuery().queryOrFail("select database()", new ArrayList<>()).toMap();
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             if (entry.getValue() != null) {
                 name = entry.getValue().toString();

@@ -23,17 +23,17 @@ abstract public class BaseTests {
     @BeforeClass
     public static void beforeClass() throws IOException {
         String sqlFilename = Thread.currentThread().getStackTrace()[1].getClass().getResource("/").toString().replace(
-                "file:", "") + "../../src/test/java/gaarason/database/test/init/Init.sql";
+            "file:", "") + "../../src/test/java/gaarason/database/test/init/Init.sql";
         initSql = readToString(sqlFilename);
     }
 
     private static String readToString(String fileName) throws IOException {
         String encoding = "UTF-8";
-        File file = new File(fileName);
+        File   file     = new File(fileName);
         file.setReadable(true);
-        Long fileLength = file.length();
-        byte[] fileContent = new byte[fileLength.intValue()];
-        FileInputStream in = new FileInputStream(file);
+        Long            fileLength  = file.length();
+        byte[]          fileContent = new byte[fileLength.intValue()];
+        FileInputStream in          = new FileInputStream(file);
         in.read(fileContent);
         in.close();
         return new String(fileContent, encoding);
@@ -61,7 +61,7 @@ abstract public class BaseTests {
             Connection connection = dataSource.getConnection();
             for (String sql : split) {
                 PreparedStatement preparedStatement = connection.prepareStatement(sql);
-                int i = preparedStatement.executeUpdate();
+                int               i                 = preparedStatement.executeUpdate();
             }
             connection.close();
         }

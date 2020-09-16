@@ -20,9 +20,9 @@ public class GeneratorTests {
     @Test
     public void run有参构造() {
         String jdbcUrl = "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8" +
-                "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
-        String username = "root";
-        String password = "root";
+            "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
+        String    username  = "root";
+        String    password  = "root";
         Generator generator = new Generator(jdbcUrl, username, password);
 
         // set
@@ -42,8 +42,8 @@ public class GeneratorTests {
     @Test
     public void run无参构造() {
         GaarasonDataSourceProvider gaarasonDataSourceProvider = proxyDataSource();
-        ToolModel toolModel = new ToolModel(gaarasonDataSourceProvider);
-        AutoGenerator autoGenerator = new AutoGenerator(toolModel);
+        ToolModel                  toolModel                  = new ToolModel(gaarasonDataSourceProvider);
+        AutoGenerator              autoGenerator              = new AutoGenerator(toolModel);
         // set
         autoGenerator.setStaticField(true);
         autoGenerator.setIsSpringBoot(true);
@@ -59,7 +59,7 @@ public class GeneratorTests {
     private DataSource dataSourceMaster0() {
         DruidDataSource druidDataSource = new DruidDataSource();
         druidDataSource.setUrl(
-                "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
+            "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
         druidDataSource.setUsername("root");
         druidDataSource.setPassword("root");
 

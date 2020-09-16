@@ -4,6 +4,8 @@ import gaarason.database.contract.eloquent.Record;
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.generator.GeneralGenerator;
 import gaarason.database.generator.Generator;
+import gaarason.database.spring.boot.starter.test.data.entity.Student;
+import gaarason.database.spring.boot.starter.test.data.repository.StudentQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -30,6 +32,9 @@ public class TestApplicationTests {
     @Resource
     GeneralModel generalModel;
 
+    @Resource
+    StudentQuery<Student, Long> studentQuery;
+
     @Test
     public void 生成代码() {
         // 设置
@@ -48,9 +53,9 @@ public class TestApplicationTests {
     @Test
     public void run有参构造() {
         String jdbcUrl = "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8" +
-                "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
-        String username = "root";
-        String password = "root";
+            "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
+        String    username  = "root";
+        String    password  = "root";
         Generator generator = new Generator(jdbcUrl, username, password);
 
         // set
@@ -87,7 +92,13 @@ public class TestApplicationTests {
         Assert.assertNotNull(studentId);
 
         Assert.assertEquals(Integer.parseInt(studentId.toString()) - 1, Integer.parseInt(id.toString()));
+    }
 
+    @Test
+    public void 使用接口调用(){
+        Record<Student, Long> infoFromDB = studentQuery.getInfoFromDB();
+        Student               student    = infoFromDB.toObject();
+        System.out.println(student);
 
     }
 

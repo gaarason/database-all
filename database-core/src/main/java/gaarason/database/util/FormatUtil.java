@@ -96,22 +96,22 @@ public class FormatUtil {
      */
     public static String backQuote(String something) {
         something = something.trim();
-        int whereIsAs = something.toLowerCase().indexOf(" as ");
-        String temp = "";
+        int    whereIsAs    = something.toLowerCase().indexOf(" as ");
+        String temp         = "";
         String mayBeHasFunc = something;
-        String alias = "";
+        String alias        = "";
         if (whereIsAs != -1) {
             mayBeHasFunc = something.substring(0, whereIsAs); // eg: sum(order.amount)
             alias = " as `" + something.substring(whereIsAs + 4) + "`";
         }
         int whereIsQuote = mayBeHasFunc.indexOf('(');
         if (whereIsQuote != -1) {
-            String func = mayBeHasFunc.substring(0, whereIsQuote); // eg: sum
+            String func     = mayBeHasFunc.substring(0, whereIsQuote); // eg: sum
             String someElse = mayBeHasFunc.replace(func, "").replace("(", "").replace(")", ""); // eg: order.amount
 
             int whereIsPoint = someElse.indexOf('.');
             if (whereIsPoint != -1) {
-                String table = someElse.substring(0, whereIsPoint); // eg: order
+                String table  = someElse.substring(0, whereIsPoint); // eg: order
                 String column = someElse.replace(table + '.', ""); // eg: amount
                 temp = column.equals("*") ? '`' + table + "`." + column : '`' + table + "`.`" + column + '`';
             } else if ("".equals(someElse)) {
@@ -125,7 +125,7 @@ public class FormatUtil {
             if (whereIsPoint == -1) {
                 temp = '`' + mayBeHasFunc + '`';
             } else {
-                String table = mayBeHasFunc.substring(0, whereIsPoint); // eg: order
+                String table  = mayBeHasFunc.substring(0, whereIsPoint); // eg: order
                 String column = mayBeHasFunc.replace(table + '.', ""); // eg: amount
                 temp = column.equals("*") ? '`' + table + "`." + column : '`' + table + "`.`" + column + '`';
             }

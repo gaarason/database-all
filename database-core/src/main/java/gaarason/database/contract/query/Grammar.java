@@ -70,7 +70,8 @@ public interface Grammar {
      * @param builderClosure 所关联的Model的查询构造器约束
      * @param recordClosure  所关联的Model的再一级关联
      */
-    void pushWith(String column, GenerateSqlPartFunctionalInterface builderClosure, RelationshipRecordWithFunctionalInterface recordClosure);
+    void pushWith(String column, GenerateSqlPartFunctionalInterface builderClosure,
+                  RelationshipRecordWithFunctionalInterface recordClosure);
 
     /**
      * 拉取with信息

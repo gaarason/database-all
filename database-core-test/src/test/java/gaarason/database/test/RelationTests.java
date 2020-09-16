@@ -27,10 +27,12 @@ import java.util.Set;
 @FixMethodOrder(MethodSorters.JVM)
 public class RelationTests extends BaseTests {
 
-    private static final StudentModel studentModel = new StudentModel();
-    private static final TeacherModel teacherModel = new TeacherModel();
-    private static RelationshipStudentTeacherModel relationshipStudentTeacherModel =
-            new RelationshipStudentTeacherModel();
+    private static final StudentModel                    studentModel                    = new StudentModel();
+
+    private static final TeacherModel                    teacherModel                    = new TeacherModel();
+
+    private static       RelationshipStudentTeacherModel relationshipStudentTeacherModel =
+        new RelationshipStudentTeacherModel();
 
     @Override
     public int hashCode() {
@@ -64,8 +66,8 @@ public class RelationTests extends BaseTests {
     public void 一对一关系_子关系不存在() {
         // 声明且使用
         Student student2 =
-                studentModel.newQuery().firstOrFail().with("teacher", builder -> builder.where("id", "99"),
-                        record -> record.with("students", builder -> builder, record1 -> record1.with("teacher"))).toObject();
+            studentModel.newQuery().firstOrFail().with("teacher", builder -> builder.where("id", "99"),
+                record -> record.with("students", builder -> builder, record1 -> record1.with("teacher"))).toObject();
         System.out.println(student2);
         Assert.assertNull(student2.getTeacher());
     }
@@ -73,18 +75,18 @@ public class RelationTests extends BaseTests {
     @Test
     public void 一对一关系_builder筛选() {
         Student student2 =
-                studentModel.newQuery()
-                        .firstOrFail()
-                        .with("teacher", (builder -> builder.where("id", "!=", "6")))
-                        .toObject();
+            studentModel.newQuery()
+                .firstOrFail()
+                .with("teacher", (builder -> builder.where("id", "!=", "6")))
+                .toObject();
         System.out.println(student2);
         Assert.assertNull(student2.getTeacher());
 
         List<Teacher> teachers = teacherModel.newQuery()
-                .where("id", "2")
-                .get()
-                .with("students", builder -> builder.where("id", "!=", "4"))
-                .toObjectList();
+            .where("id", "2")
+            .get()
+            .with("students", builder -> builder.where("id", "!=", "4"))
+            .toObjectList();
 
         System.out.println(teachers);
 
@@ -96,12 +98,12 @@ public class RelationTests extends BaseTests {
         // select * from teacher where id in (?)
         // select * from student where id in (? ?)
         Student student2 =
-                studentModel.newQuery().where("id", "1").where("teacher_id", "6")
-                        .firstOrFail()
-                        .with("teacher", builder -> builder, record -> record.with("student", builder -> builder,
-                                record1 -> record1.with("teacher", builder -> builder, record2 -> record2.with("student",
-                                        builder -> builder, record3 -> record3.with("teacher")))))
-                        .toObject();
+            studentModel.newQuery().where("id", "1").where("teacher_id", "6")
+                .firstOrFail()
+                .with("teacher", builder -> builder, record -> record.with("student", builder -> builder,
+                    record1 -> record1.with("teacher", builder -> builder, record2 -> record2.with("student",
+                        builder -> builder, record3 -> record3.with("teacher")))))
+                .toObject();
         System.out.println(student2);
         Assert.assertEquals(student2.getId().intValue(), 1);
         Assert.assertEquals(student2.getTeacherId().intValue(), 6);
@@ -116,8 +118,8 @@ public class RelationTests extends BaseTests {
         Assert.assertEquals(student2.getTeacher().getStudent().getTeacher().getStudent().getTeacherId().intValue(), 6);
         Assert.assertNotNull(student2.getTeacher().getStudent().getTeacher().getStudent().getTeacher());
         Assert.assertEquals(
-                student2.getTeacher().getStudent().getTeacher().getStudent().getTeacher().getId().intValue(),
-                6);
+            student2.getTeacher().getStudent().getTeacher().getStudent().getTeacher().getId().intValue(),
+            6);
         Assert.assertNull(student2.getTeacher().getStudent().getTeacher().getStudent().getTeacher().getStudent());
         Assert.assertNull(student2.getTeacher().getStudent().getTeacher().getStudent().getTeacher().getStudents());
 
@@ -127,11 +129,11 @@ public class RelationTests extends BaseTests {
     @Test
     public void 一对一关系_一对多关系_同级关系() {
         Student student =
-                studentModel.newQuery().where("id", "1")
-                        .firstOrFail()
-                        .with("teacher")
-                        .with("relationshipStudentTeachers")
-                        .toObject();
+            studentModel.newQuery().where("id", "1")
+                .firstOrFail()
+                .with("teacher")
+                .with("relationshipStudentTeachers")
+                .toObject();
         System.out.println(student);
         Assert.assertNotNull(student.getTeacher());
         Assert.assertEquals(student.getTeacher().getId().intValue(), 6);
@@ -143,11 +145,11 @@ public class RelationTests extends BaseTests {
     @Test
     public void 一对一关系_一对多关系_同级关系2() {
         Student student =
-                studentModel.newQuery().where("id", "1")
-                        .with("teacher")
-                        .with("relationshipStudentTeachers")
-                        .firstOrFail()
-                        .toObject();
+            studentModel.newQuery().where("id", "1")
+                .with("teacher")
+                .with("relationshipStudentTeachers")
+                .firstOrFail()
+                .toObject();
         System.out.println(student);
         Assert.assertNotNull(student.getTeacher());
         Assert.assertEquals(student.getTeacher().getId().intValue(), 6);
@@ -159,11 +161,11 @@ public class RelationTests extends BaseTests {
     @Test
     public void 一对一关系_一对多关系_快捷用法() {
         Student student =
-                studentModel.newQuery().where("id", "1")
-                        .firstOrFail()
-                        .with("teacher.student", builder -> builder.whereIn("id", "1", "2", "3"))
-                        .with("relationshipStudentTeachers", builder -> builder.whereNotIn("id", "13"))
-                        .toObject();
+            studentModel.newQuery().where("id", "1")
+                .firstOrFail()
+                .with("teacher.student", builder -> builder.whereIn("id", "1", "2", "3"))
+                .with("relationshipStudentTeachers", builder -> builder.whereNotIn("id", "13"))
+                .toObject();
         System.out.println(student);
     }
 
@@ -171,11 +173,11 @@ public class RelationTests extends BaseTests {
     @Test
     public void 一对一关系_一对多关系_快捷用法2() {
         Student student =
-                studentModel.newQuery().where("id", "1")
-                        .with("teacher.student", builder -> builder.whereIn("id", "1", "2", "3"))
-                        .with("relationshipStudentTeachers", builder -> builder.whereNotIn("id", "13"))
-                        .firstOrFail()
-                        .toObject();
+            studentModel.newQuery().where("id", "1")
+                .with("teacher.student", builder -> builder.whereIn("id", "1", "2", "3"))
+                .with("relationshipStudentTeachers", builder -> builder.whereNotIn("id", "13"))
+                .firstOrFail()
+                .toObject();
         System.out.println(student);
     }
 
@@ -183,12 +185,12 @@ public class RelationTests extends BaseTests {
     public void 一对一关系_一对多关系_无线级关系() {
 
         Student student3 =
-                studentModel.newQuery()
-                        .firstOrFail()
-                        .with("teacher", builder -> builder, record -> record.with("students", builder -> builder,
-                                record1 -> record1.with("teacher", builder -> builder, record2 -> record2.with("students",
-                                        builder -> builder, record3 -> record3.with("teacher")))))
-                        .toObject();
+            studentModel.newQuery()
+                .firstOrFail()
+                .with("teacher", builder -> builder, record -> record.with("students", builder -> builder,
+                    record1 -> record1.with("teacher", builder -> builder, record2 -> record2.with("students",
+                        builder -> builder, record3 -> record3.with("teacher")))))
+                .toObject();
         System.out.println(student3);
 
         Assert.assertEquals(student3.getId().intValue(), 1);
@@ -219,31 +221,31 @@ public class RelationTests extends BaseTests {
 
             Assert.assertNull(student3.getTeacher().getStudents().get(i).getTeacher().getStudent());
             Assert.assertEquals(
-                    student3.getTeacher().getStudents().get(i).getTeacher().getStudents().get(i).getTeacherId().intValue(),
-                    6);
+                student3.getTeacher().getStudents().get(i).getTeacher().getStudents().get(i).getTeacherId().intValue(),
+                6);
             Assert.assertNotNull(
-                    student3.getTeacher().getStudents().get(i).getTeacher().getStudents().get(i).getTeacher());
+                student3.getTeacher().getStudents().get(i).getTeacher().getStudents().get(i).getTeacher());
             Assert.assertEquals(
-                    student3.getTeacher()
-                            .getStudents()
-                            .get(i)
-                            .getTeacher()
-                            .getStudents()
-                            .get(i)
-                            .getTeacher()
-                            .getId()
-                            .intValue(),
-                    6);
+                student3.getTeacher()
+                    .getStudents()
+                    .get(i)
+                    .getTeacher()
+                    .getStudents()
+                    .get(i)
+                    .getTeacher()
+                    .getId()
+                    .intValue(),
+                6);
             Assert.assertNull(
-                    student3.getTeacher().getStudents().get(i).getTeacher().getStudents().get(i).getTeacher().getStudent());
+                student3.getTeacher().getStudents().get(i).getTeacher().getStudents().get(i).getTeacher().getStudent());
             Assert.assertNull(student3.getTeacher()
-                    .getStudents()
-                    .get(i)
-                    .getTeacher()
-                    .getStudents()
-                    .get(i)
-                    .getTeacher()
-                    .getStudents());
+                .getStudents()
+                .get(i)
+                .getTeacher()
+                .getStudents()
+                .get(i)
+                .getTeacher()
+                .getStudents());
 
             System.out.println("=========== i = " + i + " end =============\n");
         }
@@ -254,12 +256,12 @@ public class RelationTests extends BaseTests {
     public void 一对一关系_一对多关系_无线级关系2() {
 
         Student student3 =
-                studentModel.newQuery()
-                        .with("teacher", builder -> builder, record -> record.with("students", builder -> builder,
-                                record1 -> record1.with("teacher", builder -> builder, record2 -> record2.with("students",
-                                        builder -> builder, record3 -> record3.with("teacher")))))
-                        .firstOrFail()
-                        .toObject();
+            studentModel.newQuery()
+                .with("teacher", builder -> builder, record -> record.with("students", builder -> builder,
+                    record1 -> record1.with("teacher", builder -> builder, record2 -> record2.with("students",
+                        builder -> builder, record3 -> record3.with("teacher")))))
+                .firstOrFail()
+                .toObject();
         System.out.println(student3);
 
         Assert.assertEquals(student3.getId().intValue(), 1);
@@ -290,31 +292,31 @@ public class RelationTests extends BaseTests {
 
             Assert.assertNull(student3.getTeacher().getStudents().get(i).getTeacher().getStudent());
             Assert.assertEquals(
-                    student3.getTeacher().getStudents().get(i).getTeacher().getStudents().get(i).getTeacherId().intValue(),
-                    6);
+                student3.getTeacher().getStudents().get(i).getTeacher().getStudents().get(i).getTeacherId().intValue(),
+                6);
             Assert.assertNotNull(
-                    student3.getTeacher().getStudents().get(i).getTeacher().getStudents().get(i).getTeacher());
+                student3.getTeacher().getStudents().get(i).getTeacher().getStudents().get(i).getTeacher());
             Assert.assertEquals(
-                    student3.getTeacher()
-                            .getStudents()
-                            .get(i)
-                            .getTeacher()
-                            .getStudents()
-                            .get(i)
-                            .getTeacher()
-                            .getId()
-                            .intValue(),
-                    6);
+                student3.getTeacher()
+                    .getStudents()
+                    .get(i)
+                    .getTeacher()
+                    .getStudents()
+                    .get(i)
+                    .getTeacher()
+                    .getId()
+                    .intValue(),
+                6);
             Assert.assertNull(
-                    student3.getTeacher().getStudents().get(i).getTeacher().getStudents().get(i).getTeacher().getStudent());
+                student3.getTeacher().getStudents().get(i).getTeacher().getStudents().get(i).getTeacher().getStudent());
             Assert.assertNull(student3.getTeacher()
-                    .getStudents()
-                    .get(i)
-                    .getTeacher()
-                    .getStudents()
-                    .get(i)
-                    .getTeacher()
-                    .getStudents());
+                .getStudents()
+                .get(i)
+                .getTeacher()
+                .getStudents()
+                .get(i)
+                .getTeacher()
+                .getStudents());
 
             System.out.println("=========== i = " + i + " end =============\n");
         }
@@ -326,10 +328,10 @@ public class RelationTests extends BaseTests {
     public void 一对一关系_一对多关系_无线级关系_快捷用法() {
 
         Student student3 =
-                studentModel.newQuery()
-                        .firstOrFail()
-                        .with("teacher.students.teacher.students.teacher")
-                        .toObject();
+            studentModel.newQuery()
+                .firstOrFail()
+                .with("teacher.students.teacher.students.teacher")
+                .toObject();
         System.out.println(student3);
 
         Assert.assertEquals(student3.getId().intValue(), 1);
@@ -360,31 +362,31 @@ public class RelationTests extends BaseTests {
 
             Assert.assertNull(student3.getTeacher().getStudents().get(i).getTeacher().getStudent());
             Assert.assertEquals(
-                    student3.getTeacher().getStudents().get(i).getTeacher().getStudents().get(i).getTeacherId().intValue(),
-                    6);
+                student3.getTeacher().getStudents().get(i).getTeacher().getStudents().get(i).getTeacherId().intValue(),
+                6);
             Assert.assertNotNull(
-                    student3.getTeacher().getStudents().get(i).getTeacher().getStudents().get(i).getTeacher());
+                student3.getTeacher().getStudents().get(i).getTeacher().getStudents().get(i).getTeacher());
             Assert.assertEquals(
-                    student3.getTeacher()
-                            .getStudents()
-                            .get(i)
-                            .getTeacher()
-                            .getStudents()
-                            .get(i)
-                            .getTeacher()
-                            .getId()
-                            .intValue(),
-                    6);
+                student3.getTeacher()
+                    .getStudents()
+                    .get(i)
+                    .getTeacher()
+                    .getStudents()
+                    .get(i)
+                    .getTeacher()
+                    .getId()
+                    .intValue(),
+                6);
             Assert.assertNull(
-                    student3.getTeacher().getStudents().get(i).getTeacher().getStudents().get(i).getTeacher().getStudent());
+                student3.getTeacher().getStudents().get(i).getTeacher().getStudents().get(i).getTeacher().getStudent());
             Assert.assertNull(student3.getTeacher()
-                    .getStudents()
-                    .get(i)
-                    .getTeacher()
-                    .getStudents()
-                    .get(i)
-                    .getTeacher()
-                    .getStudents());
+                .getStudents()
+                .get(i)
+                .getTeacher()
+                .getStudents()
+                .get(i)
+                .getTeacher()
+                .getStudents());
 
             System.out.println("=========== i = " + i + " end =============\n");
         }
@@ -395,12 +397,12 @@ public class RelationTests extends BaseTests {
     public void 一对一关系_一对多关系_无线级关系_builder筛选() {
 
         Student student3 =
-                studentModel.newQuery()
-                        .firstOrFail()
-                        .with("teacher", builder -> builder, record -> record.with("students", builder -> builder,
-                                record1 -> record1.with("teacher", builder -> builder, record2 -> record2.with("students",
-                                        builder -> builder.whereIn("id", "3", "2"), record3 -> record3.with("teacher")))))
-                        .toObject();
+            studentModel.newQuery()
+                .firstOrFail()
+                .with("teacher", builder -> builder, record -> record.with("students", builder -> builder,
+                    record1 -> record1.with("teacher", builder -> builder, record2 -> record2.with("students",
+                        builder -> builder.whereIn("id", "3", "2"), record3 -> record3.with("teacher")))))
+                .toObject();
         System.out.println(student3);
 
         Assert.assertEquals(student3.getId().intValue(), 1);
@@ -419,18 +421,18 @@ public class RelationTests extends BaseTests {
     public void 一对一关系_一对多关系_无线级关系_builder筛选2() {
         // 明显性能问题
         Student student3 =
-                studentModel.newQuery()
-                        .firstOrFail()
-                        .with("teacher", builder -> builder, record0 -> record0.with("students", builder -> builder,
-                                record1 -> record1.with("relationshipStudentTeachers", builder -> builder,
-                                        record2 -> record2.with("teacher",
-                                                builder -> builder, record3 -> record3.with("students", builder -> builder,
-                                                        record4 -> record4.with("teacher", builder -> builder,
-                                                                record5 -> record5.with("students", builder -> builder,
-                                                                        record6 -> record6.with("teacher",
-                                                                                builder -> builder, record7 -> record7.with("students",
-                                                                                        builder -> builder.whereIn("id", "3", "2"),
-                                                                                        record8 -> record8.with("teacher")))))))))).toObject();
+            studentModel.newQuery()
+                .firstOrFail()
+                .with("teacher", builder -> builder, record0 -> record0.with("students", builder -> builder,
+                    record1 -> record1.with("relationshipStudentTeachers", builder -> builder,
+                        record2 -> record2.with("teacher",
+                            builder -> builder, record3 -> record3.with("students", builder -> builder,
+                                record4 -> record4.with("teacher", builder -> builder,
+                                    record5 -> record5.with("students", builder -> builder,
+                                        record6 -> record6.with("teacher",
+                                            builder -> builder, record7 -> record7.with("students",
+                                                builder -> builder.whereIn("id", "3", "2"),
+                                                record8 -> record8.with("teacher")))))))))).toObject();
         // 同样的断言
         assert1(student3);
 
@@ -439,11 +441,11 @@ public class RelationTests extends BaseTests {
     @Test
     public void 一对一关系_一对多关系_无线级关系_builder筛选2_快捷方式() {
         Student student3 =
-                studentModel.newQuery()
-                        .firstOrFail()
-                        .with("teacher.students.relationshipStudentTeachers.teacher.students.teacher.students.teacher.students",
-                                builder -> builder.whereIn("id", "3", "2"),
-                                record8 -> record8.with("teacher")).toObject();
+            studentModel.newQuery()
+                .firstOrFail()
+                .with("teacher.students.relationshipStudentTeachers.teacher.students.teacher.students.teacher.students",
+                    builder -> builder.whereIn("id", "3", "2"),
+                    record8 -> record8.with("teacher")).toObject();
         // 同样的断言
         assert1(student3);
     }
@@ -451,12 +453,12 @@ public class RelationTests extends BaseTests {
     @Test
     public void 一对一关系_一对多关系_无线级关系_builder筛选2_快捷方式2() {
         Student student3 =
-                studentModel.newQuery()
-                        .firstOrFail()
-                        .with("teacher.students.relationshipStudentTeachers", builder -> builder, record -> record.with(
-                                "teacher.students.teacher.students.teacher.students",
-                                builder -> builder.whereIn("id", "3", "2"),
-                                record8 -> record8.with("teacher"))).toObject();
+            studentModel.newQuery()
+                .firstOrFail()
+                .with("teacher.students.relationshipStudentTeachers", builder -> builder, record -> record.with(
+                    "teacher.students.teacher.students.teacher.students",
+                    builder -> builder.whereIn("id", "3", "2"),
+                    record8 -> record8.with("teacher"))).toObject();
 
         // 同样的断言
         assert1(student3);
@@ -475,151 +477,151 @@ public class RelationTests extends BaseTests {
         Assert.assertEquals(student3.getTeacher().getStudents().get(2).getRelationshipStudentTeachers().size(), 2);
         Assert.assertEquals(student3.getTeacher().getStudents().get(3).getRelationshipStudentTeachers().size(), 2);
         Assert.assertEquals(
-                student3.getTeacher().getStudents().get(0).getRelationshipStudentTeachers().get(0).getId().intValue(), 1);
+            student3.getTeacher().getStudents().get(0).getRelationshipStudentTeachers().get(0).getId().intValue(), 1);
         Assert.assertEquals(
-                student3.getTeacher().getStudents().get(0).getRelationshipStudentTeachers().get(1).getId().intValue(), 2);
+            student3.getTeacher().getStudents().get(0).getRelationshipStudentTeachers().get(1).getId().intValue(), 2);
         Assert.assertEquals(
-                student3.getTeacher().getStudents().get(1).getRelationshipStudentTeachers().get(0).getId().intValue(), 3);
+            student3.getTeacher().getStudents().get(1).getRelationshipStudentTeachers().get(0).getId().intValue(), 3);
         Assert.assertEquals(
-                student3.getTeacher().getStudents().get(1).getRelationshipStudentTeachers().get(1).getId().intValue(), 4);
+            student3.getTeacher().getStudents().get(1).getRelationshipStudentTeachers().get(1).getId().intValue(), 4);
         Assert.assertEquals(
-                student3.getTeacher().getStudents().get(2).getRelationshipStudentTeachers().get(0).getId().intValue(), 5);
+            student3.getTeacher().getStudents().get(2).getRelationshipStudentTeachers().get(0).getId().intValue(), 5);
         Assert.assertEquals(
-                student3.getTeacher().getStudents().get(2).getRelationshipStudentTeachers().get(1).getId().intValue(), 6);
+            student3.getTeacher().getStudents().get(2).getRelationshipStudentTeachers().get(1).getId().intValue(), 6);
         Assert.assertEquals(
-                student3.getTeacher().getStudents().get(3).getRelationshipStudentTeachers().get(0).getId().intValue(), 7);
+            student3.getTeacher().getStudents().get(3).getRelationshipStudentTeachers().get(0).getId().intValue(), 7);
         Assert.assertEquals(
-                student3.getTeacher().getStudents().get(3).getRelationshipStudentTeachers().get(1).getId().intValue(), 8);
+            student3.getTeacher().getStudents().get(3).getRelationshipStudentTeachers().get(1).getId().intValue(), 8);
 
         Assert.assertEquals(student3.getTeacher()
-                .getStudents()
-                .get(0)
-                .getRelationshipStudentTeachers()
-                .get(0)
-                .getTeacher()
-                .getId()
-                .intValue(), 1);
+            .getStudents()
+            .get(0)
+            .getRelationshipStudentTeachers()
+            .get(0)
+            .getTeacher()
+            .getId()
+            .intValue(), 1);
         Assert.assertEquals(student3.getTeacher()
-                .getStudents()
-                .get(0)
-                .getRelationshipStudentTeachers()
-                .get(1)
-                .getTeacher()
-                .getId()
-                .intValue(), 2);
+            .getStudents()
+            .get(0)
+            .getRelationshipStudentTeachers()
+            .get(1)
+            .getTeacher()
+            .getId()
+            .intValue(), 2);
         Assert.assertEquals(student3.getTeacher()
-                .getStudents()
-                .get(1)
-                .getRelationshipStudentTeachers()
-                .get(0)
-                .getTeacher()
-                .getId()
-                .intValue(), 1);
+            .getStudents()
+            .get(1)
+            .getRelationshipStudentTeachers()
+            .get(0)
+            .getTeacher()
+            .getId()
+            .intValue(), 1);
         Assert.assertEquals(student3.getTeacher()
-                .getStudents()
-                .get(1)
-                .getRelationshipStudentTeachers()
-                .get(1)
-                .getTeacher()
-                .getId()
-                .intValue(), 2);
+            .getStudents()
+            .get(1)
+            .getRelationshipStudentTeachers()
+            .get(1)
+            .getTeacher()
+            .getId()
+            .intValue(), 2);
         Assert.assertEquals(student3.getTeacher()
-                .getStudents()
-                .get(2)
-                .getRelationshipStudentTeachers()
-                .get(0)
-                .getTeacher()
-                .getId()
-                .intValue(), 1);
+            .getStudents()
+            .get(2)
+            .getRelationshipStudentTeachers()
+            .get(0)
+            .getTeacher()
+            .getId()
+            .intValue(), 1);
         Assert.assertEquals(student3.getTeacher()
-                .getStudents()
-                .get(2)
-                .getRelationshipStudentTeachers()
-                .get(1)
-                .getTeacher()
-                .getId()
-                .intValue(), 2);
+            .getStudents()
+            .get(2)
+            .getRelationshipStudentTeachers()
+            .get(1)
+            .getTeacher()
+            .getId()
+            .intValue(), 2);
         Assert.assertEquals(student3.getTeacher()
-                .getStudents()
-                .get(3)
-                .getRelationshipStudentTeachers()
-                .get(0)
-                .getTeacher()
-                .getId()
-                .intValue(), 6);
+            .getStudents()
+            .get(3)
+            .getRelationshipStudentTeachers()
+            .get(0)
+            .getTeacher()
+            .getId()
+            .intValue(), 6);
         Assert.assertEquals(student3.getTeacher()
-                .getStudents()
-                .get(3)
-                .getRelationshipStudentTeachers()
-                .get(1)
-                .getTeacher()
-                .getId()
-                .intValue(), 2);
+            .getStudents()
+            .get(3)
+            .getRelationshipStudentTeachers()
+            .get(1)
+            .getTeacher()
+            .getId()
+            .intValue(), 2);
 
         Assert.assertEquals(student3.getTeacher()
-                .getStudents()
-                .get(0)
-                .getRelationshipStudentTeachers()
-                .get(0)
-                .getTeacher()
-                .getStudents()
-                .size(), 2);
+            .getStudents()
+            .get(0)
+            .getRelationshipStudentTeachers()
+            .get(0)
+            .getTeacher()
+            .getStudents()
+            .size(), 2);
         Assert.assertEquals(student3.getTeacher()
-                .getStudents()
-                .get(0)
-                .getRelationshipStudentTeachers()
-                .get(1)
-                .getTeacher()
-                .getStudents()
-                .size(), 2);
+            .getStudents()
+            .get(0)
+            .getRelationshipStudentTeachers()
+            .get(1)
+            .getTeacher()
+            .getStudents()
+            .size(), 2);
         Assert.assertEquals(student3.getTeacher()
-                .getStudents()
-                .get(1)
-                .getRelationshipStudentTeachers()
-                .get(0)
-                .getTeacher()
-                .getStudents()
-                .size(), 2);
+            .getStudents()
+            .get(1)
+            .getRelationshipStudentTeachers()
+            .get(0)
+            .getTeacher()
+            .getStudents()
+            .size(), 2);
         Assert.assertEquals(student3.getTeacher()
-                .getStudents()
-                .get(1)
-                .getRelationshipStudentTeachers()
-                .get(1)
-                .getTeacher()
-                .getStudents()
-                .size(), 2);
+            .getStudents()
+            .get(1)
+            .getRelationshipStudentTeachers()
+            .get(1)
+            .getTeacher()
+            .getStudents()
+            .size(), 2);
         Assert.assertEquals(student3.getTeacher()
-                .getStudents()
-                .get(2)
-                .getRelationshipStudentTeachers()
-                .get(0)
-                .getTeacher()
-                .getStudents()
-                .size(), 2);
+            .getStudents()
+            .get(2)
+            .getRelationshipStudentTeachers()
+            .get(0)
+            .getTeacher()
+            .getStudents()
+            .size(), 2);
         Assert.assertEquals(student3.getTeacher()
-                .getStudents()
-                .get(2)
-                .getRelationshipStudentTeachers()
-                .get(1)
-                .getTeacher()
-                .getStudents()
-                .size(), 2);
+            .getStudents()
+            .get(2)
+            .getRelationshipStudentTeachers()
+            .get(1)
+            .getTeacher()
+            .getStudents()
+            .size(), 2);
         Assert.assertEquals(student3.getTeacher()
-                .getStudents()
-                .get(3)
-                .getRelationshipStudentTeachers()
-                .get(0)
-                .getTeacher()
-                .getId()
-                .intValue(), 6);
+            .getStudents()
+            .get(3)
+            .getRelationshipStudentTeachers()
+            .get(0)
+            .getTeacher()
+            .getId()
+            .intValue(), 6);
         Assert.assertEquals(student3.getTeacher()
-                .getStudents()
-                .get(3)
-                .getRelationshipStudentTeachers()
-                .get(1)
-                .getTeacher()
-                .getId()
-                .intValue(), 2);
+            .getStudents()
+            .get(3)
+            .getRelationshipStudentTeachers()
+            .get(1)
+            .getTeacher()
+            .getId()
+            .intValue(), 2);
 
         // todo more
 
@@ -629,11 +631,11 @@ public class RelationTests extends BaseTests {
     public void 一对一关系_一对多关系_无线级关系_builder筛选_快捷用法() {
 
         Student student3 =
-                studentModel.newQuery()
-                        .firstOrFail()
-                        .with("teacher.students.teacher.students",
-                                builder -> builder.whereIn("id", "3", "2"), record3 -> record3.with("teacher"))
-                        .toObject();
+            studentModel.newQuery()
+                .firstOrFail()
+                .with("teacher.students.teacher.students",
+                    builder -> builder.whereIn("id", "3", "2"), record3 -> record3.with("teacher"))
+                .toObject();
         System.out.println(student3);
 
         Assert.assertEquals(student3.getId().intValue(), 1);
@@ -652,11 +654,11 @@ public class RelationTests extends BaseTests {
     public void 一对一关系_一对多关系_无线级关系_builder筛选_快捷用法2() {
 
         Student student3 =
-                studentModel.newQuery()
-                        .firstOrFail()
-                        .with("teacher.students.relationshipStudentTeachers.teacher.students.teacher.students.teacher.students",
-                                builder -> builder.whereIn("id", "3", "2"), record3 -> record3.with("teacher"))
-                        .toObject();
+            studentModel.newQuery()
+                .firstOrFail()
+                .with("teacher.students.relationshipStudentTeachers.teacher.students.teacher.students.teacher.students",
+                    builder -> builder.whereIn("id", "3", "2"), record3 -> record3.with("teacher"))
+                .toObject();
         System.out.println(student3);
 
         Assert.assertEquals(student3.getId().intValue(), 1);
@@ -674,13 +676,13 @@ public class RelationTests extends BaseTests {
     public void builder筛选() {
 
         Student student =
-                studentModel.newQuery()
-                        .firstOrFail()
-                        .with("teacher", builder -> builder, record -> record.with("students",
-                                builder -> builder.whereColumn("id", "<=", "sex").orderBy("id"), // 小明(1) 小张(2)
-                                record1 -> record1.with("teacher", builder -> builder, record2 -> record2.with("students",
-                                        builder -> builder.whereIn("id", "3", "2"), record3 -> record3.with("teacher")))))
-                        .toObject();
+            studentModel.newQuery()
+                .firstOrFail()
+                .with("teacher", builder -> builder, record -> record.with("students",
+                    builder -> builder.whereColumn("id", "<=", "sex").orderBy("id"), // 小明(1) 小张(2)
+                    record1 -> record1.with("teacher", builder -> builder, record2 -> record2.with("students",
+                        builder -> builder.whereIn("id", "3", "2"), record3 -> record3.with("teacher")))))
+                .toObject();
         System.out.println(student);
 
         Assert.assertEquals(student.getId().intValue(), 1);
@@ -702,13 +704,13 @@ public class RelationTests extends BaseTests {
     public void builder筛选2() {
 
         Student student =
-                studentModel.newQuery()
-                        .firstOrFail()
-                        .with("teacher", builder -> builder, record -> record.with("students",
-                                builder -> builder.whereColumn("id", "<=", "sex").orderBy("id"), // 小明(1) 小张(2)
-                                record1 -> record1.with("relationshipStudentTeachers", builder -> builder.orderBy("teacher_id"),
-                                        record2 -> record2.with("teacher"))))
-                        .toObject();
+            studentModel.newQuery()
+                .firstOrFail()
+                .with("teacher", builder -> builder, record -> record.with("students",
+                    builder -> builder.whereColumn("id", "<=", "sex").orderBy("id"), // 小明(1) 小张(2)
+                    record1 -> record1.with("relationshipStudentTeachers", builder -> builder.orderBy("teacher_id"),
+                        record2 -> record2.with("teacher"))))
+                .toObject();
         System.out.println(student);
 
         Assert.assertEquals(student.getId().intValue(), 1);
@@ -726,37 +728,37 @@ public class RelationTests extends BaseTests {
 
 
         Assert.assertEquals(student.getTeacher()
-                .getStudents()
-                .get(0)
-                .getRelationshipStudentTeachers()
-                .get(0)
-                .getTeacher()
-                .getId()
-                .intValue(), 1);
+            .getStudents()
+            .get(0)
+            .getRelationshipStudentTeachers()
+            .get(0)
+            .getTeacher()
+            .getId()
+            .intValue(), 1);
         Assert.assertEquals(student.getTeacher()
-                .getStudents()
-                .get(0)
-                .getRelationshipStudentTeachers()
-                .get(1)
-                .getTeacher()
-                .getId()
-                .intValue(), 2);
+            .getStudents()
+            .get(0)
+            .getRelationshipStudentTeachers()
+            .get(1)
+            .getTeacher()
+            .getId()
+            .intValue(), 2);
         Assert.assertEquals(student.getTeacher()
-                .getStudents()
-                .get(1)
-                .getRelationshipStudentTeachers()
-                .get(0)
-                .getTeacher()
-                .getId()
-                .intValue(), 1);
+            .getStudents()
+            .get(1)
+            .getRelationshipStudentTeachers()
+            .get(0)
+            .getTeacher()
+            .getId()
+            .intValue(), 1);
         Assert.assertEquals(student.getTeacher()
-                .getStudents()
-                .get(1)
-                .getRelationshipStudentTeachers()
-                .get(1)
-                .getTeacher()
-                .getId()
-                .intValue(), 2);
+            .getStudents()
+            .get(1)
+            .getRelationshipStudentTeachers()
+            .get(1)
+            .getTeacher()
+            .getId()
+            .intValue(), 2);
 
     }
 
@@ -768,10 +770,10 @@ public class RelationTests extends BaseTests {
 //
 
         List<Student> students = studentModel.newQuery()
-                .get()
-                .with("teacher", builder -> builder.whereIn("id", teacherIds), record -> record.with(
-                        "students"))
-                .toObjectList();
+            .get()
+            .with("teacher", builder -> builder.whereIn("id", teacherIds), record -> record.with(
+                "students"))
+            .toObjectList();
 
         for (Student student : students) {
             System.out.println(student);
@@ -781,11 +783,11 @@ public class RelationTests extends BaseTests {
     @Test
     public void 多数据结果_一对一关系_无线级关系1() {
         List<Student> students = studentModel.newQuery()
-                .get()
-                .with("teacher", builder -> builder, record -> record
-                        .with("students")
-                )
-                .toObjectList();
+            .get()
+            .with("teacher", builder -> builder, record -> record
+                .with("students")
+            )
+            .toObjectList();
 
         for (Student student : students) {
             System.out.println(student);
@@ -806,11 +808,11 @@ public class RelationTests extends BaseTests {
 
 
         List<Student> students = studentModel.newQuery()
-                .get()
-                .with("teacher", builder -> builder.whereIn("id", teacherIds), record -> record.with(
-                        "students", builder -> builder.whereIn("id", studentIds)))
+            .get()
+            .with("teacher", builder -> builder.whereIn("id", teacherIds), record -> record.with(
+                "students", builder -> builder.whereIn("id", studentIds)))
 //        "students", builder -> builder.whereIn("teacher_id", "5","6")))
-                .toObjectList();
+            .toObjectList();
 
         for (Student student : students) {
             System.out.println(student);
@@ -821,11 +823,11 @@ public class RelationTests extends BaseTests {
     @Test
     public void 多数据结果_一对一关系_无线级关系2() {
         List<Student> students = studentModel.newQuery()
-                .get()
-                .with("teacher", builder -> builder, record -> record
-                        .with("students")
-                )
-                .toObjectList();
+            .get()
+            .with("teacher", builder -> builder, record -> record
+                .with("students")
+            )
+            .toObjectList();
 
         for (Student student : students) {
             System.out.println(student);
@@ -858,12 +860,12 @@ public class RelationTests extends BaseTests {
         studentIds2.add("8");
 
         List<Student> students = studentModel.newQuery()
-                .get()
-                .with("teacher", builder -> builder.whereIn("id", teacherIds), record -> record.with(
-                        "students", builder -> builder.whereIn("id", studentIds), record1 -> record1.with(
-                                "teacher", builder -> builder.whereIn("id", teacherIds2), record2 -> record2.with("students"
-                                        , builder -> builder.whereIn("id", studentIds2)))))
-                .toObjectList();
+            .get()
+            .with("teacher", builder -> builder.whereIn("id", teacherIds), record -> record.with(
+                "students", builder -> builder.whereIn("id", studentIds), record1 -> record1.with(
+                    "teacher", builder -> builder.whereIn("id", teacherIds2), record2 -> record2.with("students"
+                        , builder -> builder.whereIn("id", studentIds2)))))
+            .toObjectList();
 
         for (Student student : students) {
             System.out.println(student);
@@ -873,13 +875,13 @@ public class RelationTests extends BaseTests {
     @Test
     public void 多数据结果_一对一关系_无线级关系() {
         List<Student> students = studentModel.newQuery()
-                .get()
-                .with("teacher", builder -> builder, record -> record
-                        .with("students", builder -> builder, record1 -> record1
-                                .with("teacher", builder -> builder, record2 -> record2.with("students"))
-                        )
+            .get()
+            .with("teacher", builder -> builder, record -> record
+                .with("students", builder -> builder, record1 -> record1
+                    .with("teacher", builder -> builder, record2 -> record2.with("students"))
                 )
-                .toObjectList();
+            )
+            .toObjectList();
 
         for (Student student : students) {
             System.out.println(student);
@@ -893,9 +895,9 @@ public class RelationTests extends BaseTests {
     @Test
     public void 多数据结果_一对一关系_无线级关系_快捷方式() {
         List<Student> students = studentModel.newQuery()
-                .get()
-                .with("teacher.students.teacher")
-                .toObjectList();
+            .get()
+            .with("teacher.students.teacher")
+            .toObjectList();
 
         for (Student student : students) {
             System.out.println(student);
@@ -909,9 +911,9 @@ public class RelationTests extends BaseTests {
     @Test
     public void 多数据结果_一对一关系_无线级关系_快捷方式2() {
         List<Student> students = studentModel.newQuery()
-                .get()
-                .with("teacher", builder -> builder, record -> record.with("students.teacher"))
-                .toObjectList();
+            .get()
+            .with("teacher", builder -> builder, record -> record.with("students.teacher"))
+            .toObjectList();
 
         for (Student student : students) {
             System.out.println(student);
@@ -925,8 +927,8 @@ public class RelationTests extends BaseTests {
     @Test
     public void 一对多关系1() {
         // 声明但不使用
-        Record<Teacher, Integer> record = teacherModel.newQuery().where("id", "6").firstOrFail();
-        Teacher teacherHasMany = record.toObject();
+        Record<Teacher, Integer> record         = teacherModel.newQuery().where("id", "6").firstOrFail();
+        Teacher                  teacherHasMany = record.toObject();
         System.out.println(teacherHasMany);
         Assert.assertNull(teacherHasMany.getStudents());
     }
@@ -936,7 +938,7 @@ public class RelationTests extends BaseTests {
 
         // 声明且使用
         Record<Teacher, Integer> record2 =
-                teacherModel.newQuery().where("id", "6").firstOrFail().with("students");
+            teacherModel.newQuery().where("id", "6").firstOrFail().with("students");
         Teacher teacherHasMany2 = record2.toObject();
         System.out.println(teacherHasMany2);
         Assert.assertEquals(teacherHasMany2.getStudents().size(), 4);
@@ -946,8 +948,8 @@ public class RelationTests extends BaseTests {
     public void 一对多关系3() {
         // 声明且使用,但无目标数据
         Record<Teacher, Integer> record3 =
-                teacherModel.newQuery().where("id", "6").firstOrFail().with("students", builder -> builder.where("id",
-                        "222"));
+            teacherModel.newQuery().where("id", "6").firstOrFail().with("students", builder -> builder.where("id",
+                "222"));
         Teacher teacherHasMany3 = record3.toObject();
         System.out.println(teacherHasMany3);
         Assert.assertEquals(teacherHasMany3.getStudents().size(), 0);
@@ -957,8 +959,8 @@ public class RelationTests extends BaseTests {
     public void 一对多关系_builder筛选() {
         // 声明且使用
         Record<Teacher, Integer> record2 =
-                teacherModel.newQuery().where("id", "6").firstOrFail().with("students",
-                        (builder -> builder.orderBy("id", OrderBy.DESC).where("id", "<=", "2")));
+            teacherModel.newQuery().where("id", "6").firstOrFail().with("students",
+                (builder -> builder.orderBy("id", OrderBy.DESC).where("id", "<=", "2")));
         Teacher teacherHasMany2 = record2.toObject();
         System.out.println(teacherHasMany2);
         Assert.assertEquals(teacherHasMany2.getStudents().size(), 2);
@@ -968,10 +970,10 @@ public class RelationTests extends BaseTests {
     public void 多数据结果_一对多关系_无线级关系() {
         // 声明且使用
         Record<Teacher, Integer> record2 =
-                teacherModel.newQuery().where("id", "6").firstOrFail().with("students",
-                        (builder -> builder.orderBy("id", OrderBy.DESC).where("id", "<=", "2")), record -> record.with(
-                                "teacher", builder -> builder, record1 -> record1.with("students", builder -> builder,
-                                        record3 -> record3.with("teacher"))));
+            teacherModel.newQuery().where("id", "6").firstOrFail().with("students",
+                (builder -> builder.orderBy("id", OrderBy.DESC).where("id", "<=", "2")), record -> record.with(
+                    "teacher", builder -> builder, record1 -> record1.with("students", builder -> builder,
+                        record3 -> record3.with("teacher"))));
         Teacher teacherHasMany2 = record2.toObject();
         System.out.println(teacherHasMany2);
         Assert.assertEquals(teacherHasMany2.getStudents().size(), 2);
@@ -981,11 +983,11 @@ public class RelationTests extends BaseTests {
     public void 多对多关系_中间表() {
         // 声明但不使用
         Student student = studentModel.newQuery()
-                .where("id", "1")
-                .firstOrFail().with("relationshipStudentTeachers", builder -> builder,
-                        record1 -> record1.with("teacher", builder -> builder, record -> record.with(
-                                "relationshipStudentTeachers", builder -> builder.orderBy("student_id"),
-                                record2 -> record2.with("student")))).toObject();
+            .where("id", "1")
+            .firstOrFail().with("relationshipStudentTeachers", builder -> builder,
+                record1 -> record1.with("teacher", builder -> builder, record -> record.with(
+                    "relationshipStudentTeachers", builder -> builder.orderBy("student_id"),
+                    record2 -> record2.with("student")))).toObject();
 
         System.out.println(student);
         Assert.assertEquals(student.getId().intValue(), 1);
@@ -999,24 +1001,24 @@ public class RelationTests extends BaseTests {
         Assert.assertEquals(student.getId().intValue(), 1);
 
         Assert.assertEquals(
-                student.getRelationshipStudentTeachers().get(1).getTeacher().getRelationshipStudentTeachers().size(), 10);
+            student.getRelationshipStudentTeachers().get(1).getTeacher().getRelationshipStudentTeachers().size(), 10);
 
         Assert.assertEquals(student.getRelationshipStudentTeachers()
-                .get(1)
-                .getTeacher()
-                .getRelationshipStudentTeachers()
-                .get(0)
-                .getStudent()
-                .getId()
-                .intValue(), 1);
+            .get(1)
+            .getTeacher()
+            .getRelationshipStudentTeachers()
+            .get(0)
+            .getStudent()
+            .getId()
+            .intValue(), 1);
         Assert.assertEquals(student.getRelationshipStudentTeachers()
-                .get(1)
-                .getTeacher()
-                .getRelationshipStudentTeachers()
-                .get(9)
-                .getStudent()
-                .getId()
-                .intValue(), 10);
+            .get(1)
+            .getTeacher()
+            .getRelationshipStudentTeachers()
+            .get(9)
+            .getStudent()
+            .getId()
+            .intValue(), 10);
 
 
     }
@@ -1025,10 +1027,10 @@ public class RelationTests extends BaseTests {
     public void 多对多关系_中间表_快捷方式() {
         // 声明但不使用
         Student student = studentModel.newQuery()
-                .where("id", "1")
-                .firstOrFail().with("relationshipStudentTeachers.teacher.relationshipStudentTeachers",
-                        builder -> builder.orderBy("student_id"),
-                        record2 -> record2.with("student")).toObject();
+            .where("id", "1")
+            .firstOrFail().with("relationshipStudentTeachers.teacher.relationshipStudentTeachers",
+                builder -> builder.orderBy("student_id"),
+                record2 -> record2.with("student")).toObject();
 
         System.out.println(student);
         Assert.assertEquals(student.getId().intValue(), 1);
@@ -1042,24 +1044,24 @@ public class RelationTests extends BaseTests {
         Assert.assertEquals(student.getId().intValue(), 1);
 
         Assert.assertEquals(
-                student.getRelationshipStudentTeachers().get(1).getTeacher().getRelationshipStudentTeachers().size(), 10);
+            student.getRelationshipStudentTeachers().get(1).getTeacher().getRelationshipStudentTeachers().size(), 10);
 
         Assert.assertEquals(student.getRelationshipStudentTeachers()
-                .get(1)
-                .getTeacher()
-                .getRelationshipStudentTeachers()
-                .get(0)
-                .getStudent()
-                .getId()
-                .intValue(), 1);
+            .get(1)
+            .getTeacher()
+            .getRelationshipStudentTeachers()
+            .get(0)
+            .getStudent()
+            .getId()
+            .intValue(), 1);
         Assert.assertEquals(student.getRelationshipStudentTeachers()
-                .get(1)
-                .getTeacher()
-                .getRelationshipStudentTeachers()
-                .get(9)
-                .getStudent()
-                .getId()
-                .intValue(), 10);
+            .get(1)
+            .getTeacher()
+            .getRelationshipStudentTeachers()
+            .get(9)
+            .getStudent()
+            .getId()
+            .intValue(), 10);
 
 
     }
@@ -1074,27 +1076,27 @@ public class RelationTests extends BaseTests {
 
         // 查询老师关系 select * from relationship_student_teacher where student_id = 1
         List<RelationshipStudentTeacher> relationshipStudentTeachers = relationshipStudentTeacherModel.newQuery()
-                .where("student_id", student.getId().toString())
-                .get()
-                .toObjectList();
+            .where("student_id", student.getId().toString())
+            .get()
+            .toObjectList();
 
         for (RelationshipStudentTeacher relationshipStudentTeacher : relationshipStudentTeachers) {
 
             // 查询老师实体 select * from teacher where id = ? limit 1
             Teacher teacher = teacherModel.newQuery()
-                    .where("id", relationshipStudentTeacher.getTeacherId().toString())
-                    .firstOrFail()
-                    .toObject();
+                .where("id", relationshipStudentTeacher.getTeacherId().toString())
+                .firstOrFail()
+                .toObject();
 
             // 放入老师对象
             student.getTeachersBelongsToMany().add(teacher);
 
             // 查询学生关系 select * from relationship_student_teacher where teacher_id = ?
             List<String> studentIds = relationshipStudentTeacherModel.newQuery()
-                    .where("teacher_id",
-                            relationshipStudentTeacher.getTeacherId().toString())
-                    .get()
-                    .toList(record -> record.toObject().getStudentId().toString());
+                .where("teacher_id",
+                    relationshipStudentTeacher.getTeacherId().toString())
+                .get()
+                .toList(record -> record.toObject().getStudentId().toString());
 
             // 查询学生列表 select * from student where id in (?)
             List<Student> students = studentModel.newQuery().whereIn("id", studentIds).get().toObjectList();
@@ -1113,12 +1115,12 @@ public class RelationTests extends BaseTests {
     public void 多对多关系_中间表_BelongsToMany() {
         // 声明但不使用
         Student student = studentModel.newQuery()
-                .where("id", "1")
-                .firstOrFail()
-                .with("teachersBelongsToMany", builder -> builder, record -> record.with(
-                        "studentsBelongsToMany",
-                        builder -> builder))
-                .toObject();
+            .where("id", "1")
+            .firstOrFail()
+            .with("teachersBelongsToMany", builder -> builder, record -> record.with(
+                "studentsBelongsToMany",
+                builder -> builder))
+            .toObject();
 
         assert2(student);
     }
@@ -1127,10 +1129,10 @@ public class RelationTests extends BaseTests {
     public void 多对多关系_中间表_BelongsToMany_快捷方式() {
         // 声明但不使用
         Student student = studentModel.newQuery()
-                .where("id", "1")
-                .firstOrFail()
-                .with("teachersBelongsToMany.studentsBelongsToMany")
-                .toObject();
+            .where("id", "1")
+            .firstOrFail()
+            .with("teachersBelongsToMany.studentsBelongsToMany")
+            .toObject();
 
         assert2(student);
     }
@@ -1167,8 +1169,8 @@ public class RelationTests extends BaseTests {
     @Test
     public void 关联关系分页_快速分页() {
         Paginate<Student> paginate = studentModel.newQuery().orderBy(Student.ID).with(
-                "relationshipStudentTeachers.teacher.relationshipStudentTeachers", builder -> builder.orderBy("student_id"),
-                record2 -> record2.with("student")).simplePaginate(1, 3);
+            "relationshipStudentTeachers.teacher.relationshipStudentTeachers", builder -> builder.orderBy("student_id"),
+            record2 -> record2.with("student")).simplePaginate(1, 3);
         System.out.println(paginate);
         Assert.assertEquals(paginate.getCurrentPage(), 1);
         Assert.assertNotNull(paginate.getFrom());
@@ -1186,10 +1188,10 @@ public class RelationTests extends BaseTests {
     @Test
     public void 分页_通用分页() {
         Paginate<Student> paginate =
-                studentModel.newQuery().orderBy("id").with(
-                        "relationshipStudentTeachers.teacher.relationshipStudentTeachers",
-                        builder -> builder.orderBy("student_id"),
-                        record2 -> record2.with("student")).paginate(1, 4);
+            studentModel.newQuery().orderBy("id").with(
+                "relationshipStudentTeachers.teacher.relationshipStudentTeachers",
+                builder -> builder.orderBy("student_id"),
+                record2 -> record2.with("student")).paginate(1, 4);
         System.out.println(paginate);
         Assert.assertEquals(paginate.getCurrentPage(), 1);
         Assert.assertNotNull(paginate.getFrom());
@@ -1219,24 +1221,24 @@ public class RelationTests extends BaseTests {
         Assert.assertEquals(student.getId().intValue(), 1);
 
         Assert.assertEquals(
-                student.getRelationshipStudentTeachers().get(1).getTeacher().getRelationshipStudentTeachers().size(), 10);
+            student.getRelationshipStudentTeachers().get(1).getTeacher().getRelationshipStudentTeachers().size(), 10);
 
         Assert.assertEquals(student.getRelationshipStudentTeachers()
-                .get(1)
-                .getTeacher()
-                .getRelationshipStudentTeachers()
-                .get(0)
-                .getStudent()
-                .getId()
-                .intValue(), 1);
+            .get(1)
+            .getTeacher()
+            .getRelationshipStudentTeachers()
+            .get(0)
+            .getStudent()
+            .getId()
+            .intValue(), 1);
         Assert.assertEquals(student.getRelationshipStudentTeachers()
-                .get(1)
-                .getTeacher()
-                .getRelationshipStudentTeachers()
-                .get(9)
-                .getStudent()
-                .getId()
-                .intValue(), 10);
+            .get(1)
+            .getTeacher()
+            .getRelationshipStudentTeachers()
+            .get(9)
+            .getStudent()
+            .getId()
+            .intValue(), 10);
 
     }
 

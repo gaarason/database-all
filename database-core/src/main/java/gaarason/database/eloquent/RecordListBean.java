@@ -20,11 +20,22 @@ public class RecordListBean<T, K> extends ArrayList<Record<T, K>> implements Rec
     protected List<Map<String, Column>> originalMetadataMapList = new ArrayList<>();
 
     /**
-     * sql
+     * 原始sql
      */
     protected String originalSql = "";
 
+    /**
+     * 临时缓存
+     */
     protected Map<String, Set<String>> cacheMap = new HashMap<>();
+
+    public RecordListBean() {
+
+    }
+
+    public RecordListBean(String originalSql) {
+        this.originalSql = originalSql;
+    }
 
 
     @Override
@@ -33,18 +44,8 @@ public class RecordListBean<T, K> extends ArrayList<Record<T, K>> implements Rec
     }
 
     @Override
-    public void setOriginalMetadataMapList(List<Map<String, Column>> originalMetadataMapList) {
-        this.originalMetadataMapList = originalMetadataMapList;
-    }
-
-    @Override
     public String getOriginalSql() {
         return originalSql;
-    }
-
-    @Override
-    public void setOriginalSql(String originalSql) {
-        this.originalSql = originalSql;
     }
 
     @Override
@@ -107,7 +108,8 @@ public class RecordListBean<T, K> extends ArrayList<Record<T, K>> implements Rec
      * @return 单个字段列表
      */
     @Override
-    public <V> List<V> toList(FilterRecordAttributeFunctionalInterface<T, K, V> filterRecordAttributeFunctionalInterface) {
+    public <V> List<V> toList(
+        FilterRecordAttributeFunctionalInterface<T, K, V> filterRecordAttributeFunctionalInterface) {
         List<V> list = new ArrayList<>();
         for (Record<T, K> record : this) {
             V result = filterRecordAttributeFunctionalInterface.execute(record);
@@ -135,10 +137,10 @@ public class RecordListBean<T, K> extends ArrayList<Record<T, K>> implements Rec
         String[] columnArr = column.split("\\.");
         // 快捷类型
         if (columnArr.length > 1) {
-            String lastLevelColumn = columnArr[columnArr.length - 1];
+            String lastLevelColumn  = columnArr[columnArr.length - 1];
             String otherLevelColumn = StringUtil.rtrim(column, "." + lastLevelColumn);
             return with(otherLevelColumn, builder -> builder,
-                    record -> record.with(lastLevelColumn, builderClosure, recordClosure));
+                record -> record.with(lastLevelColumn, builderClosure, recordClosure));
         }
         for (Record<T, K> tkRecord : this) {
             // 赋值关联关系过滤

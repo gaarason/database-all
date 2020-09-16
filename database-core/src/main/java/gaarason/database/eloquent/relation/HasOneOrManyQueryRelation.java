@@ -22,11 +22,12 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public String[] dealBatchSql(List<Map<String, Column>> stringColumnMapList, GenerateSqlPartFunctionalInterface generateSqlPart) {
+    public String[] dealBatchSql(List<Map<String, Column>> stringColumnMapList,
+                                 GenerateSqlPartFunctionalInterface generateSqlPart) {
         return new String[]{generateSqlPart.execute(hasOneOrManyTemplate.sonModel.newQuery())
-                .whereIn(hasOneOrManyTemplate.sonModelForeignKey,
-                        getColumnInMapList(stringColumnMapList, hasOneOrManyTemplate.localModelLocalKey))
-                .toSql(SqlType.SELECT)};
+            .whereIn(hasOneOrManyTemplate.sonModelForeignKey,
+                getColumnInMapList(stringColumnMapList, hasOneOrManyTemplate.localModelLocalKey))
+            .toSql(SqlType.SELECT)};
     }
 
     @Override
@@ -52,17 +53,17 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
         // 应该更新的子表的主键列表
         List<String> targetRecordPrimaryKeyIds = targetRecords.toList(
-                recordTemp -> String.valueOf(
-                        recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName())));
+            recordTemp -> String.valueOf(
+                recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName())));
 
         // 当前表(子表)的关联键值
         String relationKeyValue = String.valueOf(
-                record.getMetadataMap().get(record.getModel().getPrimaryKeyColumnName()));
+            record.getMetadataMap().get(record.getModel().getPrimaryKeyColumnName()));
 
         // 执行插入
         targetRecords.get(0).getModel().newQuery()
-                .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetRecordPrimaryKeyIds)
-                .data(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue).update();
+            .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetRecordPrimaryKeyIds)
+            .data(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue).update();
     }
 
     static class HasOneOrManyTemplate {
@@ -78,7 +79,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
             sonModelForeignKey = hasOneOrMany.sonModelForeignKey();
             localModelLocalKey = hasOneOrMany.localModelLocalKey();
             localModelLocalKey = "".equals(
-                    localModelLocalKey) ? sonModel.getPrimaryKeyColumnName() : localModelLocalKey;
+                localModelLocalKey) ? sonModel.getPrimaryKeyColumnName() : localModelLocalKey;
 
         }
     }

@@ -1,10 +1,11 @@
 package gaarason.database.eloquent.relation;
 
-import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.contract.eloquent.Model;
-import gaarason.database.exception.ModelNewInstanceException;
+import gaarason.database.contract.eloquent.relation.RelationSubQuery;
+import gaarason.database.provider.ModelShadow;
 import gaarason.database.support.Column;
 import gaarason.database.util.EntityUtil;
+import gaarason.database.util.ObjectUtil;
 
 import java.util.*;
 
@@ -19,12 +20,7 @@ abstract public class BaseRelationSubQuery implements RelationSubQuery {
      * @return Model实例
      */
     protected static Model<?, ?> getModelInstance(Class<? extends Model<?, ?>> modelClass) {
-        try {
-            // todo 判断是spring项目, 则从容器中查找实例
-            return modelClass.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new ModelNewInstanceException(e.getMessage(), e);
-        }
+        return ModelShadow.getByModel(ObjectUtil.typeCast(modelClass)).getModel();
     }
 
     /**

@@ -72,9 +72,4 @@ public class Column implements Serializable {
 
     private boolean definitelyWritable;
 
-    /**
-     * 标记关系
-     */
-//    private Set<String> relationIds = new HashSet<>();
-
 }

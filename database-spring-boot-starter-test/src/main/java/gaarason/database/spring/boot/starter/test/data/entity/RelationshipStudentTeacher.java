@@ -16,10 +16,14 @@ public class RelationshipStudentTeacher implements Serializable {
      * auto generator start
      **/
 
-    final public static String ID = "id";
+    final public static String ID         = "id";
+
     final public static String STUDENT_ID = "student_id";
+
     final public static String TEACHER_ID = "teacher_id";
+
     final public static String CREATED_AT = "created_at";
+
     final public static String UPDATED_AT = "updated_at";
 
     @Primary()
