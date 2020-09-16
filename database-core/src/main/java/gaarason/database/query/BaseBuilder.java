@@ -12,7 +12,7 @@ import gaarason.database.contract.function.RelationshipRecordWithFunctionalInter
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.Paginate;
-import gaarason.database.eloquent.enums.SqlType;
+import gaarason.database.eloquent.appointment.SqlType;
 import gaarason.database.exception.*;
 import gaarason.database.support.RecordFactory;
 import gaarason.database.util.ExceptionUtil;

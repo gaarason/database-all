@@ -10,13 +10,13 @@ import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.record.BindBean;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.RelationNotFoundException;
+import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.Column;
 import gaarason.database.support.RelationGetSupport;
 import gaarason.database.util.EntityUtil;
 import gaarason.database.util.ObjectUtil;
 import gaarason.database.util.StringUtil;
 
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,38 +32,38 @@ public class RecordBean<T, K> implements Record<T, K> {
     /**
      * 数据实体类
      */
-    protected final Class<T>                                        entityClass;
+    protected final Class<T> entityClass;
 
     /**
      * 本表元数据
      * <数据库字段名 -> 字段信息>
      */
-    protected       Map<String, Column>                             metadataMap;
+    protected Map<String, Column> metadataMap;
 
     /**
      * 原Sql
      */
-    protected       String                                          originalSql = "";
+    protected String originalSql = "";
 
     /**
      * 数据实体
      */
-    protected T                                                      entity;
+    protected T entity;
 
     /**
      * 是否已经绑定具体的数据
      */
-    protected boolean                                                hasBind;
+    protected boolean hasBind;
 
-    protected Map<String, GenerateSqlPartFunctionalInterface>        relationBuilderMap = new HashMap<>();
+    protected Map<String, GenerateSqlPartFunctionalInterface> relationBuilderMap = new HashMap<>();
 
-    protected Map<String, RelationshipRecordWithFunctionalInterface> relationRecordMap  = new HashMap<>();
+    protected Map<String, RelationshipRecordWithFunctionalInterface> relationRecordMap = new HashMap<>();
 
     /**
      * 主键值
      */
     @Nullable
-    protected K                                                      originalPrimaryKeyValue;
+    protected K originalPrimaryKeyValue;
 
     /**
      * 根据查询结果集生成
@@ -177,8 +177,8 @@ public class RecordBean<T, K> implements Record<T, K> {
     @Override
     public String toSearch() {
         Map<String, Object> stringObjectMap = toMap();
-        Set<String>         keySet          = stringObjectMap.keySet();
-        String[]            keyArray        = keySet.toArray(new String[0]);
+        Set<String> keySet = stringObjectMap.keySet();
+        String[] keyArray = keySet.toArray(new String[0]);
         Arrays.sort(keyArray);
         StringBuilder sb = new StringBuilder();
         for (String key : keyArray) {
@@ -295,10 +295,10 @@ public class RecordBean<T, K> implements Record<T, K> {
         String[] columnArr = column.split("\\.");
         // 快捷类型
         if (columnArr.length > 1) {
-            String lastLevelColumn  = columnArr[columnArr.length - 1];
+            String lastLevelColumn = columnArr[columnArr.length - 1];
             String otherLevelColumn = StringUtil.rtrim(column, "." + lastLevelColumn);
             return with(otherLevelColumn, builder -> builder,
-                record -> record.with(lastLevelColumn, builderClosure, recordClosure));
+                    record -> record.with(lastLevelColumn, builderClosure, recordClosure));
         }
 
         relationBuilderMap.put(column, builderClosure);
@@ -327,8 +327,8 @@ public class RecordBean<T, K> implements Record<T, K> {
         }
         // 执行
         boolean success = model.newQuery()
-            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-            .delete() > 0;
+                .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
+                .delete() > 0;
         // 成功删除后后,刷新自身属性
         if (success) {
             this.metadataMap = new HashMap<>();
@@ -367,8 +367,8 @@ public class RecordBean<T, K> implements Record<T, K> {
         }
         // 执行
         boolean success = model.onlyTrashed()
-            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-            .restore() > 0;
+                .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
+                .restore() > 0;
         // 成功恢复后,刷新自身属性
         if (success && refresh) {
             refresh();
@@ -389,8 +389,8 @@ public class RecordBean<T, K> implements Record<T, K> {
         }
         // 刷新自身属性
         init(model.withTrashed()
-            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-            .firstOrFail().getMetadataMap());
+                .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
+                .firstOrFail().getMetadataMap());
         // 响应
         return this;
     }
@@ -433,8 +433,8 @@ public class RecordBean<T, K> implements Record<T, K> {
         }
         // 执行
         boolean success = model.newQuery()
-            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-            .update(entity) > 0;
+                .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
+                .update(entity) > 0;
         // 成功更新后,刷新自身属性
         if (success) {
             selfUpdate(entity, false);
@@ -447,6 +447,8 @@ public class RecordBean<T, K> implements Record<T, K> {
 
     /**
      * 更新自身数据
+     * @param entity     新的实体
+     * @param insertType 是否新增
      */
     protected void selfUpdate(T entity, boolean insertType) {
         // 更新元数据
@@ -461,18 +463,30 @@ public class RecordBean<T, K> implements Record<T, K> {
      * @param insertType 是否为更新操作
      */
     protected void selfUpdateMetadataMap(T entity, boolean insertType) {
-        for (Field field : entityClass.getDeclaredFields()) {
-            Object value = EntityUtil.fieldGet(field, entity);
-            if (EntityUtil.effectiveField(field, value, insertType)) {
-                String columnName = EntityUtil.columnName(field);
-                if (insertType) {
-                    Column column = new Column();
-                    column.setValue(value);
-                    column.setName(columnName);
-                    metadataMap.put(columnName, column);
-                } else {
-                    metadataMap.get(columnName).setValue(value);
-                }
+        // 模型信息
+        ModelShadowProvider.ModelInfo<T, Object> modelInfo = ModelShadowProvider.getByEntity(entityClass);
+        // 字段信息集合
+        Map<String, ModelShadowProvider.FieldInfo> fieldInfoMap = insertType ? modelInfo.getJavaFieldInsertMap() : modelInfo.getJavaFieldUpdateMap();
+
+        for (String fieldName : fieldInfoMap.keySet()) {
+            // 字段信息
+            ModelShadowProvider.FieldInfo fieldInfo = fieldInfoMap.get(fieldName);
+            // 获取值
+            Object value = EntityUtil.fieldGet(fieldInfo.getField(), entity);
+            // 声明不可 null, 值仍然为null, 说明值无效
+            if (!fieldInfo.isNullable() && value == null) {
+                continue;
+            }
+
+            // 数据库列名
+            String columnName = fieldInfo.getColumnName();
+            if (insertType) {
+                Column column = new Column();
+                column.setValue(value);
+                column.setName(columnName);
+                metadataMap.put(columnName, column);
+            } else {
+                metadataMap.get(columnName).setValue(value);
             }
         }
         hasBind = true;

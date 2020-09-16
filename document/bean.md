@@ -362,10 +362,10 @@ package gaarason.database.models;
 
 import gaarason.database.connection.GaarasonDataSourceProvider;
 import gaarason.database.contract.connection.GaarasonDataSource;
-import gaarason.database.eloquent.annotations.Column;
+import gaarason.database.eloquent.annotation.Column;
 import gaarason.database.eloquent.Model;
-import gaarason.database.eloquent.annotations.Primary;
-import gaarason.database.eloquent.annotations.Table;
+import gaarason.database.eloquent.annotation.Primary;
+import gaarason.database.eloquent.annotation.Table;
 import lombok.Data;
 import org.springframework.stereotype.Component;
 

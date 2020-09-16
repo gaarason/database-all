@@ -1,7 +1,7 @@
 package gaarason.database.query.grammars;
 
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.enums.SqlType;
+import gaarason.database.eloquent.appointment.SqlType;
 import gaarason.database.exception.InvalidSQLTypeException;
 import gaarason.database.util.FormatUtil;
 

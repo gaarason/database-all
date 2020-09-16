@@ -8,13 +8,14 @@ import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.enums.JoinType;
-import gaarason.database.eloquent.enums.OrderBy;
-import gaarason.database.eloquent.enums.SqlType;
+import gaarason.database.eloquent.appointment.JoinType;
+import gaarason.database.eloquent.appointment.OrderBy;
+import gaarason.database.eloquent.appointment.SqlType;
 import gaarason.database.exception.AggregatesNotSupportedGroupException;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.InsertNotSuccessException;
 import gaarason.database.exception.SQLRuntimeException;
+import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.query.grammars.MySqlGrammar;
 import gaarason.database.util.EntityUtil;
 import gaarason.database.util.FormatUtil;
@@ -29,7 +30,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
 
     @Override
     Grammar grammarFactory() {
-        return new MySqlGrammar(EntityUtil.tableName(entityClass));
+        return new MySqlGrammar(ModelShadowProvider.getByEntity(entityClass).getTableName());
     }
 
 
@@ -576,7 +577,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     @Override
     public int update(T entity) throws SQLRuntimeException {
         // 获取entity所有有效字段对其值得映射
-        Map<String, String> stringStringMap = EntityUtil.columnValueMap(entity, false);
+        Map<String, String> stringStringMap = ModelShadowProvider.columnValueMap(entity, false);
 
         data(stringStringMap);
         // 执行

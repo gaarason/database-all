@@ -29,13 +29,12 @@ Eloquent ORM for Java
 ```java
 package temp.pojo;
 
-import gaarason.database.eloquent.annotations.Column;
-import gaarason.database.eloquent.annotations.Primary;
-import gaarason.database.eloquent.annotations.Table;
+import gaarason.database.eloquent.annotation.Column;
+import gaarason.database.eloquent.annotation.Primary;
+import gaarason.database.eloquent.annotation.Table;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.math.BigInteger;
 import java.util.Date;
 
 @Data
@@ -78,16 +77,16 @@ public class Student implements Serializable {
 
 ### Table
 
-- `gaarason.database.eloquent.annotations.Table` 用于确定当前`pojo`映射的数据表名  
+- `gaarason.database.eloquent.annotation.Table` 用于确定当前`pojo`映射的数据表名  
 - 当`pojo`的类名是对应表名的大驼峰时,可以省略(eg: `temp.pojo.SupTeacher`对应数据表`sup_teacher`时,可以省略)
 
 ### Primary
 
-- `gaarason.database.eloquent.annotations.Primary` 用于确定当前数据表的主键
+- `gaarason.database.eloquent.annotation.Primary` 用于确定当前数据表的主键
 
 ### Column
 
-- `gaarason.database.eloquent.annotations.Column` 用于确定每个数据字段的具体属性
+- `gaarason.database.eloquent.annotation.Column` 用于确定每个数据字段的具体属性
 - 当`insertable`以及`updatable`为`false`时, 对应字段的`ORM`操作将被忽略 
 - 如果某个数据对象没有`Primary`注解, 则大多数`ORM`操作将被禁用
 

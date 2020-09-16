@@ -1,4 +1,4 @@
-package gaarason.database.eloquent.annotations;
+package gaarason.database.eloquent.annotation;
 
 import java.lang.annotation.*;
 

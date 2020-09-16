@@ -1,7 +1,7 @@
 package gaarason.database.spring.boot.starter.test.data.entity;
 
-import gaarason.database.eloquent.annotations.Column;
-import gaarason.database.eloquent.annotations.Table;
+import gaarason.database.eloquent.annotation.Column;
+import gaarason.database.eloquent.annotation.Table;
 import lombok.Data;
 
 import java.io.Serializable;

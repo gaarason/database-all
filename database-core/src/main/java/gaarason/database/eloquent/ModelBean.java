@@ -9,7 +9,7 @@ import gaarason.database.core.lang.Nullable;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.query.MySqlBuilder;
-import gaarason.database.provider.ModelShadow;
+import gaarason.database.provider.ModelShadowProvider;
 
 abstract public class ModelBean<T, K> implements Model<T, K> {
 
@@ -170,31 +170,31 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
 
     @Override
     public String getPrimaryKeyColumnName() {
-        return ModelShadow.get(this).getPrimaryKeyColumnName();
+        return ModelShadowProvider.get(this).getPrimaryKeyColumnName();
     }
 
     @Override
     public String getPrimaryKeyName() {
-        return ModelShadow.get(this).getPrimaryKeyName();
+        return ModelShadowProvider.get(this).getPrimaryKeyName();
     }
 
     @Override
     public boolean isPrimaryKeyIncrement() {
-        return ModelShadow.get(this).isPrimaryKeyIncrement();
+        return ModelShadowProvider.get(this).isPrimaryKeyIncrement();
     }
 
     @Override
     public Class<K> getPrimaryKeyClass() {
-        return ModelShadow.get(this).getPrimaryKeyClass();
+        return ModelShadowProvider.get(this).getPrimaryKeyClass();
     }
 
     @Override
     public String getTableName() {
-        return ModelShadow.get(this).getTableName();
+        return ModelShadowProvider.get(this).getTableName();
     }
 
     @Override
     public Class<T> getEntityClass() {
-        return ModelShadow.get(this).getEntityClass();
+        return ModelShadowProvider.get(this).getEntityClass();
     }
 }

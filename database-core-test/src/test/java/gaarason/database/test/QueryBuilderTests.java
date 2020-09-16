@@ -5,7 +5,7 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.eloquent.Paginate;
-import gaarason.database.eloquent.enums.OrderBy;
+import gaarason.database.eloquent.appointment.OrderBy;
 import gaarason.database.exception.AggregatesNotSupportedGroupException;
 import gaarason.database.exception.ConfirmOperationException;
 import gaarason.database.exception.EntityNotFoundException;
@@ -612,6 +612,7 @@ public class QueryBuilderTests extends BaseTests {
             )
         ).get().toObjectList();
         Assert.assertEquals(entityList1.size(), 3);
+        System.out.println(entityList1);
     }
 
     @Test

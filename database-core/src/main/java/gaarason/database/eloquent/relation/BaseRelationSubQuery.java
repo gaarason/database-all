@@ -2,7 +2,7 @@ package gaarason.database.eloquent.relation;
 
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
-import gaarason.database.provider.ModelShadow;
+import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.Column;
 import gaarason.database.util.EntityUtil;
 import gaarason.database.util.ObjectUtil;
@@ -20,7 +20,7 @@ abstract public class BaseRelationSubQuery implements RelationSubQuery {
      * @return Model实例
      */
     protected static Model<?, ?> getModelInstance(Class<? extends Model<?, ?>> modelClass) {
-        return ModelShadow.getByModel(ObjectUtil.typeCast(modelClass)).getModel();
+        return ModelShadowProvider.getByModel(ObjectUtil.typeCast(modelClass)).getModel();
     }
 
     /**

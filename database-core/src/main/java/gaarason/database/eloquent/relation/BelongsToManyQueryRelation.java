@@ -4,8 +4,8 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
-import gaarason.database.eloquent.annotations.BelongsToMany;
-import gaarason.database.eloquent.enums.SqlType;
+import gaarason.database.eloquent.annotation.BelongsToMany;
+import gaarason.database.eloquent.appointment.SqlType;
 import gaarason.database.support.Column;
 import gaarason.database.util.EntityUtil;
 

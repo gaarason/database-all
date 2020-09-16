@@ -2,9 +2,9 @@ package ${namespace};\n
 \n
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;\n
 import com.fasterxml.jackson.databind.annotation.JsonNaming;\n
-import gaarason.database.eloquent.annotations.Column;\n
-import gaarason.database.eloquent.annotations.Primary;\n
-import gaarason.database.eloquent.annotations.Table;\n
+import gaarason.database.eloquent.annotation.Column;\n
+import gaarason.database.eloquent.annotation.Primary;\n
+import gaarason.database.eloquent.annotation.Table;\n
 ${swagger_import}
 import lombok.Data;\n
 ${validator_import}

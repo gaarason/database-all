@@ -7,7 +7,7 @@ import gaarason.database.contract.eloquent.Model;
  * @param <K> 主键类
  */
 @FunctionalInterface
-public interface RegisterFunctionalInterface<T, K> {
+public interface InstantiationModelFunctionalInterface<T, K> {
 
     /**
      * 执行并获取模型对象

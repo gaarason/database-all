@@ -1,4 +1,4 @@
 @NonNullApi
-package gaarason.database.query.range;
+package gaarason.database.eloquent.annotation;
 
 import gaarason.database.core.lang.NonNullApi;

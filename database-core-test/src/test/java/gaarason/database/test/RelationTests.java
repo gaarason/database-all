@@ -3,7 +3,7 @@ package gaarason.database.test;
 import gaarason.database.connection.GaarasonDataSourceProvider;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.eloquent.Paginate;
-import gaarason.database.eloquent.enums.OrderBy;
+import gaarason.database.eloquent.appointment.OrderBy;
 import gaarason.database.test.parent.BaseTests;
 import gaarason.database.test.relation.data.model.RelationshipStudentTeacherModel;
 import gaarason.database.test.relation.data.model.StudentModel;

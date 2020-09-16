@@ -1,9 +1,9 @@
 package gaarason.database.test.models;
 
 import gaarason.database.contract.eloquent.Record;
-import gaarason.database.eloquent.annotations.Column;
-import gaarason.database.eloquent.annotations.Primary;
-import gaarason.database.eloquent.annotations.Table;
+import gaarason.database.eloquent.annotation.Column;
+import gaarason.database.eloquent.annotation.Primary;
+import gaarason.database.eloquent.annotation.Table;
 import gaarason.database.test.models.base.SingleModel;
 import lombok.Data;
 

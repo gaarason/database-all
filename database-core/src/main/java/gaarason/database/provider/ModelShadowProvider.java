@@ -3,10 +3,12 @@ package gaarason.database.provider;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.annotations.*;
+import gaarason.database.eloquent.annotation.*;
+import gaarason.database.eloquent.appointment.FinalVariable;
 import gaarason.database.eloquent.relation.BelongsToManyQueryRelation;
 import gaarason.database.eloquent.relation.BelongsToQueryRelation;
 import gaarason.database.eloquent.relation.HasOneOrManyQueryRelation;
+import gaarason.database.exception.IllegalAccessRuntimeException;
 import gaarason.database.exception.InvalidEntityException;
 import gaarason.database.exception.InvalidPrimaryKeyTypeException;
 import gaarason.database.util.EntityUtil;
@@ -16,28 +18,16 @@ import lombok.Data;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
-import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static gaarason.database.util.EntityUtil.columnName;
 
 /**
  * Model信息大全
  */
-final public class ModelShadow {
-
-    /**
-     * 允许的java属性
-     */
-    public final static Class<?>[] basicType = new Class[]{Boolean.class, Byte.class, Character.class, Short.class,
-        Integer.class, Long.class, Float.class, Double.class, BigInteger.class, Date.class};
-
-    /**
-     * 关联关系注解
-     */
-    public final static Class<? extends Annotation>[] relationAnnotations = new Class[]{HasOneOrMany.class,
-        BelongsTo.class, BelongsToMany.class};
+final public class ModelShadowProvider {
 
     /**
      * Model Class做为索引
@@ -54,7 +44,7 @@ final public class ModelShadow {
      */
     static {
         Set<Class<? extends Model<?, ?>>> modelClasses =
-            ObjectUtil.typeCast(ReflectionUtil.reflections.getSubTypesOf(Model.class));
+                ObjectUtil.typeCast(ReflectionUtil.reflections.getSubTypesOf(Model.class));
 
         // 一轮初始化Model基础信息, 不存在依赖递归等复杂情况
         // 并过滤不需要的model, 比如抽象类等
@@ -83,7 +73,6 @@ final public class ModelShadow {
      * @return 格式化后的Model信息
      */
     public static <T, K> ModelInfo<T, K> get(Model<T, K> model) {
-        // 类型转化
         return getByModel(ObjectUtil.typeCast(model.getClass()));
     }
 
@@ -95,7 +84,6 @@ final public class ModelShadow {
      * @return 格式化后的Model信息
      */
     public static <T, K> ModelInfo<T, K> getByModel(Class<? extends Model<T, K>> modelClass) {
-        // 类型转化
         ModelInfo<?, ?> result = modelIndexMap.get(modelClass);
         if (null == result) {
             throw new InvalidEntityException("Model class[" + modelClass + "] have no information in the Shadow.");
@@ -117,12 +105,68 @@ final public class ModelShadow {
     }
 
     /**
+     * 通过entity解析对应的字段和值组成的map, 忽略不符合规则的字段
+     * @param entity     数据表实体对象
+     * @param insertType 新增?
+     * @param <T>        数据表实体类
+     * @return 字段对值的映射
+     */
+    public static <T> Map<String, String> columnValueMap(T entity, boolean insertType) {
+        // 结果集
+        Map<String, String> columnValueMap = new HashMap<>();
+        // 属性信息集合
+        Map<String, FieldInfo> columnFieldMap = getByEntity(entity.getClass()).getColumnFieldMap();
+        for (String columnName : columnFieldMap.keySet()) {
+            // 属性信息
+            FieldInfo fieldInfo = columnFieldMap.get(columnName);
+            // 值
+            Object value = fieldGet(fieldInfo.getField(), entity);
+            // 有效则加入 结果集
+            if (effectiveField(fieldInfo, value, insertType)) {
+                columnValueMap.put(columnName, EntityUtil.valueFormat(value));
+            }
+        }
+        return columnValueMap;
+    }
+
+    /**
+     * 获取属性的值
+     * @param field 属性
+     * @param obj   对象
+     * @return 值
+     */
+    @Nullable
+    protected static Object fieldGet(Field field, Object obj) {
+        try {
+            return field.get(obj);
+        } catch (IllegalAccessException e) {
+            throw new IllegalAccessRuntimeException(e);
+        }
+    }
+
+    /**
+     * 是否有效字段
+     * @param fieldInfo  字段
+     * @param value      字段值
+     * @param insertType 是否是新增,会通过字段上的注解column(insertable, updatable)进行忽略
+     * @return 有效
+     */
+    protected static boolean effectiveField(FieldInfo fieldInfo, @Nullable Object value, boolean insertType) {
+        // 不可插入 or 不可更新
+        if (insertType ? !fieldInfo.insertable : !fieldInfo.updatable) {
+            return false;
+        }
+
+        return fieldInfo.nullable || value != null;
+    }
+
+    /**
      * 构建索引
      * @param modelClass 模型类
      * @param <T>        实体类
      * @param <K>        主键类型
      */
-    private static <T, K> void initModelInformation(Class<? extends Model<T, K>> modelClass) {
+    protected static <T, K> void initModelInformation(Class<? extends Model<T, K>> modelClass) {
         ModelInfo<T, K> modelInfo = new ModelInfo<>();
         modelInfo.modelClass = modelClass;
         try {
@@ -146,9 +190,9 @@ final public class ModelShadow {
     @SuppressWarnings("unchecked")
     protected static <T, K> void modelDeal(ModelInfo<T, K> modelInfo) {
         modelInfo.entityClass = (Class<T>) ((ParameterizedType) modelInfo.modelClass.getGenericSuperclass())
-            .getActualTypeArguments()[0];
+                .getActualTypeArguments()[0];
         modelInfo.primaryKeyClass = (Class<K>) ((ParameterizedType) modelInfo.modelClass.getGenericSuperclass())
-            .getActualTypeArguments()[1];
+                .getActualTypeArguments()[1];
         modelInfo.tableName = EntityUtil.tableName(modelInfo.entityClass);
     }
 
@@ -160,24 +204,26 @@ final public class ModelShadow {
      */
     protected static <T, K> void primitiveFieldDeal(ModelInfo<T, K> modelInfo) {
         Class<T> entityClass = modelInfo.entityClass;
-//        modelInfo.model = ModelUtil.getNewInstance(modelInfo.modelClass);
         modelInfo.model = ModelInstanceProvider.getModel(modelInfo.modelClass);
         Field[] fields = entityClass.getDeclaredFields();
 
         for (Field field : fields) {
-            // 静态属性, 不处理
-            if (Modifier.isStatic(field.getModifiers())) {
-                continue;
-            }
-            FieldInfo fieldInfo = newFieldInfo(field);
+            // 非静态 基本类型
+            if (!EntityUtil.isStaticField(field) && EntityUtil.isBasicField(field)) {
+                // 设置属性是可访问
+                field.setAccessible(true);
+                // 对象实例
+                FieldInfo fieldInfo = new FieldInfo();
+                fieldInfo.field = field;
+                fieldInfo.name = field.getName();
+                fieldInfo.javaType = field.getType();
+                fieldInfo.collection = Arrays.asList(field.getType().getInterfaces()).contains(Collection.class);
 
-            // 非基本类型, 一般是关联关系
-            if (!effectiveRelationField(field)) {
                 // 数据库属性
                 fieldInfo.column = field.isAnnotationPresent(Column.class) ? field.getAnnotation(Column.class) : null;
 
                 // 数据库列名
-                fieldInfo.columnName = EntityUtil.columnName(field);
+                fieldInfo.columnName = columnName(field);
 
                 // 主键处理
                 if (field.isAnnotationPresent(Primary.class)) {
@@ -188,16 +234,33 @@ final public class ModelShadow {
                     // 主键类型检测
                     if (!modelInfo.primaryKeyClass.equals(field.getType())) {
                         throw new InvalidPrimaryKeyTypeException(
-                            "The primary key type [" + field.getType() + "] of the entity does not match with the " +
-                                "generic [" + modelInfo.primaryKeyClass + "]");
+                                "The primary key type [" + field.getType() + "] of the entity does not match with the " +
+                                        "generic [" + modelInfo.primaryKeyClass + "]");
                     }
                 }
 
                 // 属性名 索引键入
                 modelInfo.javaFieldMap.put(fieldInfo.name, fieldInfo);
+
                 // 数据库字段名 索引键入
                 modelInfo.columnFieldMap.put(fieldInfo.columnName, fieldInfo);
 
+                // 属性名 可新增的字段 索引键入
+                if (fieldInfo.column == null || fieldInfo.column.insertable()) {
+                    fieldInfo.insertable = true;
+                    modelInfo.javaFieldInsertMap.put(fieldInfo.name, fieldInfo);
+                }
+
+                // 属性名 可更新的字段 索引键入
+                if (fieldInfo.column == null || fieldInfo.column.updatable()) {
+                    fieldInfo.updatable = true;
+                    modelInfo.javaFieldUpdateMap.put(fieldInfo.name, fieldInfo);
+                }
+
+                // 属性名 可 null
+                if (fieldInfo.column == null || !fieldInfo.column.nullable()) {
+                    fieldInfo.nullable = false;
+                }
             }
         }
     }
@@ -211,48 +274,33 @@ final public class ModelShadow {
     protected static <T, K> void relationFieldDeal(ModelInfo<T, K> modelInfo) {
 
         Class<T> entityClass = modelInfo.entityClass;
-        Field[]  fields      = entityClass.getDeclaredFields();
+        Field[] fields = entityClass.getDeclaredFields();
 
         for (Field field : fields) {
-            // 静态属性, 不处理
-            if (Modifier.isStatic(field.getModifiers())) {
-                continue;
-            }
-            FieldInfo fieldInfo = newFieldInfo(field);
-
-            // 非基本类型, 一般是关联关系
+            // 关联关系
             if (effectiveRelationField(field)) {
+                field.setAccessible(true);
+
+                // 对象实例
+                RelationFieldInfo relationFieldInfo = new RelationFieldInfo();
+                relationFieldInfo.field = field;
+                relationFieldInfo.name = field.getName();
+                relationFieldInfo.javaType = field.getType();
+                relationFieldInfo.collection = Arrays.asList(field.getType().getInterfaces()).contains(Collection.class);
+
                 if (field.isAnnotationPresent(BelongsTo.class)) {
-                    fieldInfo.relationSubQuery = new BelongsToQueryRelation(field);
+                    relationFieldInfo.relationSubQuery = new BelongsToQueryRelation(field);
                 } else if (field.isAnnotationPresent(BelongsToMany.class)) {
-                    fieldInfo.relationSubQuery = new BelongsToManyQueryRelation(field);
+                    relationFieldInfo.relationSubQuery = new BelongsToManyQueryRelation(field);
                 } else if (field.isAnnotationPresent(HasOneOrMany.class)) {
-                    fieldInfo.relationSubQuery = new HasOneOrManyQueryRelation(field);
+                    relationFieldInfo.relationSubQuery = new HasOneOrManyQueryRelation(field);
                 } else {
                     continue;
                 }
                 // 关联关系记录
-                modelInfo.relationFieldMap.put(fieldInfo.name, fieldInfo);
+                modelInfo.relationFieldMap.put(relationFieldInfo.name, relationFieldInfo);
             }
         }
-    }
-
-    /**
-     * 通用属性赋值
-     * @param field 字段
-     * @return FieldInfo
-     */
-    protected static FieldInfo newFieldInfo(Field field) {
-        // 设置属性是可访问
-        field.setAccessible(true);
-
-        // 对象实例
-        FieldInfo fieldInfo = new FieldInfo();
-        fieldInfo.field = field;
-        fieldInfo.name = field.getName();
-        fieldInfo.javaType = field.getType();
-        fieldInfo.collection = Arrays.asList(field.getType().getInterfaces()).contains(Collection.class);
-        return fieldInfo;
     }
 
     /**
@@ -261,19 +309,20 @@ final public class ModelShadow {
      * @return yes/no
      */
     protected static boolean effectiveRelationField(Field field) {
+        // 非静态类型
+        boolean isNotStatic = !EntityUtil.isStaticField(field);
         // 非基础类型
-        boolean isNotPrimitive = !field.getType().isPrimitive();
-        // 非包装类型
-        boolean isNotBasicType = !Arrays.asList(basicType).contains(field.getType());
+        boolean isNotBasicType = !EntityUtil.isBasicField(field);
         // 有相应的注解
         boolean hasRelationAnnotation = false;
-        for (Class<? extends Annotation> relationAnnotation : relationAnnotations) {
+
+        for (Class<? extends Annotation> relationAnnotation : FinalVariable.relationAnnotations) {
             if (field.isAnnotationPresent(relationAnnotation)) {
                 hasRelationAnnotation = true;
                 break;
             }
         }
-        return isNotPrimitive && isNotBasicType && hasRelationAnnotation;
+        return isNotStatic && isNotBasicType && hasRelationAnnotation;
     }
 
     /**
@@ -333,9 +382,19 @@ final public class ModelShadow {
         protected Map<String, FieldInfo> columnFieldMap = new ConcurrentHashMap<>();
 
         /**
+         * `属性名`名对应的`普通`字段数组, 可新增的字段
+         */
+        protected Map<String, FieldInfo> javaFieldInsertMap = new ConcurrentHashMap<>();
+
+        /**
+         * `属性名`名对应的`普通`字段数组, 可更新的字段
+         */
+        protected Map<String, FieldInfo> javaFieldUpdateMap = new ConcurrentHashMap<>();
+
+        /**
          * `属性名`对应的`关系`字段数组
          */
-        protected Map<String, FieldInfo> relationFieldMap = new ConcurrentHashMap<>();
+        protected Map<String, RelationFieldInfo> relationFieldMap = new ConcurrentHashMap<>();
 
     }
 
@@ -366,6 +425,21 @@ final public class ModelShadow {
         protected String columnName;
 
         /**
+         * 可新增
+         */
+        protected boolean insertable = false;
+
+        /**
+         * 可更新
+         */
+        protected boolean updatable = false;
+
+        /**
+         * 可 null
+         */
+        protected boolean nullable = true;
+
+        /**
          * java中的字段类型
          */
         protected Class<?> javaType;
@@ -380,11 +454,38 @@ final public class ModelShadow {
          */
         @Nullable
         protected Column column;
+    }
+
+
+    /**
+     * 字段信息
+     */
+    @Data
+    public static class RelationFieldInfo {
+
+        /**
+         * 是否是集合
+         */
+        protected boolean collection;
+
+        /**
+         * Field
+         */
+        protected Field field;
+
+        /**
+         * 属性名
+         */
+        protected String name;
+
+        /**
+         * java中的字段类型
+         */
+        protected Class<?> javaType;
 
         /**
          * 关联关系注解
          */
-        @Nullable
         protected RelationSubQuery relationSubQuery;
     }
 

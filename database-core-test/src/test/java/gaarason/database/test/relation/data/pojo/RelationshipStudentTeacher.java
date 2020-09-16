@@ -1,9 +1,9 @@
 package gaarason.database.test.relation.data.pojo;
 
-import gaarason.database.eloquent.annotations.BelongsTo;
-import gaarason.database.eloquent.annotations.Column;
-import gaarason.database.eloquent.annotations.Primary;
-import gaarason.database.eloquent.annotations.Table;
+import gaarason.database.eloquent.annotation.BelongsTo;
+import gaarason.database.eloquent.annotation.Column;
+import gaarason.database.eloquent.annotation.Primary;
+import gaarason.database.eloquent.annotation.Table;
 import gaarason.database.test.relation.data.model.StudentModel;
 import gaarason.database.test.relation.data.model.TeacherModel;
 import lombok.Data;

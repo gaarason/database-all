@@ -32,7 +32,7 @@ Eloquent 让组织和处理这些关联关系变得简单，并且支持多种�
 ## 关系定义
 
 通过在`entity`中声明对应的属性, 并在属性上使用相关注解`@HasOneOrMany()`,`@BelongsTo()`,`@BelongsToMany()`标记    
-所有注解在包 `gaarason.database.eloquent.annotations.*` 中
+所有注解在包 `gaarason.database.eloquent.annotation.*` 中
 
 ### 一对一
 
@@ -45,14 +45,12 @@ Eloquent 让组织和处理这些关联关系变得简单，并且支持多种�
 ```java
 package gaarason.database.test.relation.data.pojo;
 
-import gaarason.database.eloquent.annotations.*;
+import gaarason.database.eloquent.annotation.*;
 import gaarason.database.test.relation.data.model.RelationshipStudentTeacherModel;
 import gaarason.database.test.relation.data.model.StudentModel;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
 
 @Data
 @Table(name = "teacher")
@@ -91,13 +89,12 @@ public class Teacher implements Serializable {
 ```java
 package gaarason.database.test.relation.data.pojo;
 
-import gaarason.database.eloquent.annotations.*;
+import gaarason.database.eloquent.annotation.*;
 import gaarason.database.test.relation.data.model.RelationshipStudentTeacherModel;
 import gaarason.database.test.relation.data.model.StudentModel;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 
 @Data
@@ -139,14 +136,12 @@ public class Teacher implements Serializable {
 ```java
 package gaarason.database.test.relation.data.pojo;
 
-import gaarason.database.eloquent.annotations.*;
+import gaarason.database.eloquent.annotation.*;
 import gaarason.database.test.relation.data.model.RelationshipStudentTeacherModel;
 import gaarason.database.test.relation.data.model.TeacherModel;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
 
 @Data
 @Table(name = "student")
@@ -192,13 +187,12 @@ public class Student implements Serializable {
 ```java
 package gaarason.database.test.relation.data.pojo;
 
-import gaarason.database.eloquent.annotations.*;
+import gaarason.database.eloquent.annotation.*;
 import gaarason.database.test.relation.data.model.RelationshipStudentTeacherModel;
 import gaarason.database.test.relation.data.model.TeacherModel;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 
 @Data

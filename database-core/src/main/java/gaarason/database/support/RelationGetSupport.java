@@ -7,11 +7,9 @@ import gaarason.database.contract.function.GenerateRecordListFunctionalInterface
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.exception.EntityNewInstanceException;
-import gaarason.database.exception.RelationAnnotationNotSupportedException;
-import gaarason.database.provider.ModelShadow;
+import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.EntityUtil;
 
-import java.lang.reflect.Field;
 import java.util.*;
 
 public class RelationGetSupport<T, K> {
@@ -75,64 +73,65 @@ public class RelationGetSupport<T, K> {
         List<T> list = new ArrayList<>();
         // 关联关系的临时性缓存
         for (Record<T, K> record : records) {
-
-            // 内存获取
-            ModelShadow.ModelInfo<?, ?> modelInfo = ModelShadow.get(records.get(0).getModel());
-
-            Class<T> entityClass = record.getModel().getEntityClass();
-            // 某个字段的总数据集
-            Field[] fields = entityClass.getDeclaredFields();
+            // 模型信息
+            ModelShadowProvider.ModelInfo<T, K> modelInfo = ModelShadowProvider.get(records.get(0).getModel());
             try {
                 // 实体类的对象
-                T entity = entityClass.newInstance();
-                for (Field field : fields) {
+                T entity = modelInfo.getEntityClass().newInstance();
+                // 普通属性集合
+                Map<String, ModelShadowProvider.FieldInfo> javaFieldMap = modelInfo.getJavaFieldMap();
+                for (String fieldName : javaFieldMap.keySet()) {
+                    // 普通属性信息
+                    ModelShadowProvider.FieldInfo fieldInfo = javaFieldMap.get(fieldName);
+                    // 普通属性赋值
+                    EntityUtil.fieldAssignment(fieldInfo.getField(), record.getMetadataMap(), entity, record);
+                }
 
-                    ModelShadow.FieldInfo fieldInfo = modelInfo.getRelationFieldMap().get(field.getName());
-                    field.setAccessible(true); // 设置属性是可访问
-                    // 普通赋值
-                    EntityUtil.fieldAssignment(field, record.getMetadataMap(), entity, record);
+                // 关系属性集合
+                Map<String, ModelShadowProvider.RelationFieldInfo> relationFieldMap = modelInfo.getRelationFieldMap();
+                for (String fieldName : relationFieldMap.keySet()) {
+                    // 关系属性信息
+                    ModelShadowProvider.RelationFieldInfo relationFieldInfo = relationFieldMap.get(fieldName);
 
                     // 获取关系的预处理
-                    GenerateSqlPartFunctionalInterface        generateSqlPart        = record.getRelationBuilderMap()
-                        .get(field.getName());
+                    GenerateSqlPartFunctionalInterface generateSqlPart = record.getRelationBuilderMap()
+                            .get(relationFieldInfo.getName());
                     RelationshipRecordWithFunctionalInterface relationshipRecordWith = record.getRelationRecordMap()
-                        .get(field.getName());
+                            .get(relationFieldInfo.getName());
 
                     if (generateSqlPart == null || relationshipRecordWith == null || !attachedRelationship) {
                         continue;
                     }
 
-                    RelationSubQuery relationSubQuery = fieldInfo.getRelationSubQuery();
-
-                    if (relationSubQuery == null) {
-                        throw new RelationAnnotationNotSupportedException(Arrays.toString(field.getAnnotations()));
-                    }
+                    // 关联关系字段处理
+                    RelationSubQuery relationSubQuery = relationFieldInfo.getRelationSubQuery();
 
                     // sql数组
                     String[] sqlArr = relationSubQuery.dealBatchSql(originalMetadataMapList, generateSqlPart);
 
                     // 本级关系查询
                     RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
-                        field.getName(), record.getModel().getTableName(), () -> relationSubQuery.dealBatch(sqlArr),
-                        relationshipRecordWith, sqlArr);
+                            relationFieldInfo.getName(), record.getModel().getTableName(), () -> relationSubQuery.dealBatch(sqlArr),
+                            relationshipRecordWith, sqlArr);
 
                     // 递归处理下级关系, 并筛选当前 record 所需要的属性
                     List<?> objects = relationSubQuery.filterBatchRecord(record, relationshipRecordList,
-                        cacheRelationRecordList);
+                            cacheRelationRecordList);
 
                     // 是否是集合
-                    if (fieldInfo.isCollection()) {
-                        // 设置字段值
-                        field.set(entity, objects);
+                    if (relationFieldInfo.isCollection()) {
+                        // 关系属性赋值
+                        relationFieldInfo.getField().set(entity, objects);
                     } else {
-                        // 设置字段值
-                        field.set(entity, objects.size() == 0 ? null : objects.get(0));
+                        // 关系属性赋值
+                        relationFieldInfo.getField().set(entity, objects.size() == 0 ? null : objects.get(0));
                     }
                 }
                 list.add(entity);
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new EntityNewInstanceException(e.getMessage(), e);
             }
+
         }
         return list;
     }
@@ -156,7 +155,7 @@ public class RelationGetSupport<T, K> {
 
         // 有缓存有直接返回, 没有就执行后返回
         RecordList<?, ?> recordList = cacheRelationRecordList.computeIfAbsent(cacheKeyName,
-            theKey -> closure.execute());
+                theKey -> closure.execute());
 
         // 使用复制结果
         RecordList<?, ?> recordsCopy = RecordFactory.copyRecordList(recordList);

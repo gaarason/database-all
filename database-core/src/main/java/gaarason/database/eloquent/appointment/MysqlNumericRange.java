@@ -1,4 +1,4 @@
-package gaarason.database.query.range.mysql;
+package gaarason.database.eloquent.appointment;
 
 import lombok.Getter;
 
@@ -22,13 +22,13 @@ public enum MysqlNumericRange {
     // 缩减了 bigint unsigned 的值为原值的一半
     BIGINT_UNSIGNED("bigint unsigned", Long.MAX_VALUE, 0, Long.class);
 
-    private String mysqlColumnTypeName;
+    private final String mysqlColumnTypeName;
 
-    private long max;
+    private final long max;
 
-    private long min;
+    private final long min;
 
-    private Class<?> javaClassType;
+    private final Class<?> javaClassType;
 
     /**
      * @param mysqlColumnTypeName 字符的数据中的类型
