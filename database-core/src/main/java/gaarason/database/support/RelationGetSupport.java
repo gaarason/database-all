@@ -8,7 +8,6 @@ import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.exception.EntityNewInstanceException;
 import gaarason.database.provider.ModelShadowProvider;
-import gaarason.database.util.EntityUtil;
 
 import java.util.*;
 
@@ -84,7 +83,7 @@ public class RelationGetSupport<T, K> {
                     // 普通属性信息
                     ModelShadowProvider.FieldInfo fieldInfo = javaFieldMap.get(fieldName);
                     // 普通属性赋值
-                    EntityUtil.fieldAssignment(fieldInfo.getField(), record.getMetadataMap(), entity, record);
+                    ModelShadowProvider.fieldAssignment(fieldInfo, record.getMetadataMap(), entity, record);
                 }
 
                 // 关系属性集合
@@ -95,9 +94,9 @@ public class RelationGetSupport<T, K> {
 
                     // 获取关系的预处理
                     GenerateSqlPartFunctionalInterface generateSqlPart = record.getRelationBuilderMap()
-                            .get(relationFieldInfo.getName());
+                        .get(relationFieldInfo.getName());
                     RelationshipRecordWithFunctionalInterface relationshipRecordWith = record.getRelationRecordMap()
-                            .get(relationFieldInfo.getName());
+                        .get(relationFieldInfo.getName());
 
                     if (generateSqlPart == null || relationshipRecordWith == null || !attachedRelationship) {
                         continue;
@@ -111,12 +110,13 @@ public class RelationGetSupport<T, K> {
 
                     // 本级关系查询
                     RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
-                            relationFieldInfo.getName(), record.getModel().getTableName(), () -> relationSubQuery.dealBatch(sqlArr),
-                            relationshipRecordWith, sqlArr);
+                        relationFieldInfo.getName(), record.getModel().getTableName(),
+                        () -> relationSubQuery.dealBatch(sqlArr),
+                        relationshipRecordWith, sqlArr);
 
                     // 递归处理下级关系, 并筛选当前 record 所需要的属性
                     List<?> objects = relationSubQuery.filterBatchRecord(record, relationshipRecordList,
-                            cacheRelationRecordList);
+                        cacheRelationRecordList);
 
                     // 是否是集合
                     if (relationFieldInfo.isCollection()) {
@@ -155,7 +155,7 @@ public class RelationGetSupport<T, K> {
 
         // 有缓存有直接返回, 没有就执行后返回
         RecordList<?, ?> recordList = cacheRelationRecordList.computeIfAbsent(cacheKeyName,
-                theKey -> closure.execute());
+            theKey -> closure.execute());
 
         // 使用复制结果
         RecordList<?, ?> recordsCopy = RecordFactory.copyRecordList(recordList);

@@ -472,7 +472,7 @@ public class RecordBean<T, K> implements Record<T, K> {
             // 字段信息
             ModelShadowProvider.FieldInfo fieldInfo = fieldInfoMap.get(fieldName);
             // 获取值
-            Object value = EntityUtil.fieldGet(fieldInfo.getField(), entity);
+            Object value = ModelShadowProvider.fieldGet(fieldInfo, entity);
             // 声明不可 null, 值仍然为null, 说明值无效
             if (!fieldInfo.isNullable() && value == null) {
                 continue;

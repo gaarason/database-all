@@ -40,18 +40,28 @@ abstract public class BaseRelationSubQuery implements RelationSubQuery {
     /**
      * 将满足条件的对象筛选并返回
      * @param relationshipObjectList 待筛选的对象列表
-     * @param fieldName              对象的属性的名
+     * @param columnName             对象的属性的名
      * @param fieldTargetValue       对象的属性的目标值
      * @return 对象列表
      */
-    protected static List<?> findObjList(List<?> relationshipObjectList, String fieldName, String fieldTargetValue) {
+    protected static List<?> findObjList(List<?> relationshipObjectList, String columnName, String fieldTargetValue) {
         List<Object> objectList = new ArrayList<>();
-        for (Object o : relationshipObjectList) {
-            Object fieldByColumn = EntityUtil.getFieldValueByColumn(o, fieldName);
-            // 满足则加入
-            if (fieldTargetValue.equals(fieldByColumn.toString())) {
-                objectList.add(o);
+        if(relationshipObjectList.size() > 0){
+            // 模型信息
+            ModelShadowProvider.ModelInfo<?, Object> modelInfo = ModelShadowProvider.getByEntity(
+                relationshipObjectList.get(0).getClass());
+            // 字段信息
+            ModelShadowProvider.FieldInfo fieldInfo = modelInfo.getColumnFieldMap().get(columnName);
+
+            for (Object o : relationshipObjectList) {
+                // 值
+                Object fieldValue = ModelShadowProvider.fieldGet(fieldInfo, o);
+                // 满足则加入
+                if (fieldTargetValue.equals(String.valueOf(fieldValue))) {
+                    objectList.add(o);
+                }
             }
+
         }
         return objectList;
     }

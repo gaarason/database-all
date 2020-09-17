@@ -17,7 +17,6 @@ import gaarason.database.exception.InsertNotSuccessException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.query.grammars.MySqlGrammar;
-import gaarason.database.util.EntityUtil;
 import gaarason.database.util.FormatUtil;
 
 import java.util.*;
@@ -473,9 +472,9 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     @Override
     public int insert(T entity) throws SQLRuntimeException {
         // 获取entity所有有效sql字段
-        List<String> columnNameList = EntityUtil.columnNameList(entity, true);
+        List<String> columnNameList = ModelShadowProvider.columnNameList(entity, true);
         // 获取entity所有有效字段的值
-        List<String> valueList = EntityUtil.valueList(entity, columnNameList);
+        List<String> valueList = ModelShadowProvider.valueList(entity, columnNameList);
         // 字段加入grammar
         select(columnNameList);
         // 字段的值加入grammar
@@ -502,9 +501,9 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
     @Override
     public K insertGetId(T entity) throws SQLRuntimeException {
         // 获取entity所有有效sql字段
-        List<String> columnNameList = EntityUtil.columnNameList(entity, true);
+        List<String> columnNameList = ModelShadowProvider.columnNameList(entity, true);
         // 获取entity所有有效字段的值
-        List<String> valueList = EntityUtil.valueList(entity, columnNameList);
+        List<String> valueList = ModelShadowProvider.valueList(entity, columnNameList);
         // 字段加入grammar
         select(columnNameList);
         // 字段的值加入grammar
@@ -512,7 +511,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
         // 执行, 并获取主键id
         K primaryId = insertGetId();
         // 赋值主键
-        EntityUtil.setPrimaryId(entity, primaryId);
+        ModelShadowProvider.setPrimaryId(entity, primaryId);
         // 返回主键
         return primaryId;
     }
@@ -556,11 +555,11 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
      */
     private void beforeBatchInsert(List<T> entityList) {
         // 获取entity所有有效字段
-        List<String>       columnNameList = EntityUtil.columnNameList(entityList.get(0), true);
+        List<String>       columnNameList = ModelShadowProvider.columnNameList(entityList.get(0), true);
         List<List<String>> valueListList  = new ArrayList<>();
         for (T entity : entityList) {
             // 获取entity所有有效字段的值
-            List<String> valueList = EntityUtil.valueList(entity, columnNameList);
+            List<String> valueList = ModelShadowProvider.valueList(entity, columnNameList);
             valueListList.add(valueList);
         }
         // 字段加入grammar

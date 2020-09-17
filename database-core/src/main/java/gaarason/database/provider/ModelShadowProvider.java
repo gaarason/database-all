@@ -1,6 +1,7 @@
 package gaarason.database.provider;
 
 import gaarason.database.contract.eloquent.Model;
+import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.annotation.*;
@@ -11,6 +12,7 @@ import gaarason.database.eloquent.relation.HasOneOrManyQueryRelation;
 import gaarason.database.exception.IllegalAccessRuntimeException;
 import gaarason.database.exception.InvalidEntityException;
 import gaarason.database.exception.InvalidPrimaryKeyTypeException;
+import gaarason.database.exception.TypeNotSupportedException;
 import gaarason.database.util.EntityUtil;
 import gaarason.database.util.ObjectUtil;
 import gaarason.database.util.ReflectionUtil;
@@ -44,7 +46,7 @@ final public class ModelShadowProvider {
      */
     static {
         Set<Class<? extends Model<?, ?>>> modelClasses =
-                ObjectUtil.typeCast(ReflectionUtil.reflections.getSubTypesOf(Model.class));
+            ObjectUtil.typeCast(ReflectionUtil.reflections.getSubTypesOf(Model.class));
 
         // 一轮初始化Model基础信息, 不存在依赖递归等复杂情况
         // 并过滤不需要的model, 比如抽象类等
@@ -120,7 +122,7 @@ final public class ModelShadowProvider {
             // 属性信息
             FieldInfo fieldInfo = columnFieldMap.get(columnName);
             // 值
-            Object value = fieldGet(fieldInfo.getField(), entity);
+            Object value = fieldGet(fieldInfo, entity);
             // 有效则加入 结果集
             if (effectiveField(fieldInfo, value, insertType)) {
                 columnValueMap.put(columnName, EntityUtil.valueFormat(value));
@@ -130,15 +132,123 @@ final public class ModelShadowProvider {
     }
 
     /**
+     * 通过entity解析对应的字段组成的list
+     * 忽略不符合规则的字段
+     * @param entity     数据表实体对象
+     * @param <T>        数据表实体类
+     * @param insertType 新增?
+     * @return 列名组成的list
+     */
+    public static <T> List<String> columnNameList(T entity, boolean insertType) {
+        // 结果集
+        List<String> columnList = new ArrayList<>();
+        // 属性信息集合
+        Map<String, FieldInfo> columnFieldMap = getByEntity(entity.getClass()).getColumnFieldMap();
+
+        for (String columnName : columnFieldMap.keySet()) {
+            // 属性信息
+            FieldInfo fieldInfo = columnFieldMap.get(columnName);
+            // 值
+            Object value = fieldGet(fieldInfo, entity);
+            // 有效则加入 结果集
+            if (effectiveField(fieldInfo, value, insertType)) {
+                columnList.add(columnName);
+            }
+        }
+        return columnList;
+    }
+
+    /**
+     * 通过entity解析对应的字段的值组成的list, 忽略不符合规则的字段
+     * @param entity         数据表实体对象
+     * @param <T>            数据表实体类
+     * @param columnNameList 有效的属性名
+     * @return 字段的值组成的list
+     */
+    public static <T> List<String> valueList(T entity, List<String> columnNameList) {
+        // 结果集
+        List<String> valueList = new ArrayList<>();
+        // 属性信息集合
+        Map<String, FieldInfo> columnFieldMap = getByEntity(entity.getClass()).getColumnFieldMap();
+
+        for (String columnName : columnFieldMap.keySet()) {
+            // 属性信息
+            FieldInfo fieldInfo = columnFieldMap.get(columnName);
+            // 加入需要的数据
+            if (columnNameList.contains(columnName)) {
+                valueList.add(EntityUtil.valueFormat(fieldGet(fieldInfo, entity)));
+            }
+        }
+        return valueList;
+    }
+
+    /**
+     * 将数据库查询结果赋值给entity的field
+     * 需要 field.setAccessible(true)
+     * @param fieldInfo       字段信息
+     * @param stringColumnMap 元数据map
+     * @param entity          数据表实体对象
+     */
+    public static <T, K> void fieldAssignment(FieldInfo fieldInfo,
+                                              Map<String, gaarason.database.support.Column> stringColumnMap,
+                                              T entity, Record<T, K> record) throws TypeNotSupportedException {
+        gaarason.database.support.Column column = stringColumnMap.get(fieldInfo.columnName);
+        if (column != null) {
+            try {
+                Object value = EntityUtil.columnFill(fieldInfo.field, column.getValue());
+                fieldInfo.field.set(entity, value);
+                // 主键值记录
+                if (fieldInfo.field.isAnnotationPresent(Primary.class) && value != null) {
+                    record.setOriginalPrimaryKeyValue(ObjectUtil.typeCast(value));
+                }
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+                throw new TypeNotSupportedException(e.getMessage(), e);
+            }
+
+        }
+    }
+
+    /**
+     * 设置entity对象的自增属性值
+     * @param <T>    数据表实体类
+     * @param <K>    数据表主键类型
+     * @param entity 数据表实体对象
+     * @param id     数据库生成的id
+     * @throws IllegalAccessRuntimeException 反射赋值异常
+     */
+    public static <T, K> void setPrimaryId(T entity, @Nullable K id) {
+        // 属性信息集合
+        FieldInfo primaryKeyFieldInfo = getByEntity(entity.getClass()).getPrimaryKeyFieldInfo();
+        if (null != primaryKeyFieldInfo) {
+            fieldSet(primaryKeyFieldInfo.field, entity, id);
+        }
+    }
+
+    /**
      * 获取属性的值
-     * @param field 属性
-     * @param obj   对象
+     * @param fieldInfo 属性信息
+     * @param obj       对象
      * @return 值
+     * @throws IllegalAccessRuntimeException 反射赋值异常
      */
     @Nullable
-    protected static Object fieldGet(Field field, Object obj) {
+    public static Object fieldGet(FieldInfo fieldInfo, Object obj) {
         try {
-            return field.get(obj);
+            return fieldInfo.getField().get(obj);
+        } catch (IllegalAccessException e) {
+            throw new IllegalAccessRuntimeException(e);
+        }
+    }
+
+    /**
+     * 设置属性的值
+     * @param field 属性
+     * @param obj   对象
+     * @param value 值
+     */
+    protected static void fieldSet(Field field, Object obj, @Nullable Object value) {
+        try {
+            field.set(obj, value);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessRuntimeException(e);
         }
@@ -190,9 +300,9 @@ final public class ModelShadowProvider {
     @SuppressWarnings("unchecked")
     protected static <T, K> void modelDeal(ModelInfo<T, K> modelInfo) {
         modelInfo.entityClass = (Class<T>) ((ParameterizedType) modelInfo.modelClass.getGenericSuperclass())
-                .getActualTypeArguments()[0];
+            .getActualTypeArguments()[0];
         modelInfo.primaryKeyClass = (Class<K>) ((ParameterizedType) modelInfo.modelClass.getGenericSuperclass())
-                .getActualTypeArguments()[1];
+            .getActualTypeArguments()[1];
         modelInfo.tableName = EntityUtil.tableName(modelInfo.entityClass);
     }
 
@@ -228,14 +338,15 @@ final public class ModelShadowProvider {
                 // 主键处理
                 if (field.isAnnotationPresent(Primary.class)) {
                     Primary primary = field.getAnnotation(Primary.class);
+                    modelInfo.primaryKeyFieldInfo = fieldInfo;
                     modelInfo.primaryKeyIncrement = primary.increment();
                     modelInfo.primaryKeyColumnName = fieldInfo.columnName;
                     modelInfo.primaryKeyName = field.getName();
                     // 主键类型检测
                     if (!modelInfo.primaryKeyClass.equals(field.getType())) {
                         throw new InvalidPrimaryKeyTypeException(
-                                "The primary key type [" + field.getType() + "] of the entity does not match with the " +
-                                        "generic [" + modelInfo.primaryKeyClass + "]");
+                            "The primary key type [" + field.getType() + "] of the entity does not match with the " +
+                                "generic [" + modelInfo.primaryKeyClass + "]");
                     }
                 }
 
@@ -274,7 +385,7 @@ final public class ModelShadowProvider {
     protected static <T, K> void relationFieldDeal(ModelInfo<T, K> modelInfo) {
 
         Class<T> entityClass = modelInfo.entityClass;
-        Field[] fields = entityClass.getDeclaredFields();
+        Field[]  fields      = entityClass.getDeclaredFields();
 
         for (Field field : fields) {
             // 关联关系
@@ -286,7 +397,8 @@ final public class ModelShadowProvider {
                 relationFieldInfo.field = field;
                 relationFieldInfo.name = field.getName();
                 relationFieldInfo.javaType = field.getType();
-                relationFieldInfo.collection = Arrays.asList(field.getType().getInterfaces()).contains(Collection.class);
+                relationFieldInfo.collection = Arrays.asList(field.getType().getInterfaces())
+                    .contains(Collection.class);
 
                 if (field.isAnnotationPresent(BelongsTo.class)) {
                     relationFieldInfo.relationSubQuery = new BelongsToQueryRelation(field);
@@ -367,6 +479,11 @@ final public class ModelShadowProvider {
         protected Class<K> primaryKeyClass;
 
         /**
+         * 主键信息
+         */
+        protected FieldInfo primaryKeyFieldInfo;
+
+        /**
          * 数据库表名
          */
         protected String tableName;
@@ -374,27 +491,27 @@ final public class ModelShadowProvider {
         /**
          * `属性名`对应的`普通`字段数组
          */
-        protected Map<String, FieldInfo> javaFieldMap = new ConcurrentHashMap<>();
+        protected Map<String, FieldInfo> javaFieldMap = new LinkedHashMap<>();
 
         /**
          * `数据库字段`名对应的`普通`字段数组
          */
-        protected Map<String, FieldInfo> columnFieldMap = new ConcurrentHashMap<>();
+        protected Map<String, FieldInfo> columnFieldMap = new LinkedHashMap<>();
 
         /**
          * `属性名`名对应的`普通`字段数组, 可新增的字段
          */
-        protected Map<String, FieldInfo> javaFieldInsertMap = new ConcurrentHashMap<>();
+        protected Map<String, FieldInfo> javaFieldInsertMap = new LinkedHashMap<>();
 
         /**
          * `属性名`名对应的`普通`字段数组, 可更新的字段
          */
-        protected Map<String, FieldInfo> javaFieldUpdateMap = new ConcurrentHashMap<>();
+        protected Map<String, FieldInfo> javaFieldUpdateMap = new LinkedHashMap<>();
 
         /**
          * `属性名`对应的`关系`字段数组
          */
-        protected Map<String, RelationFieldInfo> relationFieldMap = new ConcurrentHashMap<>();
+        protected Map<String, RelationFieldInfo> relationFieldMap = new LinkedHashMap<>();
 
     }
 

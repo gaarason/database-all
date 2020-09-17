@@ -6,8 +6,8 @@ import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.eloquent.annotation.BelongsToMany;
 import gaarason.database.eloquent.appointment.SqlType;
+import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.Column;
-import gaarason.database.util.EntityUtil;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -90,12 +90,21 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         List<Object> objectList = new ArrayList<>();
         List<?>      objects    = relationshipRecordList.toObjectList(cacheRelationRecordList);
 
-        for (Object obj : objects) {
-            String targetModelLocalKeyValue = EntityUtil.getFieldValueByColumn(obj, targetModelLocalKey).toString();
+        if (objects.size() > 0) {
+            // 模型信息
+            ModelShadowProvider.ModelInfo<?, ?> modelInfo = ModelShadowProvider.get(
+                relationshipRecordList.get(0).getModel());
+            // 字段信息
+            ModelShadowProvider.FieldInfo fieldInfo = modelInfo.getColumnFieldMap().get(targetModelLocalKey);
 
-            // 满足则加入
-            if (targetModelLocalKayValueSet != null && targetModelLocalKayValueSet.contains(targetModelLocalKeyValue)) {
-                objectList.add(obj);
+            for (Object obj : objects) {
+                // 目标值
+                String targetModelLocalKeyValue = String.valueOf(ModelShadowProvider.fieldGet(fieldInfo, obj));
+                // 满足则加入
+                if (targetModelLocalKayValueSet != null && targetModelLocalKayValueSet.contains(
+                    targetModelLocalKeyValue)) {
+                    objectList.add(obj);
+                }
             }
         }
         return objectList;
