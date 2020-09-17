@@ -41,10 +41,10 @@ public class RelationshipStudentTeacher implements Serializable {
     @Column(name = "updated_at", insertable = false, updatable = false, comment = "更新时间")
     private Date updatedAt;
 
-    @BelongsTo(parentModel = StudentModel.class, localModelForeignKey = "student_id")
+    @BelongsTo(localModelForeignKey = "student_id")
     private Student student;
 
-    @BelongsTo(parentModel = TeacherModel.class, localModelForeignKey = "teacher_id")
+    @BelongsTo(localModelForeignKey = "teacher_id")
     private Teacher teacher;
 
 }

@@ -7,6 +7,7 @@ import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.eloquent.annotation.BelongsTo;
 import gaarason.database.eloquent.appointment.SqlType;
 import gaarason.database.exception.RelationAttachException;
+import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.Column;
 
 import java.lang.reflect.Field;
@@ -76,7 +77,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
         BelongsToTemplate(Field field) {
             BelongsTo belongsTo = field.getAnnotation(BelongsTo.class);
-            parentModel = getModelInstance(belongsTo.parentModel());
+            parentModel = getModelInstance(field);
             localModelForeignKey = belongsTo.localModelForeignKey();
             parentModelLocalKey = belongsTo.parentModelLocalKey();
             parentModelLocalKey = "".equals(

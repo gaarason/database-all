@@ -14,12 +14,6 @@ import java.lang.annotation.*;
 public @interface BelongsToMany {
 
     /**
-     * `目标表`model
-     * @return
-     */
-    Class<? extends Model<?, ?>> targetModel();
-
-    /**
      * `关系表`model
      * @return
      */

@@ -8,6 +8,8 @@ import gaarason.database.eloquent.annotation.BelongsToMany;
 import gaarason.database.eloquent.appointment.SqlType;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.Column;
+import gaarason.database.util.ObjectUtil;
+import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -189,7 +191,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
             relationModel = getModelInstance(belongsToMany.relationModel()); // user_teacher
             foreignKeyForLocalModel = belongsToMany.foreignKeyForLocalModel(); // user_id
             localModelLocalKey = belongsToMany.localModelLocalKey(); // user.id
-            targetModel = getModelInstance(belongsToMany.targetModel()); // teacher
+            targetModel = getModelInstance(field); // teacher
             foreignKeyForTargetModel = belongsToMany.foreignKeyForTargetModel(); // teacher_id
             targetModelLocalKey = belongsToMany.targetModelLocalKey();  // teacher.id
         }

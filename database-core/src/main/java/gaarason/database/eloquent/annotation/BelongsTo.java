@@ -14,12 +14,6 @@ import java.lang.annotation.*;
 public @interface BelongsTo {
 
     /**
-     * `父表`model
-     * @return
-     */
-    Class<? extends Model<?, ?>> parentModel();
-
-    /**
      * `本表`中的`关联父表的外键`
      * @return
      */

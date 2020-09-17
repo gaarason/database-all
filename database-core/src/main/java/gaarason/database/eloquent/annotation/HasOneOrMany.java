@@ -16,12 +16,6 @@ import java.lang.annotation.*;
 public @interface HasOneOrMany {
 
     /**
-     * `子表`model
-     * @return
-     */
-    Class<? extends Model<?, ?>> sonModel();
-
-    /**
      * `子表`中的`关联本表的外键`
      * @return
      */

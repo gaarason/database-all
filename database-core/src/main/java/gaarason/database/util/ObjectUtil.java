@@ -17,6 +17,43 @@ import java.util.Collection;
 
 public class ObjectUtil {
 
+
+    /**
+     * 获取指定类中的第index个泛型的类
+     * @param clazz 指定类
+     * @param index 第几个
+     * @param <A>   泛型的类
+     * @param <B>   指定类型
+     * @return 泛型的类
+     */
+    @SuppressWarnings("unchecked")
+    public static <A, B> Class<A> getGenerics(Class<B> clazz, int index) {
+        return (Class<A>) ((ParameterizedType) clazz.getGenericSuperclass())
+            .getActualTypeArguments()[index];
+    }
+
+    /**
+     * 获取指定类中的第index个泛型的类
+     * @param parameterizedType 指定类
+     * @param index 第几个
+     * @param <A>   泛型的类
+     * @return 泛型的类
+     */
+    @SuppressWarnings("unchecked")
+    public static <A> Class<A> getGenerics(ParameterizedType parameterizedType, int index) {
+        return (Class<A>) parameterizedType.getActualTypeArguments()[index];
+    }
+
+    /**
+     * 是否是集合类型
+     * @param clazz 类型
+     * @return 是否
+     */
+    public static boolean isCollection(Class<?> clazz) {
+        return Arrays.asList(clazz.getInterfaces()).contains(Collection.class);
+    }
+
+
     /**
      * 通过序列化对普通对象进行递归copy
      * @param original 源对象

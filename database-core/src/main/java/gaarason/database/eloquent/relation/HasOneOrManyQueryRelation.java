@@ -6,9 +6,12 @@ import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.eloquent.annotation.HasOneOrMany;
 import gaarason.database.eloquent.appointment.SqlType;
+import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.Column;
+import gaarason.database.util.ObjectUtil;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -75,7 +78,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
         HasOneOrManyTemplate(Field field) {
             HasOneOrMany hasOneOrMany = field.getAnnotation(HasOneOrMany.class);
-            sonModel = getModelInstance(hasOneOrMany.sonModel());
+            sonModel = getModelInstance(field);
             sonModelForeignKey = hasOneOrMany.sonModelForeignKey();
             localModelLocalKey = hasOneOrMany.localModelLocalKey();
             localModelLocalKey = "".equals(

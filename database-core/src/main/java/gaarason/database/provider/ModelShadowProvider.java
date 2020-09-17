@@ -17,10 +17,12 @@ import gaarason.database.util.EntityUtil;
 import gaarason.database.util.ObjectUtil;
 import gaarason.database.util.ReflectionUtil;
 import lombok.Data;
+import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -34,12 +36,13 @@ final public class ModelShadowProvider {
     /**
      * Model Class做为索引
      */
-    protected static volatile Map<Class<? extends Model<?, ?>>, ModelInfo<?, ?>> modelIndexMap = new ConcurrentHashMap<>();
+    final protected static Map<Class<? extends Model<?, ?>>, ModelInfo<?, ?>> modelIndexMap =
+        new ConcurrentHashMap<>();
 
     /**
      * Entity Class作为索引
      */
-    protected static volatile Map<Class<?>, ModelInfo<?, ?>> entityIndexMap = new ConcurrentHashMap<>();
+    final protected static Map<Class<?>, ModelInfo<?, ?>> entityIndexMap = new ConcurrentHashMap<>();
 
     /**
      * 初始化
@@ -60,7 +63,7 @@ final public class ModelShadowProvider {
             primitiveFieldDeal(modelInfo);
         }
         // 三轮补充关联关系字段信息
-        // RelationSubQuery实例化存储
+        // RelationSubQuery实例化存储, 依赖第二轮结果
         for (Class<?> modelClass : modelIndexMap.keySet()) {
             ModelInfo<?, ?> modelInfo = modelIndexMap.get(modelClass);
             relationFieldDeal(modelInfo);
@@ -95,13 +98,13 @@ final public class ModelShadowProvider {
 
     /**
      * 查询Model信息
-     * @param entityClass 实体类
+     * @param clazz 实体类(可查找泛型)
      * @return 格式化后的Model信息
      */
-    public static <T, K> ModelInfo<T, K> getByEntity(Class<T> entityClass) {
-        ModelInfo<?, ?> result = entityIndexMap.get(entityClass);
+    public static <T, K> ModelInfo<T, K> getByEntity(Class<?> clazz) {
+        ModelInfo<?, ?> result = entityIndexMap.get(clazz);
         if (null == result) {
-            throw new InvalidEntityException("Entity class[" + entityClass + "] have no information in the Shadow.");
+            throw new InvalidEntityException("Entity class[" + clazz + "] have no information in the Shadow.");
         }
         return ObjectUtil.typeCast(result);
     }
@@ -297,12 +300,13 @@ final public class ModelShadowProvider {
      * @param <T>       实体类
      * @param <K>       主键类型
      */
-    @SuppressWarnings("unchecked")
     protected static <T, K> void modelDeal(ModelInfo<T, K> modelInfo) {
-        modelInfo.entityClass = (Class<T>) ((ParameterizedType) modelInfo.modelClass.getGenericSuperclass())
-            .getActualTypeArguments()[0];
-        modelInfo.primaryKeyClass = (Class<K>) ((ParameterizedType) modelInfo.modelClass.getGenericSuperclass())
-            .getActualTypeArguments()[1];
+//        modelInfo.entityClass = (Class<T>) ((ParameterizedType) modelInfo.modelClass.getGenericSuperclass())
+//            .getActualTypeArguments()[0];
+//        modelInfo.primaryKeyClass = (Class<K>) ((ParameterizedType) modelInfo.modelClass.getGenericSuperclass())
+//            .getActualTypeArguments()[1];
+        modelInfo.entityClass = ObjectUtil.getGenerics(modelInfo.modelClass, 0);
+        modelInfo.primaryKeyClass = ObjectUtil.getGenerics(modelInfo.modelClass, 1);
         modelInfo.tableName = EntityUtil.tableName(modelInfo.entityClass);
     }
 
@@ -327,7 +331,6 @@ final public class ModelShadowProvider {
                 fieldInfo.field = field;
                 fieldInfo.name = field.getName();
                 fieldInfo.javaType = field.getType();
-                fieldInfo.collection = Arrays.asList(field.getType().getInterfaces()).contains(Collection.class);
 
                 // 数据库属性
                 fieldInfo.column = field.isAnnotationPresent(Column.class) ? field.getAnnotation(Column.class) : null;
@@ -357,19 +360,20 @@ final public class ModelShadowProvider {
                 modelInfo.columnFieldMap.put(fieldInfo.columnName, fieldInfo);
 
                 // 属性名 可新增的字段 索引键入
-                if (fieldInfo.column == null || fieldInfo.column.insertable()) {
+                Column column = fieldInfo.column;
+                if (column == null || column.insertable()) {
                     fieldInfo.insertable = true;
                     modelInfo.javaFieldInsertMap.put(fieldInfo.name, fieldInfo);
                 }
 
                 // 属性名 可更新的字段 索引键入
-                if (fieldInfo.column == null || fieldInfo.column.updatable()) {
+                if (column == null || column.updatable()) {
                     fieldInfo.updatable = true;
                     modelInfo.javaFieldUpdateMap.put(fieldInfo.name, fieldInfo);
                 }
 
                 // 属性名 可 null
-                if (fieldInfo.column == null || !fieldInfo.column.nullable()) {
+                if (column == null || !column.nullable()) {
                     fieldInfo.nullable = false;
                 }
             }
@@ -397,8 +401,10 @@ final public class ModelShadowProvider {
                 relationFieldInfo.field = field;
                 relationFieldInfo.name = field.getName();
                 relationFieldInfo.javaType = field.getType();
-                relationFieldInfo.collection = Arrays.asList(field.getType().getInterfaces())
-                    .contains(Collection.class);
+                relationFieldInfo.collection = ObjectUtil.isCollection(field.getType());
+
+                relationFieldInfo.javaRealType = relationFieldInfo.collection ? ObjectUtil.getGenerics((ParameterizedType)field.getGenericType(), 0)
+                    : relationFieldInfo.javaType;
 
                 if (field.isAnnotationPresent(BelongsTo.class)) {
                     relationFieldInfo.relationSubQuery = new BelongsToQueryRelation(field);
@@ -446,72 +452,72 @@ final public class ModelShadowProvider {
         /**
          * model类
          */
-        protected Class<? extends Model<T, K>> modelClass;
+        protected volatile Class<? extends Model<T, K>> modelClass;
 
         /**
          * model对象
          */
-        protected Model<T, K> model;
+        protected volatile Model<T, K> model;
 
         /**
          * entity类
          */
-        protected Class<T> entityClass;
+        protected volatile Class<T> entityClass;
 
         /**
          * 主键列名(并非一定是实体的属性名)
          */
-        protected String primaryKeyColumnName;
+        protected volatile String primaryKeyColumnName;
 
         /**
          * 主键名(实体的属性名)
          */
-        protected String primaryKeyName;
+        protected volatile String primaryKeyName;
 
         /**
          * 主键自增
          */
-        protected boolean primaryKeyIncrement;
+        protected volatile boolean primaryKeyIncrement;
 
         /**
          * 主键类型
          */
-        protected Class<K> primaryKeyClass;
+        protected volatile Class<K> primaryKeyClass;
 
         /**
          * 主键信息
          */
-        protected FieldInfo primaryKeyFieldInfo;
+        protected volatile FieldInfo primaryKeyFieldInfo;
 
         /**
          * 数据库表名
          */
-        protected String tableName;
+        protected volatile String tableName;
 
         /**
          * `属性名`对应的`普通`字段数组
          */
-        protected Map<String, FieldInfo> javaFieldMap = new LinkedHashMap<>();
+        protected volatile Map<String, FieldInfo> javaFieldMap = new LinkedHashMap<>();
 
         /**
          * `数据库字段`名对应的`普通`字段数组
          */
-        protected Map<String, FieldInfo> columnFieldMap = new LinkedHashMap<>();
+        protected volatile Map<String, FieldInfo> columnFieldMap = new LinkedHashMap<>();
 
         /**
          * `属性名`名对应的`普通`字段数组, 可新增的字段
          */
-        protected Map<String, FieldInfo> javaFieldInsertMap = new LinkedHashMap<>();
+        protected volatile Map<String, FieldInfo> javaFieldInsertMap = new LinkedHashMap<>();
 
         /**
          * `属性名`名对应的`普通`字段数组, 可更新的字段
          */
-        protected Map<String, FieldInfo> javaFieldUpdateMap = new LinkedHashMap<>();
+        protected volatile Map<String, FieldInfo> javaFieldUpdateMap = new LinkedHashMap<>();
 
         /**
          * `属性名`对应的`关系`字段数组
          */
-        protected Map<String, RelationFieldInfo> relationFieldMap = new LinkedHashMap<>();
+        protected volatile Map<String, RelationFieldInfo> relationFieldMap = new LinkedHashMap<>();
 
     }
 
@@ -522,44 +528,39 @@ final public class ModelShadowProvider {
     public static class FieldInfo {
 
         /**
-         * 是否是集合
-         */
-        protected boolean collection;
-
-        /**
          * Field
          */
-        protected Field field;
+        protected volatile Field field;
 
         /**
          * 属性名
          */
-        protected String name;
+        protected volatile String name;
 
         /**
          * 字段名
          */
-        protected String columnName;
+        protected volatile String columnName;
 
         /**
          * 可新增
          */
-        protected boolean insertable = false;
+        protected volatile boolean insertable = false;
 
         /**
          * 可更新
          */
-        protected boolean updatable = false;
+        protected volatile boolean updatable = false;
 
         /**
          * 可 null
          */
-        protected boolean nullable = true;
+        protected volatile boolean nullable = true;
 
         /**
          * java中的字段类型
          */
-        protected Class<?> javaType;
+        protected volatile Class<?> javaType;
 
         /**
          * 数据库中的字段类型
@@ -570,7 +571,7 @@ final public class ModelShadowProvider {
          * column 注解
          */
         @Nullable
-        protected Column column;
+        protected volatile Column column;
     }
 
 
@@ -583,27 +584,34 @@ final public class ModelShadowProvider {
         /**
          * 是否是集合
          */
-        protected boolean collection;
+        protected volatile boolean collection;
 
         /**
          * Field
          */
-        protected Field field;
+        protected volatile Field field;
 
         /**
          * 属性名
          */
-        protected String name;
+        protected volatile String name;
 
         /**
          * java中的字段类型
          */
-        protected Class<?> javaType;
+        protected volatile Class<?> javaType;
+
+        /**
+         * java中的字段类型
+         * 当本类型是非集合时, 此处等价于 javaType
+         * 当本类型是集合时, 为集合中的泛型(不支持MAP等多泛型的)
+         */
+        protected volatile Class<?> javaRealType;
 
         /**
          * 关联关系注解
          */
-        protected RelationSubQuery relationSubQuery;
+        protected volatile RelationSubQuery relationSubQuery;
     }
 
 }

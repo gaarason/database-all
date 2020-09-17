@@ -307,8 +307,8 @@ public class RecordBean<T, K> implements Record<T, K> {
     }
 
     @Override
-    public Bind bind(String column) {
-        return new BindBean<>(this, column);
+    public Bind bind(String fieldName) {
+        return new BindBean<>(this, fieldName);
     }
 
     /**

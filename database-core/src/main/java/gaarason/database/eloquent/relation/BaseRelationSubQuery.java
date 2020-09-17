@@ -4,15 +4,28 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.Column;
-import gaarason.database.util.EntityUtil;
 import gaarason.database.util.ObjectUtil;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
 /**
  * 关联关系
  */
 abstract public class BaseRelationSubQuery implements RelationSubQuery {
+
+    /**
+     * 获取 model 实例
+     * @param field 属性信息
+     * @return Model实例
+     */
+    protected static Model<?, ?> getModelInstance(Field field) {
+        Class<?> clazz = ObjectUtil.isCollection(field.getType()) ?
+            ObjectUtil.getGenerics((ParameterizedType) field.getGenericType(), 0) :
+            field.getType();
+        return ModelShadowProvider.getByEntity(clazz).getModel();
+    }
 
     /**
      * 获取 model 实例
@@ -46,7 +59,7 @@ abstract public class BaseRelationSubQuery implements RelationSubQuery {
      */
     protected static List<?> findObjList(List<?> relationshipObjectList, String columnName, String fieldTargetValue) {
         List<Object> objectList = new ArrayList<>();
-        if(relationshipObjectList.size() > 0){
+        if (relationshipObjectList.size() > 0) {
             // 模型信息
             ModelShadowProvider.ModelInfo<?, Object> modelInfo = ModelShadowProvider.getByEntity(
                 relationshipObjectList.get(0).getClass());

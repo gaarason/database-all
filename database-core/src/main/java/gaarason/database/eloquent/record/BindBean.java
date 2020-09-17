@@ -18,11 +18,17 @@ public class BindBean<T, K> implements Bind {
 
     private final RelationSubQuery relationSubQuery;
 
-    public BindBean(Record<T, K> record, String columnName) {
+    public BindBean(Record<T, K> record, String fieldName) {
         this.record = record;
-        presetColumn(columnName);
+        // 模型信息
         ModelShadowProvider.ModelInfo<?, ?> modelInfo = ModelShadowProvider.get(record.getModel());
-        relationSubQuery = modelInfo.getRelationFieldMap().get(columnName).getRelationSubQuery();
+        // 关系信息
+        ModelShadowProvider.RelationFieldInfo relationFieldInfo = modelInfo.getRelationFieldMap().get(fieldName);
+        if (relationFieldInfo == null) {
+            throw new RelationNotFoundException(
+                "No associations were found for property[" + fieldName + "] in the entity[" + modelInfo.getEntityClass() + "].");
+        }
+        relationSubQuery = relationFieldInfo.getRelationSubQuery();
     }
 
     @Override
@@ -114,10 +120,10 @@ public class BindBean<T, K> implements Bind {
     }
 
 
-    protected void presetColumn(String columnName) {
+    protected void presetColumn(String fieldName) {
         Class<T> entityClass = record.getModel().getEntityClass();
-        if (columnName.contains(".") || !ObjectUtil.checkProperties(entityClass, columnName)) {
-            throw new RelationNotFoundException("实体类[" + entityClass + "]中检测属性[" + columnName + "]不通过");
+        if (fieldName.contains(".") || !ObjectUtil.checkProperties(entityClass, fieldName)) {
+            throw new RelationNotFoundException("实体类[" + entityClass + "]中检测属性[" + fieldName + "]不通过");
         }
 
     }

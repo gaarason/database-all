@@ -4,6 +4,7 @@ package gaarason.database.test;
 
 import gaarason.database.connection.GaarasonDataSourceProvider;
 import gaarason.database.contract.eloquent.Record;
+import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.test.models.StudentModel;
 import gaarason.database.test.models.StudentORMModel;
 import gaarason.database.test.parent.BaseTests;
@@ -204,14 +205,16 @@ public class ORMTests extends BaseTests {
 
     @Test
     public void ORM新增_模型均已存在_仅增加关系() {
+        ModelShadowProvider.ModelInfo<Teacher, Object> modelInfo = ModelShadowProvider.getByEntity(Teacher.class);
+
         // id = 1 的老师已经存在, 现在将一位已存在的学生与他关联
         String                   newName              = "肖邦";
         String                   newTeacherName       = "肖邦de老师";
         Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
 
-        Record<StudentModel.Entity, Integer> orFail = studentModel.findOrFail(1);
+        Record<StudentModel.Entity, Integer> student = studentModel.findOrFail(1);
 
-        teacherIntegerRecord.bind("studentsBelongsToMany").attach(orFail);
+        teacherIntegerRecord.bind("studentsBelongsToMany").attach(student);
 
 //        teacherIntegerRecord.attch("student", student);
     }

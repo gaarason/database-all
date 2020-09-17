@@ -54,14 +54,14 @@ public class Student implements Serializable {
     @Column(name = "updated_at", insertable = false, updatable = false, comment = "更新时间")
     private Date updatedAt;
 
-    @BelongsTo(parentModel = TeacherModel.class, localModelForeignKey = "teacher_id", parentModelLocalKey = "id")
+    @BelongsTo(localModelForeignKey = "teacher_id", parentModelLocalKey = "id")
     private Teacher teacher;
 
-    @HasOneOrMany(sonModel = RelationshipStudentTeacherModel.class, sonModelForeignKey = "student_id")
+    @HasOneOrMany(sonModelForeignKey = "student_id")
     private List<RelationshipStudentTeacher> relationshipStudentTeachers;
 
 
-    @BelongsToMany(targetModel = TeacherModel.class, relationModel = RelationshipStudentTeacherModel.class,
+    @BelongsToMany(relationModel = RelationshipStudentTeacherModel.class,
         foreignKeyForLocalModel = "student_id", foreignKeyForTargetModel = "teacher_id", localModelLocalKey = "id",
         targetModelLocalKey = "id")
     private List<Teacher> teachersBelongsToMany;
