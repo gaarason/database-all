@@ -65,7 +65,7 @@ public class RelationGetSupport<T, K> {
      * 转化为对象列表
      * @return 对象列表
      */
-    public List<T> toObjectList(Map<String, RecordList<?, ?>> cacheRelationRecordList) {
+    public List<T> toObjectList(Map<String, RecordList<?, ?>> cacheRecords) {
         // 同级数据源
         List<Map<String, Column>> originalMetadataMapList = records.getOriginalMetadataMapList();
 
@@ -106,17 +106,19 @@ public class RelationGetSupport<T, K> {
                     RelationSubQuery relationSubQuery = relationFieldInfo.getRelationSubQuery();
 
                     // sql数组
-                    String[] sqlArr = relationSubQuery.dealBatchSql(originalMetadataMapList, generateSqlPart);
+                    String[] sqlArr = relationSubQuery.prepareSqlArr(originalMetadataMapList, generateSqlPart);
+
+                    // 中间表数据
+                    RecordList<?, ?> relationRecords = getRelationRecordsInCache(cacheRecords, sqlArr[1],
+                        () -> relationSubQuery.dealBatchPrepare(sqlArr[1]));
 
                     // 本级关系查询
-                    RecordList<?, ?> relationshipRecordList = getRecordListInCache(cacheRelationRecordList,
-                        relationFieldInfo.getName(), record.getModel().getTableName(),
-                        () -> relationSubQuery.dealBatch(sqlArr),
-                        relationshipRecordWith, sqlArr);
+                    RecordList<?, ?> TargetRecordList = getTargetRecordsInCache(cacheRecords, sqlArr,
+                        relationshipRecordWith, () -> relationSubQuery.dealBatch(sqlArr[0], relationRecords));
 
                     // 递归处理下级关系, 并筛选当前 record 所需要的属性
-                    List<?> objects = relationSubQuery.filterBatchRecord(record, relationshipRecordList,
-                        cacheRelationRecordList);
+                    List<?> objects = relationSubQuery.filterBatchRecord(record, TargetRecordList,
+                        cacheRecords);
 
                     // 是否是集合
                     if (relationFieldInfo.isCollection()) {
@@ -138,33 +140,58 @@ public class RelationGetSupport<T, K> {
 
     /**
      * 在内存缓存中优先查找目标值
-     * @param cacheRelationRecordList 缓存map
-     * @param key                     目标值
-     * @param tableName               表名
-     * @param closure                 真实业务逻辑实现
-     * @param relationshipRecordWith  record 实现
-     * @param sqlArr                  sql数组
+     * @param cacheRecords 缓存map
+     * @param sql          sql
+     * @param closure      真实业务逻辑实现
      * @return 批量结果集
      */
-    protected RecordList<?, ?> getRecordListInCache(Map<String, RecordList<?, ?>> cacheRelationRecordList, String key,
-                                                    String tableName, GenerateRecordListFunctionalInterface closure,
-                                                    RelationshipRecordWithFunctionalInterface relationshipRecordWith,
-                                                    String[] sqlArr) {
-        // 缓存keyName
-        String cacheKeyName = key + "|" + Arrays.toString(sqlArr) + "|" + tableName;
-
+    protected RecordList<?, ?> getRelationRecordsInCache(Map<String, RecordList<?, ?>> cacheRecords,
+                                                         String sql, GenerateRecordListFunctionalInterface closure) {
         // 有缓存有直接返回, 没有就执行后返回
-        RecordList<?, ?> recordList = cacheRelationRecordList.computeIfAbsent(cacheKeyName,
-            theKey -> closure.execute());
+        // 因为没有更新操作, 所以直接返回原对象
+        // new String[]{sql, ""} 很关键
+        return getRecordsInCache(cacheRecords, new String[]{sql, ""}, closure);
+    }
 
+
+    /**
+     * 在内存缓存中优先查找目标值
+     * @param cacheRecords           缓存map
+     * @param sqlArr                 sql数组
+     * @param relationshipRecordWith record 实现
+     * @param closure                真实业务逻辑实现
+     * @return 批量结果集
+     */
+    protected RecordList<?, ?> getTargetRecordsInCache(Map<String, RecordList<?, ?>> cacheRecords,
+                                                       String[] sqlArr,
+                                                       RelationshipRecordWithFunctionalInterface relationshipRecordWith,
+                                                       GenerateRecordListFunctionalInterface closure) {
+        // 有缓存有直接返回, 没有就执行后返回
+        RecordList<?, ?> recordList = getRecordsInCache(cacheRecords, sqlArr, closure);
         // 使用复制结果
         RecordList<?, ?> recordsCopy = RecordFactory.copyRecordList(recordList);
-
         // 赋值关联关系
         for (Record<?, ?> record : recordsCopy) {
             relationshipRecordWith.execute(record);
         }
         return recordsCopy;
+    }
+
+
+    /**
+     * 在内存缓存中优先查找目标值
+     * @param cacheRecords 缓存map
+     * @param sqlArr       sql数组
+     * @param closure      真实业务逻辑实现
+     * @return 批量结果集
+     */
+    protected RecordList<?, ?> getRecordsInCache(Map<String, RecordList<?, ?>> cacheRecords, String[] sqlArr,
+                                                 GenerateRecordListFunctionalInterface closure) {
+        // 缓存keyName
+        String cacheKeyName = Arrays.toString(sqlArr);
+        // 有缓存有直接返回, 没有就执行后返回
+        return cacheRecords.computeIfAbsent(cacheKeyName,
+            theKey -> closure.execute());
     }
 
 }

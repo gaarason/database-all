@@ -10,6 +10,7 @@ import gaarason.database.exception.EntityNotFoundException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +86,21 @@ public class RecordFactory {
             recordList.getOriginalMetadataMapList().add(copy(record.getMetadataMap()));
         }
         return recordList;
+    }
+
+    /**
+     * 单体结果集列表,转化为 批量结果集
+     * 仅 ToObject 构造方法中使用
+     * 保持 record 对象地址一致
+     * @param record 单体结果集
+     * @param <T>    实体类型
+     * @param <K>    实体主键类型
+     * @return 批量结果集(RecordList全新, Record为引用地址)
+     */
+    public static <T, K> RecordList<T, K> newRecordList(Record<T, K> record) {
+        List<Record<T, K>> records = new ArrayList<>();
+        records.add(record);
+        return newRecordList(records);
     }
 
     /**

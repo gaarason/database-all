@@ -1,6 +1,9 @@
 package gaarason.database.contract.record;
 
 import gaarason.database.contract.eloquent.Record;
+import gaarason.database.support.Column;
+
+import java.util.Map;
 
 public interface Operation<T, K> {
     /**
@@ -39,4 +42,11 @@ public interface Operation<T, K> {
      * @return 执行成功
      */
     Record<T, K> refresh();
+
+    /**
+     * 刷新(重新从数据获取)
+     * retrieved
+     * @return 执行成功
+     */
+    Record<T, K> refresh(Map<String, Column> metadataMap);
 }

@@ -16,15 +16,16 @@ public interface Attach {
 
     void attach(RecordList<?, ?> targetRecords);
 
-    void attach(String id);
-
-    void attach(Collection<String> ids);
-
     void attach(Record<?, ?> targetRecord, Map<String, String> stringStringMap);
 
     void attach(RecordList<?, ?> targetRecords, Map<String, String> stringStringMap);
 
+    void attach(String id);
+
+    void attach(Collection<String> ids);
+
     void attach(String id, Map<String, String> stringStringMap);
 
     void attach(Collection<String> ids, Map<String, String> stringStringMap);
+
 }

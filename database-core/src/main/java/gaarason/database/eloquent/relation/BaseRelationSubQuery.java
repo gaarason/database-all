@@ -1,7 +1,9 @@
 package gaarason.database.eloquent.relation;
 
 import gaarason.database.contract.eloquent.Model;
+import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
+import gaarason.database.eloquent.RecordListBean;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.Column;
 import gaarason.database.util.ObjectUtil;
@@ -14,6 +16,11 @@ import java.util.*;
  * 关联关系
  */
 abstract public class BaseRelationSubQuery implements RelationSubQuery {
+
+    @Override
+    public RecordList<?, ?> dealBatchPrepare(String sql1) {
+        return new RecordListBean<>();
+    }
 
     /**
      * 获取 model 实例

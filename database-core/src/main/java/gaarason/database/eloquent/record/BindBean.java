@@ -6,9 +6,11 @@ import gaarason.database.contract.eloquent.extra.Bind;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.exception.RelationNotFoundException;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.support.RecordFactory;
 import gaarason.database.util.ObjectUtil;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,40 +35,43 @@ public class BindBean<T, K> implements Bind {
 
     @Override
     public void attach(Record<?, ?> targetRecord) {
-        attach(targetRecord, new HashMap<>());
+        attach(RecordFactory.newRecordList(targetRecord), new HashMap<>());
     }
 
     @Override
     public void attach(RecordList<?, ?> targetRecords) {
-
-    }
-
-    @Override
-    public void attach(String id) {
-    }
-
-    @Override
-    public void attach(Collection<String> ids) {
-
+        attach(targetRecords, new HashMap<>());
     }
 
     @Override
     public void attach(Record<?, ?> targetRecord, Map<String, String> stringStringMap) {
-//        relationSubQuery.attach(record, targetRecord, stringStringMap);
+        attach(RecordFactory.newRecordList(targetRecord), stringStringMap);
     }
 
     @Override
     public void attach(RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
+        relationSubQuery.attach(record, targetRecords, stringStringMap);
+    }
+
+    @Override
+    public void attach(String id) {
+        attach(Collections.singletonList(id), new HashMap<>());
+    }
+
+    @Override
+    public void attach(Collection<String> ids) {
+        attach(ids, new HashMap<>());
 
     }
 
     @Override
     public void attach(String id, Map<String, String> stringStringMap) {
+        attach(Collections.singletonList(id), stringStringMap);
     }
 
     @Override
     public void attach(Collection<String> ids, Map<String, String> stringStringMap) {
-
+        relationSubQuery.attach(record, ids, stringStringMap);
     }
 
     @Override

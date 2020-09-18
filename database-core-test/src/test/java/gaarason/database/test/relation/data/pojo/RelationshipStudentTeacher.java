@@ -4,8 +4,6 @@ import gaarason.database.eloquent.annotation.BelongsTo;
 import gaarason.database.eloquent.annotation.Column;
 import gaarason.database.eloquent.annotation.Primary;
 import gaarason.database.eloquent.annotation.Table;
-import gaarason.database.test.relation.data.model.StudentModel;
-import gaarason.database.test.relation.data.model.TeacherModel;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -35,8 +33,11 @@ public class RelationshipStudentTeacher implements Serializable {
     @Column(name = "teacher_id", unsigned = true, comment = "教师id")
     private Long teacherId;
 
+    private String note;
+
     @Column(name = "created_at", insertable = false, updatable = false, comment = "新增时间")
     private Date createdAt;
+
 
     @Column(name = "updated_at", insertable = false, updatable = false, comment = "更新时间")
     private Date updatedAt;

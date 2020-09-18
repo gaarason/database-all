@@ -27,7 +27,7 @@ public class RecordBean<T, K> implements Record<T, K> {
     /**
      * 数据模型
      */
-    protected final gaarason.database.contract.eloquent.Model<T, K> model;
+    protected final Model<T, K> model;
 
     /**
      * 数据实体类
@@ -387,11 +387,17 @@ public class RecordBean<T, K> implements Record<T, K> {
         if (originalPrimaryKeyValue == null) {
             throw new PrimaryKeyNotFoundException();
         }
+        Map<String, Column> metadataMap = model.withTrashed()
+            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
+            .firstOrFail().getMetadataMap();
+
         // 刷新自身属性
-        init(model.withTrashed()
-                .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-                .firstOrFail().getMetadataMap());
-        // 响应
+        return refresh(metadataMap);
+    }
+
+    @Override
+    public Record<T, K> refresh(Map<String, Column> metadataMap) {
+        init(metadataMap);
         return this;
     }
 

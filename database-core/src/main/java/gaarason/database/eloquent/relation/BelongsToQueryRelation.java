@@ -7,11 +7,11 @@ import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.eloquent.annotation.BelongsTo;
 import gaarason.database.eloquent.appointment.SqlType;
 import gaarason.database.exception.RelationAttachException;
-import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.Column;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -24,21 +24,21 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public String[] dealBatchSql(List<Map<String, Column>> stringColumnMapList,
-                                 GenerateSqlPartFunctionalInterface generateSqlPart) {
+    public String[] prepareSqlArr(List<Map<String, Column>> stringColumnMapList,
+                                  GenerateSqlPartFunctionalInterface generateSqlPart) {
         return new String[]{generateSqlPart.execute(belongsToTemplate.parentModel.newQuery())
             .whereIn(belongsToTemplate.parentModelLocalKey,
                 getColumnInMapList(stringColumnMapList, belongsToTemplate.localModelForeignKey))
-            .toSql(SqlType.SELECT)};
+            .toSql(SqlType.SELECT), ""};
     }
 
     @Override
-    public RecordList<?, ?> dealBatch(String[] sql) {
-        return belongsToTemplate.parentModel.newQuery().queryList(sql[0], new ArrayList<>());
+    public RecordList<?, ?> dealBatch(String sql0, RecordList<?, ?> relationRecordList) {
+        return belongsToTemplate.parentModel.newQuery().queryList(sql0, new ArrayList<>());
     }
 
     @Override
-    public List<?> filterBatchRecord(Record<?, ?> record, RecordList<?, ?> relationshipRecordList,
+    public List<?> filterBatchRecord(Record<?, ?> record, RecordList<?, ?> TargetRecordList,
                                      Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         // 父表的外键字段名
         String column = belongsToTemplate.parentModelLocalKey;
@@ -46,42 +46,57 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
         String value = String.valueOf(
             record.getMetadataMap().get(belongsToTemplate.localModelForeignKey).getValue());
 
-        return findObjList(relationshipRecordList.toObjectList(cacheRelationRecordList), column, value);
+        return findObjList(TargetRecordList.toObjectList(cacheRelationRecordList), column, value);
     }
 
     @Override
     public void attach(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        if (targetRecords.size() == 0)
+        // 应该更新的子表的主键列表
+        List<String> targetRecordPrimaryKeyIds = targetRecords.toList(
+            recordTemp -> String.valueOf(
+                recordTemp.getMetadataMap().get(belongsToTemplate.parentModelLocalKey).getValue()));
+        attach(record, targetRecordPrimaryKeyIds, stringStringMap);
+    }
+
+    @Override
+    public void attach(Record<?, ?> record, Collection<String> targetPrimaryKeyValues,
+                       Map<String, String> stringStringMap) {
+        if (targetPrimaryKeyValues.size() == 0)
             return;
-        else if (targetRecords.size() > 1) {
+        else if (targetPrimaryKeyValues.size() > 1) {
             throw new RelationAttachException("The relationship \"@BelongsTo\" could only attach a relationship with " +
                 "one, but now more than one.");
         }
 
         // 目标表(父表)model的关联键值
-        String parentModelLocalKeyValue = String.valueOf(
-            targetRecords.get(0).getMetadataMap().get(belongsToTemplate.parentModelLocalKey));
-
-        // 执行更新
-        record.getModel().newQuery().data(belongsToTemplate.localModelForeignKey, parentModelLocalKeyValue).update();
+        String parentModelLocalKeyValue = String.valueOf(targetPrimaryKeyValues.toArray()[0]);
 
 
+        // 执行更新, 自我更新需要手动刷新属性
+        boolean success = record.getModel().newQuery()
+            .where(record.getModel().getPrimaryKeyColumnName(), String.valueOf(record.getOriginalPrimaryKeyValue()))
+            .data(belongsToTemplate.localModelForeignKey, parentModelLocalKeyValue).update() > 0;
+        if(success){
+            Map<String, Column> metadataMap = record.getMetadataMap();
+            metadataMap.get(belongsToTemplate.localModelForeignKey).setValue(parentModelLocalKeyValue);
+            record.refresh(metadataMap);
+        }
     }
 
     static class BelongsToTemplate {
-        Model<?, ?> parentModel;
+        final Model<?, ?> parentModel;
 
-        String localModelForeignKey;
+        final String localModelForeignKey;
 
-        String parentModelLocalKey;
+        final String parentModelLocalKey;
 
         BelongsToTemplate(Field field) {
             BelongsTo belongsTo = field.getAnnotation(BelongsTo.class);
             parentModel = getModelInstance(field);
             localModelForeignKey = belongsTo.localModelForeignKey();
-            parentModelLocalKey = belongsTo.parentModelLocalKey();
-            parentModelLocalKey = "".equals(
-                parentModelLocalKey) ? parentModel.getPrimaryKeyColumnName() : parentModelLocalKey;
+            parentModelLocalKey = "".equals(belongsTo.parentModelLocalKey())
+                ? parentModel.getPrimaryKeyColumnName()
+                : belongsTo.parentModelLocalKey();
         }
     }
 }

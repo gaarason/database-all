@@ -1112,8 +1112,28 @@ public class RelationTests extends BaseTests {
     }
 
     @Test
+    public void 多对多关系_中间表_中间额外数据查询() {
+        Student student = studentModel.newQuery()
+            .where("id", "1")
+            .firstOrFail()
+            .with("relationshipStudentTeachers")
+            .with("teachersBelongsToMany")
+            .toObject();
+
+        System.out.println(student);
+
+
+        Student student2 = studentModel.newQuery()
+            .where("id", "1")
+            .firstOrFail()
+            .with("teachersBelongsToMany")
+            .toObject();
+        System.out.println(student2);
+
+    }
+
+    @Test
     public void 多对多关系_中间表_BelongsToMany() {
-        // 声明但不使用
         Student student = studentModel.newQuery()
             .where("id", "1")
             .firstOrFail()
@@ -1121,7 +1141,6 @@ public class RelationTests extends BaseTests {
                 "studentsBelongsToMany",
                 builder -> builder))
             .toObject();
-
         assert2(student);
     }
 
