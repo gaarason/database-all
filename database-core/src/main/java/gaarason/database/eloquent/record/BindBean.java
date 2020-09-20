@@ -74,46 +74,6 @@ public class BindBean<T, K> implements Bind {
     }
 
     @Override
-    public boolean sync(RecordList<?, ?> targetRecords) {
-        return false;
-    }
-
-    @Override
-    public boolean sync(Collection<String> ids) {
-        return false;
-    }
-
-    @Override
-    public boolean sync(RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        return false;
-    }
-
-    @Override
-    public boolean sync(Collection<String> ids, Map<String, String> stringStringMap) {
-        return false;
-    }
-
-    @Override
-    public boolean toggle(RecordList<?, ?> targetRecords) {
-        return false;
-    }
-
-    @Override
-    public boolean toggle(Collection<String> ids) {
-        return false;
-    }
-
-    @Override
-    public boolean toggle(RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        return false;
-    }
-
-    @Override
-    public boolean toggle(Collection<String> ids, Map<String, String> stringStringMap) {
-        return false;
-    }
-
-    @Override
     public int detach() {
         return relationSubQuery.detach(record);
     }
@@ -136,5 +96,86 @@ public class BindBean<T, K> implements Bind {
     @Override
     public int detach(Collection<String> ids) {
         return relationSubQuery.detach(record, ids);
+    }
+
+    @Override
+    public int sync(Record<?, ?> targetRecord) {
+        return sync(RecordFactory.newRecordList(targetRecord), new HashMap<>());
+
+    }
+
+    @Override
+    public int sync(RecordList<?, ?> targetRecords) {
+        return sync(targetRecords, new HashMap<>());
+    }
+
+    @Override
+    public int sync(Record<?, ?> targetRecord, Map<String, String> stringStringMap) {
+        return sync(RecordFactory.newRecordList(targetRecord), stringStringMap);
+    }
+
+    @Override
+    public int sync(RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
+        return relationSubQuery.sync(record, targetRecords, stringStringMap);
+    }
+
+    @Override
+    public int sync(String id) {
+        return sync(Collections.singletonList(id), new HashMap<>());
+    }
+
+    @Override
+    public int sync(Collection<String> ids) {
+        return sync(ids, new HashMap<>());
+    }
+
+    @Override
+    public int sync(String id, Map<String, String> stringStringMap) {
+        return sync(Collections.singletonList(id), stringStringMap);
+    }
+
+    @Override
+    public int sync(Collection<String> ids, Map<String, String> stringStringMap) {
+        return relationSubQuery.sync(record, ids, stringStringMap);
+    }
+
+    @Override
+    public int toggle(Record<?, ?> targetRecord) {
+        return 0;
+    }
+
+    @Override
+    public int toggle(RecordList<?, ?> targetRecords) {
+        return 0;
+    }
+
+    @Override
+    public int toggle(Record<?, ?> targetRecord, Map<String, String> stringStringMap) {
+        return 0;
+    }
+
+    @Override
+    public int toggle(RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
+        return 0;
+    }
+
+    @Override
+    public int toggle(String id) {
+        return 0;
+    }
+
+    @Override
+    public int toggle(Collection<String> ids) {
+        return 0;
+    }
+
+    @Override
+    public int toggle(String id, Map<String, String> stringStringMap) {
+        return 0;
+    }
+
+    @Override
+    public int toggle(Collection<String> ids, Map<String, String> stringStringMap) {
+        return 0;
     }
 }

@@ -68,15 +68,15 @@ public interface RelationSubQuery {
 
     /**
      * 解除所有关联关系
-     * @param record          当前record
+     * @param record 当前record
      * @return 受影响的行数
      */
     int detach(Record<?, ?> record);
 
     /**
      * 解除目标关联关系
-     * @param record          当前record
-     * @param targetRecords   目标的recordList
+     * @param record        当前record
+     * @param targetRecords 目标的recordList
      * @return 受影响的行数
      */
     int detach(Record<?, ?> record, RecordList<?, ?> targetRecords);
@@ -88,5 +88,41 @@ public interface RelationSubQuery {
      * @return 受影响的行数
      */
     int detach(Record<?, ?> record, Collection<String> targetPrimaryKeyValues);
+
+    /**
+     * 同步到关联关系, 任何不在指定范围的对应记录将会移除
+     * @param record          当前record
+     * @param targetRecords   目标的recordList
+     * @param stringStringMap 仅 @BelongsToMany 时有效, 增加额外信息到中间表
+     * @return 受影响的行数
+     */
+    int sync(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap);
+
+    /**
+     * 同步到关联关系, 任何不在指定范围的对应记录将会移除
+     * @param record                 当前record
+     * @param targetPrimaryKeyValues 目标的recordList的主键集合
+     * @param stringStringMap        仅 @BelongsToMany 时有效, 增加额外信息到中间表
+     * @return 受影响的行数
+     */
+    int sync(Record<?, ?> record, Collection<String> targetPrimaryKeyValues, Map<String, String> stringStringMap);
+
+    /**
+     * 切换关系, 如果指定关系已存在，则解除，如果指定关系不存在，则增加
+     * @param record          当前record
+     * @param targetRecords   目标的recordList
+     * @param stringStringMap 仅 @BelongsToMany 时有效, 增加额外信息到中间表
+     * @return 受影响的行数
+     */
+    int toggle(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap);
+
+    /**
+     * 切换关系, 如果指定关系已存在，则解除，如果指定关系不存在，则增加
+     * @param record                 当前record
+     * @param targetPrimaryKeyValues 目标的recordList的主键集合
+     * @param stringStringMap        仅 @BelongsToMany 时有效, 增加额外信息到中间表
+     * @return 受影响的行数
+     */
+    int toggle(Record<?, ?> record, Collection<String> targetPrimaryKeyValues, Map<String, String> stringStringMap);
 
 }

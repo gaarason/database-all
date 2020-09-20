@@ -51,7 +51,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
             targetModelForeignKeySet.add(result);
         }
 
-        if(targetModelForeignKeySet.size() == 0){
+        if (targetModelForeignKeySet.size() == 0) {
             return RecordFactory.newRecordList();
         }
 
@@ -120,6 +120,9 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
     @Override
     public int attach(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
+        if (targetRecords.size() == 0)
+            return 0;
+
         // 目标表的关系键(默认目标表的主键)
         Collection<String> compatibleForeignKeyForTargetModelValues = targetRecords.toList(recordTemp -> String.valueOf(
                 recordTemp.getMetadataMap().get(belongsToManyTemplate.targetModelLocalKey).getValue()));
@@ -159,11 +162,11 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     @Override
     public int detach(Record<?, ?> record, RecordList<?, ?> targetRecords) {
         // 目标表的关系键值列表
-        List<String> targetModelLocalKeyValueList = targetRecords.toList(
+        List<String> targetModelLocalKeyValues = targetRecords.toList(
                 recordTemp -> String.valueOf(
                         recordTemp.getMetadataMap().get(belongsToManyTemplate.targetModelLocalKey).getValue()));
 
-        return detachWithTargetModelLocalKeyValues(record, targetModelLocalKeyValueList);
+        return detachWithTargetModelLocalKeyValues(record, targetModelLocalKeyValues);
     }
 
     @Override
@@ -184,20 +187,53 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
     }
 
+    @Override
+    public int sync(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
+        // 目标表的关系键值列表
+        List<String> targetModelLocalKeyValues = targetRecords.toList(
+                recordTemp -> String.valueOf(
+                        recordTemp.getMetadataMap().get(belongsToManyTemplate.targetModelLocalKey).getValue()));
+
+        // 事物
+        return belongsToManyTemplate.relationModel.newQuery().transaction(
+                () -> syncWithTargetModelLocalKeyValues(record, targetModelLocalKeyValues, stringStringMap));
+    }
+
+    @Override
+    public int sync(Record<?, ?> record, Collection<String> targetPrimaryKeyValues, Map<String, String> stringStringMap) {
+        // 事物
+        return belongsToManyTemplate.relationModel.newQuery().transaction(() -> {
+            // 目标表中的关系键的集合, 即使中间表中指向目标表的外键的集合
+            Collection<String> targetModelLocalKeyValues = targetModelLocalKeyValuesByPrimaryKeyValues(targetPrimaryKeyValues);
+
+            return detachWithTargetModelLocalKeyValues(record, targetModelLocalKeyValues);
+        });
+    }
+
+    @Override
+    public int toggle(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
+        return 0;
+    }
+
+    @Override
+    public int toggle(Record<?, ?> record, Collection<String> targetPrimaryKeyValues, Map<String, String> stringStringMap) {
+        return 0;
+    }
+
     /**
      * 通过目标表的主键获取目标表的关系键
      * @param targetPrimaryKeyValues 目标表的主键集合
      * @return 目标表的关系键集合
      */
-    protected Collection<String> targetModelLocalKeyValuesByPrimaryKeyValues(Collection<String> targetPrimaryKeyValues){
+    protected Collection<String> targetModelLocalKeyValuesByPrimaryKeyValues(Collection<String> targetPrimaryKeyValues) {
         // 目标表中的关系键的集合, 即使中间表中指向目标表的外键的集合
         Collection<String> targetModelLocalKeyValues;
 
         // 如果目标表的主键即是关系键, 那么可以简化
         if (belongsToManyTemplate.targetModelLocalKey.equals(belongsToManyTemplate.targetModel.getPrimaryKeyColumnName())) {
             // 目标表的主键 处理下 AbstractList
-            targetModelLocalKeyValues = targetPrimaryKeyValues instanceof AbstractList ?
-                    new HashSet<>(targetPrimaryKeyValues) : targetPrimaryKeyValues;
+            targetModelLocalKeyValues = compatibleCollection(targetPrimaryKeyValues);
+
         } else {
             // 目标表中的关系键的集合, 即使中间表中指向目标表的外键的集合
             targetModelLocalKeyValues = belongsToManyTemplate.targetModel.newQuery()
@@ -282,8 +318,34 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
                 .delete();
     }
 
+    /**
+     * 同步到关联关系, 任何不在指定范围的对应记录将会移除
+     * @param record                    当前record
+     * @param targetModelLocalKeyValues 目标表关系键集合
+     * @param stringStringMap           中间表新增是要附带的数据
+     * @return 受影响的行数
+     */
+    protected int syncWithTargetModelLocalKeyValues(Record<?, ?> record, Collection<String> targetModelLocalKeyValues,
+                                                    Map<String, String> stringStringMap) {
+        // 本表的关系键值
+        String localModelLocalKeyValue = String.valueOf(
+                record.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey).getValue());
 
-        static class BelongsToManyTemplate {
+
+        // 现存的关联关系, 不需要据需存在的, 解除
+        int detachNum = belongsToManyTemplate.relationModel.newQuery()
+                .where(belongsToManyTemplate.foreignKeyForLocalModel, localModelLocalKeyValue)
+                .whereNotIn(belongsToManyTemplate.foreignKeyForTargetModel, targetModelLocalKeyValues)
+                .delete();
+
+        // 执行更新
+        int attachNum = attachWithTargetModelLocalKeyValues(record, targetModelLocalKeyValues, stringStringMap);
+
+        return attachNum + detachNum;
+    }
+
+    static class BelongsToManyTemplate {
+
         final Model<?, ?> relationModel; // user_teacher
 
         final String foreignKeyForLocalModel;// user_id

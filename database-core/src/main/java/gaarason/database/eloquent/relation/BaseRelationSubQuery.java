@@ -23,6 +23,17 @@ abstract public class BaseRelationSubQuery implements RelationSubQuery {
     }
 
     /**
+     * 集合兼容处理
+     * 用于解决AbstractList不实现removeAll的情况
+     * @param mayBeInstanceOfAbstractList 原集合
+     * @return 集合(不保证引用关系)
+     */
+    protected Collection<String> compatibleCollection(Collection<String> mayBeInstanceOfAbstractList){
+        return mayBeInstanceOfAbstractList instanceof AbstractList ?
+                new HashSet<>(mayBeInstanceOfAbstractList) : mayBeInstanceOfAbstractList;
+    }
+
+    /**
      * 通过targetRecords, 获取目标表的之间集合
      * @param targetRecords 目标结果集合
      * @return 目标表的主键集合

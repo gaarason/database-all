@@ -5,13 +5,11 @@ import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.eloquent.annotation.BelongsTo;
-import gaarason.database.eloquent.appointment.FinalVariable;
 import gaarason.database.eloquent.appointment.SqlType;
 import gaarason.database.exception.RelationAttachException;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.Column;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -61,23 +59,9 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     public int attach(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
         if (targetRecords.size() == 0)
             return 0;
-        else if (targetRecords.size() > 1) {
-            throw new RelationAttachException("The relationship \"@BelongsTo\" could only attach a relationship with " +
-                    "one, but now more than one.");
-        }
-        Column column = targetRecords.get(0).getMetadataMap().get(belongsToTemplate.parentModelLocalKey);
-        if (null == column) {
-            throw new RelationAttachException("Not found the relation key["
-                    + belongsToTemplate.parentModelLocalKey + "] in the target records.");
-        }
-        Object value = column.getValue();
-        if (null == value) {
-            throw new RelationAttachException("The relation key["
-                    + belongsToTemplate.parentModelLocalKey + "] in the target records should not be NULL.");
-        }
 
         // 目标表(父表)model的关联键值
-        String parentModelLocalKeyValue = String.valueOf(value);
+        String parentModelLocalKeyValue = parentModelLocalKeyValue(targetRecords);
 
         // 执行更新, 自我更新需要手动刷新属性
         return attachAndRefresh(record, parentModelLocalKeyValue);
@@ -124,6 +108,9 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
     @Override
     public int detach(Record<?, ?> record, Collection<String> targetPrimaryKeyValues) {
+        if (targetPrimaryKeyValues.size() == 0) {
+            return 0;
+        }
         // 执行更新, 自我更新需要手动刷新属性
         // 目标,必须是关联关系, 才解除
         // 解除可以多个
@@ -140,6 +127,86 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
             record.refresh(metadataMap);
         }
         return successNum;
+    }
+
+    @Override
+    public int sync(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
+        return attach(record, targetRecords, stringStringMap);
+    }
+
+    @Override
+    public int sync(Record<?, ?> record, Collection<String> targetPrimaryKeyValues, Map<String, String> stringStringMap) {
+        return attach(record, targetPrimaryKeyValues, stringStringMap);
+    }
+
+    @Override
+    public int toggle(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
+        if (targetRecords.size() == 0)
+            return 0;
+
+        // 目标表(父表)model的关联键值
+        String parentModelLocalKeyValue = parentModelLocalKeyValue(targetRecords);
+
+        // 关系已经存在, 切换即是解除
+        if (record.getMetadataMap().get(belongsToTemplate.localModelForeignKey).getValue().toString().equals(parentModelLocalKeyValue)) {
+            return detach(record, Collections.singletonList(parentModelLocalKeyValue));
+        }
+        // 关系已经存在, 切换即是增加
+        else{
+            return attachAndRefresh(record, parentModelLocalKeyValue);
+        }
+
+    }
+
+    @Override
+    public int toggle(Record<?, ?> record, Collection<String> targetPrimaryKeyValues, Map<String, String> stringStringMap) {
+        if (targetPrimaryKeyValues.size() == 0)
+            return 0;
+        else if (targetPrimaryKeyValues.size() > 1) {
+            throw new RelationAttachException("The relationship \"@BelongsTo\" could only toggle a relationship with " +
+                    "one, but now more than one.");
+        }
+
+        // 目标表(父表)model的主键
+        String targetPrimaryKeyValue = String.valueOf(targetPrimaryKeyValues.toArray()[0]);
+
+        return belongsToTemplate.parentModel.newQuery().transaction(() -> {
+
+            // 目标表(父表)model的关联键值
+            String parentModelLocalKeyValue = belongsToTemplate.parentModel.newQuery()
+                    .select(belongsToTemplate.parentModelLocalKey)
+                    .where(belongsToTemplate.parentModel.getPrimaryKeyColumnName(), targetPrimaryKeyValue)
+                    .firstOrFail().getMetadataMap().get(belongsToTemplate.parentModelLocalKey).getValue().toString();
+
+            // 关系已经存在, 切换即是解除
+            if (String.valueOf(record.getMetadataMap().get(belongsToTemplate.localModelForeignKey).getValue()).equals(parentModelLocalKeyValue)) {
+                return detach(record, targetPrimaryKeyValues);
+            }
+            // 关系已经存在, 切换即是增加
+            else {
+                return attachAndRefresh(record, parentModelLocalKeyValue);
+            }
+        });
+    }
+
+    protected String parentModelLocalKeyValue(RecordList<?, ?> targetRecords){
+        if (targetRecords.size() > 1) {
+            throw new RelationAttachException("The relationship \"@BelongsTo\" could only attach/toggle/sync a relationship with " +
+                    "one, but now more than one.");
+        }
+        Column column = targetRecords.get(0).getMetadataMap().get(belongsToTemplate.parentModelLocalKey);
+        if (null == column) {
+            throw new RelationAttachException("Not found the relation key["
+                    + belongsToTemplate.parentModelLocalKey + "] in the target records.");
+        }
+        Object value = column.getValue();
+        if (null == value) {
+            throw new RelationAttachException("The relation key["
+                    + belongsToTemplate.parentModelLocalKey + "] in the target records should not be NULL.");
+        }
+
+        // 目标表(父表)model的关联键值
+        return String.valueOf(value);
     }
 
     /**

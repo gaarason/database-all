@@ -11,10 +11,7 @@ import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.Column;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
@@ -112,6 +109,73 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
                 .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
                 .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
                 .data(hasOneOrManyTemplate.sonModelForeignKey, defaultSonModelForeignKeyValue).update();
+    }
+
+    @Override
+    public int sync(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
+        return attach(record, getTargetRecordPrimaryKeyIds(targetRecords), stringStringMap);
+    }
+
+    @Override
+    public int sync(Record<?, ?> record, Collection<String> targetPrimaryKeyValues, Map<String, String> stringStringMap) {
+        // 关联键值(当前表关系键(默认当前表主键))(子表外键)
+        String relationKeyValue = String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
+
+        return hasOneOrManyTemplate.sonModel.newQuery().transaction(() ->{
+            // 现存的关联关系, 不需要据需存在的, 解除
+            int detachNum = hasOneOrManyTemplate.sonModel.newQuery()
+                    .whereNotIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
+                    .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
+                    .data(hasOneOrManyTemplate.sonModelForeignKey, defaultSonModelForeignKeyValue).update();
+
+            // 执行更新
+            int attachNum = hasOneOrManyTemplate.sonModel.newQuery()
+                    .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
+                    .data(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue).update();
+
+            return detachNum + attachNum;
+        });
+    }
+
+    @Override
+    public int toggle(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
+        return toggle(record, getTargetRecordPrimaryKeyIds(targetRecords), stringStringMap);
+    }
+
+    @Override
+    public int toggle(Record<?, ?> record, Collection<String> targetPrimaryKeyValues, Map<String, String> stringStringMap) {
+        if(targetPrimaryKeyValues.size() ==  0){
+            return 0;
+        }
+
+        // 关联键值(当前表关系键(默认当前表主键))(子表外键)
+        String relationKeyValue = String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
+
+        return hasOneOrManyTemplate.sonModel.newQuery().transaction(() ->{
+            // 现存的关联关系 主键值集合
+            List<String> alreadyExistSonModelPrimaryKeyValues = hasOneOrManyTemplate.sonModel.newQuery()
+                    .select(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName())
+                    .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
+                    .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
+                    .get().toOneColumnList();
+
+            // 需要增加的关系 主键值集合
+            Collection<String> compatibleAlreadyExistSonModelPrimaryKeyValues = compatibleCollection(targetPrimaryKeyValues);
+            compatibleAlreadyExistSonModelPrimaryKeyValues.removeAll(alreadyExistSonModelPrimaryKeyValues);
+
+            // 现存的关联关系, 解除
+            int detachNum = hasOneOrManyTemplate.sonModel.newQuery()
+                    .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
+                    .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
+                    .data(hasOneOrManyTemplate.sonModelForeignKey, defaultSonModelForeignKeyValue).update();
+
+            // 执行更新
+            int attachNum = hasOneOrManyTemplate.sonModel.newQuery()
+                    .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), compatibleAlreadyExistSonModelPrimaryKeyValues)
+                    .data(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue).update();
+
+            return detachNum + attachNum;
+        });
     }
 
     static class HasOneOrManyTemplate {
