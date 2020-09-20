@@ -1114,20 +1114,45 @@ public class RelationTests extends BaseTests {
     @Test
     public void 多对多关系_中间表_中间额外数据查询() {
         Student student = studentModel.newQuery()
-            .where("id", "1")
-            .firstOrFail()
-            .with("relationshipStudentTeachers")
-            .with("teachersBelongsToMany")
-            .toObject();
+                .where("id", "1")
+                .firstOrFail()
+                .with("relationshipStudentTeachers")
+                .with("teachersBelongsToMany")
+                .toObject();
 
         System.out.println(student);
 
 
         Student student2 = studentModel.newQuery()
-            .where("id", "1")
-            .firstOrFail()
-            .with("teachersBelongsToMany")
-            .toObject();
+                .where("id", "1")
+                .firstOrFail()
+                .with("teachersBelongsToMany")
+                .toObject();
+        System.out.println(student2);
+
+    }
+
+    @Test
+    public void 多对多关系_不存在关系() {
+        // 手动清除
+        relationshipStudentTeacherModel.newQuery().whereRaw("1").delete();
+
+        Student student = studentModel.newQuery()
+                .where("id", "1")
+                .firstOrFail()
+                .with("relationshipStudentTeachers")
+                .with("teachersBelongsToMany")
+                .toObject();
+
+
+        System.out.println(student);
+
+
+        Student student2 = studentModel.newQuery()
+                .where("id", "1")
+                .firstOrFail()
+                .with("teachersBelongsToMany")
+                .toObject();
         System.out.println(student2);
 
     }

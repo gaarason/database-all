@@ -53,15 +53,40 @@ public interface RelationSubQuery {
      * @param record          当前record
      * @param targetRecords   目标的recordList
      * @param stringStringMap 仅 @BelongsToMany 时有效, 增加额外信息到中间表
+     * @return 受影响的行数
      */
-    void attach(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap);
+    int attach(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap);
 
     /**
      * 增加关联关系
      * @param record                 当前record
      * @param targetPrimaryKeyValues 目标的recordList的主键集合
      * @param stringStringMap        仅 @BelongsToMany 时有效, 增加额外信息到中间表
+     * @return 受影响的行数
      */
-    void attach(Record<?, ?> record, Collection<String> targetPrimaryKeyValues, Map<String, String> stringStringMap);
+    int attach(Record<?, ?> record, Collection<String> targetPrimaryKeyValues, Map<String, String> stringStringMap);
+
+    /**
+     * 解除所有关联关系
+     * @param record          当前record
+     * @return 受影响的行数
+     */
+    int detach(Record<?, ?> record);
+
+    /**
+     * 解除目标关联关系
+     * @param record          当前record
+     * @param targetRecords   目标的recordList
+     * @return 受影响的行数
+     */
+    int detach(Record<?, ?> record, RecordList<?, ?> targetRecords);
+
+    /**
+     * 解除目标关联关系
+     * @param record                 当前record
+     * @param targetPrimaryKeyValues 目标的recordList的主键集合
+     * @return 受影响的行数
+     */
+    int detach(Record<?, ?> record, Collection<String> targetPrimaryKeyValues);
 
 }

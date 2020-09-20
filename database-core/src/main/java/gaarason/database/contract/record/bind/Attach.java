@@ -6,26 +6,69 @@ import gaarason.database.contract.eloquent.RecordList;
 import java.util.Collection;
 import java.util.Map;
 
+/**
+ * 新增关系
+ */
 public interface Attach {
 
     /**
-     * 新增关系, 连接模型的中间表中插入记录
-     * @param targetRecord 目标关系
+     * 新增单个关系
+     * @param targetRecord 目标record
+     * @return 受影响的行数
      */
-    void attach(Record<?, ?> targetRecord);
+    int attach(Record<?, ?> targetRecord);
 
-    void attach(RecordList<?, ?> targetRecords);
+    /**
+     * 新增多个关系
+     * @param targetRecords 目标records
+     * @return 受影响的行数
+     */
+    int attach(RecordList<?, ?> targetRecords);
 
-    void attach(Record<?, ?> targetRecord, Map<String, String> stringStringMap);
+    /**
+     * 新增单个关系
+     * @param targetRecord 目标record
+     * @param stringStringMap 当BelongsToMany时生效, 将数据插入中间表
+     * @return 受影响的行数
+     */
+    int attach(Record<?, ?> targetRecord, Map<String, String> stringStringMap);
 
-    void attach(RecordList<?, ?> targetRecords, Map<String, String> stringStringMap);
+    /**
+     * 新增多个关系
+     * @param targetRecords 目标records
+     * @param stringStringMap 当BelongsToMany时生效, 将数据插入中间表
+     * @return 受影响的行数
+     */
+    int attach(RecordList<?, ?> targetRecords, Map<String, String> stringStringMap);
 
-    void attach(String id);
+    /**
+     * 新增单个关系
+     * @param id 目标record的主键
+     * @return 受影响的行数
+     */
+    int attach(String id);
 
-    void attach(Collection<String> ids);
+    /**
+     * 新增多个关系
+     * @param ids 目标records的主键集合
+     * @return 受影响的行数
+     */
+    int attach(Collection<String> ids);
 
-    void attach(String id, Map<String, String> stringStringMap);
+    /**
+     * 新增单个关系
+     * @param id 目标record的主键
+     * @param stringStringMap 当BelongsToMany时生效, 将数据插入中间表
+     * @return 受影响的行数
+     */
+    int attach(String id, Map<String, String> stringStringMap);
 
-    void attach(Collection<String> ids, Map<String, String> stringStringMap);
+    /**
+     * 新增多个关系
+     * @param ids 目标records的主键集合
+     * @param stringStringMap 当BelongsToMany时生效, 将数据插入中间表
+     * @return 受影响的行数
+     */
+    int attach(Collection<String> ids, Map<String, String> stringStringMap);
 
 }

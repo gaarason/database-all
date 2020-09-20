@@ -38,10 +38,22 @@ public interface FriendlyList<T, K> {
     List<Map<String, Object>> toMapList();
 
     /**
+     * 转化为 list map
+     * @return listMap
+     */
+    Map<String, List<Object>> toListMap();
+
+    /**
      * 过滤成list
      * @return 单个字段列表
      */
     <V> List<V> toList(FilterRecordAttributeFunctionalInterface<T, K, V> filterRecordAttributeFunctionalInterface);
+
+    /**
+     * 过滤成list(取Record中的第一列)
+     * @return 单个字段列表
+     */
+    List<String> toOneColumnList();
 
 
     /**

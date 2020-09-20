@@ -23,14 +23,25 @@ abstract public class BaseRelationSubQuery implements RelationSubQuery {
     }
 
     /**
+     * 通过targetRecords, 获取目标表的之间集合
+     * @param targetRecords 目标结果集合
+     * @return 目标表的主键集合
+     */
+    protected List<String> getTargetRecordPrimaryKeyIds(RecordList<?, ?> targetRecords) {
+        // 应该目标表的主键列表
+        return targetRecords.toList(recordTemp -> String.valueOf(
+                recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName()).getValue()));
+    }
+
+    /**
      * 获取 model 实例
      * @param field 属性信息
      * @return Model实例
      */
     protected static Model<?, ?> getModelInstance(Field field) {
         Class<?> clazz = ObjectUtil.isCollection(field.getType()) ?
-            ObjectUtil.getGenerics((ParameterizedType) field.getGenericType(), 0) :
-            field.getType();
+                ObjectUtil.getGenerics((ParameterizedType) field.getGenericType(), 0) :
+                field.getType();
         return ModelShadowProvider.getByEntity(clazz).getModel();
     }
 
@@ -69,7 +80,7 @@ abstract public class BaseRelationSubQuery implements RelationSubQuery {
         if (relationshipObjectList.size() > 0) {
             // 模型信息
             ModelShadowProvider.ModelInfo<?, Object> modelInfo = ModelShadowProvider.getByEntity(
-                relationshipObjectList.get(0).getClass());
+                    relationshipObjectList.get(0).getClass());
             // 字段信息
             ModelShadowProvider.FieldInfo fieldInfo = modelInfo.getColumnFieldMap().get(columnName);
 

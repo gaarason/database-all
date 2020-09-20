@@ -6,9 +6,7 @@ import gaarason.database.eloquent.annotation.HasOneOrMany;
 
 import java.lang.annotation.Annotation;
 import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * 全局可用的常量
@@ -26,6 +24,14 @@ public class FinalVariable {
      */
     public final static List<Class<? extends Annotation>> relationAnnotations = Arrays.asList(HasOneOrMany.class,
             BelongsTo.class, BelongsToMany.class);
+    /**
+     * 在使用闭包事务时, 发生死锁异常后的默认重试次数
+     */
+    public final static int defaultCausedByDeadlockRetryCount  = 0;
 
+    /**
+     * 在内部迭代时使用并行线程
+     */
+    public final static boolean defaultParallelStream  = true;
 
 }

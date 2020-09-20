@@ -104,6 +104,16 @@ public class RecordFactory {
     }
 
     /**
+     * 空的批量结果集
+     * @param <T>    实体类型
+     * @param <K>    实体主键类型
+     * @return 批量结果集(RecordList全新, Record为引用地址)
+     */
+    public static <T, K> RecordList<T, K> newRecordList() {
+        return new RecordListBean<>("");
+    }
+
+    /**
      * copy产生新的record, 其中model使用原record中的引用
      * @param originalRecord 原结果集
      * @param <T>            实体类型

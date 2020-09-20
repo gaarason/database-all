@@ -2,6 +2,8 @@ package gaarason.database.eloquent.appointment;
 
 import lombok.Getter;
 
+import java.math.BigInteger;
+
 /**
  * Mysql 数字类型取值范围
  */

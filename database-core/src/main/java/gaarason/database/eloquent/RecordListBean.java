@@ -8,6 +8,7 @@ import gaarason.database.contract.function.RelationshipRecordWithFunctionalInter
 import gaarason.database.support.Column;
 import gaarason.database.support.RelationGetSupport;
 import gaarason.database.util.EntityUtil;
+import gaarason.database.util.PerformanceUtil;
 import gaarason.database.util.StringUtil;
 
 import java.util.*;
@@ -103,13 +104,25 @@ public class RecordListBean<T, K> extends ArrayList<Record<T, K>> implements Rec
         return list;
     }
 
+    @Override
+    public Map<String, List<Object>> toListMap() {
+        Map<String, List<Object>> map = new HashMap<>();
+//        PerformanceUtil.steam(this).notifyAll();
+        for (Record<T, K> record : this) {
+            for(String column : record.getMetadataMap().keySet()) {
+                List<Object> list = map.computeIfAbsent(column, (key) -> new ArrayList<>());
+                list.add(record.getMetadataMap().get(column).getValue());
+            }
+        }
+        return map;
+    }
+
     /**
      * 过滤成list
      * @return 单个字段列表
      */
     @Override
-    public <V> List<V> toList(
-        FilterRecordAttributeFunctionalInterface<T, K, V> filterRecordAttributeFunctionalInterface) {
+    public <V> List<V> toList(FilterRecordAttributeFunctionalInterface<T, K, V> filterRecordAttributeFunctionalInterface) {
         List<V> list = new ArrayList<>();
         for (Record<T, K> record : this) {
             V result = filterRecordAttributeFunctionalInterface.execute(record);
@@ -120,6 +133,17 @@ public class RecordListBean<T, K> extends ArrayList<Record<T, K>> implements Rec
         return list;
     }
 
+    @Override
+    public List<String> toOneColumnList() {
+        return toList(record -> {
+            Set<Map.Entry<String, Column>> entries = record.getMetadataMap().entrySet();
+            for (Map.Entry<String, Column> entry : entries) {
+                Object value = entry.getValue().getValue();
+                return value == null ? null : String.valueOf(value);
+            }
+            return null;
+        });
+    }
 
     @Override
     public RecordListBean<T, K> with(String column) {
@@ -137,10 +161,10 @@ public class RecordListBean<T, K> extends ArrayList<Record<T, K>> implements Rec
         String[] columnArr = column.split("\\.");
         // 快捷类型
         if (columnArr.length > 1) {
-            String lastLevelColumn  = columnArr[columnArr.length - 1];
+            String lastLevelColumn = columnArr[columnArr.length - 1];
             String otherLevelColumn = StringUtil.rtrim(column, "." + lastLevelColumn);
             return with(otherLevelColumn, builder -> builder,
-                record -> record.with(lastLevelColumn, builderClosure, recordClosure));
+                    record -> record.with(lastLevelColumn, builderClosure, recordClosure));
         }
         for (Record<T, K> tkRecord : this) {
             // 赋值关联关系过滤

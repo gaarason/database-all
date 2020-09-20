@@ -7,7 +7,6 @@ import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.exception.RelationNotFoundException;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.RecordFactory;
-import gaarason.database.util.ObjectUtil;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -28,60 +27,50 @@ public class BindBean<T, K> implements Bind {
         ModelShadowProvider.RelationFieldInfo relationFieldInfo = modelInfo.getRelationFieldMap().get(fieldName);
         if (relationFieldInfo == null) {
             throw new RelationNotFoundException(
-                "No associations were found for property[" + fieldName + "] in the entity[" + modelInfo.getEntityClass() + "].");
+                    "No associations were found for property[" + fieldName + "] in the entity[" + modelInfo.getEntityClass() + "].");
         }
         relationSubQuery = relationFieldInfo.getRelationSubQuery();
     }
 
     @Override
-    public void attach(Record<?, ?> targetRecord) {
-        attach(RecordFactory.newRecordList(targetRecord), new HashMap<>());
+    public int attach(Record<?, ?> targetRecord) {
+        return attach(RecordFactory.newRecordList(targetRecord), new HashMap<>());
     }
 
     @Override
-    public void attach(RecordList<?, ?> targetRecords) {
-        attach(targetRecords, new HashMap<>());
+    public int attach(RecordList<?, ?> targetRecords) {
+        return attach(targetRecords, new HashMap<>());
     }
 
     @Override
-    public void attach(Record<?, ?> targetRecord, Map<String, String> stringStringMap) {
-        attach(RecordFactory.newRecordList(targetRecord), stringStringMap);
+    public int attach(Record<?, ?> targetRecord, Map<String, String> stringStringMap) {
+        return attach(RecordFactory.newRecordList(targetRecord), stringStringMap);
     }
 
     @Override
-    public void attach(RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        relationSubQuery.attach(record, targetRecords, stringStringMap);
+    public int attach(RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
+        return relationSubQuery.attach(record, targetRecords, stringStringMap);
     }
 
     @Override
-    public void attach(String id) {
-        attach(Collections.singletonList(id), new HashMap<>());
+    public int attach(String id) {
+        return attach(Collections.singletonList(id), new HashMap<>());
     }
 
     @Override
-    public void attach(Collection<String> ids) {
-        attach(ids, new HashMap<>());
+    public int attach(Collection<String> ids) {
+        return attach(ids, new HashMap<>());
 
     }
 
     @Override
-    public void attach(String id, Map<String, String> stringStringMap) {
-        attach(Collections.singletonList(id), stringStringMap);
+    public int attach(String id, Map<String, String> stringStringMap) {
+        return attach(Collections.singletonList(id), stringStringMap);
     }
 
     @Override
-    public void attach(Collection<String> ids, Map<String, String> stringStringMap) {
-        relationSubQuery.attach(record, ids, stringStringMap);
-    }
-
-    @Override
-    public boolean detach(Record<?, ?> targetRecord) {
-        return false;
-    }
-
-    @Override
-    public boolean detach(String id) {
-        return false;
+    public int attach(Collection<String> ids, Map<String, String> stringStringMap) {
+        return relationSubQuery.attach(record, ids, stringStringMap);
     }
 
     @Override
@@ -124,12 +113,28 @@ public class BindBean<T, K> implements Bind {
         return false;
     }
 
+    @Override
+    public int detach() {
+        return relationSubQuery.detach(record);
+    }
 
-    protected void presetColumn(String fieldName) {
-        Class<T> entityClass = record.getModel().getEntityClass();
-        if (fieldName.contains(".") || !ObjectUtil.checkProperties(entityClass, fieldName)) {
-            throw new RelationNotFoundException("实体类[" + entityClass + "]中检测属性[" + fieldName + "]不通过");
-        }
+    @Override
+    public int detach(Record<?, ?> targetRecord) {
+        return detach(RecordFactory.newRecordList(targetRecord));
+    }
 
+    @Override
+    public int detach(RecordList<?, ?> targetRecords) {
+        return relationSubQuery.detach(record, targetRecords);
+    }
+
+    @Override
+    public int detach(String id) {
+        return detach(Collections.singletonList(id));
+    }
+
+    @Override
+    public int detach(Collection<String> ids) {
+        return relationSubQuery.detach(record, ids);
     }
 }

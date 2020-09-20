@@ -331,6 +331,8 @@ final public class ModelShadowProvider {
                 fieldInfo.field = field;
                 fieldInfo.name = field.getName();
                 fieldInfo.javaType = field.getType();
+                // todo 应该优先使用数据库默认值, 当默认值不存在时, 再才使用如下方法
+                fieldInfo.defaultValue = Number.class.isAssignableFrom(fieldInfo.javaType) ? "0" : "";
 
                 // 数据库属性
                 fieldInfo.column = field.isAnnotationPresent(Column.class) ? field.getAnnotation(Column.class) : null;
@@ -561,6 +563,11 @@ final public class ModelShadowProvider {
          * java中的字段类型
          */
         protected volatile Class<?> javaType;
+
+        /**
+         * 默认值
+         */
+        protected volatile String defaultValue;
 
         /**
          * 数据库中的字段类型

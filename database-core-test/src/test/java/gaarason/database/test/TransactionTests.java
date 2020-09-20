@@ -42,12 +42,12 @@ public class TransactionTests extends BaseTests {
         // 1层事物
         studentModel.newQuery().transaction(() -> {
             // 2层事物 应该抛出异常 NestedTransactionException
-            studentModel.newQuery().transaction(() -> {
+            return studentModel.newQuery().transaction(() -> {
                 // 3层事物
-                studentModel.newQuery().transaction(() -> {
+                return studentModel.newQuery().transaction(() -> {
                     try {
                         // 4层事物
-                        studentModel.newQuery().transaction(() -> {
+                        return studentModel.newQuery().transaction(() -> {
                             studentModel.newQuery().where("id", "1").data("name", "dddddd").update();
                             StudentModel.Entity entity = studentModel.newQuery()
                                 .where("id", "1")
@@ -55,12 +55,13 @@ public class TransactionTests extends BaseTests {
                                 .toObject();
                             Assert.assertEquals(entity.getName(), "dddddd");
                             throw new RuntimeException("业务上抛了个异常");
-                        }, 1, true);
-                    } catch (RuntimeException e) {
+                        }, 1);
+                    } catch (RuntimeException ignored) {
                     }
-                }, 1, true);
-            }, 1, true);
-        }, 3, true);
+                    return true;
+                }, 1);
+            }, 1);
+        }, 3);
     }
 
     @Test
@@ -94,7 +95,7 @@ public class TransactionTests extends BaseTests {
 //                                    e.printStackTrace();
 //                                }
                                 throw new RuntimeException("业务上抛了个异常");
-                            }, 1, true);
+                            }, 1);
                             // 第3层事物 结束
                         } catch (RuntimeException e) {
                             log.info("student3Model 业务上抛了个异常, 成功捕获, 所以student3Model上的事物回滚");
@@ -108,13 +109,13 @@ public class TransactionTests extends BaseTests {
                         Student2Model.Entity id = student2Model.newQuery()
                             .where("id", "4")
                             .firstOrFail().toObject();
-                    }, 1, true);
+                    }, 1);
 
                     //  第2层事物结束
                     StudentModel.Entity id = studentModel.newQuery()
                         .where("id", "9")
                         .firstOrFail().toObject();
-                }, 3, true);
+                }, 3);
 
                 // 第1层事物结束
             } finally {
@@ -148,7 +149,7 @@ public class TransactionTests extends BaseTests {
                     System.out.println("子线程结束 " + Thread.currentThread().getName());
                 }
             });
-        }, 1, true);
+        }, 1);
 
         StudentModel.Entity entity = studentModel.newQuery()
             .where("id", "9")
@@ -175,7 +176,7 @@ public class TransactionTests extends BaseTests {
                         .where("id", "1")
                         .firstOrFail()
                         .toObject();
-                }, 1, true);
+                }, 1);
 
                 try {
                     // 3层事物
@@ -188,7 +189,7 @@ public class TransactionTests extends BaseTests {
                             .toObject();
                         Assert.assertEquals(entity.getName(), "ddddddxx");
                         throw new RuntimeException("业务上抛了个异常");
-                    }, 1, true);
+                    }, 1);
                 } catch (RuntimeException e) {
                     log.info("student3Model 业务上抛了个异常, 成功捕获, 所以student3Model上的事物回滚");
                 }
@@ -202,12 +203,12 @@ public class TransactionTests extends BaseTests {
                     .firstOrFail().toObject();
                 Assert.assertEquals(id.getName(), "testttt");
 
-            }, 1, true);
+            }, 1);
             StudentModel.Entity id = studentModel.newQuery()
                 .where("id", "9")
                 .firstOrFail().toObject();
             Assert.assertEquals(id.getName(), "testttt");
-        }, 3, true);
+        }, 3);
 
         // 事物结束后
         StudentModel.Entity id = studentModel.newQuery()
@@ -231,48 +232,51 @@ public class TransactionTests extends BaseTests {
         CountDownLatch countDownLatch = new CountDownLatch(count);
         for (int i = 0; i < count; i++) {
             new Thread(() -> {
-                // 1层事物
-                studentModel.newQuery().transaction(() -> {
-                    studentModel.newQuery().data("name", "testttt").where("id", "9").update();
-                    // 2层事物
-                    student2Model.newQuery().transaction(() -> {
-                        student2Model.newQuery().data("name", "testttt").where("id", "4").update();
-                        try {
-                            // 3层事物
-                            student3Model.newQuery().transaction(() -> {
-                                student3Model.newQuery().where("id", "1").data("name", "dddddd").update();
-                                Student3Model.Entity entity = student3Model.newQuery()
+
+                try {
+                    // 1层事物
+                    studentModel.newQuery().transaction(() -> {
+                        studentModel.newQuery().data("name", "testttt").where("id", "9").update();
+                        // 2层事物
+                        student2Model.newQuery().transaction(() -> {
+                            student2Model.newQuery().data("name", "testttt").where("id", "4").update();
+                            try {
+                                // 3层事物
+                                student3Model.newQuery().transaction(() -> {
+                                    student3Model.newQuery().where("id", "1").data("name", "dddddd").update();
+                                    Student3Model.Entity entity = student3Model.newQuery()
+                                            .where("id", "1")
+                                            .firstOrFail()
+                                            .toObject();
+//                                Assert.assertEquals(entity.getName(), "dddddd");
+                                    throw new RuntimeException("业务上抛了个异常");
+                                }, 1);
+                            } catch (RuntimeException e) {
+                                log.info("student3Model 业务上抛了个异常, 成功捕获, 所以student3Model上的事物回滚");
+                            }
+                            // student3Model 回滚
+                            Student3Model.Entity entity = student3Model.newQuery()
                                     .where("id", "1")
                                     .firstOrFail()
                                     .toObject();
-//                                Assert.assertEquals(entity.getName(), "dddddd");
-                                throw new RuntimeException("业务上抛了个异常");
-                            }, 1, true);
-                        } catch (RuntimeException e) {
-                            log.info("student3Model 业务上抛了个异常, 成功捕获, 所以student3Model上的事物回滚");
-                        }
-                        // student3Model 回滚
-                        Student3Model.Entity entity = student3Model.newQuery()
-                            .where("id", "1")
-                            .firstOrFail()
-                            .toObject();
 //                        Assert.assertNotEquals(entity.getName(), "dddddd");
 
-                        // student2Model 不受影响
-                        Student2Model.Entity id = student2Model.newQuery()
-                            .where("id", "4")
-                            .firstOrFail().toObject();
+                            // student2Model 不受影响
+                            Student2Model.Entity id = student2Model.newQuery()
+                                    .where("id", "4")
+                                    .firstOrFail().toObject();
 //                        Assert.assertEquals(id.getName(), "testttt");
 
-                    }, 1, true);
-                    StudentModel.Entity id = studentModel.newQuery()
-                        .where("id", "9")
-                        .firstOrFail().toObject();
+                        }, 1);
+                        StudentModel.Entity id = studentModel.newQuery()
+                                .where("id", "9")
+                                .firstOrFail().toObject();
 //                    Assert.assertEquals(id.getName(), "testttt");
-                }, 3, false);
-
-                countDownLatch.countDown();
-                System.out.println("子线程结束");
+                    }, 3);
+                }finally {
+                    countDownLatch.countDown();
+                    System.out.println("子线程结束");
+                }
             }).start();
             System.out.println("开启线程: " + i);
         }
@@ -284,14 +288,14 @@ public class TransactionTests extends BaseTests {
     public void 事物_lock_in_share_mode() {
         studentModel.newQuery().transaction(() -> {
             studentModel.newQuery().where("id", "3").sharedLock().get();
-        }, 3, true);
+        }, 3);
     }
 
     @Test
     public void 事物_for_update() {
         studentModel.newQuery().transaction(() -> {
             studentModel.newQuery().where("id", "3").lockForUpdate().get();
-        }, 3, true);
+        }, 3);
     }
 
 }

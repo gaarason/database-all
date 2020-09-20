@@ -5,7 +5,9 @@ import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.eloquent.annotation.HasOneOrMany;
+import gaarason.database.eloquent.appointment.FinalVariable;
 import gaarason.database.eloquent.appointment.SqlType;
+import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.Column;
 
 import java.lang.reflect.Field;
@@ -18,17 +20,25 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
     private final HasOneOrManyTemplate hasOneOrManyTemplate;
 
+    /**
+     * 目标模型外键的默认值, 仅在解除关系时使用
+     */
+    private final String defaultSonModelForeignKeyValue;
+
     public HasOneOrManyQueryRelation(Field field) {
         hasOneOrManyTemplate = new HasOneOrManyTemplate(field);
+
+        defaultSonModelForeignKeyValue = ModelShadowProvider.get(hasOneOrManyTemplate.sonModel)
+                .getColumnFieldMap().get(hasOneOrManyTemplate.sonModelForeignKey).getDefaultValue();
     }
 
     @Override
     public String[] prepareSqlArr(List<Map<String, Column>> stringColumnMapList,
                                   GenerateSqlPartFunctionalInterface generateSqlPart) {
         return new String[]{generateSqlPart.execute(hasOneOrManyTemplate.sonModel.newQuery())
-            .whereIn(hasOneOrManyTemplate.sonModelForeignKey,
-                getColumnInMapList(stringColumnMapList, hasOneOrManyTemplate.localModelLocalKey))
-            .toSql(SqlType.SELECT), ""};
+                .whereIn(hasOneOrManyTemplate.sonModelForeignKey,
+                        getColumnInMapList(stringColumnMapList, hasOneOrManyTemplate.localModelLocalKey))
+                .toSql(SqlType.SELECT), ""};
     }
 
     @Override
@@ -48,33 +58,61 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public void attach(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        // 应该更新的子表的主键列表
-        List<String> targetRecordPrimaryKeyIds = targetRecords.toList(
-            recordTemp -> String.valueOf(
-                recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName()).getValue()));
-
-        attach(record, targetRecordPrimaryKeyIds, stringStringMap);
-
+    public int attach(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
+        return attach(record, getTargetRecordPrimaryKeyIds(targetRecords), stringStringMap);
     }
 
     @Override
-    public void attach(Record<?, ?> record, Collection<String> targetPrimaryKeyValues,
-                       Map<String, String> stringStringMap) {
+    public int attach(Record<?, ?> record, Collection<String> targetPrimaryKeyValues,
+                      Map<String, String> stringStringMap) {
         if (targetPrimaryKeyValues.size() == 0)
-            return;
+            return 0;
 
-        // 当前表(子表)的关联键值
-        String relationKeyValue = String.valueOf(
-            record.getMetadataMap().get(record.getModel().getPrimaryKeyColumnName()).getValue());
+        // 关联键值(当前表关系键(默认当前表主键))(子表外键)
+        String relationKeyValue = String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
 
-        // 执行插入
-        hasOneOrManyTemplate.sonModel.newQuery()
-            .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
-            .data(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue).update();
-
+        // 执行更新
+        return hasOneOrManyTemplate.sonModel.newQuery()
+                .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
+                .data(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue).update();
     }
 
+    @Override
+    public int detach(Record<?, ?> record) {
+        // 关联键值(当前表关系键(默认当前表主键))(子表外键)
+        String relationKeyValue = String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
+
+        // 执行更新
+        // 目标,必须是关联关系, 才解除
+        return hasOneOrManyTemplate.sonModel.newQuery()
+                .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
+                .data(hasOneOrManyTemplate.sonModelForeignKey, defaultSonModelForeignKeyValue).update();
+    }
+
+    @Override
+    public int detach(Record<?, ?> record, RecordList<?, ?> targetRecords) {
+        // 应该更新的子表的主键列表
+        List<String> targetRecordPrimaryKeyIds = targetRecords.toList(
+                recordTemp -> String.valueOf(
+                        recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName()).getValue()));
+        return detach(record, targetRecordPrimaryKeyIds);
+    }
+
+    @Override
+    public int detach(Record<?, ?> record, Collection<String> targetPrimaryKeyValues) {
+        if (targetPrimaryKeyValues.size() == 0)
+            return 0;
+
+        // 关联键值(当前表关系键(默认当前表主键))(子表外键)
+        String relationKeyValue = String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
+
+        // 执行更新
+        // 目标,必须是关联关系, 才解除
+        return hasOneOrManyTemplate.sonModel.newQuery()
+                .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
+                .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
+                .data(hasOneOrManyTemplate.sonModelForeignKey, defaultSonModelForeignKeyValue).update();
+    }
 
     static class HasOneOrManyTemplate {
         final Model<?, ?> sonModel;
@@ -88,8 +126,8 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
             sonModel = getModelInstance(field);
             sonModelForeignKey = hasOneOrMany.sonModelForeignKey();
             localModelLocalKey = "".equals(hasOneOrMany.localModelLocalKey())
-                ? sonModel.getPrimaryKeyColumnName()
-                : hasOneOrMany.localModelLocalKey();
+                    ? sonModel.getPrimaryKeyColumnName()
+                    : hasOneOrMany.localModelLocalKey();
 
         }
     }

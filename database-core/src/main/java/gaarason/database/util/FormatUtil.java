@@ -66,7 +66,7 @@ public class FormatUtil {
     public static String value(Collection<?> somethingList, Grammar grammar) {
         StringBuilder StringBuilder = new StringBuilder();
         for (Object value : somethingList) {
-            StringBuilder.append(FormatUtil.value(value.toString(), grammar)).append(',');
+            StringBuilder.append(FormatUtil.value(String.valueOf(value), grammar)).append(',');
         }
         return StringUtil.rtrim(StringBuilder.toString(), ",");
     }

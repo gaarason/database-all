@@ -1054,7 +1054,7 @@ public class QueryBuilderTests extends BaseTests {
                 StudentModel.Entity entity = studentModel.newQuery().where("id", "1").firstOrFail().toObject();
                 Assert.assertEquals(entity.getName(), "dddddd");
                 throw new RuntimeException("ssss");
-            }, 3, true);
+            }, 3);
         });
 
         StudentModel.Entity entity = studentModel.newQuery().where("id", "1").firstOrFail().toObject();
@@ -1080,12 +1080,12 @@ public class QueryBuilderTests extends BaseTests {
                                     .toObject();
                                 Assert.assertEquals(entity.getName(), "dddddd");
                                 throw new RuntimeException("业务上抛了个异常");
-                            }, 1, true);
+                            }, 1);
                         } catch (RuntimeException e) {
                         }
-                    }, 1, true);
-                }, 1, true);
-            }, 3, true);
+                    }, 1);
+                }, 1);
+            }, 3);
         });
     }
 
@@ -1093,14 +1093,14 @@ public class QueryBuilderTests extends BaseTests {
     public void 事物_lock_in_share_mode() {
         studentModel.newQuery().transaction(() -> {
             studentModel.newQuery().where("id", "3").sharedLock().get();
-        }, 3, true);
+        }, 3);
     }
 
     @Test
     public void 事物_for_update() {
         studentModel.newQuery().transaction(() -> {
             studentModel.newQuery().where("id", "3").lockForUpdate().get();
-        }, 3, true);
+        }, 3);
     }
 
     @Test
