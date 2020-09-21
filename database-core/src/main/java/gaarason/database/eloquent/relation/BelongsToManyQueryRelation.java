@@ -211,6 +211,10 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
     @Override
     public int toggle(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
+        if (targetRecords.isEmpty()) {
+            return 0;
+        }
+
         // 目标表的关系键值的集合
         List<String> targetModelLocalKeyValues = targetRecords.toList(
             recordTemp -> String.valueOf(
@@ -221,8 +225,10 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public int toggle(Record<?, ?> record, Collection<String> targetPrimaryKeyValues,
-                      Map<String, String> stringStringMap) {
+    public int toggle(Record<?, ?> record, Collection<String> targetPrimaryKeyValues, Map<String, String> stringStringMap) {
+        if (targetPrimaryKeyValues.isEmpty()) {
+            return 0;
+        }
         // 事物
         return belongsToManyTemplate.relationModel.newQuery().transaction(() -> {
             // 目标表中的关系键值的集合, 即使中间表中指向目标表的外键的集合
@@ -269,14 +275,14 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
      */
     protected int attachWithTargetModelLocalKeyValues(Record<?, ?> record, Collection<String> targetModelLocalKeyValues,
                                                       Map<String, String> stringStringMap, boolean checkAlreadyExist) {
-        // 本表的关系键值
-        String localModelLocalKeyValue = String.valueOf(
-            record.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey).getValue());
-
         // 无需处理则直接返回
         if (targetModelLocalKeyValues.isEmpty()) {
             return 0;
         }
+
+        // 本表的关系键值
+        String localModelLocalKeyValue = String.valueOf(
+            record.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey).getValue());
 
         if (checkAlreadyExist) {
             // 查询中间表(relationModel)是否存在已经存在对应的关系
@@ -376,6 +382,9 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
      */
     protected int toggleWithTargetModelLocalKeyValues(Record<?, ?> record, Collection<String> targetModelLocalKeyValues,
                                                       Map<String, String> stringStringMap) {
+        if(targetModelLocalKeyValues.isEmpty()){
+            return 0;
+        }
         // 本表的关系键值
         String localModelLocalKeyValue = String.valueOf(
             record.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey).getValue());
@@ -387,15 +396,16 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
             .whereIn(belongsToManyTemplate.foreignKeyForTargetModel, targetModelLocalKeyValues)
             .get().toOneColumnList();
 
-        // 需要增加的关系(不存在就徐涛增加) 中间表指向目标表的外键值的集合
-        Collection<String> compatibleTargetModelLocalKeyValues = compatibleCollection(targetModelLocalKeyValues);
-        compatibleTargetModelLocalKeyValues.removeAll(alreadyExistTargetModelLocalKeyValues);
-
         // 现存的关联关系, 解除
         int detachNum = !targetModelLocalKeyValues.isEmpty() ? belongsToManyTemplate.relationModel.newQuery()
             .where(belongsToManyTemplate.foreignKeyForLocalModel, localModelLocalKeyValue)
             .whereIn(belongsToManyTemplate.foreignKeyForTargetModel, targetModelLocalKeyValues)
             .delete() : 0;
+
+        // 需要增加的关系(不存在就增加) 中间表指向目标表的外键值的集合
+        // compatibleTargetModelLocalKeyValues 与 targetModelLocalKeyValues 可能是同一个对象(相同内存地址)
+        Collection<String> compatibleTargetModelLocalKeyValues = compatibleCollection(targetModelLocalKeyValues);
+        compatibleTargetModelLocalKeyValues.removeAll(alreadyExistTargetModelLocalKeyValues);
 
         // 不存在的关系, 新增
         int attachNum = attachWithTargetModelLocalKeyValues(record, compatibleTargetModelLocalKeyValues, stringStringMap, false);

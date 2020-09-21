@@ -248,25 +248,6 @@ public class RecordBean<T, K> implements Record<T, K> {
         return success;
     }
 
-//    /**
-//     * 新增或者更新(关联关系)
-//     * @param propertyName 关联关系属性 eg: teacher.student.id
-//     * @return 执行成功
-//     */
-//    public boolean save(String propertyName) {
-//        // 检测入参, 主要是多级检测
-//        if (!ObjectUtil.checkProperties(model.getEntityClass(), propertyName)) {
-//            throw new TypeNotSupportedException(propertyName);
-//        }
-//
-//        // 属性上的注解分析, 分析出关联关系类型
-//
-//        // 多级则开启事物, 依次执行
-//
-//        // todo
-//        return true;
-//    }
-
     @Override
     public Record<T, K> withClear() {
         relationBuilderMap.clear();

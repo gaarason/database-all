@@ -163,20 +163,20 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
                     .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
                     .get().toOneColumnList();
 
+            // 现存的关联关系, 解除关系
+            int detachNum = hasOneOrManyTemplate.sonModel.newQuery()
+                .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
+                .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
+                .data(hasOneOrManyTemplate.sonModelForeignKey, defaultSonModelForeignKeyValue).update();
+
             // 需要增加的关系 主键值集合
             Collection<String> compatibleTargetPrimaryKeyValues = compatibleCollection(targetPrimaryKeyValues);
             compatibleTargetPrimaryKeyValues.removeAll(alreadyExistSonModelPrimaryKeyValues);
 
-            // 现存的关联关系, 解除关系
-            int detachNum = hasOneOrManyTemplate.sonModel.newQuery()
-                    .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
-                    .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
-                    .data(hasOneOrManyTemplate.sonModelForeignKey, defaultSonModelForeignKeyValue).update();
-
             // 不存在的关系, 新增关系
-            int attachNum = hasOneOrManyTemplate.sonModel.newQuery()
+            int attachNum = !compatibleTargetPrimaryKeyValues.isEmpty() ? hasOneOrManyTemplate.sonModel.newQuery()
                     .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), compatibleTargetPrimaryKeyValues)
-                    .data(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue).update();
+                    .data(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue).update() : 0;
 
             return detachNum + attachNum;
         });

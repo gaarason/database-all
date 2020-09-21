@@ -20,10 +20,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import javax.sql.DataSource;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 @Slf4j
@@ -1289,6 +1286,7 @@ public class ORMTests extends BaseTests {
         // 学生2的关系
         Map<String, String> map = new HashMap<>();
         map.put("note", note);
+        // 切换2, 即是 解除2, 剩余1,3
         int studentsBelongsToMany2 = teacherIntegerRecord.bind("studentsBelongsToMany").toggle("2", map);
 
         Long new1Count = relationshipStudentTeacherModel.newQuery().count("*");
@@ -1297,7 +1295,7 @@ public class ORMTests extends BaseTests {
 
         // 学生1,2,3,4的关系
         int studentsBelongsToMany1 =
-                teacherIntegerRecord.bind("studentsBelongsToMany").sync(Arrays.asList("1", "2", "3", "4"), map);
+                teacherIntegerRecord.bind("studentsBelongsToMany").toggle(Arrays.asList("1", "2", "3", "4"), map);
         Assert.assertEquals(studentsBelongsToMany1, 4);
 
         Long new2Count = relationshipStudentTeacherModel.newQuery().count("*");
@@ -1364,7 +1362,7 @@ public class ORMTests extends BaseTests {
 
         Record<StudentModel.Entity, Integer> student1  = studentModel.findOrFail(1);
         int                                  students1 = teacherRecord.bind("students").toggle(student1);
-        Assert.assertEquals(students1, 2);
+        Assert.assertEquals(students1, 1);
 
         Teacher teacher3 = teacherRecord.toObject();
         Assert.assertEquals(teacher3.getStudents().size(), 2);
@@ -1449,6 +1447,13 @@ public class ORMTests extends BaseTests {
         Assert.assertThrows(RelationAttachException.class, () -> {
             studentLongRecord.bind("teacher").toggle(all);
         });
+
+        int num1 = studentLongRecord.bind("teacher").attach(new ArrayList<>());
+        Assert.assertEquals(num1, 0);
+        int num2 = studentLongRecord.bind("teacher").detach(new ArrayList<>());
+        Assert.assertEquals(num2, 0);
+        int num3 = studentLongRecord.bind("teacher").toggle(new ArrayList<>());
+        Assert.assertEquals(num3, 0);
     }
 
 }

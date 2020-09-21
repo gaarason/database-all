@@ -301,10 +301,6 @@ final public class ModelShadowProvider {
      * @param <K>       主键类型
      */
     protected static <T, K> void modelDeal(ModelInfo<T, K> modelInfo) {
-//        modelInfo.entityClass = (Class<T>) ((ParameterizedType) modelInfo.modelClass.getGenericSuperclass())
-//            .getActualTypeArguments()[0];
-//        modelInfo.primaryKeyClass = (Class<K>) ((ParameterizedType) modelInfo.modelClass.getGenericSuperclass())
-//            .getActualTypeArguments()[1];
         modelInfo.entityClass = ObjectUtil.getGenerics(modelInfo.modelClass, 0);
         modelInfo.primaryKeyClass = ObjectUtil.getGenerics(modelInfo.modelClass, 1);
         modelInfo.tableName = EntityUtil.tableName(modelInfo.entityClass);
