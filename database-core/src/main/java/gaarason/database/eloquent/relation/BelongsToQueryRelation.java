@@ -25,7 +25,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     public BelongsToQueryRelation(Field field) {
         belongsToTemplate = new BelongsToTemplate(field);
 
-        defaultLocalModelForeignKeyValue = ModelShadowProvider.getByEntity(field.getDeclaringClass())
+        defaultLocalModelForeignKeyValue = ModelShadowProvider.getByEntityClass(field.getDeclaringClass())
                 .getColumnFieldMap().get(belongsToTemplate.localModelForeignKey).getDefaultValue();
     }
 

@@ -38,7 +38,7 @@ Eloquent ORM for Java
 package gaarason.database.generator.test;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import gaarason.database.connection.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceWrapper;
 import gaarason.database.eloquent.Model;
 import gaarason.database.generator.Generator;
 import lombok.extern.slf4j.Slf4j;
@@ -79,8 +79,8 @@ public class GeneratorTests {
 
     @Test
     public void run无参构造() {
-        ProxyDataSource gaarasonDataSourceProvider = gaarasonDataSourceProvider();
-        ToolModel toolModel = new ToolModel(gaarasonDataSourceProvider);
+        ProxyDataSource gaarasonDataSourceWrapper = gaarasonDataSourceWrapper();
+        ToolModel toolModel = new ToolModel(gaarasonDataSourceWrapper);
         AutoGenerator autoGenerator = new AutoGenerator(toolModel);
         // set
         autoGenerator.setStaticField(true);
@@ -116,18 +116,18 @@ public class GeneratorTests {
         return dataSources;
     }
 
-    private ProxyDataSource gaarasonDataSourceProvider() {
+    private ProxyDataSource gaarasonDataSourceWrapper() {
         List<DataSource> dataSources = dataSourceMasterList();
         return new ProxyDataSource(dataSources);
     }
 
     public static class ToolModel extends Model<ToolModel.Inner, Object> {
-        private ProxyDataSource gaarasonDataSourceProvider;
+        private ProxyDataSource gaarasonDataSourceWrapper;
         public ToolModel(ProxyDataSource dataSource) {
-            gaarasonDataSourceProvider = dataSource;
+            gaarasonDataSourceWrapper = dataSource;
         }
         public ProxyDataSource getProxyDataSource() {
-            return gaarasonDataSourceProvider;
+            return gaarasonDataSourceWrapper;
         }
         public static class Inner {
         }

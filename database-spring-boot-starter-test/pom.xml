@@ -13,11 +13,6 @@
     <dependencies>
         <dependency>
             <groupId>com.github.gaarason</groupId>
-            <artifactId>database-generator</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.gaarason</groupId>
             <artifactId>database-spring-boot-starter</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>

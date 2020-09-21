@@ -7,6 +7,8 @@ import gaarason.database.core.lang.Nullable;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 
+import java.util.Collection;
+
 /**
  * model接口
  * @param <T> 实体类
@@ -39,11 +41,27 @@ public interface Query<T, K> {
 
     /**
      * 查询全部
-     * @param column 返回字段
+     * @param column 返回列
      * @return 批量结果集
      * @throws SQLRuntimeException SQL异常
      */
-    RecordList<T, K> all(String... column) throws SQLRuntimeException;
+    RecordList<T, K> findAll(String... column) throws SQLRuntimeException;
+
+    /**
+     * 查询主键列表中的全部
+     * @param ids 主键集合
+     * @return 批量结果集
+     * @throws SQLRuntimeException SQL异常
+     */
+    RecordList<T, K> findMany(Collection<K> ids) throws SQLRuntimeException;
+
+    /**
+     * 查询主键列表中的全部
+     * @param ids 主键集合
+     * @return 批量结果集
+     * @throws SQLRuntimeException SQL异常
+     */
+    RecordList<T, K> findMany(K... ids) throws SQLRuntimeException;
 
     /**
      * 单个查询

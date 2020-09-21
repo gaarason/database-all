@@ -12,11 +12,11 @@ public class GaarasonDataSourceBuilder {
     }
 
     public GaarasonDataSource build(List<DataSource> masterDataSourceList) {
-        return new GaarasonDataSourceProvider(masterDataSourceList);
+        return new GaarasonDataSourceWrapper(masterDataSourceList);
     }
 
     public GaarasonDataSource build(List<DataSource> masterDataSourceList, List<DataSource> slaveDataSourceList) {
-        return new GaarasonDataSourceProvider(masterDataSourceList, slaveDataSourceList);
+        return new GaarasonDataSourceWrapper(masterDataSourceList, slaveDataSourceList);
     }
 
 }

@@ -1,6 +1,6 @@
 package gaarason.database.test;
 
-import gaarason.database.connection.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceWrapper;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.eloquent.Paginate;
 import gaarason.database.eloquent.appointment.OrderBy;
@@ -40,8 +40,8 @@ public class RelationTests extends BaseTests {
     }
 
     protected List<DataSource> getDataSourceList() {
-        GaarasonDataSourceProvider gaarasonDataSourceProvider = studentModel.getGaarasonDataSource();
-        return gaarasonDataSourceProvider.getMasterDataSourceList();
+        GaarasonDataSourceWrapper gaarasonDataSourceWrapper = studentModel.getGaarasonDataSource();
+        return gaarasonDataSourceWrapper.getMasterDataSourceList();
     }
 
     @Test

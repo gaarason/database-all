@@ -1,12 +1,12 @@
 package gaarason.database.spring.boot.starter.test.config;
 
-import gaarason.database.connection.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceWrapper;
 
 import javax.sql.DataSource;
 
-public class TestDataSourceProvider extends GaarasonDataSourceProvider {
+public class TestDataSourceWrapper extends GaarasonDataSourceWrapper {
 
-    public TestDataSourceProvider() {
+    public TestDataSourceWrapper() {
         hasSlave = true;
     }
 

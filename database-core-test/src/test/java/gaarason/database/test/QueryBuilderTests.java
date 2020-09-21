@@ -1,6 +1,6 @@
 package gaarason.database.test;
 
-import gaarason.database.connection.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceWrapper;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
@@ -30,8 +30,8 @@ public class QueryBuilderTests extends BaseTests {
     private static StudentModel studentModel = new StudentModel();
 
     protected List<DataSource> getDataSourceList() {
-        GaarasonDataSourceProvider gaarasonDataSourceProvider = studentModel.getGaarasonDataSource();
-        return gaarasonDataSourceProvider.getMasterDataSourceList();
+        GaarasonDataSourceWrapper gaarasonDataSourceWrapper = studentModel.getGaarasonDataSource();
+        return gaarasonDataSourceWrapper.getMasterDataSourceList();
     }
 
     @Test

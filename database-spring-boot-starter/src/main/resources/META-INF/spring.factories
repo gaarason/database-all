@@ -1,2 +1,3 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-gaarason.database.spring.boot.starter.configurations.GaarasonDataSourceConfiguration
+gaarason.database.spring.boot.starter.configurations.GaarasonDataSourceConfiguration,\
+gaarason.database.spring.boot.starter.configurations.ModelInstanceConfiguration

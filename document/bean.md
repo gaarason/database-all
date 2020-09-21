@@ -34,7 +34,7 @@ bean配置 如下
 package com.demo.common.data.spring;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
-import gaarason.database.connection.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceWrapper;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -360,7 +360,7 @@ application.properties 省略
 ```java
 package gaarason.database.models;
 
-import gaarason.database.connection.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceWrapper;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.eloquent.annotation.Column;
 import gaarason.database.eloquent.Model;
@@ -415,107 +415,98 @@ public class StudentSingle2Model extends Model<StudentSingle2Model.Entity, Integ
 ## 非spring
 ```java
 
-    /**
-     * step 1
-     * 定义model
-     */
-    public static class TestModel extends Model<TestModel.Inner, Integer> {
+import com.alibaba.druid.pool.DruidDataSource;
+import gaarason.database.connection.GaarasonDataSourceWrapper;
+import gaarason.database.eloquent.Model;
+import gaarason.database.eloquent.annotation.Column;
+import gaarason.database.eloquent.annotation.Primary;
+import gaarason.database.eloquent.annotation.Table;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.Assert;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
-        private static GaarasonDataSource gaarasonDataSource = getGaarasonDataSource();
+import javax.sql.DataSource;
+import java.util.*;
 
-        /**
-         * step 2
-         * 定义 DataSource
-         * @return DataSource
-         */
-        private static DataSource dataSourceMaster0() {
-            DruidDataSource druidDataSource = new DruidDataSource();
-            druidDataSource.setUrl(
-                "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
-            druidDataSource.setDbType("com.alibaba.druid.pool.DruidDataSource");
-            druidDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-            druidDataSource.setUsername("root");
-            druidDataSource.setPassword("root");
-            druidDataSource.setInitialSize(5);
-            druidDataSource.setMinIdle(5);
-            druidDataSource.setMaxActive(10);
-            druidDataSource.setMaxWait(60000);
-            druidDataSource.setTimeBetweenEvictionRunsMillis(60000);
-            druidDataSource.setMinEvictableIdleTimeMillis(300000);
-            druidDataSource.setValidationQuery("SELECT 1");
-            List<String> iniSql = new ArrayList<>();
-            iniSql.add(
-                "SET SESSION SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'");
-            druidDataSource.setConnectionInitSqls(iniSql);
-            druidDataSource.setTestOnBorrow(false);
-            druidDataSource.setTestOnReturn(false);
-            druidDataSource.setPoolPreparedStatements(false);
-            druidDataSource.setMaxPoolPreparedStatementPerConnectionSize(-1);
-            Properties properties = new Properties();
-            properties.setProperty("druid.stat.mergeSql", "true");
-            properties.setProperty("druid.stat.slowSqlMillis", "5000");
-            druidDataSource.setConnectProperties(properties);
-            druidDataSource.setUseGlobalDataSourceStat(true);
-            return druidDataSource;
-        }
+/**
+ * 定义model
+ */
+public class TestModel extends Model<TestModel.Inner, Integer> {
 
-        /**
-         * step 3
-         * 定义 List<DataSource>
-         * @return List<DataSource>
-         */
-        private static List<DataSource> dataSourceMasterList() {
-            List<DataSource> dataSources = new ArrayList<>();
-            dataSources.add(dataSourceMaster0());
-            return dataSources;
-        }
+    private final static GaarasonDataSourceWrapper gaarasonDataSourceWrapper;
 
-        /**
-         * step 4
-         * 定义 GaarasonDataSource
-         * @return GaarasonDataSource
-         */
-        private static GaarasonDataSource getGaarasonDataSource() {
-            List<DataSource> dataSources = dataSourceMasterList();
-            return GaarasonDataSourceBuilder.create().build(dataSources);
-        }
+    static {
+        DruidDataSource druidDataSource = new DruidDataSource();
+        druidDataSource.setUrl(
+            "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
+        druidDataSource.setDbType("com.alibaba.druid.pool.DruidDataSource");
+        druidDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        druidDataSource.setUsername("root");
+        druidDataSource.setPassword("root");
+        druidDataSource.setInitialSize(5);
+        druidDataSource.setMinIdle(5);
+        druidDataSource.setMaxActive(10);
+        druidDataSource.setMaxWait(60000);
+        druidDataSource.setTimeBetweenEvictionRunsMillis(60000);
+        druidDataSource.setMinEvictableIdleTimeMillis(300000);
+        druidDataSource.setValidationQuery("SELECT 1");
+        List<String> iniSql = new ArrayList<>();
+        iniSql.add(
+            "SET SESSION SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'");
+        druidDataSource.setConnectionInitSqls(iniSql);
+        druidDataSource.setTestOnBorrow(false);
+        druidDataSource.setTestOnReturn(false);
+        druidDataSource.setPoolPreparedStatements(false);
+        druidDataSource.setMaxPoolPreparedStatementPerConnectionSize(-1);
+        Properties properties = new Properties();
+        properties.setProperty("druid.stat.mergeSql", "true");
+        properties.setProperty("druid.stat.slowSqlMillis", "5000");
+        druidDataSource.setConnectProperties(properties);
+        druidDataSource.setUseGlobalDataSourceStat(true);
 
-        /**
-         * step 5
-         * 使用 GaarasonDataSource
-         * @return GaarasonDataSource
-         */
-        @Override
-        public GaarasonDataSource getGaarasonDataSource() {
-            return gaarasonDataSource;
-        }
+        List<DataSource> dataSources = new ArrayList<>();
+        dataSources.add(druidDataSource);
 
-        /**
-         * step 6
-         * 定义 entity
-         */
-        @Data
-        @Table(name = "student")
-        public static class Inner {
-            @Primary
-            private Integer id;
-
-            @Column(length = 20)
-            private String name;
-
-            private Byte age;
-
-            private Byte sex;
-
-            @Column(name = "teacher_id")
-            private Integer teacherId;
-
-            @Column(name = "created_at", insertable = false, updatable = false)
-            private Date createdAt;
-
-            @Column(name = "updated_at", insertable = false, updatable = false)
-            private Date updatedAt;
-        }
+        gaarasonDataSourceWrapper = new GaarasonDataSourceWrapper(dataSources);
     }
+
+    /**
+     * 使用 ProxyDataSource
+     * @return ProxyDataSource
+     */
+    @Override
+    public GaarasonDataSourceWrapper getGaarasonDataSource() {
+        return gaarasonDataSourceWrapper;
+    }
+
+    /**
+     * 定义 entity
+     */
+    @Data
+    @Table(name = "student")
+    public static class Inner {
+        @Primary
+        private Integer id;
+
+        @Column(length = 20)
+        private String name;
+
+        private Byte age;
+
+        private Byte sex;
+
+        @Column(name = "teacher_id")
+        private Integer teacherId;
+
+        @Column(name = "created_at", insertable = false, updatable = false)
+        private Date createdAt;
+
+        @Column(name = "updated_at", insertable = false, updatable = false)
+        private Date updatedAt;
+    }
+}
 
 ```

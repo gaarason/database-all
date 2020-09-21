@@ -1,7 +1,8 @@
 package gaarason.database.test;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import gaarason.database.connection.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceWrapper;
+import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.eloquent.Model;
 import gaarason.database.eloquent.annotation.Column;
 import gaarason.database.eloquent.annotation.Primary;
@@ -36,20 +37,23 @@ public class QuickStartTests {
         Assert.assertEquals(3, inners.size());
     }
 
+    @Test
+    public void findMany() {
+        TestModel             testModel = new TestModel();
+        RecordList<TestModel.Inner, Integer> many = testModel.findMany(Arrays.asList(1, 2, 3));
+        RecordList<TestModel.Inner, Integer> many1 = testModel.findMany(1, 2, 3);
+        Assert.assertEquals(many.size(), 3);
+        Assert.assertEquals(many1.size(), 3);
+    }
+
     /**
-     * step 1
      * 定义model
      */
     public static class TestModel extends Model<TestModel.Inner, Integer> {
 
-        private static GaarasonDataSourceProvider gaarasonDataSourceProvider = proxyDataSource();
+        private final static GaarasonDataSourceWrapper gaarasonDataSourceWrapper;
 
-        /**
-         * step 2
-         * 定义 DataSource
-         * @return DataSource
-         */
-        private static DataSource dataSourceMaster0() {
+        static {
             DruidDataSource druidDataSource = new DruidDataSource();
             druidDataSource.setUrl(
                 "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
@@ -77,42 +81,23 @@ public class QuickStartTests {
             properties.setProperty("druid.stat.slowSqlMillis", "5000");
             druidDataSource.setConnectProperties(properties);
             druidDataSource.setUseGlobalDataSourceStat(true);
-            return druidDataSource;
-        }
 
-        /**
-         * step 3
-         * 定义 List<DataSource>
-         * @return List<DataSource>
-         */
-        private static List<DataSource> dataSourceMasterList() {
             List<DataSource> dataSources = new ArrayList<>();
-            dataSources.add(dataSourceMaster0());
-            return dataSources;
+            dataSources.add(druidDataSource);
+
+            gaarasonDataSourceWrapper = new GaarasonDataSourceWrapper(dataSources);
         }
 
         /**
-         * step 4
-         * 定义 ProxyDataSource
-         * @return ProxyDataSource
-         */
-        private static GaarasonDataSourceProvider proxyDataSource() {
-            List<DataSource> dataSources = dataSourceMasterList();
-            return new GaarasonDataSourceProvider(dataSources);
-        }
-
-        /**
-         * step 5
          * 使用 ProxyDataSource
          * @return ProxyDataSource
          */
         @Override
-        public GaarasonDataSourceProvider getGaarasonDataSource() {
-            return gaarasonDataSourceProvider;
+        public GaarasonDataSourceWrapper getGaarasonDataSource() {
+            return gaarasonDataSourceWrapper;
         }
 
         /**
-         * step 6
          * 定义 entity
          */
         @Data
@@ -138,5 +123,4 @@ public class QuickStartTests {
             private Date updatedAt;
         }
     }
-
 }

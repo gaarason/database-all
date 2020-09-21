@@ -11,14 +11,20 @@ import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.query.MySqlBuilder;
 import gaarason.database.provider.ModelShadowProvider;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+
 abstract public class ModelBean<T, K> implements Model<T, K> {
 
-    /**
-     * 是否启用软删除
-     */
-    protected boolean softDeleting() {
-        return false;
+    public ModelBean(){
+
     }
+
+    /**
+     * @return dataSource代理
+     */
+    abstract public GaarasonDataSource getGaarasonDataSource();
 
     /**
      * 删除(软/硬删除)
@@ -38,6 +44,13 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
     @Override
     public int restore(Builder<T, K> builder) {
         return softDeleteRestore(builder);
+    }
+
+    /**
+     * 是否启用软删除
+     */
+    protected boolean softDeleting() {
+        return false;
     }
 
     /**
@@ -102,12 +115,6 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
         return apply(new MySqlBuilder<>(gaarasonDataSource, this, getEntityClass()));
     }
 
-
-    /**
-     * @return dataSource代理
-     */
-    abstract public GaarasonDataSource getGaarasonDataSource();
-
     /**
      * 新的查询构造器
      * @return 查询构造器
@@ -153,19 +160,29 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
     }
 
     @Override
-    public RecordList<T, K> all(String... column) throws SQLRuntimeException {
+    public RecordList<T, K> findAll(String... column) throws SQLRuntimeException {
         return newQuery().select(column).get();
     }
 
     @Override
+    public RecordList<T, K> findMany(Collection<K> ids) throws SQLRuntimeException{
+        return newQuery().whereIn(getPrimaryKeyColumnName(), ids).get();
+    }
+
+    @Override
+    public RecordList<T, K> findMany(K... ids) throws SQLRuntimeException{
+        return newQuery().whereIn(getPrimaryKeyColumnName(), new HashSet<>(Arrays.asList(ids))).get();
+    }
+
+    @Override
     public Record<T, K> findOrFail(K id) throws EntityNotFoundException, SQLRuntimeException {
-        return newQuery().where(getPrimaryKeyColumnName(), id.toString()).firstOrFail();
+        return newQuery().where(getPrimaryKeyColumnName(), String.valueOf(id)).firstOrFail();
     }
 
     @Override
     @Nullable
     public Record<T, K> find(K id) {
-        return newQuery().where(getPrimaryKeyColumnName(), id.toString()).first();
+        return newQuery().where(getPrimaryKeyColumnName(), String.valueOf(id)).first();
     }
 
     @Override

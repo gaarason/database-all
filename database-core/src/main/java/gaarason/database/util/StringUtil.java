@@ -20,6 +20,19 @@ public class StringUtil {
     final private static Pattern humpPattern = Pattern.compile("[A-Z]");
 
     /**
+     * 将首字符转化为小写
+     * @param str 原字符串
+     * @return 字符串
+     */
+    public static String lowerFirstChar(String str) {
+        char[] chars = str.toCharArray();
+        if (chars[0] >= 65 && chars[0] <= 90) {
+            chars[0] += 32;
+        }
+        return String.valueOf(chars);
+    }
+
+    /**
      * 下划线转驼峰
      * @param str              原字符串
      * @param firstIsUpperCase 大驼峰

@@ -21,6 +21,11 @@ Eloquent ORM for Java
             * [示例无线级筛选](#示例无线级筛选)
             * [示例混合场景](#示例混合场景)
             * [示例分页](#示例分页)
+    * [更新关系](#更新关系)
+        * [附加关系](#附加关系)
+        * [解除关系](#解除关系)
+        * [同步关系](#同步关系)
+        * [切换关系](#切换关系)
 * [生成代码](/document/generate.md)
 * [版本信息](/document/version.md)
 
@@ -32,12 +37,12 @@ Eloquent 让组织和处理这些关联关系变得简单，并且支持多种�
 ## 关系定义
 
 通过在`entity`中声明对应的属性, 并在属性上使用相关注解`@HasOneOrMany()`,`@BelongsTo()`,`@BelongsToMany()`标记    
-所有注解在包 `gaarason.database.eloquent.annotation.*` 中
+所有注解在包 `gaarason.database.eloquent.annotation.*` 中   
+在近期的一次更新中, 不再需要指定目标模型, 程序会根据字段类型`entity`的找到正确的目标模型   
 
 ### 一对一
 
-`@HasOneOrMany()` 其中包含3个属性:  
-`sonModel`表示子表的模型  
+`@HasOneOrMany()` 其中包含2个属性:  
 `sonModelForeignKey`表示子表的外键  
 `localModelLocalKey`表示本表的关联键,默认值为本表的主键(`@Primary()`修饰的键)  
 
@@ -73,7 +78,7 @@ public class Teacher implements Serializable {
     private String subject;
 
     // 一对一关联关系声明
-    @HasOneOrMany(sonModel = PetModel.class, sonModelForeignKey = "master_id", localModelLocalKey = "id")
+    @HasOneOrMany(sonModelForeignKey = "master_id", localModelLocalKey = "id")
     private Pet pet;
 
 }
@@ -118,7 +123,7 @@ public class Teacher implements Serializable {
     private String subject;
 
     // 一对多关联关系声明
-    @HasOneOrMany(sonModel = StudentModel.class, sonModelForeignKey = "teacher_id", localModelLocalKey = "id")
+    @HasOneOrMany(sonModelForeignKey = "teacher_id", localModelLocalKey = "id")
     private List<Student> students;
 
 }
@@ -127,8 +132,7 @@ public class Teacher implements Serializable {
 
 ### 反向一对多/一对一
 
-`@BelongsTo()` 其中包含3个属性:  
-`parentModel`表示父表的模型  
+`@BelongsTo()` 其中包含2个属性:  
 `localModelForeignKey`表示本表的外键  
 `parentModelLocalKey`表示父表的关联键,默认值为父表的主键(`@Primary()`修饰的键)  
 
@@ -166,7 +170,7 @@ public class Student implements Serializable {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
-    @BelongsTo(parentModel = TeacherModel.class, localModelForeignKey = "teacher_id", parentModelLocalKey = "id")
+    @BelongsTo(localModelForeignKey = "teacher_id", parentModelLocalKey = "id")
     private Teacher teacher;
 
 }
@@ -176,7 +180,6 @@ public class Student implements Serializable {
 ### 多对多
 
 `@BelongsToMany()` 其中包含5个属性:  
-`targetModel`表示`目标表`的模型  
 `relationModel`表示`关系表`的模型  
 `localModelLocalKey`表示`本表`中`关联键`  
 `foreignKeyForLocalModel`表示`关系表`中`关联本表的外键`   
@@ -215,7 +218,7 @@ public class Student implements Serializable {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
-    @BelongsToMany(targetModel = StudentModel.class, relationModel = RelationshipStudentTeacherModel.class,
+    @BelongsToMany(relationModel = RelationshipStudentTeacherModel.class,
             foreignKeyForLocalModel = "teacher_id", foreignKeyForTargetModel = "student_id", localModelLocalKey = "id",
             targetModelLocalKey = "id")
     private List<Student> students;
@@ -306,5 +309,98 @@ Student student = studentModel.newQuery().firstOrFail().with("teacher.students.r
 // select * from `student` where `id`in("1","2","3","4","5","6","7","8","9","10")
 Paginate<Student> paginate = studentModel.newQuery().orderBy("id").with("relationshipStudentTeachers.teacher.relationshipStudentTeachers",
      builder -> builder.orderBy("student_id"), record2 -> record2.with("student")).paginate(1, 4);
+
+```
+#### 示例中间表数据查询
+
+在定义 entity 时, 除了通过 @BelongsToMany 注解定义与目标表的多堆多关系时, 还需要通过 @HasOneOrMany 定义与中间表的一对多关系  
+在查询中间表时, 直接 with 对应的一对多关系即可, 并且在同时 with 对应的多对多关系时, 不会产生额外的查询  
+
+```java
+studentModel..newQuery().with("teachers").with("relation").get();
+
+```
+
+## 更新关系
+ 
+处理多对多关联的时候，Eloquent 还提供了一些额外的辅助函数使得处理关联模型变得更加方便。  
+这些关系的都需要在 Entity 中进行声明, 并在 Record 中使用。 
+在 Record 中使用时, 需要先用`bind()`指明要处理的关系(属性名)  
+需要注意的是一下的 4 类操作, 均可在全部 3 类关系上使用, 但是中间表数据插入仅对`@BelongsToMany`关系生效  
+4 类操作在使用集合作为参数时, 参数代表的含义是主键集合(并不是关系键, 程序会根据注解中的声明找到真正的关系键)   
+
+
+### 附加关系 
+
+我们假定一个用户可能有多个角色，同时一个角色属于多个用户，要通过在连接模型的中间表中插入记录附加角色到用户上，可以使用 attach 方法   
+@HasOneOrMany : 会将子表(目标表)的外键的值更新为本表的关系键值   
+@BelongsTo : 会将本表的外键的值更新为父表(目标表)的关系键值   
+@BelongsToMany : 在中间表中新增记录, 2个外键分表指向本表的关系键与目标表的关系键, 可以指定附加的字段  
+
+```java
+
+Record<User, int> userRecord = UserModel.findOrFail(1);
+
+// 以下2种写法等价, 返回受影响的行数
+userRecord.bind("roles").attach(RoleModel.findMany(1,2));
+userRecord.bind("roles").attach(Arrays.asList(1, 2));
+
+// 附加关联关系到模型，还可以以MAP形式传递额外被插入数据到中间表
+// 以下2种写法等价
+HashMap<String, String> map = new HashMap<>();
+map.put("note", note);
+userRecord.bind("roles").attach(RoleModel.findMany(1,2), map);
+userRecord.bind("roles").attach(Arrays.asList(1, 2), map);
+
+```
+
+### 解除关系 
+
+当然，有时候有必要从用户中移除角色，要移除一个关联记录，使用 detach 方法。
+@HasOneOrMany : 会将子表(目标表)的外键的值更新为默认值(String则为"", integer则为"0")  
+@BelongsTo : 会将本表的外键的值更新为默认值(String则为"", integer则为"0")   
+@BelongsToMany : 在中间表中移除相应的记录, 但是，两个模型在数据库中都保持不变
+
+```java
+
+Record<User, int> userRecord = UserModel.findOrFail(1);
+
+// 以下2种写法等价, 返回受影响的行数
+userRecord.bind("roles").detach(RoleModel.findMany(1,2));
+userRecord.bind("roles").detach(1,2);
+
+```
+
+### 同步关系 
+
+有时候有要将用户更新到指定的角色, 任何不在指定范围对应记录将会移除, 使用 sync 方法。
+@HasOneOrMany : 针对每个范围内的值, 将会调用 `attach` 与 `attach`
+@BelongsTo : 针对每个范围内的值, 将会调用 `attach` 与 `attach`
+@BelongsToMany : 针对每个范围内的值, 将会调用 `attach` 与 `attach`，两个模型在数据库中都保持不变, 可以指定附加的字段在增加关系时生效  
+
+```java
+
+Record<User, int> userRecord = UserModel.findOrFail(1);
+
+// 以下2种写法等价, 返回受影响的行数
+userRecord.bind("roles").sync(RoleModel.findMany(1,2));
+userRecord.bind("roles").sync(1,2);
+
+```
+
+### 切换关系 
+
+多对多关联还提供了一个 toggle 方法用于切换给定 ID 的附加状态，如果给定ID当前被附加，则取消附加，类似的，如果当前没有附加，则附加, 使用 toggle 方法。
+@HasOneOrMany : 针对每个范围内的值, 将会调用 `attach` 与 `attach`
+@BelongsTo : 针对每个范围内的值, 将会调用 `attach` 与 `attach`
+@BelongsToMany : 针对每个范围内的值, 将会调用 `attach` 与 `attach`，两个模型在数据库中都保持不变, 可以指定附加的字段在增加关系时生效  
+
+```java
+
+Record<User, int> userRecord = UserModel.findOrFail(1);
+
+// 以下2种写法等价, 返回受影响的行数
+userRecord.bind("roles").toggle(RoleModel.findMany(1,2));
+userRecord.bind("roles").toggle(1,2);
 
 ```

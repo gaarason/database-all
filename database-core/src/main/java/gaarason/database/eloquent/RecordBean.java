@@ -451,7 +451,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      */
     protected void selfUpdateMetadataMap(T entity, boolean insertType) {
         // 模型信息
-        ModelShadowProvider.ModelInfo<T, Object> modelInfo = ModelShadowProvider.getByEntity(entityClass);
+        ModelShadowProvider.ModelInfo<T, Object> modelInfo = ModelShadowProvider.getByEntityClass(entityClass);
         // 字段信息集合
         Map<String, ModelShadowProvider.FieldInfo> fieldInfoMap = insertType ? modelInfo.getJavaFieldInsertMap() : modelInfo.getJavaFieldUpdateMap();
 

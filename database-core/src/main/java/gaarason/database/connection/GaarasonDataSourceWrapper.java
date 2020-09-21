@@ -16,7 +16,7 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 @ToString
-public class GaarasonDataSourceProvider implements GaarasonDataSource {
+public class GaarasonDataSourceWrapper implements GaarasonDataSource {
 
     /**
      * 写连接
@@ -38,36 +38,36 @@ public class GaarasonDataSourceProvider implements GaarasonDataSource {
     /**
      * 单前线程中的 ProxyDataSource对象 是否处于数据库事物中
      */
-    protected ThreadLocal<Boolean>    inTransaction    = ThreadLocal.withInitial(() -> false);
+    protected ThreadLocal<Boolean> inTransaction = ThreadLocal.withInitial(() -> false);
 
     /**
      * 是否写连接
      */
     @Setter
     @Getter
-    protected boolean                 isWrite          = false;
+    protected boolean isWrite = false;
 
     protected ThreadLocal<DataSource> masterDataSource = ThreadLocal.withInitial(() -> {
         // TODO 权重选择
         return masterDataSourceList.get((new Random()).nextInt(masterDataSourceList.size()));
     });
 
-    protected ThreadLocal<DataSource> slaveDataSource  = ThreadLocal.withInitial(() -> {
+    protected ThreadLocal<DataSource> slaveDataSource = ThreadLocal.withInitial(() -> {
         // TODO 权重选择
         return slaveDataSourceList.get((new Random()).nextInt(slaveDataSourceList.size()));
     });
 
-    public GaarasonDataSourceProvider(List<DataSource> masterDataSourceList, List<DataSource> slaveDataSourceList) {
+    public GaarasonDataSourceWrapper(List<DataSource> masterDataSourceList, List<DataSource> slaveDataSourceList) {
         this.masterDataSourceList = masterDataSourceList;
         this.slaveDataSourceList = slaveDataSourceList;
         hasSlave = true;
     }
 
-    public GaarasonDataSourceProvider(List<DataSource> masterDataSourceList) {
+    public GaarasonDataSourceWrapper(List<DataSource> masterDataSourceList) {
         this.masterDataSourceList = masterDataSourceList;
     }
 
-    public GaarasonDataSourceProvider() {
+    public GaarasonDataSourceWrapper() {
     }
 
     public boolean isInTransaction() {

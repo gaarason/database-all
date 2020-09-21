@@ -1,11 +1,13 @@
 package gaarason.database.generator;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import gaarason.database.connection.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceWrapper;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.Model;
+import gaarason.database.contract.eloquent.Model;
+import gaarason.database.eloquent.ModelBean;
 import gaarason.database.generator.element.field.Field;
 import gaarason.database.generator.element.field.MysqlFieldGenerator;
+import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.StringUtil;
 import lombok.Setter;
 
@@ -17,123 +19,125 @@ import java.util.concurrent.*;
 
 public class Generator {
 
-    final private static String   entityTemplateStr    = fileGetContent(getAbsoluteReadFileName("entity"));
+    final private static String entityTemplateStr = fileGetContent(getAbsoluteReadFileName("entity"));
 
-    final private static String   fieldTemplateStr     = fileGetContent(getAbsoluteReadFileName("field"));
+    final private static String fieldTemplateStr = fileGetContent(getAbsoluteReadFileName("field"));
 
-    final private static String   baseModelTemplateStr = fileGetContent(getAbsoluteReadFileName("baseModel"));
+    final private static String baseModelTemplateStr = fileGetContent(getAbsoluteReadFileName("baseModel"));
 
-    final private static String   modelTemplateStr     = fileGetContent(getAbsoluteReadFileName("model"));
+    final private static String modelTemplateStr = fileGetContent(getAbsoluteReadFileName("model"));
 
     /**
      * 输出目录
      */
     @Setter
-    private              String   outputDir            = "./";
+    private String outputDir = "./";
 
     /**
      * 命名空间
      */
     @Setter
-    private              String   namespace            = "data";
+    private String namespace = "data";
 
     /**
      * entity目录
      */
     @Setter
-    private              String   entityDir            = "entity";
+    private String entityDir = "entity";
 
     /**
      * entity前缀
      */
     @Setter
-    private              String   entityPrefix         = "";
+    private String entityPrefix = "";
 
     /**
      * entity后缀
      */
     @Setter
-    private              String   entitySuffix         = "";
+    private String entitySuffix = "";
 
     /**
      * model目录
      */
     @Setter
-    private              String   modelDir             = "model";
+    private String modelDir = "model";
 
     /**
      * model前缀
      */
     @Setter
-    private              String   modelPrefix          = "";
+    private String modelPrefix = "";
 
     /**
      * model后缀
      */
     @Setter
-    private              String   modelSuffix          = "Model";
+    private String modelSuffix = "Model";
 
     /**
      * baseModel目录
      */
     @Setter
-    private              String   baseModelDir         = "base";
+    private String baseModelDir = "base";
 
     /**
      * baseModel类名
      */
     @Setter
-    private              String   baseModelName        = "BaseModel";
+    private String baseModelName = "BaseModel";
 
     /**
      * 是否使用spring boot注解 model
      */
     @Setter
-    private              Boolean  isSpringBoot         = false;
+    private Boolean isSpringBoot = false;
 
     /**
      * 是否使用swagger注解 entity
      */
     @Setter
-    private              Boolean  isSwagger            = false;
+    private Boolean isSwagger = false;
 
     /**
      * 是否使用 org.hibernate.validator.constraints.* 注解 entity
      */
     @Setter
-    private              Boolean  isValidator          = false;
+    private Boolean isValidator = false;
 
     /**
      * 是否生成静态字段名
      */
     @Setter
-    private              Boolean  staticField          = false;
+    private Boolean staticField = false;
 
     /**
      * 生成并发线程数
      */
     @Setter
-    private              int      corePoolSize         = 20;
+    private int corePoolSize = 20;
 
     /**
      * 新增时,不可通过代码更改的字段
      */
-    private              String[] disInsertable        = {};
+    private String[] disInsertable = {};
 
     /**
      * 更新时,不可通过代码更改的字段
      */
-    private              String[] disUpdatable         = {};
+    private String[] disUpdatable = {};
 
-    private              String   baseModelNamespace;
+    private String baseModelNamespace;
 
     private String modelNamespace;
 
     private String entityNamespace;
 
-    private Model model;
+    private Model<?, ?> model;
 
-    private ConcurrentHashMap<String, String> tablePrimaryKeyTypeMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, String> tablePrimaryKeyTypeMap = new ConcurrentHashMap<>();
+
+    protected GaarasonDataSourceWrapper gaarasonDataSourceWrapper;
 
     /**
      * 使用无参构造时,需要重写 getModel 方法
@@ -157,7 +161,9 @@ public class Generator {
         List<DataSource> dataSources = new ArrayList<>();
         dataSources.add(druidDataSource);
 
-        model = new ToolModel(new GaarasonDataSourceProvider(dataSources));
+        ToolModel.gaarasonDataSource = new GaarasonDataSourceWrapper(dataSources);
+
+        this.model = ModelShadowProvider.getByModelClass(ToolModel.class).getModel();
     }
 
     private static String namespace2dir(String namespace) {
@@ -580,15 +586,15 @@ public class Generator {
         return StringUtil.rtrim(outputDir, "/") + "/" + namespace2dir(namespace) + '/';
     }
 
-    protected static class ToolModel extends Model<ToolModel.Inner, Object> {
-        private GaarasonDataSourceProvider gaarasonDataSourceProvider;
+    public static class ToolModel extends ModelBean<ToolModel.Inner, Object> {
 
-        public ToolModel(GaarasonDataSourceProvider dataSource) {
-            gaarasonDataSourceProvider = dataSource;
+        protected static GaarasonDataSourceWrapper gaarasonDataSource = null;
+
+        public ToolModel() {
         }
 
-        public GaarasonDataSourceProvider getGaarasonDataSource() {
-            return gaarasonDataSourceProvider;
+        public GaarasonDataSourceWrapper getGaarasonDataSource() {
+            return gaarasonDataSource;
         }
 
         public static class Inner {

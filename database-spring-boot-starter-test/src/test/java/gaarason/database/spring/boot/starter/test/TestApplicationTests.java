@@ -1,17 +1,23 @@
 package gaarason.database.spring.boot.starter.test;
 
+import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.generator.GeneralGenerator;
 import gaarason.database.generator.Generator;
+import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.spring.boot.starter.test.data.entity.Student;
+import gaarason.database.spring.boot.starter.test.data.model.StudentModel;
 import gaarason.database.spring.boot.starter.test.data.repository.StudentQuery;
+import gaarason.database.util.ObjectUtil;
+import gaarason.database.util.ReflectionUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.reflections.Reflections;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -19,6 +25,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -34,6 +41,9 @@ public class TestApplicationTests {
 
     @Resource
     StudentQuery<Student, Long> studentQuery;
+
+    @Resource
+    StudentModel studentModel;
 
     @Test
     public void 生成代码() {
@@ -77,7 +87,7 @@ public class TestApplicationTests {
         Record<GeneralModel.Table, Object> first = generalModel.newQuery().from("student").where("id", "3").first();
         Assert.assertNotNull(first);
         Map<String, Object> stringObjectMap = first.toMap();
-        Assert.assertEquals((long) stringObjectMap.get("id"), 3);
+        Assert.assertEquals(stringObjectMap.get("id"), 3);
         System.out.println(stringObjectMap);
     }
 
@@ -99,6 +109,25 @@ public class TestApplicationTests {
         Record<Student, Long> infoFromDB = studentQuery.getInfoFromDB();
         Student               student    = infoFromDB.toObject();
         System.out.println(student);
+
+    }
+
+    @Test
+    public void 模型在spring中是容器获取的单例(){
+        Record<Student, Long> infoFromDB = studentQuery.getInfoFromDB();
+        Student               student    = infoFromDB.toObject();
+        System.out.println(student);
+
+        Model<Student, Long> model1 = ModelShadowProvider.getByModelClass(StudentModel.class).getModel();
+        Model<Student, Object> model2 = ModelShadowProvider.getByEntityClass(Student.class).getModel();
+
+        System.out.println(model1.getClass());
+        System.out.println(model2.getClass());
+        System.out.println(studentModel.getClass());
+        System.out.println(studentQuery.getClass());
+        Assert.assertSame(model1, model2);
+        Assert.assertSame(model2, studentModel);
+        Assert.assertSame(model2, studentQuery);
 
     }
 

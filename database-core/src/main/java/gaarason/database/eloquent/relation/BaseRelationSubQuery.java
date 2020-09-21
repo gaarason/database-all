@@ -53,7 +53,7 @@ abstract public class BaseRelationSubQuery implements RelationSubQuery {
         Class<?> clazz = ObjectUtil.isCollection(field.getType()) ?
                 ObjectUtil.getGenerics((ParameterizedType) field.getGenericType(), 0) :
                 field.getType();
-        return ModelShadowProvider.getByEntity(clazz).getModel();
+        return ModelShadowProvider.getByEntityClass(clazz).getModel();
     }
 
     /**
@@ -62,7 +62,7 @@ abstract public class BaseRelationSubQuery implements RelationSubQuery {
      * @return Model实例
      */
     protected static Model<?, ?> getModelInstance(Class<? extends Model<?, ?>> modelClass) {
-        return ModelShadowProvider.getByModel(ObjectUtil.typeCast(modelClass)).getModel();
+        return ModelShadowProvider.getByModelClass(ObjectUtil.typeCast(modelClass)).getModel();
     }
 
     /**
@@ -90,7 +90,7 @@ abstract public class BaseRelationSubQuery implements RelationSubQuery {
         List<Object> objectList = new ArrayList<>();
         if (relationshipObjectList.size() > 0) {
             // 模型信息
-            ModelShadowProvider.ModelInfo<?, Object> modelInfo = ModelShadowProvider.getByEntity(
+            ModelShadowProvider.ModelInfo<?, Object> modelInfo = ModelShadowProvider.getByEntityClass(
                     relationshipObjectList.get(0).getClass());
             // 字段信息
             ModelShadowProvider.FieldInfo fieldInfo = modelInfo.getColumnFieldMap().get(columnName);

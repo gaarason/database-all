@@ -7,7 +7,9 @@ Eloquent ORM for Java
 
  让连接数据库以及对数据库进行增删改查操作变得非常简单，不论希望使用原生 SQL、还是查询构建器，还是 Eloquent ORM。  
       
- Eloquent ORM 提供一个美观、简单的与数据库打交道的 ActiveRecord 实现，每张数据表都对应一个与该表数据结构对应的实体（Entity），以及的进行交互的模型（Model），通过模型类，你可以对数据表进行查询、插入、更新、删除等操作，并将结果反映到实体实例化的 java 对象中。
+ Eloquent ORM 提供一个美观、简单的与数据库打交道的 ActiveRecord 实现，每张数据表都对应一个与该表数据结构对应的实体（Entity），以及的进行交互的模型（Model），通过模型类，你可以对数据表进行查询、插入、更新、删除等操作，并将结果反映到实体实例化的 java 对象中。  
+ 
+ 对于关联关系 Eloquent ORM 提供了富有表现力的声明方式，与简洁的使用方法，并专注在内部进行查询与内存优化，在复杂的关系中有仍然有着良好的体验。  
 
 ## 目录
 * [注册bean](/document/bean.md)
@@ -33,8 +35,20 @@ List<Student> Students = studentModel.newQuery().where("id", "3").orWhere(
     )
 ).select("id", "name").get().toObjectList();
 
-// 关联关系 找出学生们的老师们的父亲们的那些房子
+// 关联查询 找出学生们的老师们的父亲们的那些房子
 List<Student> Students = studentModel.newQuery().whereIn("id", "1","2","3").get().with("teacher.father.house").toObjectList();
+
+// 增加关联 给id为8的学生增加3名老师(id分别为1,2,3)
+studentModel.findOrFail(8).bind("teachers").attach(teacherModel.findMany(1,2,3));
+
+// 解除关联 id为8的学生不再有id为2的老师
+studentModel.findOrFail(8).bind("teachers").detach(teacherModel.findOrFail(2));
+
+// 同步关联 id为8的学生只有id为2和3的两名老师
+studentModel.findOrFail(8).bind("teachers").sync(teacherModel.findMany(2,3));
+
+// 切换关联 id为8的学生 如果原本是id为2老师的学生,则解除, 反之则新增
+studentModel.findOrFail(8).bind("teachers").toggle(teacherModel.findMany(2));
 ```
 ## spring boot 快速开始
 

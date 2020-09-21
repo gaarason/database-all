@@ -1,6 +1,6 @@
 package gaarason.database.test;
 
-import gaarason.database.connection.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceWrapper;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.eloquent.appointment.OrderBy;
@@ -39,8 +39,8 @@ public class ORMTests extends BaseTests {
     private static RelationshipStudentTeacherModel relationshipStudentTeacherModel = new RelationshipStudentTeacherModel();
 
     protected List<DataSource> getDataSourceList() {
-        GaarasonDataSourceProvider gaarasonDataSourceProvider = studentORMModel.getGaarasonDataSource();
-        return gaarasonDataSourceProvider.getMasterDataSourceList();
+        GaarasonDataSourceWrapper gaarasonDataSourceWrapper = studentORMModel.getGaarasonDataSource();
+        return gaarasonDataSourceWrapper.getMasterDataSourceList();
     }
 
     @Test
@@ -425,7 +425,7 @@ public class ORMTests extends BaseTests {
     public void attach_BelongsTo_异常() {
         Record<Student, Long> studentLongRecord = studentRelationModel.findOrFail(1L);
 
-        RecordList<Teacher, Integer> all = teacherModel.all();
+        RecordList<Teacher, Integer> all = teacherModel.findAll();
 
         Student student = studentLongRecord.with("teacher").toObject();
 
@@ -813,7 +813,7 @@ public class ORMTests extends BaseTests {
         Assert.assertEquals(student1.getTeacher().getId().intValue(), 1);
 
 
-        RecordList<Teacher, Integer> all = teacherModel.all();
+        RecordList<Teacher, Integer> all = teacherModel.findAll();
         studentLongRecord.bind("teacher").detach(all);
 
         Student student2 = studentLongRecord.toObject();
@@ -1147,7 +1147,7 @@ public class ORMTests extends BaseTests {
     @Test
     public void sync_BelongsTo_异常() {
         Record<Student, Long>        studentLongRecord = studentRelationModel.findOrFail(1L);
-        RecordList<Teacher, Integer> all               = teacherModel.all();
+        RecordList<Teacher, Integer> all               = teacherModel.findAll();
         Student                      student           = studentLongRecord.with("teacher").toObject();
         Assert.assertThrows(RelationAttachException.class, () -> {
             studentLongRecord.bind("teacher").sync(all);
@@ -1442,7 +1442,7 @@ public class ORMTests extends BaseTests {
     @Test
     public void toggle_BelongsTo_异常() {
         Record<Student, Long>        studentLongRecord = studentRelationModel.findOrFail(1L);
-        RecordList<Teacher, Integer> all               = teacherModel.all();
+        RecordList<Teacher, Integer> all               = teacherModel.findAll();
         Student                      student           = studentLongRecord.with("teacher").toObject();
         Assert.assertThrows(RelationAttachException.class, () -> {
             studentLongRecord.bind("teacher").toggle(all);

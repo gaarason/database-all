@@ -5,6 +5,7 @@ import gaarason.database.contract.function.InstantiationModelFunctionalInterface
 import gaarason.database.exception.InvalidConfigException;
 import gaarason.database.exception.ModelNewInstanceException;
 import gaarason.database.util.ObjectUtil;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,7 +35,7 @@ final public class ModelInstanceProvider {
             try {
                 return modelClass.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
-                throw new ModelNewInstanceException(e.getMessage(), e);
+                throw new ModelNewInstanceException(modelClass, e.getMessage(), e);
             }
         });
     }
@@ -60,13 +61,14 @@ final public class ModelInstanceProvider {
      */
     public static <T, K> Model<T, K> getModel(Class<? extends Model<T, K>> modelClass) {
         executed = true;
+        List<Throwable> throwableList = new ArrayList<>();
         for (InstantiationModelFunctionalInterface<?, ?> instantiation : instantiations) {
             try {
                 return ObjectUtil.typeCast(instantiation.execute(ObjectUtil.typeCast(modelClass)));
-            } catch (Throwable ignored) {
-
+            } catch (Throwable e) {
+                throwableList.add(e);
             }
         }
-        throw new ModelNewInstanceException();
+        throw new ModelNewInstanceException(modelClass, throwableList);
     }
 }

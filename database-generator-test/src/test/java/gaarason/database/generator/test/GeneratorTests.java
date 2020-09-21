@@ -1,7 +1,7 @@
 package gaarason.database.generator.test;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import gaarason.database.connection.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceWrapper;
 import gaarason.database.eloquent.Model;
 import gaarason.database.generator.Generator;
 import lombok.extern.slf4j.Slf4j;
@@ -41,9 +41,9 @@ public class GeneratorTests {
 
     @Test
     public void run无参构造() {
-        GaarasonDataSourceProvider gaarasonDataSourceProvider = proxyDataSource();
-        ToolModel                  toolModel                  = new ToolModel(gaarasonDataSourceProvider);
-        AutoGenerator              autoGenerator              = new AutoGenerator(toolModel);
+        ToolModel.gaarasonDataSourceWrapper = proxyDataSource();
+        ToolModel     toolModel     = new ToolModel();
+        AutoGenerator autoGenerator = new AutoGenerator(toolModel);
         // set
         autoGenerator.setStaticField(true);
         autoGenerator.setIsSpringBoot(true);
@@ -78,20 +78,16 @@ public class GeneratorTests {
         return dataSources;
     }
 
-    private GaarasonDataSourceProvider proxyDataSource() {
+    private GaarasonDataSourceWrapper proxyDataSource() {
         List<DataSource> dataSources = dataSourceMasterList();
-        return new GaarasonDataSourceProvider(dataSources);
+        return new GaarasonDataSourceWrapper(dataSources);
     }
 
     public static class ToolModel extends Model<ToolModel.Inner, Object> {
-        private GaarasonDataSourceProvider gaarasonDataSourceProvider;
+        public static GaarasonDataSourceWrapper gaarasonDataSourceWrapper;
 
-        public ToolModel(GaarasonDataSourceProvider dataSource) {
-            gaarasonDataSourceProvider = dataSource;
-        }
-
-        public GaarasonDataSourceProvider getGaarasonDataSource() {
-            return gaarasonDataSourceProvider;
+        public GaarasonDataSourceWrapper getGaarasonDataSource() {
+            return gaarasonDataSourceWrapper;
         }
 
         public static class Inner {

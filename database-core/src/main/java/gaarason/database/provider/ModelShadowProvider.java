@@ -17,12 +17,10 @@ import gaarason.database.util.EntityUtil;
 import gaarason.database.util.ObjectUtil;
 import gaarason.database.util.ReflectionUtil;
 import lombok.Data;
-import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -78,7 +76,7 @@ final public class ModelShadowProvider {
      * @return 格式化后的Model信息
      */
     public static <T, K> ModelInfo<T, K> get(Model<T, K> model) {
-        return getByModel(ObjectUtil.typeCast(model.getClass()));
+        return getByModelClass(ObjectUtil.typeCast(model.getClass()));
     }
 
     /**
@@ -88,7 +86,7 @@ final public class ModelShadowProvider {
      * @param <K>        主键类型
      * @return 格式化后的Model信息
      */
-    public static <T, K> ModelInfo<T, K> getByModel(Class<? extends Model<T, K>> modelClass) {
+    public static <T, K> ModelInfo<T, K> getByModelClass(Class<? extends Model<T, K>> modelClass) {
         ModelInfo<?, ?> result = modelIndexMap.get(modelClass);
         if (null == result) {
             throw new InvalidEntityException("Model class[" + modelClass + "] have no information in the Shadow.");
@@ -101,7 +99,7 @@ final public class ModelShadowProvider {
      * @param clazz 实体类(可查找泛型)
      * @return 格式化后的Model信息
      */
-    public static <T, K> ModelInfo<T, K> getByEntity(Class<?> clazz) {
+    public static <T, K> ModelInfo<T, K> getByEntityClass(Class<T> clazz) {
         ModelInfo<?, ?> result = entityIndexMap.get(clazz);
         if (null == result) {
             throw new InvalidEntityException("Entity class[" + clazz + "] have no information in the Shadow.");
@@ -120,7 +118,7 @@ final public class ModelShadowProvider {
         // 结果集
         Map<String, String> columnValueMap = new HashMap<>();
         // 属性信息集合
-        Map<String, FieldInfo> columnFieldMap = getByEntity(entity.getClass()).getColumnFieldMap();
+        Map<String, FieldInfo> columnFieldMap = getByEntityClass(entity.getClass()).getColumnFieldMap();
         for (String columnName : columnFieldMap.keySet()) {
             // 属性信息
             FieldInfo fieldInfo = columnFieldMap.get(columnName);
@@ -146,7 +144,7 @@ final public class ModelShadowProvider {
         // 结果集
         List<String> columnList = new ArrayList<>();
         // 属性信息集合
-        Map<String, FieldInfo> columnFieldMap = getByEntity(entity.getClass()).getColumnFieldMap();
+        Map<String, FieldInfo> columnFieldMap = getByEntityClass(entity.getClass()).getColumnFieldMap();
 
         for (String columnName : columnFieldMap.keySet()) {
             // 属性信息
@@ -172,7 +170,7 @@ final public class ModelShadowProvider {
         // 结果集
         List<String> valueList = new ArrayList<>();
         // 属性信息集合
-        Map<String, FieldInfo> columnFieldMap = getByEntity(entity.getClass()).getColumnFieldMap();
+        Map<String, FieldInfo> columnFieldMap = getByEntityClass(entity.getClass()).getColumnFieldMap();
 
         for (String columnName : columnFieldMap.keySet()) {
             // 属性信息
@@ -221,7 +219,7 @@ final public class ModelShadowProvider {
      */
     public static <T, K> void setPrimaryId(T entity, @Nullable K id) {
         // 属性信息集合
-        FieldInfo primaryKeyFieldInfo = getByEntity(entity.getClass()).getPrimaryKeyFieldInfo();
+        FieldInfo primaryKeyFieldInfo = getByEntityClass(entity.getClass()).getPrimaryKeyFieldInfo();
         if (null != primaryKeyFieldInfo) {
             fieldSet(primaryKeyFieldInfo.field, entity, id);
         }

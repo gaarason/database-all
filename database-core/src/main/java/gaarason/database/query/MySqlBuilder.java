@@ -29,7 +29,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
 
     @Override
     Grammar grammarFactory() {
-        return new MySqlGrammar(ModelShadowProvider.getByEntity(entityClass).getTableName());
+        return new MySqlGrammar(ModelShadowProvider.getByEntityClass(entityClass).getTableName());
     }
 
 

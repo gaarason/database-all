@@ -1,7 +1,7 @@
 package gaarason.database.test.models.base;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import gaarason.database.connection.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceWrapper;
 import gaarason.database.eloquent.Model;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,7 +14,7 @@ import java.util.Properties;
 @Slf4j
 public class Single3Model<T, K> extends Model<T, K> {
 
-    private static GaarasonDataSourceProvider gaarasonDataSourceProvider = proxyDataSource();
+    private static GaarasonDataSourceWrapper gaarasonDataSourceWrapper = proxyDataSource();
 
     private static DataSource dataSourceMaster0() {
         DruidDataSource druidDataSource = new DruidDataSource();
@@ -53,14 +53,14 @@ public class Single3Model<T, K> extends Model<T, K> {
         return dataSources;
     }
 
-    private static GaarasonDataSourceProvider proxyDataSource() {
+    private static GaarasonDataSourceWrapper proxyDataSource() {
         List<DataSource> dataSources = dataSourceMasterList();
-        return new GaarasonDataSourceProvider(dataSources);
+        return new GaarasonDataSourceWrapper(dataSources);
     }
 
     @Override
-    public GaarasonDataSourceProvider getGaarasonDataSource() {
-        return gaarasonDataSourceProvider;
+    public GaarasonDataSourceWrapper getGaarasonDataSource() {
+        return gaarasonDataSourceWrapper;
     }
 
     @Override

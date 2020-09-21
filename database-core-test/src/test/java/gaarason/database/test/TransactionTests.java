@@ -1,6 +1,6 @@
 package gaarason.database.test;
 
-import gaarason.database.connection.GaarasonDataSourceProvider;
+import gaarason.database.connection.GaarasonDataSourceWrapper;
 import gaarason.database.exception.NestedTransactionException;
 import gaarason.database.test.models.Student2Model;
 import gaarason.database.test.models.Student3Model;
@@ -32,8 +32,8 @@ public class TransactionTests extends BaseTests {
     private static Student3Model student3Model = new Student3Model();
 
     protected List<DataSource> getDataSourceList() {
-        GaarasonDataSourceProvider gaarasonDataSourceProvider = studentModel.getGaarasonDataSource();
-        return gaarasonDataSourceProvider.getMasterDataSourceList();
+        GaarasonDataSourceWrapper gaarasonDataSourceWrapper = studentModel.getGaarasonDataSource();
+        return gaarasonDataSourceWrapper.getMasterDataSourceList();
     }
 
 
