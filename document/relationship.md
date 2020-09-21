@@ -31,7 +31,7 @@ Eloquent ORM for Java
 
 ## 总览
 
-数据表经常要与其它表做关联，比如一篇博客文章可能有很多评论，或者一个订单会被关联到下单用户  
+数据表经常要与其它表做关联，比如一篇博客文章可能有很多评论，或者一个订单会被关联到下单用户   
 Eloquent 让组织和处理这些关联关系变得简单，并且支持多种不同类型的关联关系，更重要的是会进行查询优化，这点在多层级关系的情况下尤其明显  
 
 ## 关系定义
@@ -43,8 +43,8 @@ Eloquent 让组织和处理这些关联关系变得简单，并且支持多种�
 ### 一对一
 
 `@HasOneOrMany()` 其中包含2个属性:  
-`sonModelForeignKey`表示子表的外键  
-`localModelLocalKey`表示本表的关联键,默认值为本表的主键(`@Primary()`修饰的键)  
+- `sonModelForeignKey`表示子表的外键  
+- `localModelLocalKey`表示本表的关联键,默认值为本表的主键(`@Primary()`修饰的键)  
 
 以下是一个`teacher`包含一个`pet`(宠物)的例子  
 ```java
@@ -133,8 +133,8 @@ public class Teacher implements Serializable {
 ### 反向一对多/一对一
 
 `@BelongsTo()` 其中包含2个属性:  
-`localModelForeignKey`表示本表的外键  
-`parentModelLocalKey`表示父表的关联键,默认值为父表的主键(`@Primary()`修饰的键)  
+- `localModelForeignKey`表示本表的外键  
+- `parentModelLocalKey`表示父表的关联键,默认值为父表的主键(`@Primary()`修饰的键)  
 
 以下是一个`teacher`包含多个`student`的场景下, 需要从`student`找到`teacher`的例子  
 ```java
@@ -180,11 +180,11 @@ public class Student implements Serializable {
 ### 多对多
 
 `@BelongsToMany()` 其中包含5个属性:  
-`relationModel`表示`关系表`的模型  
-`localModelLocalKey`表示`本表`中`关联键`  
-`foreignKeyForLocalModel`表示`关系表`中`关联本表的外键`   
-`foreignKeyForTargetModel`表示`关系表`中`关联目标表的外键`  
-`targetModelLocalKey`表示`目标表`中`关联键` 
+- `relationModel`表示`关系表`的模型  
+- `localModelLocalKey`表示`本表`中`关联键`  
+- `foreignKeyForLocalModel`表示`关系表`中`关联本表的外键`   
+- `foreignKeyForTargetModel`表示`关系表`中`关联目标表的外键`  
+- `targetModelLocalKey`表示`目标表`中`关联键` 
 
 以下是一个`teacher`包含多个`student`,同时, 一个`student`包含多个`teacher`的场景, 关系表使用`relationship_student_teacher`    
 ```java
@@ -237,9 +237,9 @@ public class Student implements Serializable {
 
 `Record::with(String column, GenerateSqlPart builderClosure, RelationshipRecordWith recordClosure)` 与 `RecordList::with()` 与 `Builer::with()` 方法签名类似, 接受3个参数 
  
-`column`希望执行关联的属性名(非数据库字段), 可以使用`.`快捷指定下级  
-`builderClosure`所关联的Model的查询构造器约束  
-`recordClosure`所关联的Model的再一级关联, 可以指定下级   
+- `column`希望执行关联的属性名(非数据库字段), 可以使用`.`快捷指定下级  
+- `builderClosure`所关联的Model的查询构造器约束  
+- `recordClosure`所关联的Model的再一级关联, 可以指定下级   
 
 下面是一些例子, 基本都可以在`database-core-test`模块的单元测试中找到  
 
@@ -323,19 +323,19 @@ studentModel..newQuery().with("teachers").with("relation").get();
 
 ## 更新关系
  
-处理多对多关联的时候，Eloquent 还提供了一些额外的辅助函数使得处理关联模型变得更加方便。  
-这些关系的都需要在 Entity 中进行声明, 并在 Record 中使用。 
-在 Record 中使用时, 需要先用`bind()`指明要处理的关系(属性名)  
-需要注意的是一下的 4 类操作, 均可在全部 3 类关系上使用, 但是中间表数据插入仅对`@BelongsToMany`关系生效  
-4 类操作在使用集合作为参数时, 参数代表的含义是主键集合(并不是关系键, 程序会根据注解中的声明找到真正的关系键)   
+- 处理多对多关联的时候，Eloquent 还提供了一些额外的辅助函数使得处理关联模型变得更加方便。  
+- 这些关系的都需要在 Entity 中进行声明, 并在 Record 中使用。  
+- 在 Record 中使用时, 需要先用`bind()`指明要处理的关系(属性名)   
+- 需要注意的是一下的 4 类操作, 均可在全部 3 类关系上使用, 但是中间表数据插入仅对`@BelongsToMany`关系生效   
+- 4 类操作在使用集合作为参数时, 参数代表的含义是主键集合(并不是关系键, 程序会根据注解中的声明找到真正的关系键)   
 
 
 ### 附加关系 
 
 我们假定一个用户可能有多个角色，同时一个角色属于多个用户，要通过在连接模型的中间表中插入记录附加角色到用户上，可以使用 attach 方法   
-@HasOneOrMany : 会将子表(目标表)的外键的值更新为本表的关系键值   
-@BelongsTo : 会将本表的外键的值更新为父表(目标表)的关系键值   
-@BelongsToMany : 在中间表中新增记录, 2个外键分表指向本表的关系键与目标表的关系键, 可以指定附加的字段  
+- @HasOneOrMany : 会将子表(目标表)的外键的值更新为本表的关系键值   
+- @BelongsTo : 会将本表的外键的值更新为父表(目标表)的关系键值   
+- @BelongsToMany : 在中间表中新增记录, 2个外键分表指向本表的关系键与目标表的关系键, 可以指定附加的字段   
 
 ```java
 
@@ -356,10 +356,10 @@ userRecord.bind("roles").attach(Arrays.asList(1, 2), map);
 
 ### 解除关系 
 
-当然，有时候有必要从用户中移除角色，要移除一个关联记录，使用 detach 方法。
-@HasOneOrMany : 会将子表(目标表)的外键的值更新为默认值(String则为"", integer则为"0")  
-@BelongsTo : 会将本表的外键的值更新为默认值(String则为"", integer则为"0")   
-@BelongsToMany : 在中间表中移除相应的记录, 但是，两个模型在数据库中都保持不变
+当然，有时候有必要从用户中移除角色，要移除一个关联记录，使用 detach 方法。 
+- @HasOneOrMany : 会将子表(目标表)的外键的值更新为默认值(String则为"", integer则为"0")  
+- @BelongsTo : 会将本表的外键的值更新为默认值(String则为"", integer则为"0")   
+- @BelongsToMany : 在中间表中移除相应的记录, 但是，两个模型在数据库中都保持不变  
 
 ```java
 
@@ -373,10 +373,10 @@ userRecord.bind("roles").detach(1,2);
 
 ### 同步关系 
 
-有时候有要将用户更新到指定的角色, 任何不在指定范围对应记录将会移除, 使用 sync 方法。
-@HasOneOrMany : 针对每个范围内的值, 将会调用 `attach` 与 `attach`
-@BelongsTo : 针对每个范围内的值, 将会调用 `attach` 与 `attach`
-@BelongsToMany : 针对每个范围内的值, 将会调用 `attach` 与 `attach`，两个模型在数据库中都保持不变, 可以指定附加的字段在增加关系时生效  
+有时候有要将用户更新到指定的角色, 任何不在指定范围对应记录将会移除, 使用 sync 方法。 
+- @HasOneOrMany : 针对每个范围内的值, 将会调用 `attach` 与 `attach`  
+- @BelongsTo : 针对每个范围内的值, 将会调用 `attach` 与 `attach`  
+- @BelongsToMany : 针对每个范围内的值, 将会调用 `attach` 与 `attach`，两个模型在数据库中都保持不变, 可以指定附加的字段在增加关系时生效   
 
 ```java
 
@@ -390,10 +390,10 @@ userRecord.bind("roles").sync(1,2);
 
 ### 切换关系 
 
-多对多关联还提供了一个 toggle 方法用于切换给定 ID 的附加状态，如果给定ID当前被附加，则取消附加，类似的，如果当前没有附加，则附加, 使用 toggle 方法。
-@HasOneOrMany : 针对每个范围内的值, 将会调用 `attach` 与 `attach`
-@BelongsTo : 针对每个范围内的值, 将会调用 `attach` 与 `attach`
-@BelongsToMany : 针对每个范围内的值, 将会调用 `attach` 与 `attach`，两个模型在数据库中都保持不变, 可以指定附加的字段在增加关系时生效  
+多对多关联还提供了一个 toggle 方法用于切换给定 ID 的附加状态，如果给定ID当前被附加，则取消附加，类似的，如果当前没有附加，则附加, 使用 toggle 方法。  
+- @HasOneOrMany : 针对每个范围内的值, 将会调用 `attach` 与 `attach`   
+- @BelongsTo : 针对每个范围内的值, 将会调用 `attach` 与 `attach`   
+- @BelongsToMany : 针对每个范围内的值, 将会调用 `attach` 与 `attach`，两个模型在数据库中都保持不变, 可以指定附加的字段在增加关系时生效   
 
 ```java
 
