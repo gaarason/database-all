@@ -141,41 +141,41 @@ public class BindBean<T, K> implements Bind {
 
     @Override
     public int toggle(Record<?, ?> targetRecord) {
-        return 0;
+        return toggle(RecordFactory.newRecordList(targetRecord), new HashMap<>());
     }
 
     @Override
     public int toggle(RecordList<?, ?> targetRecords) {
-        return 0;
+        return toggle(targetRecords, new HashMap<>());
     }
 
     @Override
     public int toggle(Record<?, ?> targetRecord, Map<String, String> stringStringMap) {
-        return 0;
+        return toggle(RecordFactory.newRecordList(targetRecord), stringStringMap);
     }
 
     @Override
     public int toggle(RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        return 0;
+        return relationSubQuery.toggle(record, targetRecords, stringStringMap);
     }
 
     @Override
     public int toggle(String id) {
-        return 0;
+        return toggle(Collections.singletonList(id), new HashMap<>());
     }
 
     @Override
     public int toggle(Collection<String> ids) {
-        return 0;
+        return toggle(ids, new HashMap<>());
     }
 
     @Override
     public int toggle(String id, Map<String, String> stringStringMap) {
-        return 0;
+        return toggle(Collections.singletonList(id), stringStringMap);
     }
 
     @Override
     public int toggle(Collection<String> ids, Map<String, String> stringStringMap) {
-        return 0;
+        return relationSubQuery.toggle(record, ids, stringStringMap);
     }
 }

@@ -151,7 +151,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
         if (record.getMetadataMap().get(belongsToTemplate.localModelForeignKey).getValue().toString().equals(parentModelLocalKeyValue)) {
             return detach(record, Collections.singletonList(parentModelLocalKeyValue));
         }
-        // 关系已经存在, 切换即是增加
+        // 关系不存在, 切换即是增加
         else{
             return attachAndRefresh(record, parentModelLocalKeyValue);
         }
@@ -182,7 +182,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
             if (String.valueOf(record.getMetadataMap().get(belongsToTemplate.localModelForeignKey).getValue()).equals(parentModelLocalKeyValue)) {
                 return detach(record, targetPrimaryKeyValues);
             }
-            // 关系已经存在, 切换即是增加
+            // 关系不存在, 切换即是增加
             else {
                 return attachAndRefresh(record, parentModelLocalKeyValue);
             }

@@ -28,16 +28,16 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
         hasOneOrManyTemplate = new HasOneOrManyTemplate(field);
 
         defaultSonModelForeignKeyValue = ModelShadowProvider.get(hasOneOrManyTemplate.sonModel)
-            .getColumnFieldMap().get(hasOneOrManyTemplate.sonModelForeignKey).getDefaultValue();
+                .getColumnFieldMap().get(hasOneOrManyTemplate.sonModelForeignKey).getDefaultValue();
     }
 
     @Override
     public String[] prepareSqlArr(List<Map<String, Column>> stringColumnMapList,
                                   GenerateSqlPartFunctionalInterface generateSqlPart) {
         return new String[]{generateSqlPart.execute(hasOneOrManyTemplate.sonModel.newQuery())
-            .whereIn(hasOneOrManyTemplate.sonModelForeignKey,
-                getColumnInMapList(stringColumnMapList, hasOneOrManyTemplate.localModelLocalKey))
-            .toSql(SqlType.SELECT), ""};
+                .whereIn(hasOneOrManyTemplate.sonModelForeignKey,
+                        getColumnInMapList(stringColumnMapList, hasOneOrManyTemplate.localModelLocalKey))
+                .toSql(SqlType.SELECT), ""};
     }
 
     @Override
@@ -72,8 +72,9 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
         // 执行更新
         return hasOneOrManyTemplate.sonModel.newQuery()
-            .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
-            .data(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue).update();
+                .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
+                .where(hasOneOrManyTemplate.sonModelForeignKey, "!=", relationKeyValue)
+                .data(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue).update();
     }
 
     @Override
@@ -84,16 +85,16 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
         // 执行更新
         // 目标,必须是关联关系, 才解除
         return hasOneOrManyTemplate.sonModel.newQuery()
-            .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
-            .data(hasOneOrManyTemplate.sonModelForeignKey, defaultSonModelForeignKeyValue).update();
+                .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
+                .data(hasOneOrManyTemplate.sonModelForeignKey, defaultSonModelForeignKeyValue).update();
     }
 
     @Override
     public int detach(Record<?, ?> record, RecordList<?, ?> targetRecords) {
         // 应该更新的子表的主键列表
         List<String> targetRecordPrimaryKeyIds = targetRecords.toList(
-            recordTemp -> String.valueOf(
-                recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName()).getValue()));
+                recordTemp -> String.valueOf(
+                        recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName()).getValue()));
         return detach(record, targetRecordPrimaryKeyIds);
     }
 
@@ -108,14 +109,14 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
         // 执行更新
         // 目标,必须是关联关系, 才解除
         return hasOneOrManyTemplate.sonModel.newQuery()
-            .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
-            .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
-            .data(hasOneOrManyTemplate.sonModelForeignKey, defaultSonModelForeignKeyValue).update();
+                .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
+                .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
+                .data(hasOneOrManyTemplate.sonModelForeignKey, defaultSonModelForeignKeyValue).update();
     }
 
     @Override
     public int sync(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        return attach(record, getTargetRecordPrimaryKeyIds(targetRecords), stringStringMap);
+        return sync(record, getTargetRecordPrimaryKeyIds(targetRecords), stringStringMap);
     }
 
     @Override
@@ -126,14 +127,15 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
         return hasOneOrManyTemplate.sonModel.newQuery().transaction(() -> {
             // 现存的关联关系, 不需要据需存在的, 解除
             int detachNum = hasOneOrManyTemplate.sonModel.newQuery()
-                .whereNotIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
-                .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
-                .data(hasOneOrManyTemplate.sonModelForeignKey, defaultSonModelForeignKeyValue).update();
+                    .whereNotIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
+                    .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
+                    .data(hasOneOrManyTemplate.sonModelForeignKey, defaultSonModelForeignKeyValue).update();
 
             // 执行更新
             int attachNum = hasOneOrManyTemplate.sonModel.newQuery()
-                .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
-                .data(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue).update();
+                    .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
+                    .where(hasOneOrManyTemplate.sonModelForeignKey, "!=", relationKeyValue)
+                    .data(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue).update();
 
             return detachNum + attachNum;
         });
@@ -156,10 +158,10 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
         return hasOneOrManyTemplate.sonModel.newQuery().transaction(() -> {
             // 现存的关联关系 主键值集合
             List<String> alreadyExistSonModelPrimaryKeyValues = hasOneOrManyTemplate.sonModel.newQuery()
-                .select(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName())
-                .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
-                .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
-                .get().toOneColumnList();
+                    .select(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName())
+                    .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
+                    .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
+                    .get().toOneColumnList();
 
             // 需要增加的关系 主键值集合
             Collection<String> compatibleTargetPrimaryKeyValues = compatibleCollection(targetPrimaryKeyValues);
@@ -167,14 +169,14 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
             // 现存的关联关系, 解除关系
             int detachNum = hasOneOrManyTemplate.sonModel.newQuery()
-                .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
-                .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
-                .data(hasOneOrManyTemplate.sonModelForeignKey, defaultSonModelForeignKeyValue).update();
+                    .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
+                    .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
+                    .data(hasOneOrManyTemplate.sonModelForeignKey, defaultSonModelForeignKeyValue).update();
 
             // 不存在的关系, 新增关系
             int attachNum = hasOneOrManyTemplate.sonModel.newQuery()
-                .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), compatibleTargetPrimaryKeyValues)
-                .data(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue).update();
+                    .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), compatibleTargetPrimaryKeyValues)
+                    .data(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue).update();
 
             return detachNum + attachNum;
         });
@@ -192,8 +194,8 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
             sonModel = getModelInstance(field);
             sonModelForeignKey = hasOneOrMany.sonModelForeignKey();
             localModelLocalKey = "".equals(hasOneOrMany.localModelLocalKey())
-                ? sonModel.getPrimaryKeyColumnName()
-                : hasOneOrMany.localModelLocalKey();
+                    ? sonModel.getPrimaryKeyColumnName()
+                    : hasOneOrMany.localModelLocalKey();
 
         }
     }

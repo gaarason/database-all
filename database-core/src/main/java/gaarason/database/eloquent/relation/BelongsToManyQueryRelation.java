@@ -273,6 +273,11 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         String localModelLocalKeyValue = String.valueOf(
             record.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey).getValue());
 
+        // 无需处理则直接返回
+        if (targetModelLocalKeyValues.isEmpty()) {
+            return 0;
+        }
+
         if (checkAlreadyExist) {
             // 查询中间表(relationModel)是否存在已经存在对应的关系
             List<String> AlreadyExistTargetModelLocalKeyValueList = belongsToManyTemplate.relationModel.newQuery()
@@ -387,10 +392,10 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         compatibleTargetModelLocalKeyValues.removeAll(alreadyExistTargetModelLocalKeyValues);
 
         // 现存的关联关系, 解除
-        int detachNum = belongsToManyTemplate.relationModel.newQuery()
+        int detachNum = !targetModelLocalKeyValues.isEmpty() ? belongsToManyTemplate.relationModel.newQuery()
             .where(belongsToManyTemplate.foreignKeyForLocalModel, localModelLocalKeyValue)
             .whereIn(belongsToManyTemplate.foreignKeyForTargetModel, targetModelLocalKeyValues)
-            .delete();
+            .delete() : 0;
 
         // 不存在的关系, 新增
         int attachNum = attachWithTargetModelLocalKeyValues(record, compatibleTargetModelLocalKeyValues, stringStringMap, false);

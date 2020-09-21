@@ -3,6 +3,7 @@ package gaarason.database.test;
 import gaarason.database.connection.GaarasonDataSourceProvider;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.eloquent.appointment.OrderBy;
 import gaarason.database.exception.RelationAttachException;
 import gaarason.database.test.models.StudentModel;
 import gaarason.database.test.models.StudentORMModel;
@@ -22,6 +23,7 @@ import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 @Slf4j
@@ -47,7 +49,7 @@ public class ORMTests extends BaseTests {
     @Test
     public void ORM查询() {
         Record<StudentORMModel.Entity, Integer> record = studentORMModel.findOrFail(3);
-        StudentORMModel.Entity entity = record.getEntity();
+        StudentORMModel.Entity                  entity = record.getEntity();
         Assert.assertEquals(entity.getAge(), Byte.valueOf("16"));
         Assert.assertEquals(entity.getName(), "小腾");
 
@@ -92,7 +94,7 @@ public class ORMTests extends BaseTests {
     @Test
     public void ORM新增() {
         Record<StudentORMModel.Entity, Integer> record = studentORMModel.newRecord();
-        StudentORMModel.Entity entity = record.getEntity();
+        StudentORMModel.Entity                  entity = record.getEntity();
         entity.setId(15);
         entity.setName("小超超");
         entity.setAge(Byte.valueOf("44"));
@@ -123,7 +125,7 @@ public class ORMTests extends BaseTests {
     @Test
     public void ORM新增_自增id() {
         Record<StudentORMModel.Entity, Integer> record = studentORMModel.newRecord();
-        StudentORMModel.Entity entity = record.getEntity();
+        StudentORMModel.Entity                  entity = record.getEntity();
         entity.setName("小超超");
         entity.setAge(Byte.valueOf("44"));
         entity.setSex(Byte.valueOf("1"));
@@ -171,11 +173,11 @@ public class ORMTests extends BaseTests {
 
     @Test
     public void ORM多线程兼容性() throws InterruptedException {
-        int count = 100;
+        int            count          = 100;
         CountDownLatch countDownLatch = new CountDownLatch(count);
         for (int i = 0; i < count; i++) {
             Record<StudentORMModel.Entity, Integer> record = studentORMModel.findOrFail(3);
-            StudentORMModel.Entity entity = record.getEntity();
+            StudentORMModel.Entity                  entity = record.getEntity();
             Assert.assertEquals(entity.getAge(), Byte.valueOf("16"));
             Assert.assertEquals(entity.getName(), "小腾");
 
@@ -225,7 +227,7 @@ public class ORMTests extends BaseTests {
 
     @Test
     public void attach_BelongsToMany_单个_附带信息到中间表() {
-        String note = "ssssss";
+        String                   note                 = "ssssss";
         Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany")
@@ -270,7 +272,7 @@ public class ORMTests extends BaseTests {
 
     @Test
     public void attach_BelongsToMany_批量_附带信息到中间表() {
-        String note = "ssssss";
+        String                   note                 = "ssssss";
         Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany")
@@ -315,7 +317,7 @@ public class ORMTests extends BaseTests {
 
     @Test
     public void attach_BelongsToMany_批量id() {
-        String note = "ssssss";
+        String                   note                 = "ssssss";
         Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany")
@@ -352,7 +354,7 @@ public class ORMTests extends BaseTests {
 
     @Test
     public void attach_BelongsToMany_批量id_附带信息到中间表() {
-        String note = "ssssss";
+        String                   note                 = "ssssss";
         Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany")
@@ -758,7 +760,7 @@ public class ORMTests extends BaseTests {
         Teacher teacher2 = teacherRecord.toObject();
         Assert.assertEquals(teacher2.getStudents().size(), 2);
 
-        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().whereIn("id", "5","1","3").get();
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().whereIn("id", "5", "1", "3").get();
         teacherRecord.bind("students").detach(records);
 
         Teacher teacher3 = teacherRecord.toObject();
@@ -782,10 +784,9 @@ public class ORMTests extends BaseTests {
     }
 
 
-
     @Test
     public void detach_BelongsTo_单个() {
-        Record<Student, Long> studentLongRecord = studentRelationModel.findOrFail(1L);
+        Record<Student, Long>    studentLongRecord    = studentRelationModel.findOrFail(1L);
         Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
 
         Student student = studentLongRecord.with("teacher").toObject();
@@ -804,7 +805,7 @@ public class ORMTests extends BaseTests {
 
     @Test
     public void detach_BelongsTo_多个() {
-        Record<Student, Long> studentLongRecord = studentRelationModel.findOrFail(1L);
+        Record<Student, Long>    studentLongRecord    = studentRelationModel.findOrFail(1L);
         Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
 
         Student student = studentLongRecord.with("teacher").toObject();
@@ -825,7 +826,7 @@ public class ORMTests extends BaseTests {
 
     @Test
     public void detach_BelongsTo_单个id() {
-        Record<Student, Long> studentLongRecord = studentRelationModel.findOrFail(1L);
+        Record<Student, Long>    studentLongRecord    = studentRelationModel.findOrFail(1L);
         Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
 
         Student student = studentLongRecord.with("teacher").toObject();
@@ -844,7 +845,7 @@ public class ORMTests extends BaseTests {
 
     @Test
     public void detach_BelongsTo_多个id() {
-        Record<Student, Long> studentLongRecord = studentRelationModel.findOrFail(1L);
+        Record<Student, Long>    studentLongRecord    = studentRelationModel.findOrFail(1L);
         Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
 
         Student student = studentLongRecord.with("teacher").toObject();
@@ -862,7 +863,7 @@ public class ORMTests extends BaseTests {
 
     @Test
     public void detach_BelongsTo_ALL() {
-        Record<Student, Long> studentLongRecord = studentRelationModel.findOrFail(1L);
+        Record<Student, Long>    studentLongRecord    = studentRelationModel.findOrFail(1L);
         Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
 
         Student student = studentLongRecord.with("teacher").toObject();
@@ -874,5 +875,580 @@ public class ORMTests extends BaseTests {
         Assert.assertNull(student2.getTeacher());
     }
 
+    @Test
+    public void sync_BelongsToMany_单个_and_多个() {
+        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+
+        Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany").toObject();
+        // 老师(id=1)已经有3个学生(id=1, id=2, id=3)
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().size(), 3);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(0).getId().intValue(), 1);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(1).getId().intValue(), 2);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(2).getId().intValue(), 3);
+
+        Long oldCount = relationshipStudentTeacherModel.newQuery().count("*");
+
+        // 学生2的关系
+        Record<StudentModel.Entity, Integer> student = studentModel.findOrFail(2);
+        teacherIntegerRecord.bind("studentsBelongsToMany").sync(student);
+
+        Long new1Count = relationshipStudentTeacherModel.newQuery().count("*");
+        Assert.assertEquals(new1Count - oldCount, -2);
+
+        // 学生1,2,3,4的关系
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().whereIn("id", "1", "2", "3", "4").get();
+        teacherIntegerRecord.bind("studentsBelongsToMany").sync(records);
+
+        Long new2Count = relationshipStudentTeacherModel.newQuery().count("*");
+        Assert.assertEquals(new2Count - new1Count, 3);
+
+        Teacher teacher = teacherIntegerRecord.toObject();
+        Assert.assertEquals(teacher.getStudentsBelongsToMany().size(), 4);
+        System.out.println(teacher);
+    }
+
+    @Test
+    public void sync_BelongsToMany_单个_and_多个_附带信息到中间表() {
+        String                   note                 = "ssssss";
+        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+
+        Teacher studentsBelongsToMany = teacherIntegerRecord
+                .with("studentsBelongsToMany")
+                .with("relationshipStudentTeachers")
+                .toObject();
+        // 老师(id=1)已经有3个学生(id=1, id=2, id=3)
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().size(), 3);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(0).getId().intValue(), 1);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(1).getId().intValue(), 2);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(2).getId().intValue(), 3);
+
+        Long oldCount = relationshipStudentTeacherModel.newQuery().count("*");
+
+        // 学生2的关系
+        Record<StudentModel.Entity, Integer> student = studentModel.findOrFail(2);
+        Map<String, String>                  map     = new HashMap<>();
+        map.put("note", note);
+        int studentsBelongsToMany2 = teacherIntegerRecord.bind("studentsBelongsToMany").sync(student, map);
+
+        Long new1Count = relationshipStudentTeacherModel.newQuery().count("*");
+        Assert.assertEquals(studentsBelongsToMany2, 2);
+        Assert.assertEquals(new1Count - oldCount, -2);
+
+        // 学生1,2,3,4的关系
+        RecordList<StudentModel.Entity, Integer> records =
+                studentModel.newQuery().whereIn("id", "1", "2", "3", "4").get();
+        int studentsBelongsToMany1 =
+                teacherIntegerRecord.bind("studentsBelongsToMany").sync(records, map);
+        Assert.assertEquals(studentsBelongsToMany1, 3);
+
+        Long new2Count = relationshipStudentTeacherModel.newQuery().count("*");
+        Assert.assertEquals(new2Count - new1Count, 3);
+
+        Teacher teacher = teacherIntegerRecord.toObject();
+        System.out.println(teacher);
+        Assert.assertEquals(teacher.getStudentsBelongsToMany().size(), 4);
+
+        for (RelationshipStudentTeacher relationshipStudentTeacher : teacher.getRelationshipStudentTeachers()) {
+            if (relationshipStudentTeacher.getStudentId().intValue() != 2) {
+                Assert.assertEquals(relationshipStudentTeacher.getNote(), note);
+            }
+        }
+    }
+
+    @Test
+    public void sync_BelongsToMany_单个_and_多个ID() {
+        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+
+        Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany").toObject();
+        // 老师(id=1)已经有3个学生(id=1, id=2, id=3)
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().size(), 3);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(0).getId().intValue(), 1);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(1).getId().intValue(), 2);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(2).getId().intValue(), 3);
+
+        Long oldCount = relationshipStudentTeacherModel.newQuery().count("*");
+
+        // 学生2的关系
+        teacherIntegerRecord.bind("studentsBelongsToMany").sync("2");
+
+        Long new1Count = relationshipStudentTeacherModel.newQuery().count("*");
+        Assert.assertEquals(new1Count - oldCount, -2);
+
+        // 学生1,2,3,4的关系
+        teacherIntegerRecord.bind("studentsBelongsToMany").sync(Arrays.asList("1", "2", "3", "4"));
+
+        Long new2Count = relationshipStudentTeacherModel.newQuery().count("*");
+        Assert.assertEquals(new2Count - new1Count, 3);
+
+        Teacher teacher = teacherIntegerRecord.toObject();
+        Assert.assertEquals(teacher.getStudentsBelongsToMany().size(), 4);
+        System.out.println(teacher);
+    }
+
+    @Test
+    public void sync_BelongsToMany_单个_and_多个ID_附带信息到中间表() {
+        String                   note                 = "ssssss";
+        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+
+        Teacher studentsBelongsToMany = teacherIntegerRecord
+                .with("studentsBelongsToMany")
+                .with("relationshipStudentTeachers")
+                .toObject();
+        // 老师(id=1)已经有3个学生(id=1, id=2, id=3)
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().size(), 3);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(0).getId().intValue(), 1);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(1).getId().intValue(), 2);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(2).getId().intValue(), 3);
+
+        Long oldCount = relationshipStudentTeacherModel.newQuery().count("*");
+
+        // 学生2的关系
+        Map<String, String> map = new HashMap<>();
+        map.put("note", note);
+        int studentsBelongsToMany2 = teacherIntegerRecord.bind("studentsBelongsToMany").sync("2", map);
+
+        Long new1Count = relationshipStudentTeacherModel.newQuery().count("*");
+        Assert.assertEquals(studentsBelongsToMany2, 2);
+        Assert.assertEquals(new1Count - oldCount, -2);
+
+        // 学生1,2,3,4的关系
+        int studentsBelongsToMany1 =
+                teacherIntegerRecord.bind("studentsBelongsToMany").sync(Arrays.asList("1", "2", "3", "4"), map);
+        Assert.assertEquals(studentsBelongsToMany1, 3);
+
+        Long new2Count = relationshipStudentTeacherModel.newQuery().count("*");
+        Assert.assertEquals(new2Count - new1Count, 3);
+
+        Teacher teacher = teacherIntegerRecord.toObject();
+        System.out.println(teacher);
+
+        Assert.assertEquals(teacher.getStudentsBelongsToMany().size(), 4);
+
+        for (RelationshipStudentTeacher relationshipStudentTeacher : teacher.getRelationshipStudentTeachers()) {
+            if (relationshipStudentTeacher.getStudentId().intValue() != 2) {
+                Assert.assertEquals(relationshipStudentTeacher.getNote(), note);
+            }
+        }
+    }
+
+    @Test
+    public void sync_HasOneOrMany_单体_单个() {
+        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+
+        teacherRecord.with("student").toObject();
+
+        Record<StudentModel.Entity, Integer> student = studentModel.findOrFail(5);
+        teacherRecord.bind("student").sync(student);
+
+        Teacher teacher2 = teacherRecord.toObject();
+        Assert.assertEquals(teacher2.getStudent().getId().intValue(), 5);
+
+        Long teacher_id = studentModel.newQuery().where("teacher_id", "1").count("*");
+        Assert.assertEquals(teacher_id.intValue(), 1);
+    }
+
+    @Test
+    public void sync_HasOneOrMany_单体_多个() {
+        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+
+        Teacher teacher1 = teacherRecord.with("student").toObject();
+
+        RecordList<StudentModel.Entity, Integer> students = studentModel.newQuery()
+                .whereIn("id", "1", "2", "3", "4", "5")
+                .get();
+        teacherRecord.bind("students").sync(students);
+        Teacher teacher2 = teacherRecord.toObject();
+        Assert.assertNotNull(teacher2.getStudent());
+    }
+
+    @Test
+    public void sync_HasOneOrMany_集合_单个() {
+        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+
+        Teacher teacher1 = teacherRecord.with("students").toObject();
+        System.out.println(teacher1);
+        // 老师(id=1)已经有2个学生(id=5, id=6)
+        Assert.assertEquals(teacher1.getStudents().size(), 2);
+
+        Record<StudentModel.Entity, Integer> student  = studentModel.findOrFail(5);
+        int                                  students = teacherRecord.bind("students").sync(student);
+        Assert.assertEquals(students, 1);
+
+        Teacher teacher2 = teacherRecord.toObject();
+        Assert.assertEquals(teacher2.getStudents().size(), 1);
+
+        Record<StudentModel.Entity, Integer> student1  = studentModel.findOrFail(1);
+        int                                  students1 = teacherRecord.bind("students").sync(student1);
+        Assert.assertEquals(students1, 2);
+
+        Teacher teacher3 = teacherRecord.toObject();
+        Assert.assertEquals(teacher3.getStudents().size(), 1);
+        System.out.println(teacher3);
+    }
+
+    @Test
+    public void sync_HasOneOrMany_集合_多个() {
+        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+
+        Teacher teacher1 = teacherRecord.with("students").toObject();
+        System.out.println(teacher1);
+        // 老师(id=1)已经有2个学生(id=5, id=6)
+        Assert.assertEquals(teacher1.getStudents().size(), 2);
+
+        RecordList<StudentModel.Entity, Integer> students = studentModel.newQuery()
+                .whereIn("id", "1", "2", "3", "4", "5")
+                .get();
+        int students1 = teacherRecord.bind("students").sync(students);
+        // 插入 1,2,3,4 解除 6
+        Assert.assertEquals(students1, 5);
+
+
+        Teacher teacher2 = teacherRecord.toObject();
+        Assert.assertEquals(teacher2.getStudents().size(), 5);
+        System.out.println(teacher2);
+    }
+
+    @Test
+    public void sync_HasOneOrMany_集合_多个id() {
+        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+
+        Teacher teacher1 = teacherRecord.with("students").toObject();
+        System.out.println(teacher1);
+        // 老师(id=1)已经有2个学生(id=5, id=6)
+        Assert.assertEquals(teacher1.getStudents().size(), 2);
+
+        int students = teacherRecord.bind("students").sync(Arrays.asList("1", "2", "3", "4", "5"));
+        // 插入 1,2,3,4 解除 6
+        Assert.assertEquals(students, 5);
+
+        Teacher teacher2 = teacherRecord.toObject();
+        Assert.assertEquals(teacher2.getStudents().size(), 5);
+        System.out.println(teacher2);
+    }
+
+    @Test
+    public void sync_BelongsTo_单个() {
+        Record<Student, Long>    studentLongRecord    = studentRelationModel.findOrFail(1L);
+        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Student                  student              = studentLongRecord.with("teacher").toObject();
+        Assert.assertEquals(student.getTeacher().getId().intValue(), 6);
+        studentLongRecord.bind("teacher").sync(teacherIntegerRecord);
+        Student student1 = studentLongRecord.toObject();
+        Assert.assertEquals(student1.getTeacher().getId().intValue(), 1);
+    }
+
+    @Test
+    public void sync_BelongsTo_单个id() {
+        Record<Student, Long> studentLongRecord = studentRelationModel.findOrFail(1L);
+        Student               student           = studentLongRecord.with("teacher").toObject();
+        Assert.assertEquals(student.getTeacher().getId().intValue(), 6);
+        studentLongRecord.bind("teacher").sync("1");
+        Student student1 = studentLongRecord.toObject();
+        Assert.assertEquals(student1.getTeacher().getId().intValue(), 1);
+    }
+
+    @Test
+    public void sync_BelongsTo_异常() {
+        Record<Student, Long>        studentLongRecord = studentRelationModel.findOrFail(1L);
+        RecordList<Teacher, Integer> all               = teacherModel.all();
+        Student                      student           = studentLongRecord.with("teacher").toObject();
+        Assert.assertThrows(RelationAttachException.class, () -> {
+            studentLongRecord.bind("teacher").sync(all);
+        });
+    }
+
+
+    @Test
+    public void toggle_BelongsToMany_单个_and_多个() {
+        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+
+        Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany").toObject();
+        // 老师(id=1)已经有3个学生(id=1, id=2, id=3)
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().size(), 3);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(0).getId().intValue(), 1);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(1).getId().intValue(), 2);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(2).getId().intValue(), 3);
+
+        Long oldCount = relationshipStudentTeacherModel.newQuery().count("*");
+
+        // 学生2的关系
+        Record<StudentModel.Entity, Integer> student = studentModel.findOrFail(2);
+        // 反转2的关系, 即解除2的关系
+        // 剩余 1,3
+        teacherIntegerRecord.bind("studentsBelongsToMany").toggle(student);
+
+        Long new1Count = relationshipStudentTeacherModel.newQuery().count("*");
+        Assert.assertEquals(new1Count - oldCount, -1);
+
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().whereIn("id", "1", "2", "3", "4").get();
+        // 反转 1,2,3,4 的关系
+        // 剩余 2,4
+        teacherIntegerRecord.bind("studentsBelongsToMany").toggle(records);
+
+        Long new2Count = relationshipStudentTeacherModel.newQuery().count("*");
+        Assert.assertEquals(new2Count - new1Count, 0);
+
+        Teacher teacher = teacherIntegerRecord.toObject();
+        Assert.assertEquals(teacher.getStudentsBelongsToMany().size(), 2);
+        System.out.println(teacher);
+    }
+
+    @Test
+    public void toggle_BelongsToMany_单个_and_多个_附带信息到中间表() {
+        String                   note                 = "ssssss";
+        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+
+        Teacher studentsBelongsToMany = teacherIntegerRecord
+                .with("studentsBelongsToMany")
+                .with("relationshipStudentTeachers")
+                .toObject();
+        // 老师(id=1)已经有3个学生(id=1, id=2, id=3)
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().size(), 3);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(0).getId().intValue(), 1);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(1).getId().intValue(), 2);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(2).getId().intValue(), 3);
+
+        Long oldCount = relationshipStudentTeacherModel.newQuery().count("*");
+
+        // 学生2的关系
+        Record<StudentModel.Entity, Integer> student = studentModel.findOrFail(2);
+        Map<String, String>                  map     = new HashMap<>();
+        map.put("note", note);
+        int studentsBelongsToMany2 = teacherIntegerRecord.bind("studentsBelongsToMany").toggle(student, map);
+
+        Long new1Count = relationshipStudentTeacherModel.newQuery().count("*");
+        Assert.assertEquals(studentsBelongsToMany2, 1);
+        Assert.assertEquals(new1Count - oldCount, -1);
+
+        // 学生1,2,3,4的关系
+        RecordList<StudentModel.Entity, Integer> records =
+                studentModel.newQuery().whereIn("id", "1", "2", "3", "4").get();
+        int studentsBelongsToMany1 =
+                teacherIntegerRecord.bind("studentsBelongsToMany").toggle(records, map);
+        Assert.assertEquals(studentsBelongsToMany1, 4);
+
+        Long new2Count = relationshipStudentTeacherModel.newQuery().count("*");
+        Assert.assertEquals(new2Count - new1Count, 0);
+
+        Teacher teacher = teacherIntegerRecord.toObject();
+        System.out.println(teacher);
+        Assert.assertEquals(teacher.getStudentsBelongsToMany().size(), 2);
+
+        for (RelationshipStudentTeacher relationshipStudentTeacher : teacher.getRelationshipStudentTeachers()) {
+            Assert.assertEquals(relationshipStudentTeacher.getNote(), note);
+        }
+    }
+
+    @Test
+    public void toggle_BelongsToMany_单个_and_多个ID() {
+        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+
+        Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany").toObject();
+        // 老师(id=1)已经有3个学生(id=1, id=2, id=3)
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().size(), 3);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(0).getId().intValue(), 1);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(1).getId().intValue(), 2);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(2).getId().intValue(), 3);
+
+        Long oldCount = relationshipStudentTeacherModel.newQuery().count("*");
+
+        // 学生2的关系
+        teacherIntegerRecord.bind("studentsBelongsToMany").toggle("2");
+
+        Long new1Count = relationshipStudentTeacherModel.newQuery().count("*");
+        Assert.assertEquals(new1Count - oldCount, -1);
+
+        // 学生1,2,3,4的关系
+        teacherIntegerRecord.bind("studentsBelongsToMany").toggle(Arrays.asList("1", "2", "3", "4"));
+
+        Long new2Count = relationshipStudentTeacherModel.newQuery().count("*");
+        Assert.assertEquals(new2Count - new1Count, 0);
+
+        Teacher teacher = teacherIntegerRecord.toObject();
+        Assert.assertEquals(teacher.getStudentsBelongsToMany().size(), 2);
+        System.out.println(teacher);
+    }
+
+    @Test
+    public void toggle_BelongsToMany_单个_and_多个ID_附带信息到中间表() {
+        String                   note                 = "ssssss";
+        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+
+        Teacher studentsBelongsToMany = teacherIntegerRecord
+                .with("studentsBelongsToMany")
+                .with("relationshipStudentTeachers")
+                .toObject();
+        // 老师(id=1)已经有3个学生(id=1, id=2, id=3)
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().size(), 3);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(0).getId().intValue(), 1);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(1).getId().intValue(), 2);
+        Assert.assertEquals(studentsBelongsToMany.getStudentsBelongsToMany().get(2).getId().intValue(), 3);
+
+        Long oldCount = relationshipStudentTeacherModel.newQuery().count("*");
+
+        // 学生2的关系
+        Map<String, String> map = new HashMap<>();
+        map.put("note", note);
+        int studentsBelongsToMany2 = teacherIntegerRecord.bind("studentsBelongsToMany").toggle("2", map);
+
+        Long new1Count = relationshipStudentTeacherModel.newQuery().count("*");
+        Assert.assertEquals(studentsBelongsToMany2, 1);
+        Assert.assertEquals(new1Count - oldCount, -1);
+
+        // 学生1,2,3,4的关系
+        int studentsBelongsToMany1 =
+                teacherIntegerRecord.bind("studentsBelongsToMany").sync(Arrays.asList("1", "2", "3", "4"), map);
+        Assert.assertEquals(studentsBelongsToMany1, 4);
+
+        Long new2Count = relationshipStudentTeacherModel.newQuery().count("*");
+        Assert.assertEquals(new2Count - new1Count, 0);
+
+        Teacher teacher = teacherIntegerRecord.toObject();
+        System.out.println(teacher);
+
+        Assert.assertEquals(teacher.getStudentsBelongsToMany().size(), 2);
+
+        for (RelationshipStudentTeacher relationshipStudentTeacher : teacher.getRelationshipStudentTeachers()) {
+            Assert.assertEquals(relationshipStudentTeacher.getNote(), note);
+        }
+    }
+
+    @Test
+    public void toggle_HasOneOrMany_单体_单个() {
+        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        // 老师(id=1)已经有2个学生(id=5, id=6)
+
+        teacherRecord.with("student").toObject();
+
+        Record<StudentModel.Entity, Integer> student = studentModel.findOrFail(5);
+        teacherRecord.bind("student").toggle(student);
+
+        Teacher teacher2 = teacherRecord.toObject();
+        Assert.assertEquals(teacher2.getStudent().getId().intValue(), 6);
+
+        Long teacher_id = studentModel.newQuery().where("teacher_id", "1").count("*");
+        Assert.assertEquals(teacher_id.intValue(), 1);
+    }
+
+    @Test
+    public void toggle_HasOneOrMany_单体_多个() {
+        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        // 老师(id=1)已经有2个学生(id=5, id=6)
+
+        Teacher teacher1 = teacherRecord.with("student").toObject();
+
+        RecordList<StudentModel.Entity, Integer> students = studentModel.newQuery()
+                .whereIn("id", "1", "2", "3", "4", "5")
+                .get();
+        // 切换
+        teacherRecord.bind("students").toggle(students);
+        Teacher teacher2 = teacherRecord.toObject();
+        Assert.assertNotNull(teacher2.getStudent());
+    }
+
+    @Test
+    public void toggle_HasOneOrMany_集合_单个() {
+        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+
+        Teacher teacher1 = teacherRecord.with("students").toObject();
+        System.out.println(teacher1);
+        // 老师(id=1)已经有2个学生(id=5, id=6)
+        Assert.assertEquals(teacher1.getStudents().size(), 2);
+
+        Record<StudentModel.Entity, Integer> student  = studentModel.findOrFail(5);
+        int                                  students = teacherRecord.bind("students").toggle(student);
+        Assert.assertEquals(students, 1);
+
+        Teacher teacher2 = teacherRecord.toObject();
+        Assert.assertEquals(teacher2.getStudents().size(), 1);
+
+        Record<StudentModel.Entity, Integer> student1  = studentModel.findOrFail(1);
+        int                                  students1 = teacherRecord.bind("students").toggle(student1);
+        Assert.assertEquals(students1, 2);
+
+        Teacher teacher3 = teacherRecord.toObject();
+        Assert.assertEquals(teacher3.getStudents().size(), 2);
+        System.out.println(teacher3);
+    }
+
+    @Test
+    public void toggle_HasOneOrMany_集合_多个() {
+        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+
+        Teacher teacher1 = teacherRecord.with("students", builder -> builder.orderBy("id", OrderBy.ASC)).toObject();
+        System.out.println(teacher1);
+        // 老师(id=1)已经有2个学生(id=5, id=6)
+        Assert.assertEquals(teacher1.getStudents().size(), 2);
+
+        RecordList<StudentModel.Entity, Integer> students = studentModel.newQuery()
+                .whereIn("id", "1", "2", "3", "4", "5")
+                .get();
+        int students1 = teacherRecord.bind("students").toggle(students);
+        // 插入 1,2,3,4 解除 5
+        Assert.assertEquals(students1, 5);
+
+        Teacher teacher2 = teacherRecord.toObject();
+        System.out.println(teacher2);
+        Assert.assertEquals(teacher2.getStudents().size(), 5);
+        Assert.assertEquals(teacher2.getStudents().get(0).getId().intValue(), 1);
+        Assert.assertEquals(teacher2.getStudents().get(1).getId().intValue(), 2);
+        Assert.assertEquals(teacher2.getStudents().get(2).getId().intValue(), 3);
+        Assert.assertEquals(teacher2.getStudents().get(3).getId().intValue(), 4);
+        Assert.assertEquals(teacher2.getStudents().get(4).getId().intValue(), 6);
+    }
+
+    @Test
+    public void toggle_HasOneOrMany_集合_多个id() {
+        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+
+        Teacher teacher1 = teacherRecord.with("students", builder -> builder.orderBy("id", OrderBy.ASC)).toObject();
+        System.out.println(teacher1);
+        // 老师(id=1)已经有2个学生(id=5, id=6)
+        Assert.assertEquals(teacher1.getStudents().size(), 2);
+
+        int students = teacherRecord.bind("students").toggle(Arrays.asList("1", "2", "3", "4", "5"));
+        // 插入 1,2,3,4 解除 6
+        Assert.assertEquals(students, 5);
+
+        Teacher teacher2 = teacherRecord.toObject();
+        System.out.println(teacher2);
+        Assert.assertEquals(teacher2.getStudents().size(), 5);
+        Assert.assertEquals(teacher2.getStudents().get(0).getId().intValue(), 1);
+        Assert.assertEquals(teacher2.getStudents().get(1).getId().intValue(), 2);
+        Assert.assertEquals(teacher2.getStudents().get(2).getId().intValue(), 3);
+        Assert.assertEquals(teacher2.getStudents().get(3).getId().intValue(), 4);
+        Assert.assertEquals(teacher2.getStudents().get(4).getId().intValue(), 6);
+    }
+
+    @Test
+    public void toggle_BelongsTo_单个() {
+        Record<Student, Long>    studentLongRecord    = studentRelationModel.findOrFail(1L);
+        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Student                  student              = studentLongRecord.with("teacher").toObject();
+        Assert.assertEquals(student.getTeacher().getId().intValue(), 6);
+        studentLongRecord.bind("teacher").toggle(teacherIntegerRecord);
+        Student student1 = studentLongRecord.toObject();
+        Assert.assertEquals(student1.getTeacher().getId().intValue(), 1);
+    }
+
+    @Test
+    public void toggle_BelongsTo_单个id() {
+        Record<Student, Long> studentLongRecord = studentRelationModel.findOrFail(1L);
+        Student               student           = studentLongRecord.with("teacher").toObject();
+        Assert.assertEquals(student.getTeacher().getId().intValue(), 6);
+        studentLongRecord.bind("teacher").toggle("1");
+        Student student1 = studentLongRecord.toObject();
+        Assert.assertEquals(student1.getTeacher().getId().intValue(), 1);
+    }
+
+    @Test
+    public void toggle_BelongsTo_异常() {
+        Record<Student, Long>        studentLongRecord = studentRelationModel.findOrFail(1L);
+        RecordList<Teacher, Integer> all               = teacherModel.all();
+        Student                      student           = studentLongRecord.with("teacher").toObject();
+        Assert.assertThrows(RelationAttachException.class, () -> {
+            studentLongRecord.bind("teacher").toggle(all);
+        });
+    }
 
 }
