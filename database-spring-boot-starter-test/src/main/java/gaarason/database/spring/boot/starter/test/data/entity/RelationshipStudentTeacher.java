@@ -1,5 +1,6 @@
 package gaarason.database.spring.boot.starter.test.data.entity;
 
+import gaarason.database.eloquent.annotation.BelongsTo;
 import gaarason.database.eloquent.annotation.Column;
 import gaarason.database.eloquent.annotation.Primary;
 import gaarason.database.eloquent.annotation.Table;
@@ -39,8 +40,16 @@ public class RelationshipStudentTeacher implements Serializable {
     @Column(name = "created_at", insertable = false, updatable = false, comment = "新增时间")
     private Date createdAt;
 
+    private String note;
+
     @Column(name = "updated_at", insertable = false, updatable = false, comment = "更新时间")
     private Date updatedAt;
 
     /** auto generator end **/
+
+    @BelongsTo(localModelForeignKey = "student_id")
+    private Student student;
+
+    @BelongsTo(localModelForeignKey = "teacher_id")
+    private Teacher teacher;
 }

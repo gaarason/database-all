@@ -1,7 +1,10 @@
 package gaarason.database.connection;
 
 import gaarason.database.contract.connection.GaarasonDataSource;
+import gaarason.database.eloquent.appointment.Propagation;
 import gaarason.database.exception.InternalConcurrentException;
+import gaarason.database.exception.NestedTransactionException;
+import gaarason.database.exception.SQLRuntimeException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -19,6 +22,11 @@ import java.util.logging.Logger;
 public class GaarasonDataSourceWrapper implements GaarasonDataSource {
 
     /**
+     * 事物中的 Connection
+     */
+    protected final ThreadLocal<Connection> localThreadConnection = new ThreadLocal<>();
+
+    /**
      * 写连接
      */
     @Getter
@@ -33,25 +41,29 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
     /**
      * 是否主从(读写分离)
      */
-    protected boolean hasSlave = false;
+    protected final boolean hasSlave;
 
     /**
-     * 单前线程中的 ProxyDataSource对象 是否处于数据库事物中
+     * 当前线程中的 GaarasonDataSource 对象 是否处于数据库事物中
      */
     protected ThreadLocal<Boolean> inTransaction = ThreadLocal.withInitial(() -> false);
 
     /**
      * 是否写连接
      */
-    @Setter
-    @Getter
-    protected boolean isWrite = false;
+    protected volatile boolean isWrite = false;
 
+    /**
+     * 当前线程的写连接
+     */
     protected ThreadLocal<DataSource> masterDataSource = ThreadLocal.withInitial(() -> {
         // TODO 权重选择
         return masterDataSourceList.get((new Random()).nextInt(masterDataSourceList.size()));
     });
 
+    /**
+     * 当前线程的读连接
+     */
     protected ThreadLocal<DataSource> slaveDataSource = ThreadLocal.withInitial(() -> {
         // TODO 权重选择
         return slaveDataSourceList.get((new Random()).nextInt(slaveDataSourceList.size()));
@@ -65,21 +77,79 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
 
     public GaarasonDataSourceWrapper(List<DataSource> masterDataSourceList) {
         this.masterDataSourceList = masterDataSourceList;
+        hasSlave = false;
     }
 
-    public GaarasonDataSourceWrapper() {
+    @Override
+    public void begin() {
+        synchronized (this) {
+            if (isInTransaction()) {
+                throw new NestedTransactionException();
+            }
+            try {
+                Connection connection = getConnection();
+                connection.setAutoCommit(false);
+                localThreadConnection.set(connection);
+            } catch (SQLException e) {
+                throw new SQLRuntimeException(e.getMessage(), e);
+            }
+        }
     }
 
-    public boolean isInTransaction() {
-        return inTransaction.get();
+    @Override
+    public void commit() {
+        try {
+            Connection connection = localThreadConnection.get();
+            connection.commit();
+            connection.close();
+        } catch (SQLException e) {
+            throw new SQLRuntimeException(e.getMessage(), e);
+        } finally {
+            localThreadConnection.remove();
+        }
     }
 
-    public void setInTransaction() {
-        inTransaction.set(true);
+    @Override
+    public void rollBack() {
+        try {
+            Connection connection = localThreadConnection.get();
+            connection.rollback();
+            connection.close();
+        } catch (SQLException e) {
+            throw new SQLRuntimeException(e.getMessage(), e);
+        } finally {
+            localThreadConnection.remove();
+        }
     }
 
-    public void setOutTransaction() {
-        inTransaction.remove();
+    @Override
+    public Connection getLocalConnection(boolean isWrite) {
+        if (isInTransaction()) {
+            return localThreadConnection.get();
+        } else {
+            synchronized (this) {
+                this.isWrite = isWrite;
+                try {
+                    return getConnection();
+                } catch (SQLException e) {
+                    throw new SQLRuntimeException(e.getMessage(), e);
+                }
+            }
+        }
+    }
+
+    /**
+     * 关闭数据库连接
+     * @param connection 数据库连接
+     * @throws SQLRuntimeException 关闭连接出错
+     */
+    public void connectionClose(Connection connection) throws SQLRuntimeException {
+        try {
+            if (!isInTransaction())
+                connection.close();
+        } catch (SQLException e) {
+            throw new SQLRuntimeException(e.getMessage(), e);
+        }
     }
 
     /**
@@ -96,7 +166,7 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
         DataSource realDataSource = getRealDataSource();
         Connection connection     = realDataSource.getConnection();
         if (null == connection) {
-            throw new InternalConcurrentException("Get an null value in ProxyDataSource object.");
+            throw new InternalConcurrentException("Get an null value in GaarasonDataSourceWrapper object.");
         }
         return connection;
     }
@@ -141,4 +211,25 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
         return getRealDataSource().getParentLogger();
     }
 
+    /**
+     * 当前线程是否在事物中
+     * @return 是否事物中
+     */
+    protected boolean isInTransaction() {
+        return localThreadConnection.get() != null;
+    }
+
+    public static class TransactionInfo{
+        /**
+         *
+         */
+        protected final Connection connection;
+        protected final Propagation propagation;
+        protected int counter = 0;
+
+        public TransactionInfo(Connection connection,  Propagation propagation){
+            this.connection = connection;
+            this.propagation = propagation;
+        }
+    }
 }

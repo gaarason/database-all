@@ -5,6 +5,6 @@ import gaarason.database.spring.boot.starter.test.data.model.base.BaseModel;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class BaseRelationshipStudentTeacherModel extends BaseModel<RelationshipStudentTeacher, Long> {
+public class RelationshipStudentTeacherModel extends BaseModel<RelationshipStudentTeacher, Long> {
 
 }

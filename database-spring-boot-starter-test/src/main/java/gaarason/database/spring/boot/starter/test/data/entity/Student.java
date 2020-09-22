@@ -1,12 +1,12 @@
 package gaarason.database.spring.boot.starter.test.data.entity;
 
-import gaarason.database.eloquent.annotation.Column;
-import gaarason.database.eloquent.annotation.Primary;
-import gaarason.database.eloquent.annotation.Table;
+import gaarason.database.eloquent.annotation.*;
+import gaarason.database.spring.boot.starter.test.data.model.RelationshipStudentTeacherModel;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Table(name = "student")
@@ -58,4 +58,11 @@ public class Student implements Serializable {
     private Date updatedAt;
 
     /** auto generator end **/
+
+    @HasOneOrMany(sonModelForeignKey = "student_id")
+    private List<RelationshipStudentTeacher> relationshipStudentTeachers;
+
+    @BelongsToMany(relationModel = RelationshipStudentTeacherModel.class, foreignKeyForLocalModel = "student_id",
+        foreignKeyForTargetModel = "teacher_id", localModelLocalKey = "id", targetModelLocalKey = "id")
+    private List<Teacher> teachersBelongsToMany;
 }

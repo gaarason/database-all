@@ -200,19 +200,7 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
      */
     @Override
     public void begin() throws SQLRuntimeException, NestedTransactionException {
-        synchronized (gaarasonDataSource) {
-            if (gaarasonDataSource.isInTransaction()) {
-                throw new NestedTransactionException();
-            }
-            try {
-                gaarasonDataSource.setInTransaction();
-                Connection connection = gaarasonDataSource.getConnection();
-                connection.setAutoCommit(false);
-                setLocalThreadConnection(connection);
-            } catch (SQLException e) {
-                throw new SQLRuntimeException(e.getMessage(), e);
-            }
-        }
+        gaarasonDataSource.begin();
     }
 
     /**
@@ -221,15 +209,7 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
      */
     @Override
     public void commit() throws SQLRuntimeException {
-        try {
-            Objects.requireNonNull(getLocalThreadConnection()).commit();
-            getLocalThreadConnection().close();
-        } catch (SQLException e) {
-            throw new SQLRuntimeException(e.getMessage(), e);
-        } finally {
-            removeLocalThreadConnection();
-            gaarasonDataSource.setOutTransaction();
-        }
+        gaarasonDataSource.commit();
     }
 
     /**
@@ -238,24 +218,7 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
      */
     @Override
     public void rollBack() throws SQLRuntimeException {
-        try {
-            getLocalThreadConnection().rollback();
-            getLocalThreadConnection().close();
-        } catch (SQLException e) {
-            throw new SQLRuntimeException(e.getMessage(), e);
-        } finally {
-            removeLocalThreadConnection();
-            gaarasonDataSource.setOutTransaction();
-        }
-    }
-
-    /**
-     * 当前线程是否在事物中
-     * @return 是否在事物中
-     */
-    @Override
-    public boolean inTransaction() {
-        return gaarasonDataSource.isInTransaction();
+        gaarasonDataSource.rollBack();
     }
 
     @Override
@@ -408,7 +371,7 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
     protected <U> U doSomethingInConnection(ExecSqlWithinConnectionFunctionalInterface<U> closure, String sql,
                                             Collection<String> parameters, boolean isWrite) throws SQLRuntimeException {
         // 获取连接
-        Connection connection = theConnection(isWrite);
+        Connection connection = gaarasonDataSource.getLocalConnection(isWrite);
         try {
             // 参数准备
             PreparedStatement preparedStatement = executeSql(connection, sql, parameters);
@@ -420,9 +383,10 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
             throw new SQLRuntimeException(sql, parameters, e.getMessage(), e);
         } finally {
             // 关闭连接
-            if (!inTransaction()) {
-                connectionClose(connection);
-            }
+            gaarasonDataSource.connectionClose(connection);
+//            if (!inTransaction()) {
+//                connectionClose(connection);
+//            }
         }
     }
 
@@ -527,30 +491,6 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
     }
 
     /**
-     * 获取指定的数据库连接
-     * @param isWrite 写连接
-     * @return 数据库连接
-     * @throws SQLRuntimeException 数据库连接获取失败
-     */
-    private Connection theConnection(boolean isWrite) throws SQLRuntimeException {
-        // 如果在事物中, 那么取已经开启事物的 Connection
-        if (inTransaction()) {
-            return getLocalThreadConnection();
-        }
-        // 否则根据读写规则, 取新的 Connection
-        else {
-            synchronized (gaarasonDataSource) {
-                gaarasonDataSource.setWrite(isWrite);
-                try {
-                    return gaarasonDataSource.getConnection();
-                } catch (SQLException e) {
-                    throw new SQLRuntimeException(e.getMessage(), e);
-                }
-            }
-        }
-    }
-
-    /**
      * 执行sql
      * @param connection    数据库连接
      * @param sql           查询语句
@@ -587,42 +527,6 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
         }
         SqlType sqlType = wholeSql ? SqlType.SELECT : SqlType.SUB_QUERY;
         return FormatUtil.bracket(subBuilder.getGrammar().generateSql(sqlType));
-    }
-
-    /**
-     * 从线程内取出数据库连接
-     * @return 数据库连接
-     */
-    private Connection getLocalThreadConnection() {
-        Connection connection = localThreadConnectionMap.get(localThreadConnectionListName());
-        if (connection == null) {
-            throw new InternalConcurrentException(
-                    "Get an null value in localThreadConnectionList with key[" + localThreadConnectionListName() + "].");
-        }
-        return connection;
-    }
-
-    /**
-     * 将数据库连接保存在线程内
-     * @param connection 数据库连接
-     */
-    private void setLocalThreadConnection(Connection connection) {
-        localThreadConnectionMap.put(localThreadConnectionListName(), connection);
-    }
-
-    /**
-     * 移除线程内的数据库连接
-     */
-    private void removeLocalThreadConnection() {
-        localThreadConnectionMap.remove(localThreadConnectionListName());
-    }
-
-    private String localThreadConnectionListName() {
-        String processName = ManagementFactory.getRuntimeMXBean().getName();
-        String threadName = Thread.currentThread().getName();
-        String className = getClass().toString();
-        int dataSourceHashCode = gaarasonDataSource.hashCode();
-        return processName + threadName + className + dataSourceHashCode;
     }
 
 }

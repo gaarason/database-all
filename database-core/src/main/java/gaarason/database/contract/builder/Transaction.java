@@ -31,12 +31,6 @@ public interface Transaction<T, K> {
     void rollBack() throws SQLRuntimeException;
 
     /**
-     * 当前是否处于事物中
-     * @return 当前是否处于事物中
-     */
-    boolean inTransaction();
-
-    /**
      * 以闭包开启一个事物
      * @param closure 事物中的处理
      * @return 事物中的处理的结果 (事物失败抛出异常)

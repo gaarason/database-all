@@ -13,13 +13,13 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import javax.annotation.Resource;
 
 @Slf4j
-public class ModelInstanceConfiguration implements ApplicationListener<ContextRefreshedEvent> {
+public class GaarasonModelInstanceConfiguration implements ApplicationListener<ContextRefreshedEvent> {
 
     @Resource
     ApplicationContext applicationContext;
 
     @Override
-    public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
+    public void onApplicationEvent(ContextRefreshedEvent event) {
         ModelInstanceProvider.register((modelClass) -> {
             try {
                 return ObjectUtil.typeCast(applicationContext.getBean(modelClass));

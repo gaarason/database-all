@@ -38,6 +38,11 @@ final public class ModelShadowProvider {
         new ConcurrentHashMap<>();
 
     /**
+     * Model proxy Class做为索引
+     */
+    final protected static Map<Class<?>, ModelInfo<?, ?>> modelProxyIndexMap = new ConcurrentHashMap<>();
+
+    /**
      * Entity Class作为索引
      */
     final protected static Map<Class<?>, ModelInfo<?, ?>> entityIndexMap = new ConcurrentHashMap<>();
@@ -87,11 +92,15 @@ final public class ModelShadowProvider {
      * @return 格式化后的Model信息
      */
     public static <T, K> ModelInfo<T, K> getByModelClass(Class<? extends Model<T, K>> modelClass) {
-        ModelInfo<?, ?> result = modelIndexMap.get(modelClass);
-        if (null == result) {
-            throw new InvalidEntityException("Model class[" + modelClass + "] have no information in the Shadow.");
+        ModelInfo<?, ?> result1 = modelIndexMap.get(modelClass);
+        if (null == result1) {
+            ModelInfo<?, ?> result2 = modelProxyIndexMap.get(modelClass);
+            if (null == result2) {
+                throw new InvalidEntityException("Model class[" + modelClass + "] have no information in the Shadow.");
+            }
+            return ObjectUtil.typeCast(result2);
         }
-        return ObjectUtil.typeCast(result);
+        return ObjectUtil.typeCast(result1);
     }
 
     /**
@@ -312,7 +321,12 @@ final public class ModelShadowProvider {
      */
     protected static <T, K> void primitiveFieldDeal(ModelInfo<T, K> modelInfo) {
         Class<T> entityClass = modelInfo.entityClass;
+        // 模型实体缓存
         modelInfo.model = ModelInstanceProvider.getModel(modelInfo.modelClass);
+        // 模型代理索引建立
+        modelProxyIndexMap.put(modelInfo.model.getClass(), modelInfo);
+
+
         Field[] fields = entityClass.getDeclaredFields();
 
         for (Field field : fields) {
@@ -399,7 +413,7 @@ final public class ModelShadowProvider {
                 relationFieldInfo.javaType = field.getType();
                 relationFieldInfo.collection = ObjectUtil.isCollection(field.getType());
 
-                relationFieldInfo.javaRealType = relationFieldInfo.collection ? ObjectUtil.getGenerics((ParameterizedType)field.getGenericType(), 0)
+                relationFieldInfo.javaRealType = relationFieldInfo.collection ? ObjectUtil.getGenerics((ParameterizedType) field.getGenericType(), 0)
                     : relationFieldInfo.javaType;
 
                 if (field.isAnnotationPresent(BelongsTo.class)) {
