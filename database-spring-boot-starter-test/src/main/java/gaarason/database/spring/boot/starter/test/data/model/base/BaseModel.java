@@ -25,7 +25,7 @@ abstract public class BaseModel<T, K> extends Model<T, K> {
      */
     public void log(String sql, Collection<String> parameterList) {
         String format = String.format(sql.replace(" ? ", "\"%s\""), parameterList.toArray());
-        log.debug("SQL complete : {}", format);
+        log.info("SQL complete : {}", format);
     }
 
 }

@@ -10,15 +10,25 @@ public class StudentModel extends BaseModel<Student, Long> implements StudentQue
 
     @Override
     public Student updateName() {
-        int update = newQuery().where("id", "1").data("name", "222").update();
+        int update = newQuery().where("id", "1").data("name", "bgfd").update();
+
+        if(true){
+            throw new RuntimeException("更新操作执行完, 抛出异常");
+        }
 
         return findOrFail(1L).toObject();
     }
 
     @Override
     public Student getInfoFromDB() {
+        Student student = findOrFail(1L).toObject();
+        System.out.println("StudentModel : getInfoFromDB :" + student);
+        return student;
+    }
 
-        return findOrFail(1L).toObject();
+    @Override
+    public Student father() {
+        return null;
     }
 
 

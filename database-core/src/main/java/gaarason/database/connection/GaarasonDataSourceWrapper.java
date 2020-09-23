@@ -2,6 +2,7 @@ package gaarason.database.connection;
 
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.exception.AbnormalParameterException;
+import gaarason.database.exception.ConnectionCloseException;
 import gaarason.database.exception.InternalConcurrentException;
 import gaarason.database.exception.SQLRuntimeException;
 import lombok.Getter;
@@ -110,13 +111,7 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
         }
         // 保存点
         else {
-            Connection connection = localThreadTransactionConnection.get();
-            try {
-                Savepoint savepoint = connection.setSavepoint();
-                localThreadTransactionSavepointLinkedList.get().add(savepoint);
-            } catch (SQLException e) {
-                throw new SQLRuntimeException(e.getMessage(), e);
-            }
+            createSavepoint();
         }
     }
 
@@ -128,22 +123,16 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
             try {
                 connection.commit();
                 connection.setAutoCommit(true);
-                connection.close();
             } catch (SQLException e) {
                 throw new SQLRuntimeException(e.getMessage(), e);
-            }finally {
+            } finally {
+                connectionClose(connection);
                 localThreadTransactionConnection.remove();
             }
         }
         // 移除 savepoint
         else {
-            Savepoint savepoint = localThreadTransactionSavepointLinkedList.get().removeLast();
-            try {
-                connection.releaseSavepoint(savepoint);
-            } catch (SQLException e) {
-                throw new SQLRuntimeException(e.getMessage(), e);
-            }
-
+            releaseSavepoint();
         }
     }
 
@@ -155,21 +144,16 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
             try {
                 connection.rollback();
                 connection.setAutoCommit(true);
-                connection.close();
             } catch (SQLException e) {
                 throw new SQLRuntimeException(e.getMessage(), e);
-            }finally {
+            } finally {
+                connectionClose(connection);
                 localThreadTransactionConnection.remove();
             }
         }
         // 回滚到 savepoint
         else {
-            try {
-                Savepoint savepoint = localThreadTransactionSavepointLinkedList.get().removeLast();
-                connection.rollback(savepoint);
-            } catch (SQLException e) {
-                throw new SQLRuntimeException(e.getMessage(), e);
-            }
+            rollbackToSavepoint();
         }
     }
 
@@ -185,27 +169,6 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
                 connection.close();
         } catch (SQLException e) {
             throw new SQLRuntimeException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * 得到 DataSource, 不考虑事物
-     * @return DataSource
-     */
-    protected DataSource getRealDataSource() {
-        return getRealDataSource(true);
-    }
-
-    /**
-     * 得到 DataSource, 考虑事物
-     * @param isWriteOrTransaction 是否在事务中, 是否需要写连接
-     * @return DataSource
-     */
-    protected DataSource getRealDataSource(boolean isWriteOrTransaction) {
-        if (!hasSlave || isWriteOrTransaction) {
-            return masterDataSourceList.get((new Random()).nextInt(masterDataSourceList.size()));
-        } else {
-            return slaveDataSourceList.get((new Random()).nextInt(slaveDataSourceList.size()));
         }
     }
 
@@ -272,10 +235,79 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
     }
 
     /**
+     * 得到 DataSource, 不考虑事物
+     * @return DataSource
+     */
+    protected DataSource getRealDataSource() {
+        return getRealDataSource(true);
+    }
+
+    /**
+     * 得到 DataSource, 考虑事物
+     * @param isWriteOrTransaction 是否在事务中, 是否需要写连接
+     * @return DataSource
+     */
+    protected DataSource getRealDataSource(boolean isWriteOrTransaction) {
+        if (!hasSlave || isWriteOrTransaction) {
+            return masterDataSourceList.get((new Random()).nextInt(masterDataSourceList.size()));
+        } else {
+            return slaveDataSourceList.get((new Random()).nextInt(slaveDataSourceList.size()));
+        }
+    }
+
+    /**
      * 当前线程是否在事物中
      * @return 是否事物中
      */
-    protected boolean isLocalThreadInTransaction() {
+    @Override
+    public boolean isLocalThreadInTransaction() {
         return localThreadTransactionConnection.get() != null;
+    }
+
+    /**
+     * 数据库连接关闭
+     * @param connection 数据库连接
+     * @throws ConnectionCloseException 关闭异常
+     */
+    protected void connectionClose(Connection connection) throws ConnectionCloseException {
+        try {
+            connection.close();
+        } catch (Throwable e) {
+            throw new ConnectionCloseException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Savepoint createSavepoint() {
+        Connection connection = localThreadTransactionConnection.get();
+        try {
+            Savepoint savepoint = connection.setSavepoint();
+            localThreadTransactionSavepointLinkedList.get().add(savepoint);
+            return savepoint;
+        } catch (SQLException e) {
+            throw new SQLRuntimeException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void rollbackToSavepoint() {
+        try {
+            Connection connection = localThreadTransactionConnection.get();
+            Savepoint savepointReal = localThreadTransactionSavepointLinkedList.get().removeLast();
+            connection.rollback(savepointReal);
+        } catch (SQLException e) {
+            throw new SQLRuntimeException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void releaseSavepoint() {
+        Connection connection = localThreadTransactionConnection.get();
+        Savepoint savepoint = localThreadTransactionSavepointLinkedList.get().removeLast();
+        try {
+            connection.releaseSavepoint(savepoint);
+        } catch (SQLException e) {
+            throw new SQLRuntimeException(e.getMessage(), e);
+        }
     }
 }

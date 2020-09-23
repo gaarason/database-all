@@ -178,11 +178,10 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
 
     /**
      * 数据库事物开启
-     * @throws SQLRuntimeException        数据库异常
-     * @throws NestedTransactionException 构建
+     * @throws SQLRuntimeException 数据库异常
      */
     @Override
-    public void begin() throws SQLRuntimeException, NestedTransactionException {
+    public void begin() throws SQLRuntimeException {
         gaarasonDataSource.begin();
     }
 

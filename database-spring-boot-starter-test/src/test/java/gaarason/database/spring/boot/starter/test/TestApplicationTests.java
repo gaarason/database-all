@@ -6,9 +6,11 @@ import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.generator.GeneralGenerator;
 import gaarason.database.generator.Generator;
 import gaarason.database.spring.boot.starter.test.data.entity.Student;
+import gaarason.database.spring.boot.starter.test.data.entity.Teacher;
 import gaarason.database.spring.boot.starter.test.data.model.StudentModel;
 import gaarason.database.spring.boot.starter.test.data.model.TeacherModel;
 import gaarason.database.spring.boot.starter.test.data.repository.StudentQuery;
+import gaarason.database.spring.boot.starter.test.data.repository.TeacherQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -40,10 +42,10 @@ public class TestApplicationTests {
     StudentQuery<Student, Long> studentQuery;
 
     @Resource
-    Model<Student, Long> studentModel;
+    TeacherQuery<Teacher, Integer> teacherQuery;
 
     @Resource
-    TeacherModel teacherModel;
+    Model<Student, Long> studentModel;
 
     @Test
     public void 生成代码() {
@@ -110,12 +112,18 @@ public class TestApplicationTests {
             Student student = studentQuery.updateName();
             System.out.println(student);
 
-        }catch (Throwable ignored){
-
+        }catch (Throwable e){
+            e.printStackTrace();
         }
 
         Student student = studentQuery.getInfoFromDB();
         System.out.println(student);
+    }
+
+    @Test
+    public void sss(){
+        Student student = teacherQuery.updateName();
+        System.out.println("end : "+ student);
     }
 
 //    @Test

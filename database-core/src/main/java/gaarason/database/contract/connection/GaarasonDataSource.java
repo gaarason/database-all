@@ -1,12 +1,13 @@
 package gaarason.database.contract.connection;
 
+import gaarason.database.contract.transaction.SavepointManager;
 import gaarason.database.exception.SQLRuntimeException;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.util.List;
 
-public interface GaarasonDataSource extends DataSource {
+public interface GaarasonDataSource extends DataSource, SavepointManager {
 
     /**
      * 当前线程 数据库事物开启
@@ -25,6 +26,12 @@ public interface GaarasonDataSource extends DataSource {
      * @throws SQLRuntimeException 数据库异常
      */
     void rollBack() throws SQLRuntimeException;
+
+    /**
+     * 当前线程 是否在事物中
+     * @throws SQLRuntimeException 数据库异常
+     */
+    boolean isLocalThreadInTransaction() throws SQLRuntimeException;
 
     /**
      * 当前线程 获取本地 connection
