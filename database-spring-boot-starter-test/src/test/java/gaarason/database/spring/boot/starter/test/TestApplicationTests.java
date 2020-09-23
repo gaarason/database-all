@@ -1,10 +1,12 @@
 package gaarason.database.spring.boot.starter.test;
 
+import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.generator.GeneralGenerator;
 import gaarason.database.generator.Generator;
 import gaarason.database.spring.boot.starter.test.data.entity.Student;
+import gaarason.database.spring.boot.starter.test.data.model.StudentModel;
 import gaarason.database.spring.boot.starter.test.data.model.TeacherModel;
 import gaarason.database.spring.boot.starter.test.data.repository.StudentQuery;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +15,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -36,9 +39,8 @@ public class TestApplicationTests {
     @Resource
     StudentQuery<Student, Long> studentQuery;
 
-//    @Resource
-//    StudentModel studentModel;
-
+    @Resource
+    Model<Student, Long> studentModel;
 
     @Resource
     TeacherModel teacherModel;

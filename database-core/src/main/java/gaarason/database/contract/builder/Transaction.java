@@ -1,7 +1,6 @@
 package gaarason.database.contract.builder;
 
 import gaarason.database.contract.function.TransactionFunctionalInterface;
-import gaarason.database.exception.NestedTransactionException;
 import gaarason.database.exception.SQLRuntimeException;
 
 /**
@@ -13,10 +12,9 @@ public interface Transaction<T, K> {
 
     /**
      * 标记开启一个事物
-     * @throws SQLRuntimeException        数据库异常
-     * @throws NestedTransactionException 事物嵌套异常
+     * @throws SQLRuntimeException 数据库异常
      */
-    void begin() throws SQLRuntimeException, NestedTransactionException;
+    void begin() throws SQLRuntimeException;
 
     /**
      * 提交事物

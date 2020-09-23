@@ -27,7 +27,7 @@ public class FinalVariable {
     /**
      * 在使用闭包事务时, 发生死锁异常后的默认重试次数
      */
-    public final static int defaultCausedByDeadlockRetryCount  = 0;
+    public final static int defaultCausedByDeadlockRetryCount  = 2;
 
     /**
      * 在内部迭代时使用并行线程
