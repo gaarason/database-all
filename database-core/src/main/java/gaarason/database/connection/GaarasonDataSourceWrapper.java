@@ -122,10 +122,10 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
 
     @Override
     public void commit() {
+        Connection connection = localThreadTransactionConnection.get();
         // 无已存在 savepoint, 直接提交
         if (localThreadTransactionSavepointLinkedList.get().size() == 0) {
             try {
-                Connection connection = localThreadTransactionConnection.get();
                 connection.commit();
                 connection.setAutoCommit(true);
                 connection.close();
@@ -137,7 +137,13 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
         }
         // 移除 savepoint
         else {
-            localThreadTransactionSavepointLinkedList.get().removeLast();
+            Savepoint savepoint = localThreadTransactionSavepointLinkedList.get().removeLast();
+            try {
+                connection.releaseSavepoint(savepoint);
+            } catch (SQLException e) {
+                throw new SQLRuntimeException(e.getMessage(), e);
+            }
+
         }
     }
 
@@ -160,7 +166,7 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
         else {
             try {
                 Savepoint savepoint = localThreadTransactionSavepointLinkedList.get().removeLast();
-                connection.releaseSavepoint(savepoint);
+                connection.rollback(savepoint);
             } catch (SQLException e) {
                 throw new SQLRuntimeException(e.getMessage(), e);
             }

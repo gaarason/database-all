@@ -1090,34 +1090,6 @@ public class QueryBuilderTests extends BaseTests {
 //    }
 
     @Test
-    public void 事物_单个数据连接可嵌套事物_子事务独立提交() {
-        Assert.assertThrows(NestedTransactionException.class, () -> {
-            // 1层事物
-            studentModel.newQuery().transaction(() -> {
-                // 2层事物
-                studentModel.newQuery().transaction(() -> {
-                    // 3层事物
-                    studentModel.newQuery().transaction(() -> {
-                        try {
-                            // 4层事物
-                            studentModel.newQuery().transaction(() -> {
-                                studentModel.newQuery().where("id", "1").data("name", "dddddd").update();
-                                StudentModel.Entity entity = studentModel.newQuery()
-                                    .where("id", "1")
-                                    .firstOrFail()
-                                    .toObject();
-                                Assert.assertEquals(entity.getName(), "dddddd");
-                                throw new RuntimeException("业务上抛了个异常");
-                            }, 1);
-                        } catch (RuntimeException e) {
-                        }
-                    }, 1);
-                }, 1);
-            }, 3);
-        });
-    }
-
-    @Test
     public void 事物_lock_in_share_mode() {
         studentModel.newQuery().transaction(() -> {
             studentModel.newQuery().where("id", "3").sharedLock().get();

@@ -36,33 +36,93 @@ public class TransactionTests extends BaseTests {
         return gaarasonDataSourceWrapper.getMasterDataSourceList();
     }
 
-
-    @Test(expected = NestedTransactionException.class)
-    public void 事物_单个数据连接不可嵌套事物() {
+    @Test
+    public void 事物_单个数据连接可嵌套事物_子事务独立提交() {
         // 1层事物
         studentModel.newQuery().transaction(() -> {
-            // 2层事物 应该抛出异常 NestedTransactionException
-            return studentModel.newQuery().transaction(() -> {
-                // 3层事物
-                return studentModel.newQuery().transaction(() -> {
-                    try {
-                        // 4层事物
-                        return studentModel.newQuery().transaction(() -> {
-                            studentModel.newQuery().where("id", "1").data("name", "dddddd").update();
-                            StudentModel.Entity entity = studentModel.newQuery()
-                                .where("id", "1")
-                                .firstOrFail()
-                                .toObject();
-                            Assert.assertEquals(entity.getName(), "dddddd");
-                            throw new RuntimeException("业务上抛了个异常");
-                        }, 1);
-                    } catch (RuntimeException ignored) {
-                    }
-                    return true;
-                }, 1);
+            studentModel.newQuery().where("id", "4").data("name", "44444").update();
+
+            // 2层事物
+            studentModel.newQuery().transaction(() -> {
+                studentModel.newQuery().where("id", "3").data("name", "33333").update();
+
+                try {
+                    // 3层事物
+                    studentModel.newQuery().transaction(() -> {
+                        studentModel.newQuery().where("id", "2").data("name", "22222").update();
+
+                        try {
+                            // 4层事物
+                            studentModel.newQuery().transaction(() -> {
+
+                                studentModel.newQuery().where("id", "1").data("name", "11111").update();
+                                StudentModel.Entity entity = studentModel.newQuery()
+                                    .where("id", "1")
+                                    .firstOrFail()
+                                    .toObject();
+                                Assert.assertEquals(entity.getName(), "11111");
+                                throw new RuntimeException("业务上抛了个异常");
+
+                            }, 1);
+
+                        } catch (RuntimeException e) {
+                        }
+                        StudentModel.Entity entity = studentModel.findOrFail(1).toObject();
+                        Assert.assertNotEquals(entity.getName(), "11111");
+
+                        StudentModel.Entity entity1 = studentModel.findOrFail(2).toObject();
+                        Assert.assertEquals(entity1.getName(), "22222");
+                        throw new RuntimeException("业务上抛了个异常22");
+                    }, 1);
+
+                }catch (RuntimeException e){
+
+                }
+                StudentModel.Entity entity1 = studentModel.findOrFail(2).toObject();
+                Assert.assertNotEquals(entity1.getName(), "22222");
+
+                StudentModel.Entity entity11 = studentModel.findOrFail(3).toObject();
+                Assert.assertEquals(entity11.getName(), "33333");
             }, 1);
+
+            StudentModel.Entity entity11 = studentModel.findOrFail(3).toObject();
+            Assert.assertEquals(entity11.getName(), "33333");
+
+            StudentModel.Entity entity111 = studentModel.findOrFail(4).toObject();
+            Assert.assertEquals(entity111.getName(), "44444");
         }, 3);
+
+        StudentModel.Entity entity111 = studentModel.findOrFail(4).toObject();
+        Assert.assertEquals(entity111.getName(), "44444");
     }
+
+
+//    @Test(expected = NestedTransactionException.class)
+//    public void 事物_单个数据连接不可嵌套事物() {
+//        // 1层事物
+//        studentModel.newQuery().transaction(() -> {
+//            // 2层事物 应该抛出异常 NestedTransactionException
+//            return studentModel.newQuery().transaction(() -> {
+//                // 3层事物
+//                return studentModel.newQuery().transaction(() -> {
+//                    try {
+//                        // 4层事物
+//                        return studentModel.newQuery().transaction(() -> {
+//                            studentModel.newQuery().where("id", "1").data("name", "dddddd").update();
+//                            StudentModel.Entity entity = studentModel.newQuery()
+//                                .where("id", "1")
+//                                .firstOrFail()
+//                                .toObject();
+//                            Assert.assertEquals(entity.getName(), "dddddd");
+//                            throw new RuntimeException("业务上抛了个异常");
+//                        }, 1);
+//                    } catch (RuntimeException ignored) {
+//                    }
+//                    return true;
+//                }, 1);
+//            }, 1);
+//        }, 3);
+//    }
 
     @Test
     public void 事物_多线程下_多个数据连接嵌套事物2() throws InterruptedException {

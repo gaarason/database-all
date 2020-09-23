@@ -425,11 +425,14 @@ RecordList<Student, Long>> records = studentModel.newQuery()
 
 ## 事务
 
-- `隔离级别` 设置在[注册bean](/document/bean.md)的`SESSION SQL_MODE`, 默认可重复读   
-- `传播性` 同数据库连接(ProxyDataSource)且同个线程中不可嵌套, 不同的数据库连接可以任意嵌套  
+- `隔离级别` 设置在[注册bean](/document/bean.md)的`SESSION SQL_MODE`   
 - `多线程` 事物绑定在线程中 **`(重要)`**
-  -  先开启事物, 再在事物中开启多线程执行, 子进程不处于事物中  
-  -  先开启多线程, 再在每个子线程中开启事物(即使是同一个数据库连接ProxyDataSource), 事物之间相互隔离, 可以按单线程思路书写业务
+  -  先开启事物, 再在事物中开启多线程执行, 子线程不处于事物中   
+  -  先开启多线程, 再在每个子线程中开启事物(即使是同一个数据库连接GaarasonDataSource), 事物之间相互隔离, 可以按单线程思路书写业务   
+- `传播性` PROPAGATION_NESTED 
+  -  如果不存在事务，创建事务。如果存在事务，则嵌套在事务内，嵌套事务依赖外层事务提交，不进行独立事务提交。
+  -  嵌套事务如果发生异常，则抛出异常，回滚嵌套事务的操作，回到开始嵌套事务的“保存点”，由外层事务的逻辑继续执行（外层捕获异常并处理即可）。
+  -  嵌套事务如果不发生异常，则继续执行，不提交。由外层事务的逻辑继续执行，若外层事务后续发生异常，则回滚包括嵌套事务在内的所有事务。 
 
 ### 手动事物
 ```java
@@ -437,6 +440,7 @@ RecordList<Student, Long>> records = studentModel.newQuery()
 studentModel.newQuery().begin();
 
 // do something
+// 请手动捕获异常, 以确保 rollBack()/commit() 的正确执行, 以释放连接
 studentModel.newQuery().where("id", "1").data("name", "dddddd").update();
 StudentSingleModel.Entity entity = studentModel.newQuery().where("id", "1").firstOrFail().toObject();
 
@@ -448,28 +452,40 @@ studentModel.newQuery().commit();
 ```
 ### 闭包事物
 
-- 异常自动回滚
+- 异常自动回滚, 原样向上抛出
 - 语义表达性更直观
 - 自动处理死锁异常
 
+无返回值  
 ```java
 // 开启事物
 studentModel.newQuery().transaction(() -> {
     // do something
     studentModel.newQuery().where("id", "1").data("name", "dddddd").update();
     StudentSingleModel.Entity entity = studentModel.newQuery().where("id", "1").firstOrFail().toObject();
-}, 3, true);
+}, 3);
+```
+有返回值
+```java
+// 开启事物
+boolean success = studentModel.newQuery().transaction(() -> {
+    // do something
+    studentModel.newQuery().where("id", "1").data("name", "dddddd").update();
+    StudentSingleModel.Entity entity = studentModel.newQuery().where("id", "1").firstOrFail().toObject();
+    
+    return true;
+}, 3);
 ```
 ### 共享锁与排他锁
 ```java
 studentModel.newQuery().transaction(()->{
     studentModel.newQuery().where("id", "3").sharedLock().get();
-}, 3, true);
+}, 3);
 ```
 ```java
 studentModel.newQuery().transaction(()->{
     studentModel.newQuery().where("id", "3").lockForUpdate().get();
-}, 3, true);
+}, 3);
 ```
 ## 分页
 ### 快速分页
