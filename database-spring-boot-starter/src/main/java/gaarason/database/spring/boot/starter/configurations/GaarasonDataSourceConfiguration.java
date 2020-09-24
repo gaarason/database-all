@@ -7,6 +7,7 @@ import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.generator.GeneralGenerator;
 import gaarason.database.spring.boot.starter.properties.DefaultProperties;
+import gaarason.database.spring.boot.starter.provider.GaarasonTransactionManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -17,8 +18,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
 @Slf4j
 @Configuration
@@ -38,10 +38,14 @@ public class GaarasonDataSourceConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public GaarasonDataSource gaarasonDataSource() {
-        List<DataSource> dataSourceList = new ArrayList<>();
-        dataSourceList.add(dataSourceDruidConfig());
-        log.info("-------------------- ProxyDataSource(GaarasonDataSource) init ---------------------");
-        return GaarasonDataSourceBuilder.create().build(dataSourceList);
+        log.info("-------------------- gaarasonDataSource init --------------------------");
+        return GaarasonDataSourceBuilder.create().build(Collections.singletonList(dataSourceDruidConfig()));
     }
 
+    @Bean
+    @ConditionalOnMissingBean
+    public GaarasonTransactionManager gaarasonTransactionManager() {
+        log.info("-------------------- gaarasonTransactionManager init ------------------");
+        return new GaarasonTransactionManager(gaarasonDataSource());
+    }
 }

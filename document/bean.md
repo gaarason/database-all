@@ -31,24 +31,35 @@ Eloquent ORM for Java
 bean配置 如下
 
 ```java
-package com.demo.common.data.spring;
-
+import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
-import gaarason.database.connection.GaarasonDataSourceWrapper;
+import gaarason.database.connection.GaarasonDataSourceBuilder;
 import gaarason.database.contract.connection.GaarasonDataSource;
-import org.springframework.beans.factory.annotation.Qualifier;
+import gaarason.database.eloquent.GeneralModel;
+import gaarason.database.generator.GeneralGenerator;
+import gaarason.database.spring.boot.starter.properties.DefaultProperties;
+import gaarason.database.spring.boot.starter.provider.GaarasonTransactionManager;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.*;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
+@Slf4j
 @Configuration
-public class BeanConfiguration {
+@AutoConfigureBefore(DruidDataSourceAutoConfigure.class)
+@EnableConfigurationProperties({DefaultProperties.class})
+@Import({GeneralModel.class, GeneralGenerator.class})
+public class GaarasonDataSourceConfiguration {
 
     @Bean
-    @ConfigurationProperties(prefix = "database.master0")
+    @ConfigurationProperties(prefix = "spring.datasource.druid")
     @ConditionalOnMissingBean
     public DataSource dataSourceDruidConfig() {
         log.info("-------------------- dataSource druid config init ---------------------");
@@ -58,13 +69,16 @@ public class BeanConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public GaarasonDataSource gaarasonDataSource() {
-        List<DataSource> dataSourceList = new ArrayList<>();
-        dataSourceList.add(dataSourceDruidConfig());
-        log.info("-------------------- ProxyDataSource(GaarasonDataSource) init ---------------------");
-        return GaarasonDataSourceBuilder.create().build(dataSourceList);
+        log.info("-------------------- gaarasonDataSource init --------------------------");
+        return GaarasonDataSourceBuilder.create().build(Collections.singletonList(dataSourceDruidConfig()));
     }
 
-
+    @Bean
+    @ConditionalOnMissingBean
+    public GaarasonTransactionManager gaarasonTransactionManager() {
+        log.info("-------------------- gaarasonTransactionManager init ------------------");
+        return new GaarasonTransactionManager(gaarasonDataSource());
+    }
 }
 ```
 
@@ -170,8 +184,14 @@ public class BeanConfiguration {
         List<DataSource> readDataSourceList = new ArrayList<>();
         readDataSourceList.add(dataSourceSlave0());
         readDataSourceList.add(dataSourceSlave1());
-        log.info("-------------------- ProxyDataSource(GaarasonDataSource) init ---------------------");
         return GaarasonDataSourceBuilder.create().build(dataSourceList, readDataSourceList);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public GaarasonTransactionManager gaarasonTransactionManager() {
+        log.info("-------------------- gaarasonTransactionManager init ------------------");
+        return new GaarasonTransactionManager(gaarasonDataSource());
     }
 
 }
@@ -327,7 +347,14 @@ public class BeanConfiguration {
         List<DataSource> dataSources = new ArrayList<>();
         dataSources.add(dataSourceMasterHUADONG());
         return GaarasonDataSourceBuilder.create().build(dataSources);
+    }
 
+    // 事物管理器
+    @Bean
+    @ConditionalOnMissingBean
+    public GaarasonTransactionManager gaarasonTransactionManagerHUADONG() {
+        log.info("-------------------- gaarasonTransactionManager for HUADONG init ------------------");
+        return new GaarasonTransactionManager(proxyDataSourceHUADONG());
     }
    
     //////////////// 另一个连接 ///////////////
@@ -346,7 +373,14 @@ public class BeanConfiguration {
         dataSources.add(dataSourceMasterHUANANList());
         return GaarasonDataSourceBuilder.create().build(dataSources);
     }
-    
+
+    // 事物管理器
+    @Bean
+    @ConditionalOnMissingBean
+    public GaarasonTransactionManager gaarasonTransactionManagerHUANAN() {
+        log.info("-------------------- gaarasonTransactionManager for HUANAN init ------------------");
+        return new GaarasonTransactionManager(proxyDataSourceHUANAN());
+    }
 
 }
 ```

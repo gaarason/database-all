@@ -1,33 +1,24 @@
-package gaarason.database.spring.boot.starter.configurations;
+package gaarason.database.spring.boot.starter.provider;
 
 import gaarason.database.contract.connection.GaarasonDataSource;
-import gaarason.database.eloquent.GeneralModel;
-import gaarason.database.generator.GeneralGenerator;
-import gaarason.database.spring.boot.starter.provider.SavepointManagerProvider;
-import org.springframework.context.annotation.Import;
+import org.springframework.transaction.SavepointManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
 
-import javax.annotation.Resource;
+public class GaarasonTransactionManager extends AbstractPlatformTransactionManager implements SavepointManager {
 
-@Import({SavepointManagerProvider.class})
-public class GaarasonTransactionManagerConfiguration extends AbstractPlatformTransactionManager {
+    protected GaarasonDataSource gaarasonDataSource;
 
-    @Resource
-    GaarasonDataSource gaarasonDataSource;
-
-    @Resource
-    SavepointManagerProvider savepointManagerProvider;
-
-    public GaarasonTransactionManagerConfiguration(){
+    public GaarasonTransactionManager(GaarasonDataSource gaarasonDataSource) {
+        this.gaarasonDataSource = gaarasonDataSource;
         setNestedTransactionAllowed(true);
     }
 
     @Override
     protected Object doGetTransaction() throws TransactionException {
-        return savepointManagerProvider;
+        return this;
     }
 
     @Override
@@ -48,5 +39,20 @@ public class GaarasonTransactionManagerConfiguration extends AbstractPlatformTra
     @Override
     protected void doRollback(DefaultTransactionStatus status) throws TransactionException {
         gaarasonDataSource.rollBack();
+    }
+
+    @Override
+    public Object createSavepoint() throws TransactionException {
+        return gaarasonDataSource.createSavepoint();
+    }
+
+    @Override
+    public void rollbackToSavepoint(Object savepoint) throws TransactionException {
+        gaarasonDataSource.rollbackToSavepoint();
+    }
+
+    @Override
+    public void releaseSavepoint(Object savepoint) throws TransactionException {
+        gaarasonDataSource.releaseSavepoint();
     }
 }
