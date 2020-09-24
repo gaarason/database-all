@@ -1,5 +1,7 @@
 package gaarason.database.eloquent.annotation;
 
+import gaarason.database.eloquent.appointment.IdGeneratorType;
+
 import java.lang.annotation.*;
 
 
@@ -13,4 +15,10 @@ public @interface Primary {
      * @return
      */
     boolean increment() default true;
+
+    /**
+     * id生成策略
+     * @return
+     */
+    IdGeneratorType idGenerator() default IdGeneratorType.AUTO;
 }

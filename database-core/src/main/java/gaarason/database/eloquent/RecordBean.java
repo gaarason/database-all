@@ -229,25 +229,6 @@ public class RecordBean<T, K> implements Record<T, K> {
         return EntityUtil.entityAssignment(this.metadataMap, clazz);
     }
 
-    /**
-     * 新增或者更新
-     * 新增情况下: saving -> creating -> created -> saved
-     * 更新情况下: saving -> updating -> updated -> saved
-     * @return 执行成功
-     */
-    public boolean save() {
-        // aop阻止
-        if (!model.saving(this)) {
-            return false;
-        }
-        // 执行
-        boolean success = hasBind ? update() : insert();
-        // aop通知
-        model.saved(this);
-        // 响应
-        return success;
-    }
-
     @Override
     public Record<T, K> withClear() {
         relationBuilderMap.clear();
@@ -279,7 +260,7 @@ public class RecordBean<T, K> implements Record<T, K> {
             String lastLevelColumn = columnArr[columnArr.length - 1];
             String otherLevelColumn = StringUtil.rtrim(column, "." + lastLevelColumn);
             return with(otherLevelColumn, builder -> builder,
-                    record -> record.with(lastLevelColumn, builderClosure, recordClosure));
+                record -> record.with(lastLevelColumn, builderClosure, recordClosure));
         }
 
         relationBuilderMap.put(column, builderClosure);
@@ -290,6 +271,25 @@ public class RecordBean<T, K> implements Record<T, K> {
     @Override
     public Bind bind(String fieldName) {
         return new BindBean<>(this, fieldName);
+    }
+
+    /**
+     * 新增或者更新
+     * 新增情况下: saving -> creating -> created -> saved
+     * 更新情况下: saving -> updating -> updated -> saved
+     * @return 执行成功
+     */
+    public boolean save() {
+        // aop阻止
+        if (!model.saving(this)) {
+            return false;
+        }
+        // 执行
+        boolean success = hasBind ? update() : insert();
+        // aop通知
+        model.saved(this);
+        // 响应
+        return success;
     }
 
     /**
@@ -308,8 +308,8 @@ public class RecordBean<T, K> implements Record<T, K> {
         }
         // 执行
         boolean success = model.newQuery()
-                .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-                .delete() > 0;
+            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
+            .delete() > 0;
         // 成功删除后后,刷新自身属性
         if (success) {
             this.metadataMap = new HashMap<>();
@@ -348,8 +348,8 @@ public class RecordBean<T, K> implements Record<T, K> {
         }
         // 执行
         boolean success = model.onlyTrashed()
-                .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-                .restore() > 0;
+            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
+            .restore() > 0;
         // 成功恢复后,刷新自身属性
         if (success && refresh) {
             refresh();
@@ -392,6 +392,8 @@ public class RecordBean<T, K> implements Record<T, K> {
         if (!model.creating(this)) {
             return false;
         }
+        // 主键处理
+        primaryKeyAutoDeal(entity);
         // 执行
         boolean success = model.newQuery().insertGetId(entity) != null;
         // 成功插入后,刷新自身属性
@@ -420,8 +422,8 @@ public class RecordBean<T, K> implements Record<T, K> {
         }
         // 执行
         boolean success = model.newQuery()
-                .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-                .update(entity) > 0;
+            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
+            .update(entity) > 0;
         // 成功更新后,刷新自身属性
         if (success) {
             selfUpdate(entity, false);
@@ -430,6 +432,21 @@ public class RecordBean<T, K> implements Record<T, K> {
         }
         // 响应
         return success;
+    }
+
+    /**
+     * 主键自动处理
+     * @param entity 实体
+     */
+    protected void primaryKeyAutoDeal(T entity) {
+        ModelShadowProvider.ModelInfo<T, K> modelInfo = ModelShadowProvider.get(this.model);
+        ModelShadowProvider.FieldInfo fieldInfo = modelInfo.getPrimaryKeyFieldInfo();
+        Object originallyPrimaryKeyValue = ModelShadowProvider.fieldGet(fieldInfo, entity);
+        if (originallyPrimaryKeyValue == null) {
+            K k = modelInfo.getIdGenerator().nextId();
+            // 生成后赋值
+            ModelShadowProvider.setPrimaryKeyValue(entity, k);
+        }
     }
 
     /**

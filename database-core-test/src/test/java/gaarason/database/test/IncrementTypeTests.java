@@ -99,11 +99,32 @@ public class IncrementTypeTests extends BaseTests {
             entity.setUpdatedAt(new Date(1312312312));
             entityList.add(entity);
         }
-        int        insert = peopleModel.newQuery().insert(entityList);
-        List<Long> longs  = peopleModel.newQuery().insertGetIds(entityList);
+        int insert = peopleModel.newQuery().insert(entityList);
+        List<Long> longs = peopleModel.newQuery().insertGetIds(entityList);
         Assert.assertEquals(9901, insert);
         Assert.assertEquals(9901, longs.size());
         System.out.println(longs);
+    }
+
+    @Test
+    public void 雪花算法id_ORM新增且没有赋值给主键才会生效() {
+        Record<PeopleModel.Entity, Long> entityLongRecord = peopleModel.newRecord();
+        PeopleModel.Entity entity = entityLongRecord.getEntity();
+        entity.setName("姓名");
+        entity.setAge(Byte.valueOf("13"));
+        entity.setSex(Byte.valueOf("1"));
+        entity.setTeacherId(0);
+        entity.setCreatedAt(new Date(1312312312));
+        entity.setUpdatedAt(new Date(1312312312));
+
+        entityLongRecord.save();
+        System.out.println(entity);
+        Assert.assertTrue(entity.getId() - 170936861320019968L > 0);
+
+        PeopleModel.Entity entity1 = peopleModel.findOrFail(entity.getId()).toObject();
+        System.out.println(entity1);
+        Assert.assertNotNull(entity1);
+        Assert.assertTrue(entity1.getId() - 170936861320019968L > 0);
     }
 
 

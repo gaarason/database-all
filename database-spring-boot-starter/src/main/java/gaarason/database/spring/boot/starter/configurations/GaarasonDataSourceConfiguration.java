@@ -6,7 +6,7 @@ import gaarason.database.connection.GaarasonDataSourceBuilder;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.generator.GeneralGenerator;
-import gaarason.database.spring.boot.starter.properties.DefaultProperties;
+import gaarason.database.spring.boot.starter.properties.GaarasonDatabaseProperties;
 import gaarason.database.spring.boot.starter.provider.GaarasonTransactionManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -23,7 +23,7 @@ import java.util.Collections;
 @Slf4j
 @Configuration
 @AutoConfigureBefore(DruidDataSourceAutoConfigure.class)
-@EnableConfigurationProperties({DefaultProperties.class})
+@EnableConfigurationProperties({GaarasonDatabaseProperties.class})
 @Import({GeneralModel.class, GeneralGenerator.class})
 public class GaarasonDataSourceConfiguration {
 

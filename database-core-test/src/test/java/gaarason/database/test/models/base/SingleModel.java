@@ -2,6 +2,7 @@ package gaarason.database.test.models.base;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import gaarason.database.connection.GaarasonDataSourceWrapper;
+import gaarason.database.contract.eloquent.Record;
 import gaarason.database.eloquent.Model;
 import lombok.extern.slf4j.Slf4j;
 
@@ -67,5 +68,14 @@ public class SingleModel<T, K> extends Model<T, K> {
     public void log(String sql, Collection<String> parameterList) {
         String format = String.format(sql.replace(" ? ", "\"%s\""), parameterList.toArray());
         log.info("SQL complete         : {}", format);
+    }
+
+
+    /**
+     * 事件会当一个新模型被首次保存的时候触发
+     * @return 继续操作
+     */
+    public boolean creating(Record<T, K> record) {
+        return true;
     }
 }

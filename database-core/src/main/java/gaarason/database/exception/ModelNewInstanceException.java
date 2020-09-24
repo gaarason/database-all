@@ -12,8 +12,8 @@ public class ModelNewInstanceException extends BaseException {
 
     protected List<Throwable> throwableList;
 
-    public ModelNewInstanceException(Class<? extends Model<?, ?>> modelClass, String message, Throwable e) {
-        super("Error instantiating model[" + modelClass + "] with message : " + message, e);
+    public ModelNewInstanceException(Class<?> modelClass, String message, Throwable e) {
+        super("Error instantiating object[" + modelClass + "] with message : " + message, e);
     }
 
     public ModelNewInstanceException(String message, Throwable e) {
@@ -21,7 +21,7 @@ public class ModelNewInstanceException extends BaseException {
     }
 
     public ModelNewInstanceException(Class<? extends Model<?, ?>> modelClass, List<Throwable> throwableList) {
-        super("Error instantiating model[" + modelClass + "] with message : "
+        super("Error instantiating object[" + modelClass + "] with message : "
             + throwableList.get(throwableList.size() - 1).getMessage(), throwableList.get(throwableList.size() - 1));
         this.throwableList = throwableList;
     }

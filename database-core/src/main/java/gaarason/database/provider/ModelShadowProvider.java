@@ -3,6 +3,7 @@ package gaarason.database.provider;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
+import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.annotation.*;
 import gaarason.database.eloquent.appointment.FinalVariable;
@@ -17,6 +18,7 @@ import gaarason.database.util.EntityUtil;
 import gaarason.database.util.ObjectUtil;
 import gaarason.database.util.ReflectionUtil;
 import lombok.Data;
+import lombok.Getter;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -34,8 +36,7 @@ final public class ModelShadowProvider {
     /**
      * Model Class做为索引
      */
-    final protected static Map<Class<? extends Model<?, ?>>, ModelInfo<?, ?>> modelIndexMap =
-        new ConcurrentHashMap<>();
+    final protected static Map<Class<? extends Model<?, ?>>, ModelInfo<?, ?>> modelIndexMap = new ConcurrentHashMap<>();
 
     /**
      * Model proxy Class做为索引
@@ -48,11 +49,26 @@ final public class ModelShadowProvider {
     final protected static Map<Class<?>, ModelInfo<?, ?>> entityIndexMap = new ConcurrentHashMap<>();
 
     /**
+     * id生成器
+     */
+    @Getter
+    final protected static IdGenerators idGenerators;
+
+    /**
      * 初始化
      */
     static {
         Set<Class<? extends Model<?, ?>>> modelClasses =
             ObjectUtil.typeCast(ReflectionUtil.reflections.getSubTypesOf(Model.class));
+
+        // 静态初始化
+        idGenerators = new IdGenerators(
+            ContainerProvider.getBean(IdGenerator.SnowFlakesID.class),
+            ContainerProvider.getBean(IdGenerator.UUID32.class),
+            ContainerProvider.getBean(IdGenerator.UUID36.class),
+            ContainerProvider.getBean(IdGenerator.Never.class),
+            ContainerProvider.getBean(IdGenerator.Custom.class)
+        );
 
         // 一轮初始化Model基础信息, 不存在依赖递归等复杂情况
         // 并过滤不需要的model, 比如抽象类等
@@ -219,19 +235,39 @@ final public class ModelShadowProvider {
     }
 
     /**
-     * 设置entity对象的自增属性值
+     * 设置 entity 对象的自增属性值
      * @param <T>    数据表实体类
      * @param <K>    数据表主键类型
      * @param entity 数据表实体对象
      * @param id     数据库生成的id
      * @throws IllegalAccessRuntimeException 反射赋值异常
      */
-    public static <T, K> void setPrimaryId(T entity, @Nullable K id) {
+    public static <T, K> void setPrimaryKeyValue(T entity, @Nullable K id) {
         // 属性信息集合
         FieldInfo primaryKeyFieldInfo = getByEntityClass(entity.getClass()).getPrimaryKeyFieldInfo();
         if (null != primaryKeyFieldInfo) {
             fieldSet(primaryKeyFieldInfo.field, entity, id);
         }
+    }
+
+    /**
+     * 获取 entity 对象的主键值
+     * @param <T>    数据表实体类
+     * @param <K>    数据表主键类型
+     * @param entity 数据表实体对象
+     * @throws IllegalAccessRuntimeException 反射赋值异常
+     */
+    @Nullable
+    public static <T, K> K getPrimaryKeyValue(T entity) {
+        // 属性信息集合
+        FieldInfo primaryKeyFieldInfo = getByEntityClass(entity.getClass()).getPrimaryKeyFieldInfo();
+        if (null != primaryKeyFieldInfo) {
+            Object value = fieldGet(primaryKeyFieldInfo, entity);
+            if (value != null) {
+                return ObjectUtil.typeCast(value);
+            }
+        }
+        return null;
     }
 
     /**
@@ -351,6 +387,7 @@ final public class ModelShadowProvider {
                 // 主键处理
                 if (field.isAnnotationPresent(Primary.class)) {
                     Primary primary = field.getAnnotation(Primary.class);
+                    // 主键 索引键入
                     modelInfo.primaryKeyFieldInfo = fieldInfo;
                     modelInfo.primaryKeyIncrement = primary.increment();
                     modelInfo.primaryKeyColumnName = fieldInfo.columnName;
@@ -361,6 +398,38 @@ final public class ModelShadowProvider {
                             "The primary key type [" + field.getType() + "] of the entity does not match with the " +
                                 "generic [" + modelInfo.primaryKeyClass + "]");
                     }
+                    // 主键生成器选择
+                    switch (primary.idGenerator()) {
+                        case SNOW_FLAKES_ID:
+                            modelInfo.idGenerator = ObjectUtil.typeCast(idGenerators.snowFlakesID);
+                            break;
+                        case UUID_36:
+                            modelInfo.idGenerator = ObjectUtil.typeCast(idGenerators.uuid36);
+                            break;
+                        case UUID_32:
+                            modelInfo.idGenerator = ObjectUtil.typeCast(idGenerators.uuid32);
+                            break;
+                        case NEVER:
+                            modelInfo.idGenerator = ObjectUtil.typeCast(idGenerators.never);
+                            break;
+                        case CUSTOM:
+                            modelInfo.idGenerator = ObjectUtil.typeCast(idGenerators.custom);
+                            break;
+                        default:
+                            // auto
+                            if (fieldInfo.javaType == Long.class) {
+                                modelInfo.idGenerator = ObjectUtil.typeCast(idGenerators.snowFlakesID);
+                            } else if (fieldInfo.javaType == String.class && fieldInfo.column != null) {
+                                if (fieldInfo.column.length() >= 36) {
+                                    modelInfo.idGenerator = ObjectUtil.typeCast(idGenerators.uuid36);
+                                } else if (fieldInfo.column.length() >= 32) {
+                                    modelInfo.idGenerator = ObjectUtil.typeCast(idGenerators.uuid32);
+                                }
+                            } else {
+                                modelInfo.idGenerator = ObjectUtil.typeCast(idGenerators.never);
+                            }
+                    }
+
                 }
 
                 // 属性名 索引键入
@@ -399,7 +468,7 @@ final public class ModelShadowProvider {
     protected static <T, K> void relationFieldDeal(ModelInfo<T, K> modelInfo) {
 
         Class<T> entityClass = modelInfo.entityClass;
-        Field[]  fields      = entityClass.getDeclaredFields();
+        Field[] fields = entityClass.getDeclaredFields();
 
         for (Field field : fields) {
             // 关联关系
@@ -483,6 +552,11 @@ final public class ModelShadowProvider {
          * 主键名(实体的属性名)
          */
         protected volatile String primaryKeyName;
+
+        /**
+         * 主键自动生成
+         */
+        protected volatile IdGenerator<K> idGenerator;
 
         /**
          * 主键自增
@@ -627,6 +701,35 @@ final public class ModelShadowProvider {
          * 关联关系注解
          */
         protected volatile RelationSubQuery relationSubQuery;
+    }
+
+    @Data
+    public static class IdGenerators {
+
+        /**
+         * 雪花id生成器
+         */
+        protected final IdGenerator.SnowFlakesID snowFlakesID;
+
+        /**
+         * uuid32位生成器
+         */
+        protected final IdGenerator.UUID32 uuid32;
+
+        /**
+         * uuid36位生成器
+         */
+        protected final IdGenerator.UUID36 uuid36;
+
+        /**
+         * 无生成
+         */
+        protected final IdGenerator.Never never;
+
+        /**
+         * 无生成
+         */
+        protected final IdGenerator.Custom custom;
     }
 
 }

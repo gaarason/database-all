@@ -181,10 +181,20 @@ int num = studentModel.newQuery().select(columnNameList).value(valueList).insert
 ```
 
 ### 自增id
-当数据库主键为`bigint unsigned`时, 可以使用雪花id生成器  
-默认使用本机mac地址转化为机器id(范围0-1023, 一旦出现机器id重复, 建议自行实现), 兼容10ms以内时间回拨, 单个进程每秒500w个id
+当数据库主键为`bigint unsigned`时, 可以使用雪花id生成器, 兼容10ms以内时间回拨, 单个进程每秒500w个id   
+- spring boot
+    - 设置工作id gaarason.database.snow-flake.worker-id=2
+
 ```java
-long id = gaarason.database.util.SnowFlakeIdUtil.getId();
+// 内部用法不建议使用, 因为api可能更改
+long id = ModelShadowProvider.getIdGenerators().getSnowFlakesID().nextId();
+
+// 建议使用定义时 @Primary() 强行指定
+// 注意, 有且只有使用 ORM 新增时,且主键没有赋值时, 生效
+// 且 默认的 IdGeneratorType.AUTO 更加智能
+@Primary(idGenerator = IdGeneratorType.SNOW_FLAKES_ID)
+private Long id;
+
 ```
 
 ## 更新

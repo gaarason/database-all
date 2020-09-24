@@ -1,7 +1,10 @@
 package gaarason.database.spring.boot.starter.configurations;
 
-import gaarason.database.core.lang.NonNull;
+import gaarason.database.contract.support.IdGenerator;
+import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.ModelInstanceProvider;
+import gaarason.database.spring.boot.starter.properties.GaarasonDatabaseProperties;
+import gaarason.database.support.SnowFlakeIdGenerator;
 import gaarason.database.util.ObjectUtil;
 import gaarason.database.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -13,10 +16,13 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import javax.annotation.Resource;
 
 @Slf4j
-public class GaarasonModelInstanceConfiguration implements ApplicationListener<ContextRefreshedEvent> {
+public class GaarasonInstanceConfiguration implements ApplicationListener<ContextRefreshedEvent> {
 
     @Resource
     ApplicationContext applicationContext;
+
+    @Resource
+    GaarasonDatabaseProperties gaarasonDatabaseProperties;
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -28,5 +34,12 @@ public class GaarasonModelInstanceConfiguration implements ApplicationListener<C
             }
         });
         log.info("Model instance provider has been registered success.");
+
+        int workerId = gaarasonDatabaseProperties.getSnowFlake().getWorkerId();
+        ContainerProvider.register(IdGenerator.SnowFlakesID.class,
+            (clazz -> new SnowFlakeIdGenerator(workerId, 0)));
+
+        log.info("SnowFlakesID[{}] instance has been registered success.", workerId);
+
     }
 }

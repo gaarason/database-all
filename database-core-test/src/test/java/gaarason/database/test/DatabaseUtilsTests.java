@@ -1,9 +1,13 @@
 package gaarason.database.test;
 
 import gaarason.database.contract.eloquent.Model;
+import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.test.relation.data.pojo.Teacher;
 import gaarason.database.test.utils.MultiThreadUtil;
-import gaarason.database.util.*;
+import gaarason.database.util.ExceptionUtil;
+import gaarason.database.util.FormatUtil;
+import gaarason.database.util.ObjectUtil;
+import gaarason.database.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -91,7 +95,7 @@ public class DatabaseUtilsTests {
         int b = 30000;
 
         MultiThreadUtil.run(a, b, () -> {
-            long id = SnowFlakeIdUtil.getId();
+            long id = ModelShadowProvider.getIdGenerators().getSnowFlakesID().nextId();
             synchronized (ids) {
                 ids.add(id);
             }

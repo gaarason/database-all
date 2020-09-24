@@ -511,7 +511,7 @@ public class MySqlBuilder<T, K> extends BaseBuilder<T, K> {
         // 执行, 并获取主键id
         K primaryId = insertGetId();
         // 赋值主键
-        ModelShadowProvider.setPrimaryId(entity, primaryId);
+        ModelShadowProvider.setPrimaryKeyValue(entity, primaryId);
         // 返回主键
         return primaryId;
     }

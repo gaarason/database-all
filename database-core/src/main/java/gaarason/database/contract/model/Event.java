@@ -6,6 +6,11 @@ import java.util.Collection;
 
 /**
  * 事件
+ * 查询 : retrieved
+ * 新增 : saving -> creating -> created -> saved
+ * 更新 : saving -> updating -> updated -> saved
+ * 删除 : deleting -> deleted
+ * 恢复 : restoring -> restored
  * @param <T> 实体类
  * @param <K> 主键类型
  */
