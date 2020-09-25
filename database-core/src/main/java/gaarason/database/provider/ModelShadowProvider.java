@@ -17,7 +17,6 @@ import gaarason.database.exception.InvalidPrimaryKeyTypeException;
 import gaarason.database.exception.TypeNotSupportedException;
 import gaarason.database.util.EntityUtil;
 import gaarason.database.util.ObjectUtil;
-import gaarason.database.util.ReflectionUtil;
 import lombok.Data;
 import lombok.Getter;
 
@@ -406,7 +405,7 @@ final public class ModelShadowProvider {
                     modelInfo.primaryKeyColumnName = fieldInfo.columnName;
                     modelInfo.primaryKeyName = field.getName();
                     // 主键类型检测
-                    if (!modelInfo.primaryKeyClass.equals(field.getType())) {
+                    if (!modelInfo.primaryKeyClass.equals(Object.class) && !modelInfo.primaryKeyClass.equals(field.getType())) {
                         throw new InvalidPrimaryKeyTypeException(
                             "The primary key type [" + field.getType() + "] of the entity does not match with the " +
                                 "generic [" + modelInfo.primaryKeyClass + "]");

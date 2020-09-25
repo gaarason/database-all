@@ -19,6 +19,8 @@ import java.util.concurrent.*;
 
 public class Generator {
 
+    final private static String ObjectName = "Object";
+
     final private static String entityTemplateStr = fileGetContent(getAbsoluteReadFileName("entity"));
 
     final private static String fieldTemplateStr = fileGetContent(getAbsoluteReadFileName("field"));
@@ -312,7 +314,7 @@ public class Generator {
                     // 主键的java类型
                     String primaryKeyType = Optional.ofNullable(tablePrimaryKeyTypeMap.get(tableName))
                         .map(Object::toString)
-                        .orElse("Object");
+                        .orElse(ObjectName);
                     // model文件名
                     String modelName = modelName(tableName);
                     // model文件内容
@@ -480,7 +482,11 @@ public class Generator {
 
         // 暂存主键类型
         if (field.getPrimary()) {
-            tablePrimaryKeyTypeMap.put(tableName, field.getJavaClassTypeString());
+            if( tablePrimaryKeyTypeMap.get(tableName) != null ){
+                tablePrimaryKeyTypeMap.put(tableName, ObjectName);
+            }else{
+                tablePrimaryKeyTypeMap.put(tableName, field.getJavaClassTypeString());
+            }
         }
 
         // 模板替换参数
