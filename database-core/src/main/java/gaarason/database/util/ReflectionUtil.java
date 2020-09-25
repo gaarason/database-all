@@ -1,6 +1,6 @@
 package gaarason.database.util;
 
-import org.reflections8.Reflections;
+import org.reflections.Reflections;
 
 public class ReflectionUtil {
 

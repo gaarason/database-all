@@ -34,8 +34,8 @@
             <version>RELEASE</version>
         </dependency>
         <dependency>
-            <groupId>net.oneandone.reflections8</groupId>
-            <artifactId>reflections8</artifactId>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
             <version>RELEASE</version>
         </dependency>
     </dependencies>
