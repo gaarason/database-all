@@ -24,23 +24,13 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
     /**
      * @return dataSource代理
      */
-    abstract public GaarasonDataSource getGaarasonDataSource();
+    abstract protected GaarasonDataSource getGaarasonDataSource();
 
-    /**
-     * 删除(软/硬删除)
-     * @param builder 查询构造器
-     * @return 删除的行数
-     */
     @Override
     public int delete(Builder<T, K> builder) {
         return softDeleting() ? softDelete(builder) : builder.forceDelete();
     }
 
-    /**
-     * 恢复软删除
-     * @param builder 查询构造器
-     * @return 删除的行数
-     */
     @Override
     public int restore(Builder<T, K> builder) {
         return softDeleteRestore(builder);
@@ -115,10 +105,6 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
         return apply(new MySqlBuilder<>(gaarasonDataSource, this, getEntityClass()));
     }
 
-    /**
-     * 新的查询构造器
-     * @return 查询构造器
-     */
     @Override
     public Builder<T, K> newQuery() {
         Builder<T, K> builder = theBuilder();
@@ -128,10 +114,6 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
         return builder;
     }
 
-    /**
-     * 包含软删除模型
-     * @return 查询构造器
-     */
     @Override
     public Builder<T, K> withTrashed() {
         Builder<T, K> builder = theBuilder();
@@ -139,10 +121,6 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
         return builder;
     }
 
-    /**
-     * 只获取软删除模型
-     * @return 查询构造器
-     */
     @Override
     public Builder<T, K> onlyTrashed() {
         Builder<T, K> builder = theBuilder();
@@ -150,10 +128,6 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
         return builder;
     }
 
-    /**
-     * 新的记录对象
-     * @return 记录对象
-     */
     @Override
     public Record<T, K> newRecord() {
         return new RecordBean<>(getEntityClass(), this);

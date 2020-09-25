@@ -58,9 +58,6 @@ final public class ModelShadowProvider {
      * 初始化
      */
     static {
-        Set<Class<? extends Model<?, ?>>> modelClasses =
-            ObjectUtil.typeCast(ReflectionUtil.reflections.getSubTypesOf(Model.class));
-
         // 静态初始化
         idGenerators = new IdGenerators(
             ContainerProvider.getBean(IdGenerator.SnowFlakesID.class),
@@ -72,21 +69,15 @@ final public class ModelShadowProvider {
 
         // 一轮初始化Model基础信息, 不存在依赖递归等复杂情况
         // 并过滤不需要的model, 比如抽象类等
-        for (Class<? extends Model<?, ?>> modelClass : modelClasses) {
-            initModelInformation(ObjectUtil.typeCast(modelClass));
-        }
+        initModelInformation();
+
         // 二轮补充基础字段信息
         // Model实例化存储
-        for (Class<? extends Model<?, ?>> modelClass : modelIndexMap.keySet()) {
-            ModelInfo<?, ?> modelInfo = modelIndexMap.get(modelClass);
-            primitiveFieldDeal(modelInfo);
-        }
+        primitiveFieldDeal();
+
         // 三轮补充关联关系字段信息
         // RelationSubQuery实例化存储, 依赖第二轮结果
-        for (Class<?> modelClass : modelIndexMap.keySet()) {
-            ModelInfo<?, ?> modelInfo = modelIndexMap.get(modelClass);
-            relationFieldDeal(modelInfo);
-        }
+        relationFieldDeal();
     }
 
     /**
@@ -318,6 +309,18 @@ final public class ModelShadowProvider {
 
     /**
      * 构建索引
+     */
+    protected static void initModelInformation() {
+        Set<Class<? extends Model<?, ?>>> modelClasses =
+            ObjectUtil.typeCast(ReflectionUtil.reflections.getSubTypesOf(Model.class));
+
+        for (Class<? extends Model<?, ?>> modelClass : modelClasses) {
+            initModelInformation(ObjectUtil.typeCast(modelClass));
+        }
+    }
+
+    /**
+     * 构建索引
      * @param modelClass 模型类
      * @param <T>        实体类
      * @param <K>        主键类型
@@ -347,6 +350,16 @@ final public class ModelShadowProvider {
         modelInfo.entityClass = ObjectUtil.getGenerics(modelInfo.modelClass, 0);
         modelInfo.primaryKeyClass = ObjectUtil.getGenerics(modelInfo.modelClass, 1);
         modelInfo.tableName = EntityUtil.tableName(modelInfo.entityClass);
+    }
+
+    /**
+     * 补充基本字段信息
+     */
+    protected static void primitiveFieldDeal() {
+        for (Class<? extends Model<?, ?>> modelClass : modelIndexMap.keySet()) {
+            ModelInfo<?, ?> modelInfo = modelIndexMap.get(modelClass);
+            primitiveFieldDeal(modelInfo);
+        }
     }
 
     /**
@@ -456,6 +469,16 @@ final public class ModelShadowProvider {
                     fieldInfo.nullable = false;
                 }
             }
+        }
+    }
+
+    /**
+     * 补充关系字段信息
+     */
+    protected static void relationFieldDeal() {
+        for (Class<?> modelClass : modelIndexMap.keySet()) {
+            ModelInfo<?, ?> modelInfo = modelIndexMap.get(modelClass);
+            relationFieldDeal(modelInfo);
         }
     }
 

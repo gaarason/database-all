@@ -15,7 +15,7 @@ abstract public class ${model_name}<T, K> extends Model<T, K> {\n
     protected GaarasonDataSource gaarasonDataSource;\n
 \n
     @Override\n
-    public GaarasonDataSource getProxyDataSource(){\n
+    protected GaarasonDataSource getGaarasonDataSource(){\n
         return gaarasonDataSource;\n
     }\n
 \n

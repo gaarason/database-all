@@ -54,12 +54,10 @@ import java.util.Collections;
 @Slf4j
 @Configuration
 @AutoConfigureBefore(DruidDataSourceAutoConfigure.class)
-@EnableConfigurationProperties({DefaultProperties.class})
-@Import({GeneralModel.class, GeneralGenerator.class})
 public class GaarasonDataSourceConfiguration {
 
     @Bean
-    @ConfigurationProperties(prefix = "spring.datasource.druid")
+    @ConfigurationProperties(prefix = "database.master0")
     @ConditionalOnMissingBean
     public DataSource dataSourceDruidConfig() {
         log.info("-------------------- dataSource druid config init ---------------------");

@@ -107,7 +107,9 @@ public class TestApplicationTests {
 
     @Test
     public void 简单查询() {
+
         Record<GeneralModel.Table, Object> first = generalModel.newQuery().from("student").where("id", "3").first();
+        
         Assert.assertNotNull(first);
         Map<String, Object> stringObjectMap = first.toMap();
         Assert.assertEquals((long) stringObjectMap.get("id"), 3);
