@@ -4,6 +4,7 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.contract.support.IdGenerator;
+import gaarason.database.contract.support.ReflectionScan;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.annotation.*;
 import gaarason.database.eloquent.appointment.FinalVariable;
@@ -311,8 +312,7 @@ final public class ModelShadowProvider {
      * 构建索引
      */
     protected static void initModelInformation() {
-        Set<Class<? extends Model<?, ?>>> modelClasses =
-            ObjectUtil.typeCast(ReflectionUtil.reflections.getSubTypesOf(Model.class));
+        Set<Class<? extends Model<?, ?>>> modelClasses = ContainerProvider.getBean(ReflectionScan.class).scanModels();
 
         for (Class<? extends Model<?, ?>> modelClass : modelClasses) {
             initModelInformation(ObjectUtil.typeCast(modelClass));

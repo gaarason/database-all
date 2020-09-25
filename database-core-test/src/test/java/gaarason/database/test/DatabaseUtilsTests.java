@@ -13,7 +13,7 @@ import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.reflections.Reflections;
+import org.reflections8.Reflections;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -140,11 +140,14 @@ public class DatabaseUtilsTests {
 
     @Test
     public void test() {
-        Reflections                 reflections = new Reflections("");
+        Reflections                 reflections = new Reflections("lombok","gaarason.database","");
         Set<Class<? extends Model>> subTypesOf  = reflections.getSubTypesOf(Model.class);
         System.out.println(subTypesOf);
 
-//        ModelShadow.test();
+//        Reflections                 reflections1 = new Reflections("lombok");
+//        Set<Class<? extends Model>> subTypesOf1  = reflections1.getSubTypesOf(Model.class);
+//        System.out.println(subTypesOf1);
+
 
     }
 

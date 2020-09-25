@@ -1,12 +1,16 @@
 package gaarason.database.provider;
 
+import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.InstanceCreatorFunctionalInterface;
 import gaarason.database.contract.support.IdGenerator;
+import gaarason.database.contract.support.ReflectionScan;
 import gaarason.database.exception.InvalidConfigException;
 import gaarason.database.exception.ModelNewInstanceException;
 import gaarason.database.support.SnowFlakeIdGenerator;
 import gaarason.database.util.ObjectUtil;
+import org.reflections8.Reflections;
 
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,23 +34,24 @@ final public class ContainerProvider {
      */
     static {
         // ID生成 雪花算法
-        instanceCreatorMap.put(IdGenerator.SnowFlakesID.class, (clazz -> new SnowFlakeIdGenerator(0, 0)));
+        register(IdGenerator.SnowFlakesID.class, (clazz -> new SnowFlakeIdGenerator(0, 0)));
         // ID生成 UUID 36
-        instanceCreatorMap.put(IdGenerator.UUID36.class,
-            (InstanceCreatorFunctionalInterface<IdGenerator.UUID36>) clazz ->
-                () -> UUID.randomUUID().toString());
+        register(IdGenerator.UUID36.class, clazz -> () -> UUID.randomUUID().toString());
         // ID生成 UUID 32
-        instanceCreatorMap.put(IdGenerator.UUID32.class,
-            (InstanceCreatorFunctionalInterface<IdGenerator.UUID32>) clazz ->
-                () -> UUID.randomUUID().toString().replace("-", ""));
+        register(IdGenerator.UUID32.class, clazz -> () -> UUID.randomUUID().toString().replace("-", ""));
         // ID生成 Never
-        instanceCreatorMap.put(IdGenerator.Never.class,
-            (InstanceCreatorFunctionalInterface<IdGenerator.Never>) clazz ->
-                () -> null);
+        register(IdGenerator.Never.class, clazz -> () -> null);
         // ID生成 自定义
-        instanceCreatorMap.put(IdGenerator.Custom.class,
-            (InstanceCreatorFunctionalInterface<IdGenerator.Custom>) clazz ->
-                () -> null);
+        register(IdGenerator.Custom.class, clazz -> () -> null);
+        // 包扫描
+        register(ReflectionScan.class, clazz -> new ReflectionScan() {
+            public final Reflections reflections = new Reflections("", "gaarason.database");
+
+            @Override
+            public Set<Class<? extends Model<?, ?>>> scanModels() {
+                return ObjectUtil.typeCast(reflections.getSubTypesOf(Model.class));
+            }
+        });
     }
 
     /**
@@ -56,7 +61,7 @@ final public class ContainerProvider {
      */
     public static <T> void register(Class<T> interfaceClass, InstanceCreatorFunctionalInterface<T> closure) {
         if (instanceMap.get(interfaceClass) != null) {
-            throw new InvalidConfigException("Should be registered before get bean.");
+            throw new InvalidConfigException(interfaceClass +" should be registered before get bean.");
         }
         instanceCreatorMap.put(interfaceClass, closure);
     }
