@@ -89,7 +89,7 @@ public class TestApplicationTests {
         Record<GeneralModel.Table, Object> first = generalModel.newQuery().from("student").where("id", "3").first();
         Assert.assertNotNull(first);
         Map<String, Object> stringObjectMap = first.toMap();
-        Assert.assertEquals(stringObjectMap.get("id"), 3);
+        Assert.assertEquals(stringObjectMap.get("id").toString(), "3");
         System.out.println(stringObjectMap);
     }
 

@@ -13,7 +13,7 @@ import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.reflections.Reflections;
+import org.reflections8.Reflections;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;

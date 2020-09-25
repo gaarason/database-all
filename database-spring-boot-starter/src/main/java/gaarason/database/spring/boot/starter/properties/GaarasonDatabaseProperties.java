@@ -12,7 +12,7 @@ public class GaarasonDatabaseProperties implements Serializable {
     /**
      * 雪花算法
      */
-    private SnowFlake snowFlake;
+    private SnowFlake snowFlake = new SnowFlake();
 
     @Data
     public static class SnowFlake implements Serializable {
@@ -20,6 +20,6 @@ public class GaarasonDatabaseProperties implements Serializable {
         /**
          * 雪花算法 工作ID ( 0 - 31 )
          */
-        private int workerId;
+        private int workerId = 0;
     }
 }
