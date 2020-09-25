@@ -124,7 +124,7 @@ public class SnowFlakeIdGenerator implements IdGenerator.SnowFlakesID {
         long effectiveAge =
             ((1L << (64 - 1 - SEQUENCE_BITS - WORKER_ID_BITS - DATA_CENTER_ID_BITS)) - (getSystemCurrentTimeMillis() - INITIAL_TIME_STAMP)) / (1000L * 3600 * 24 * 365);
         System.out.println(
-            "雪花算法信息 : 尚可使用 " + effectiveAge + " 年, 当前 workerID " + workerId + " , 当前 dataCenterID " + dataCenterId);
+            "雪花算法信息 : 尚可使用 " + effectiveAge + " 年, 当前 workerID " + workerId + " (最大 : " + MAX_WORKER_ID + ") , 当前 dataCenterID " + dataCenterId);
     }
 
     /**
