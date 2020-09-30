@@ -12,13 +12,11 @@ public interface SavepointManager {
 
     /**
      * 回滚到回滚点
-     * @param savepoint 回滚点
      */
     void rollbackToSavepoint();
 
     /**
      * 移除回滚点
-     * @param savepoint 回滚点
      */
     void releaseSavepoint();
 }

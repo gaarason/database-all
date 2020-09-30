@@ -79,18 +79,18 @@ public class RelationGetSupport<T, K> {
                 T entity = modelInfo.getEntityClass().newInstance();
                 // 普通属性集合
                 Map<String, ModelShadowProvider.FieldInfo> javaFieldMap = modelInfo.getJavaFieldMap();
-                for (String fieldName : javaFieldMap.keySet()) {
+                for (Map.Entry<String, ModelShadowProvider.FieldInfo> entry : javaFieldMap.entrySet()) {
                     // 普通属性信息
-                    ModelShadowProvider.FieldInfo fieldInfo = javaFieldMap.get(fieldName);
+                    ModelShadowProvider.FieldInfo fieldInfo = entry.getValue();
                     // 普通属性赋值
                     ModelShadowProvider.fieldAssignment(fieldInfo, record.getMetadataMap(), entity, record);
                 }
 
                 // 关系属性集合
                 Map<String, ModelShadowProvider.RelationFieldInfo> relationFieldMap = modelInfo.getRelationFieldMap();
-                for (String fieldName : relationFieldMap.keySet()) {
+                for (Map.Entry<String, ModelShadowProvider.RelationFieldInfo> entry : relationFieldMap.entrySet()) {
                     // 关系属性信息
-                    ModelShadowProvider.RelationFieldInfo relationFieldInfo = relationFieldMap.get(fieldName);
+                    ModelShadowProvider.RelationFieldInfo relationFieldInfo = entry.getValue();
 
                     // 获取关系的预处理
                     GenerateSqlPartFunctionalInterface generateSqlPart = record.getRelationBuilderMap()

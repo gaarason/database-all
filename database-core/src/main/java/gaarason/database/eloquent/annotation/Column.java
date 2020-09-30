@@ -1,5 +1,7 @@
 package gaarason.database.eloquent.annotation;
 
+import gaarason.database.eloquent.appointment.JdbcType;
+
 import java.lang.annotation.*;
 
 @Documented
@@ -81,4 +83,9 @@ public @interface Column {
      * 注释
      */
     String comment() default "";
+
+    /**
+     * 数据库中的数据类型
+     */
+    JdbcType jdbcType() default JdbcType.UNDEFINED;
 }

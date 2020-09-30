@@ -12,13 +12,13 @@ import java.lang.annotation.*;
 public @interface Primary {
     /**
      * 自增主键
-     * @return
+     * @return 自增主键
      */
     boolean increment() default true;
 
     /**
      * id生成策略
-     * @return
+     * @return id生成策略
      */
     IdGeneratorType idGenerator() default IdGeneratorType.AUTO;
 }

@@ -1,7 +1,5 @@
 package gaarason.database.eloquent.annotation;
 
-import gaarason.database.contract.eloquent.Model;
-
 import java.lang.annotation.*;
 
 /**
@@ -17,13 +15,13 @@ public @interface HasOneOrMany {
 
     /**
      * `子表`中的`关联本表的外键`
-     * @return
+     * @return `子表`中的`关联本表的外键`
      */
     String sonModelForeignKey();
 
     /**
      * `本表`中的`关联键`, 默认值为`本表`的主键(`@Primary()`修饰的键)
-     * @return
+     * @return `本表`中的`关联键`
      */
     String localModelLocalKey() default "";
 

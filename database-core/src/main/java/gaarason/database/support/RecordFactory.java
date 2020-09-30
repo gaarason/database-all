@@ -157,7 +157,7 @@ public class RecordFactory {
      * @return 通用map
      * @throws SQLException 数据库异常
      */
-    private static Map<String, Column> JDBCResultToMap(ResultSetMetaData resultSetMetaData, ResultSet resultSet)
+    public static Map<String, Column> JDBCResultToMap(ResultSetMetaData resultSetMetaData, ResultSet resultSet)
         throws SQLException {
         Map<String, Column> map                = new HashMap<>();
         final int           columnCountMoreOne = resultSetMetaData.getColumnCount() + 1;

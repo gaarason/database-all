@@ -5,7 +5,6 @@ import gaarason.database.contract.function.InstantiationModelFunctionalInterface
 import gaarason.database.exception.InvalidConfigException;
 import gaarason.database.exception.ModelNewInstanceException;
 import gaarason.database.util.ObjectUtil;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,10 +26,8 @@ final public class ModelInstanceProvider {
      */
     private static volatile boolean executed = false;
 
-    /**
-     * 初始化默认的 Model实例化工厂
-     */
     static {
+        // 初始化默认的 Model实例化工厂
         instantiations.add((modelClass) -> {
             try {
                 return modelClass.newInstance();
@@ -55,8 +52,8 @@ final public class ModelInstanceProvider {
      * 返回一个模型(是否是单例, 仅取决于Model实例化工厂)
      * 当存在多个工厂时, 后加入的先执行, 只要执行正确则直接返回
      * @param modelClass 模型类
-     * @param <T> 实体类
-     * @param <K> 主键类
+     * @param <T>        实体类
+     * @param <K>        主键类
      * @return 模型对象
      */
     public static <T, K> Model<T, K> getModel(Class<? extends Model<T, K>> modelClass) {

@@ -15,31 +15,31 @@ public @interface BelongsToMany {
 
     /**
      * `关系表`model
-     * @return
+     * @return `关系表`
      */
     Class<? extends Model<?, ?>> relationModel();
 
     /**
      * `本表`中的`关联键`
-     * @return
+     * @return `本表`中的`关联键`
      */
     String localModelLocalKey();
 
     /**
      * `关系表`中的`关联本表的外键`
-     * @return
+     * @return `关系表`中的`关联本表的外键`
      */
     String foreignKeyForLocalModel();
 
     /**
      * `关系表`中的`关联目标表的外键`
-     * @return
+     * @return `关系表`中的`关联目标表的外键`
      */
     String foreignKeyForTargetModel();
 
     /**
      * `目标表`中的`关联键`
-     * @return
+     * @return `目标表`中的`关联键`
      */
     String targetModelLocalKey();
 }

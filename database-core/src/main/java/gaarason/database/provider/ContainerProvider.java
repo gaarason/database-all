@@ -29,9 +29,6 @@ final public class ContainerProvider {
      */
     private final static ConcurrentHashMap<Class<?>, Object> instanceMap = new ConcurrentHashMap<>();
 
-    /**
-     * 初始化默认的
-     */
     static {
         // ID生成 雪花算法
         register(IdGenerator.SnowFlakesID.class, (clazz -> new SnowFlakeIdGenerator(0, 0)));
@@ -61,7 +58,7 @@ final public class ContainerProvider {
      */
     public static <T> void register(Class<T> interfaceClass, InstanceCreatorFunctionalInterface<T> closure) {
         if (instanceMap.get(interfaceClass) != null) {
-            throw new InvalidConfigException(interfaceClass +" should be registered before get bean.");
+            throw new InvalidConfigException(interfaceClass + " should be registered before get bean.");
         }
         instanceCreatorMap.put(interfaceClass, closure);
     }

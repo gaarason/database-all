@@ -10,7 +10,7 @@ import java.util.List;
 
 public class MySqlGrammar extends BaseGrammar {
 
-    private String table;
+    private final String table;
 
     private String data;
 
@@ -37,11 +37,11 @@ public class MySqlGrammar extends BaseGrammar {
 
     private String union;
 
-    private List<String> valueList = new ArrayList<>();
+    private final List<String> valueList = new ArrayList<>();
 
-    private List<String> whereParameterList = new ArrayList<>();
+    private final List<String> whereParameterList = new ArrayList<>();
 
-    private List<String> dataParameterList = new ArrayList<>();
+    private final List<String> dataParameterList = new ArrayList<>();
 
 
     public MySqlGrammar(String tableName) {

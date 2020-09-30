@@ -45,7 +45,8 @@ public interface Relationship<T, K> {
                       RelationshipRecordWithFunctionalInterface recordClosure);
 
     /**
-     * @return
+     * 关系绑定操作对象
+     * @return 关系绑定操作对象
      */
     Bind bind(String column);
 }

@@ -7,7 +7,7 @@ public enum OrderBy {
     ASC("asc"), DESC("desc");
 
     @Getter
-    private String operation;
+    private final String operation;
 
     OrderBy(String operation) {
         this.operation = operation;

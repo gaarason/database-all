@@ -8,7 +8,6 @@ import gaarason.database.contract.function.RelationshipRecordWithFunctionalInter
 import gaarason.database.support.Column;
 import gaarason.database.support.RelationGetSupport;
 import gaarason.database.util.EntityUtil;
-import gaarason.database.util.PerformanceUtil;
 import gaarason.database.util.StringUtil;
 
 import java.util.*;
@@ -18,7 +17,7 @@ public class RecordListBean<T, K> extends ArrayList<Record<T, K>> implements Rec
     /**
      * 元数据
      */
-    protected List<Map<String, Column>> originalMetadataMapList = new ArrayList<>();
+    protected final List<Map<String, Column>> originalMetadataMapList = new ArrayList<>();
 
     /**
      * 原始sql
@@ -109,7 +108,7 @@ public class RecordListBean<T, K> extends ArrayList<Record<T, K>> implements Rec
         Map<String, List<Object>> map = new HashMap<>();
 //        PerformanceUtil.steam(this).notifyAll();
         for (Record<T, K> record : this) {
-            for(String column : record.getMetadataMap().keySet()) {
+            for (String column : record.getMetadataMap().keySet()) {
                 List<Object> list = map.computeIfAbsent(column, (key) -> new ArrayList<>());
                 list.add(record.getMetadataMap().get(column).getValue());
             }
@@ -164,7 +163,7 @@ public class RecordListBean<T, K> extends ArrayList<Record<T, K>> implements Rec
             String lastLevelColumn = columnArr[columnArr.length - 1];
             String otherLevelColumn = StringUtil.rtrim(column, "." + lastLevelColumn);
             return with(otherLevelColumn, builder -> builder,
-                    record -> record.with(lastLevelColumn, builderClosure, recordClosure));
+                record -> record.with(lastLevelColumn, builderClosure, recordClosure));
         }
         for (Record<T, K> tkRecord : this) {
             // 赋值关联关系过滤

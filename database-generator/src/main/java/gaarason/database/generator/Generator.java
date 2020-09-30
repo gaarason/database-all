@@ -596,9 +596,6 @@ public class Generator {
 
         protected static GaarasonDataSourceWrapper gaarasonDataSource = null;
 
-        public ToolModel() {
-        }
-
         public GaarasonDataSourceWrapper getGaarasonDataSource() {
             return gaarasonDataSource;
         }

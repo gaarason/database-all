@@ -54,9 +54,6 @@ final public class ModelShadowProvider {
     @Getter
     final protected static IdGenerators idGenerators;
 
-    /**
-     * 初始化
-     */
     static {
         // 静态初始化
         idGenerators = new IdGenerators(
@@ -135,14 +132,14 @@ final public class ModelShadowProvider {
         Map<String, String> columnValueMap = new HashMap<>();
         // 属性信息集合
         Map<String, FieldInfo> columnFieldMap = getByEntityClass(entity.getClass()).getColumnFieldMap();
-        for (String columnName : columnFieldMap.keySet()) {
+        for (Map.Entry<String, FieldInfo> entry : columnFieldMap.entrySet()) {
             // 属性信息
-            FieldInfo fieldInfo = columnFieldMap.get(columnName);
+            FieldInfo fieldInfo = entry.getValue();
             // 值
             Object value = fieldGet(fieldInfo, entity);
             // 有效则加入 结果集
             if (effectiveField(fieldInfo, value, insertType)) {
-                columnValueMap.put(columnName, EntityUtil.valueFormat(value));
+                columnValueMap.put(entry.getKey(), EntityUtil.valueFormat(value));
             }
         }
         return columnValueMap;
@@ -161,15 +158,14 @@ final public class ModelShadowProvider {
         List<String> columnList = new ArrayList<>();
         // 属性信息集合
         Map<String, FieldInfo> columnFieldMap = getByEntityClass(entity.getClass()).getColumnFieldMap();
-
-        for (String columnName : columnFieldMap.keySet()) {
+        for (Map.Entry<String, FieldInfo> entry : columnFieldMap.entrySet()) {
             // 属性信息
-            FieldInfo fieldInfo = columnFieldMap.get(columnName);
+            FieldInfo fieldInfo = entry.getValue();
             // 值
             Object value = fieldGet(fieldInfo, entity);
             // 有效则加入 结果集
             if (effectiveField(fieldInfo, value, insertType)) {
-                columnList.add(columnName);
+                columnList.add(entry.getKey());
             }
         }
         return columnList;
@@ -187,12 +183,11 @@ final public class ModelShadowProvider {
         List<String> valueList = new ArrayList<>();
         // 属性信息集合
         Map<String, FieldInfo> columnFieldMap = getByEntityClass(entity.getClass()).getColumnFieldMap();
-
-        for (String columnName : columnFieldMap.keySet()) {
+        for (Map.Entry<String, FieldInfo> entry : columnFieldMap.entrySet()) {
             // 属性信息
-            FieldInfo fieldInfo = columnFieldMap.get(columnName);
+            FieldInfo fieldInfo = entry.getValue();
             // 加入需要的数据
-            if (columnNameList.contains(columnName)) {
+            if (columnNameList.contains(entry.getKey())) {
                 valueList.add(EntityUtil.valueFormat(fieldGet(fieldInfo, entity)));
             }
         }
@@ -355,8 +350,8 @@ final public class ModelShadowProvider {
      * 补充基本字段信息
      */
     protected static void primitiveFieldDeal() {
-        for (Class<? extends Model<?, ?>> modelClass : modelIndexMap.keySet()) {
-            ModelInfo<?, ?> modelInfo = modelIndexMap.get(modelClass);
+        for (Map.Entry<Class<? extends Model<?, ?>>, ModelInfo<?, ?>> entry : modelIndexMap.entrySet()) {
+            ModelInfo<?, ?> modelInfo = entry.getValue();
             primitiveFieldDeal(modelInfo);
         }
     }
@@ -475,9 +470,8 @@ final public class ModelShadowProvider {
      * 补充关系字段信息
      */
     protected static void relationFieldDeal() {
-        for (Class<?> modelClass : modelIndexMap.keySet()) {
-            ModelInfo<?, ?> modelInfo = modelIndexMap.get(modelClass);
-            relationFieldDeal(modelInfo);
+        for (Map.Entry<Class<? extends Model<?, ?>>, ModelInfo<?, ?>> entry : modelIndexMap.entrySet()) {
+            relationFieldDeal(entry.getValue());
         }
     }
 
@@ -672,11 +666,6 @@ final public class ModelShadowProvider {
          * 默认值
          */
         protected volatile String defaultValue;
-
-        /**
-         * 数据库中的字段类型
-         */
-//        protected String jdbcType;
 
         /**
          * column 注解

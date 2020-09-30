@@ -5,7 +5,8 @@ import gaarason.database.eloquent.appointment.JoinType;
 
 /**
  * 连接
- * @param <T, K>
+ * @param <T>
+ * @param <K>
  */
 public interface Join<T, K> {
 

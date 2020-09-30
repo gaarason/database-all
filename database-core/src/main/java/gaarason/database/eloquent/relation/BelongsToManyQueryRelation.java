@@ -303,18 +303,17 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
             return 0;
         }
 
-        // 预处理中间表信息
-        Set<String>  middleColumnSet = stringStringMap.keySet();
-        List<String> middleValueList = new ArrayList<>();
-        for (String column : middleColumnSet) {
-            middleValueList.add(stringStringMap.get(column));
-        }
-
         // 格式化, 并附带需要存储到中间表的信息
         List<String> columnList = new ArrayList<>();
         columnList.add(belongsToManyTemplate.foreignKeyForLocalModel);
         columnList.add(belongsToManyTemplate.foreignKeyForTargetModel);
-        columnList.addAll(middleColumnSet);
+
+        // 预处理中间表信息
+        List<String> middleValueList = new ArrayList<>();
+        for (Map.Entry<String, String> entry : stringStringMap.entrySet()) {
+            columnList.add(entry.getKey());
+            middleValueList.add(entry.getValue());
+        }
 
         List<List<String>> valuesList = new ArrayList<>();
         for (Object o : targetModelLocalKeyValues) {

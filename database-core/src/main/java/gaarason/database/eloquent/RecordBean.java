@@ -112,6 +112,7 @@ public class RecordBean<T, K> implements Record<T, K> {
     }
 
     @Override
+    @Nullable
     public K getOriginalPrimaryKeyValue() {
         return originalPrimaryKeyValue;
     }
@@ -472,9 +473,9 @@ public class RecordBean<T, K> implements Record<T, K> {
         // 字段信息集合
         Map<String, ModelShadowProvider.FieldInfo> fieldInfoMap = insertType ? modelInfo.getJavaFieldInsertMap() : modelInfo.getJavaFieldUpdateMap();
 
-        for (String fieldName : fieldInfoMap.keySet()) {
+        for (Map.Entry<String, ModelShadowProvider.FieldInfo> entry : fieldInfoMap.entrySet()) {
             // 字段信息
-            ModelShadowProvider.FieldInfo fieldInfo = fieldInfoMap.get(fieldName);
+            ModelShadowProvider.FieldInfo fieldInfo = entry.getValue();
             // 获取值
             Object value = ModelShadowProvider.fieldGet(fieldInfo, entity);
             // 声明不可 null, 值仍然为null, 说明值无效

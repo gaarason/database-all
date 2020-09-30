@@ -33,12 +33,12 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
     /**
      * 数据模型
      */
-    protected Model<T, K> model;
+    protected final Model<T, K> model;
 
     /**
      * 数据实体类
      */
-    Class<T> entityClass;
+    final Class<T> entityClass;
 
     /**
      * sql生成器
@@ -405,10 +405,10 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
         List<String>          parameterList = grammar.getParameterList(SqlType.SELECT);
         Map<String, Object[]> columnMap     = grammar.pullWith();
         Record<T, K>          record        = queryOrFail(sql, parameterList);
-        for (String column : columnMap.keySet()) {
-            Object[] objects = columnMap.get(column);
-            record.with(column, (GenerateSqlPartFunctionalInterface) objects[0],
-                (RelationshipRecordWithFunctionalInterface) objects[1]);
+        for (Map.Entry<String, Object[]> stringEntry : columnMap.entrySet()) {
+            Object[] value = stringEntry.getValue();
+            record.with(stringEntry.getKey(), (GenerateSqlPartFunctionalInterface) value[0],
+                (RelationshipRecordWithFunctionalInterface) value[1]);
         }
         return record;
     }
@@ -425,10 +425,9 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
         List<String>          parameterList = grammar.getParameterList(SqlType.SELECT);
         Map<String, Object[]> columnMap     = grammar.pullWith();
         RecordList<T, K>      records       = queryList(sql, parameterList);
-        for (String column : columnMap.keySet()) {
-            Object[] objects = columnMap.get(column);
-            records.with(column, (GenerateSqlPartFunctionalInterface) objects[0],
-                (RelationshipRecordWithFunctionalInterface) objects[1]);
+        for (Map.Entry<String, Object[]> stringEntry : columnMap.entrySet()) {
+            records.with(stringEntry.getKey(), (GenerateSqlPartFunctionalInterface) stringEntry.getValue()[0],
+                (RelationshipRecordWithFunctionalInterface) stringEntry.getValue()[1]);
         }
         return records;
     }
@@ -444,11 +443,11 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
             List<String>          parameterList = cloneBuilder.getGrammar().getParameterList(SqlType.SELECT);
             Map<String, Object[]> columnMap     = grammar.pullWith();
             RecordList<T, K>      records       = queryList(sql, parameterList);
-            for (String column : columnMap.keySet()) {
-                Object[] objects = columnMap.get(column);
-                records.with(column, (GenerateSqlPartFunctionalInterface) objects[0],
-                    (RelationshipRecordWithFunctionalInterface) objects[1]);
+            for (Map.Entry<String, Object[]> stringEntry : columnMap.entrySet()) {
+                records.with(stringEntry.getKey(), (GenerateSqlPartFunctionalInterface) stringEntry.getValue()[0],
+                    (RelationshipRecordWithFunctionalInterface) stringEntry.getValue()[1]);
             }
+
             flag = chunkFunctionalInterface.execute(records) && (records.size() == num);
             offset += num;
         } while (flag);

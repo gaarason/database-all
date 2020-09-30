@@ -1,7 +1,5 @@
 package gaarason.database.eloquent.annotation;
 
-import gaarason.database.contract.eloquent.Model;
-
 import java.lang.annotation.*;
 
 /**
@@ -15,13 +13,13 @@ public @interface BelongsTo {
 
     /**
      * `本表`中的`关联父表的外键`
-     * @return
+     * @return `本表`中的`关联父表的外键`
      */
     String localModelForeignKey();
 
     /**
      * `父表`中的`关联键`, 默认值为`父表`的主键(`@Primary()`修饰的键)
-     * @return
+     * @return `父表`中的`关联键`
      */
     String parentModelLocalKey() default "";
 

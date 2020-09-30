@@ -43,6 +43,6 @@ public enum Propagation {
      * 与PROPAGATION_REQUIRES_NEW的区别：嵌套事务由外层事务决定提交，而PROPAGATION_REQUIRES_NEW独立提交。
      * 与PROPAGATION_REQUIRED的区别：发生异常时，嵌套事务回滚至嵌套事务开始处（即“保存点”），PROPAGATION_REQUIRED没有保存点。
      */
-    NESTED;
+    NESTED
 
 }
