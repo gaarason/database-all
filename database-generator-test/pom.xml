@@ -35,7 +35,7 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
-            <version>RELEASE</version>
+            <version>4.13.1</version>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
