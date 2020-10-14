@@ -6,6 +6,7 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.core.lang.Nullable;
+import gaarason.database.eloquent.appointment.DatabaseType;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.query.MySqlBuilder;

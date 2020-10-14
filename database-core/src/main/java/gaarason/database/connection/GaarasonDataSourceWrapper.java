@@ -1,6 +1,7 @@
 package gaarason.database.connection;
 
 import gaarason.database.contract.connection.GaarasonDataSource;
+import gaarason.database.eloquent.appointment.DatabaseType;
 import gaarason.database.exception.AbnormalParameterException;
 import gaarason.database.exception.ConnectionCloseException;
 import gaarason.database.exception.InternalConcurrentException;
@@ -56,6 +57,11 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
      * 是否主从(读写分离)
      */
     protected final boolean hasSlave;
+
+    /**
+     * 数据库类型
+     */
+    protected volatile DatabaseType databaseType;
 
     /**
      * 构造
@@ -309,5 +315,22 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
         } catch (SQLException e) {
             throw new SQLRuntimeException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public DatabaseType getDatabaseType() throws SQLRuntimeException {
+        if (databaseType == null) {
+            synchronized (this) {
+                if (databaseType == null) {
+                    try (Connection connection = getLocalConnection(true)) {
+                        String databaseProductName = connection.getMetaData().getDatabaseProductName();
+                        databaseType = DatabaseType.forDatabaseProductName(databaseProductName);
+                    } catch (Throwable e) {
+                        throw new SQLRuntimeException(e.getMessage(), e);
+                    }
+                }
+            }
+        }
+        return databaseType;
     }
 }

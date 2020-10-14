@@ -2,6 +2,8 @@ package gaarason.database.contract.connection;
 
 import gaarason.database.contract.transaction.SavepointManager;
 import gaarason.database.contract.transaction.TransactionManager;
+import gaarason.database.eloquent.appointment.DatabaseType;
+import gaarason.database.exception.SQLRuntimeException;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -19,4 +21,11 @@ public interface GaarasonDataSource extends DataSource, SavepointManager, Transa
      * @return data source 集合
      */
     List<DataSource> getSlaveDataSourceList();
+
+    /**
+     * 数据库类型
+     * @return DatabaseType
+     * @throws SQLRuntimeException 数据库异常
+     */
+    DatabaseType getDatabaseType() throws SQLRuntimeException;
 }
