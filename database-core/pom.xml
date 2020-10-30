@@ -15,28 +15,23 @@
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
-            <version>RELEASE</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>RELEASE</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
-            <version>[1.1.2,)</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>RELEASE</version>
         </dependency>
         <dependency>
             <groupId>net.oneandone.reflections8</groupId>
             <artifactId>reflections8</artifactId>
-            <version>RELEASE</version>
         </dependency>
     </dependencies>
 </project>

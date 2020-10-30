@@ -144,8 +144,9 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
         return newQuery().whereIn(getPrimaryKeyColumnName(), ids).get();
     }
 
+    @SafeVarargs
     @Override
-    public RecordList<T, K> findMany(K... ids) throws SQLRuntimeException{
+    public final RecordList<T, K> findMany(K... ids) throws SQLRuntimeException{
         return newQuery().whereIn(getPrimaryKeyColumnName(), new HashSet<>(Arrays.asList(ids))).get();
     }
 
