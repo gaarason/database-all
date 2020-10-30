@@ -54,10 +54,12 @@ studentModel.findOrFail(8).bind("teachers").toggle(teacherModel.findMany(2));
 
 1.引入仓库 pom.xml  
 ```$xslt
-<query>
-    <id>jitpack.io</id>
-    <url>https://jitpack.io</url>
-</query>
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
 ```
 2.引入依赖 pom.xml  
 ```$xslt
