@@ -15,8 +15,6 @@
         <java.version>1.8</java.version>
         <springboot.version>2.3.5.RELEASE</springboot.version>
         <druid.version>1.2.1</druid.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
     <dependencyManagement>
         <dependencies>
