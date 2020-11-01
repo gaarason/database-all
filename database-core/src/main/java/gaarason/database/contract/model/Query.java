@@ -61,6 +61,7 @@ public interface Query<T, K> {
      * @return 批量结果集
      * @throws SQLRuntimeException SQL异常
      */
+    @SuppressWarnings({"unchecked", "varargs"})
     RecordList<T, K> findMany(K... ids) throws SQLRuntimeException;
 
     /**
