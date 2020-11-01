@@ -43,6 +43,38 @@
                 <artifactId>database-spring-boot-starter-test</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+
+            <dependency>
+                <groupId>com.github.gaarason.database-all</groupId>
+                <artifactId>database-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.gaarason.database-all</groupId>
+                <artifactId>database-core-test</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.gaarason.database-all</groupId>
+                <artifactId>database-generator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.gaarason.database-all</groupId>
+                <artifactId>database-generator-test</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.gaarason.database-all</groupId>
+                <artifactId>database-spring-boot-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.gaarason.database-all</groupId>
+                <artifactId>database-spring-boot-starter-test</artifactId>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
