@@ -324,7 +324,7 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
                 if (databaseType == null) {
                     try (Connection connection = getLocalConnection(true)) {
                         String databaseProductName = connection.getMetaData().getDatabaseProductName();
-                        databaseType = DatabaseType.forDatabaseProductName(databaseProductName);
+                        databaseType = DatabaseType.forDatabaseProductName(databaseProductName.toLowerCase());
                     } catch (Throwable e) {
                         throw new SQLRuntimeException(e.getMessage(), e);
                     }

@@ -23,7 +23,7 @@ abstract public class BaseTests {
     @BeforeClass
     public static void beforeClass() throws IOException {
         String sqlFilename = Thread.currentThread().getStackTrace()[1].getClass().getResource("/").toString().replace(
-            "file:", "") + "../../src/test/java/gaarason/database/test/init/Init.sql";
+            "file:", "") + "../../src/test/java/gaarason/database/test/init/mysql.sql";
         initSql = readToString(sqlFilename);
     }
 

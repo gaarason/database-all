@@ -101,9 +101,9 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
      * @return 原始查询构造器
      */
     protected Builder<T, K> theBuilder() {
-        // todo 按连接类型,等等信息选择 builder
         GaarasonDataSource gaarasonDataSource = getGaarasonDataSource();
-        return apply(new MySqlBuilder<>(gaarasonDataSource, this, getEntityClass()));
+        return apply(gaarasonDataSource.getDatabaseType().getBuilderByDatabaseType(gaarasonDataSource, this, getEntityClass()));
+//        return apply(new MySqlBuilder<>(gaarasonDataSource, this, getEntityClass()));
     }
 
     @Override

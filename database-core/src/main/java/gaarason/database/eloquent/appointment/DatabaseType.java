@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum DatabaseType {
+
     MYSQL("mysql"),
     MSSQL("mssql");
 
@@ -37,6 +38,15 @@ public enum DatabaseType {
         return databaseProductNameLookup.get(databaseProductName);
     }
 
+    /**
+     * 根据数据库类型返回查询构造器
+     * @param gaarasonDataSource 数据源
+     * @param model 数据模型
+     * @param entityClass 实体类
+     * @param <T> 实体类型
+     * @param <K> 主键类型
+     * @return 查询构造器
+     */
     public <T, K> Builder<T, K> getBuilderByDatabaseType(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
         switch (this) {
             case MYSQL:
