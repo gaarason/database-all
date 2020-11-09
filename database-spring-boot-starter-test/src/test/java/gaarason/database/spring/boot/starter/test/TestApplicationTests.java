@@ -53,7 +53,7 @@ public class TestApplicationTests {
         generalGenerator.setStaticField(true);
         generalGenerator.setIsSpringBoot(false);
         generalGenerator.setOutputDir("./src/main/java/");
-        generalGenerator.setNamespace("gaarason.database.test.relation.data");
+        generalGenerator.setNamespace("gaarason.database.test.models.relation.data");
         String[] disableCreate = {"created_at", "updated_at"};
         generalGenerator.setDisInsertable(disableCreate);
         String[] disableUpdate = {"created_at", "updated_at"};

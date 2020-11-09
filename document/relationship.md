@@ -48,11 +48,11 @@ Eloquent 让组织和处理这些关联关系变得简单，并且支持多种�
 
 以下是一个`teacher`包含一个`pet`(宠物)的例子  
 ```java
-package gaarason.database.test.relation.data.pojo;
+package gaarason.database.test.models.relation.pojo;
 
 import gaarason.database.eloquent.annotation.*;
-import gaarason.database.test.relation.data.model.RelationshipStudentTeacherModel;
-import gaarason.database.test.relation.data.model.StudentModel;
+import gaarason.database.test.models.relation.model.RelationshipStudentTeacherModel;
+import gaarason.database.test.models.relation.model.StudentModel;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -92,11 +92,11 @@ public class Teacher implements Serializable {
 
 以下是一个`teacher`包含多个`student`的例子  
 ```java
-package gaarason.database.test.relation.data.pojo;
+package gaarason.database.test.models.relation.pojo;
 
 import gaarason.database.eloquent.annotation.*;
-import gaarason.database.test.relation.data.model.RelationshipStudentTeacherModel;
-import gaarason.database.test.relation.data.model.StudentModel;
+import gaarason.database.test.models.relation.model.RelationshipStudentTeacherModel;
+import gaarason.database.test.models.relation.model.StudentModel;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -138,11 +138,11 @@ public class Teacher implements Serializable {
 
 以下是一个`teacher`包含多个`student`的场景下, 需要从`student`找到`teacher`的例子  
 ```java
-package gaarason.database.test.relation.data.pojo;
+package gaarason.database.test.models.relation.pojo;
 
 import gaarason.database.eloquent.annotation.*;
-import gaarason.database.test.relation.data.model.RelationshipStudentTeacherModel;
-import gaarason.database.test.relation.data.model.TeacherModel;
+import gaarason.database.test.models.relation.model.RelationshipStudentTeacherModel;
+import gaarason.database.test.models.relation.model.TeacherModel;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -188,11 +188,11 @@ public class Student implements Serializable {
 
 以下是一个`teacher`包含多个`student`,同时, 一个`student`包含多个`teacher`的场景, 关系表使用`relationship_student_teacher`    
 ```java
-package gaarason.database.test.relation.data.pojo;
+package gaarason.database.test.models.relation.pojo;
 
 import gaarason.database.eloquent.annotation.*;
-import gaarason.database.test.relation.data.model.RelationshipStudentTeacherModel;
-import gaarason.database.test.relation.data.model.TeacherModel;
+import gaarason.database.test.models.relation.model.RelationshipStudentTeacherModel;
+import gaarason.database.test.models.relation.model.TeacherModel;
 import lombok.Data;
 
 import java.io.Serializable;
