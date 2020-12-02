@@ -8,7 +8,7 @@ import gaarason.database.util.FormatUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MySqlGrammar extends BaseGrammar {
+public class MsSqlGrammar extends BaseGrammar {
 
     private final String table;
 
@@ -44,7 +44,7 @@ public class MySqlGrammar extends BaseGrammar {
     private final List<String> dataParameterList = new ArrayList<>();
 
 
-    public MySqlGrammar(String tableName) {
+    public MsSqlGrammar(String tableName) {
         table = tableName;
     }
 
@@ -158,7 +158,7 @@ public class MySqlGrammar extends BaseGrammar {
     }
 
     private String dealTable() {
-        return FormatUtil.backQuote(table, "`");
+        return FormatUtil.backQuote(table, "\"");
     }
 
     private String dealWhere(SqlType sqlType) {
@@ -203,7 +203,7 @@ public class MySqlGrammar extends BaseGrammar {
     }
 
     private String dealLimit() {
-        return limit == null ? "" : (" limit " + limit);
+        return limit == null ? "" : (" " + limit);
     }
 
     private String dealUnion() {
@@ -217,7 +217,7 @@ public class MySqlGrammar extends BaseGrammar {
             case REPLACE:
                 return "replace into " + dealFrom() + dealColumn() + " values" + dealValue();
             case INSERT:
-                return "insert into " + dealFrom() + dealColumn() + " values" + dealValue();
+                return identityInsertOn(table) + "insert into " + dealFrom() + dealColumn() + " values" + dealValue();
             case SELECT:
                 sql = "select " + dealSelect() + dealFromSelect();
                 break;
@@ -281,6 +281,15 @@ public class MySqlGrammar extends BaseGrammar {
     @Override
     public void pushDataParameter(String value) {
         dataParameterList.add(value);
+    }
+
+    /**
+     * 开启标识列插入显式值
+     * @param table 表名
+     * @return 语句
+     */
+    protected static String identityInsertOn(String table){
+        return "set IDENTITY_INSERT "+table+" ON ";
     }
 
 }

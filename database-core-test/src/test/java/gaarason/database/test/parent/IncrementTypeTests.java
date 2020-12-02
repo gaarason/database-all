@@ -47,7 +47,7 @@ abstract public class IncrementTypeTests extends BaseTests {
 
     @Test
     public void 新增_空插入_返回自增id() {
-        Long aLong = peopleModel.newQuery().executeGetId("insert into `people` values ()", new ArrayList<>());
+        Long aLong = peopleModel.newQuery().executeGetId("insert into people values ()", new ArrayList<>());
         Assert.assertNotNull(aLong);
         Assert.assertEquals(20, aLong.intValue());
 

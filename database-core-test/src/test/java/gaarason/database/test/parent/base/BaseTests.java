@@ -1,5 +1,6 @@
 package gaarason.database.test.parent.base;
 
+import gaarason.database.eloquent.appointment.DatabaseType;
 import gaarason.database.exception.SQLRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.*;
@@ -70,13 +71,14 @@ abstract public class BaseTests {
             try(Connection connection = dataSource.getConnection()){
                 for (String sql : split) {
                     sqlTemp = sql;
-                    System.out.println(sql);
+//                    System.out.println(sql);
                     PreparedStatement preparedStatement = connection.prepareStatement(sql);
                     int               i                 = preparedStatement.executeUpdate();
-                    System.out.println(i);
+//                    System.out.println(i);
                 }
             }catch (Throwable e){
-                throw new SQLRuntimeException(sqlTemp, new ArrayList<>(), e.getMessage(), e);
+                DatabaseType databaseType = DatabaseType.forDatabaseProductName(dataSource.getConnection().getMetaData().getDatabaseProductName());
+                throw new SQLRuntimeException(sqlTemp, new ArrayList<>(), e.getMessage(), databaseType.getValueSymbol(), e);
             }
 
 

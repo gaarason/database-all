@@ -10,8 +10,8 @@ public class SQLRuntimeException extends BaseException {
         super(message, cause);
     }
 
-    public SQLRuntimeException(String sql, Collection<String> parameters, String message, Throwable cause) {
-        super("message : [" + message + "] sql : [" + String.format(sql.replace(" ? ", "\"%s\""),
+    public SQLRuntimeException(String sql, Collection<String> parameters, String message, String symbol, Throwable cause) {
+        super("message : [" + message + "] sql : [" + String.format(sql.replace(" ? ", symbol + "%s" + symbol),
             parameters.toArray()) + "]", cause);
     }
 }

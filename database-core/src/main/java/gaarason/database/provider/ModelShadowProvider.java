@@ -436,7 +436,6 @@ final public class ModelShadowProvider {
                                 modelInfo.idGenerator = ObjectUtil.typeCast(idGenerators.never);
                             }
                     }
-
                 }
 
                 // 属性名 索引键入

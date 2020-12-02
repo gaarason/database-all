@@ -9,6 +9,7 @@ import gaarason.database.contract.function.*;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.Paginate;
+import gaarason.database.eloquent.appointment.DatabaseType;
 import gaarason.database.eloquent.appointment.FinalVariable;
 import gaarason.database.eloquent.appointment.SqlType;
 import gaarason.database.exception.*;
@@ -28,13 +29,12 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
     /**
      * 数据库连接
      */
-    private final GaarasonDataSource gaarasonDataSource;
+    protected final GaarasonDataSource gaarasonDataSource;
 
     /**
      * 数据模型
      */
     protected final Model<T, K> model;
-
     /**
      * 数据实体类
      */
@@ -51,6 +51,11 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
         this.entityClass = entityClass;
         grammar = grammarFactory();
     }
+
+    /**
+     * @return 数据库语句组装对象
+     */
+    abstract Grammar grammarFactory();
 
     @Override
     public Grammar getGrammar() {
@@ -87,11 +92,6 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
     String generateSql(GenerateSqlPartFunctionalInterface closure) {
         return generateSql(closure, true);
     }
-
-    /**
-     * @return 数据库语句组装对象
-     */
-    abstract Grammar grammarFactory();
 
     /**
      * 克隆当前查询构造器
@@ -323,6 +323,7 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
     }
 
     @Override
+    @Nullable
     public K executeGetId(String sql, Collection<String> parameters) throws SQLRuntimeException {
         return doSomethingInConnection((preparedStatement) -> {
             // 执行
@@ -362,7 +363,7 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
         } catch (EntityNotFoundException e) {
             throw new EntityNotFoundException(String.format(sql.replace(" ? ", "\"%s\""), parameters.toArray()));
         } catch (Throwable e) {
-            throw new SQLRuntimeException(sql, parameters, e.getMessage(), e);
+            throw new SQLRuntimeException(sql, parameters, e.getMessage(), gaarasonDataSource.getDatabaseType().getValueSymbol(), e);
         } finally {
             // 关闭连接
             gaarasonDataSource.localConnectionClose(connection);

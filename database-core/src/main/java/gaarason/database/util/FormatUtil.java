@@ -13,7 +13,7 @@ public class FormatUtil {
      * @return eg: sum(`order`.`amount`) AS `sum_price`
      */
     public static String column(String something) {
-        return backQuote(something);
+        return backQuote(something, "`");
     }
 
     /**
@@ -92,17 +92,18 @@ public class FormatUtil {
     /**
      * 给字段加上反引号
      * @param something 字段 eg: sum(order.amount) AS sum_price
+     * @param symbol 符号 eg: `
      * @return eg: sum(`order`.`amount`) AS `sum_price`
      */
-    public static String backQuote(String something) {
+    public static String backQuote(String something, String symbol) {
         something = something.trim();
         int    whereIsAs    = something.toLowerCase().indexOf(" as ");
-        String temp         = "";
+        String temp;
         String mayBeHasFunc = something;
         String alias        = "";
         if (whereIsAs != -1) {
             mayBeHasFunc = something.substring(0, whereIsAs); // eg: sum(order.amount)
-            alias = " as `" + something.substring(whereIsAs + 4) + "`";
+            alias = " as "+ symbol + something.substring(whereIsAs + 4) + "symbol";
         }
         int whereIsQuote = mayBeHasFunc.indexOf('(');
         if (whereIsQuote != -1) {
@@ -113,21 +114,21 @@ public class FormatUtil {
             if (whereIsPoint != -1) {
                 String table  = someElse.substring(0, whereIsPoint); // eg: order
                 String column = someElse.replace(table + '.', ""); // eg: amount
-                temp = column.equals("*") ? '`' + table + "`." + column : '`' + table + "`.`" + column + '`';
+                temp = column.equals("*") ? symbol + table + symbol + "." + column : symbol + table + symbol + "." + symbol + column + symbol;
             } else if ("".equals(someElse)) {
                 temp = "";
             } else {
-                temp = '`' + someElse + '`';
+                temp = symbol + someElse + symbol;
             }
             temp = func + '(' + temp + ')';
         } else {
             int whereIsPoint = mayBeHasFunc.indexOf('.');
             if (whereIsPoint == -1) {
-                temp = '`' + mayBeHasFunc + '`';
+                temp = symbol + mayBeHasFunc + symbol;
             } else {
                 String table  = mayBeHasFunc.substring(0, whereIsPoint); // eg: order
                 String column = mayBeHasFunc.replace(table + '.', ""); // eg: amount
-                temp = column.equals("*") ? '`' + table + "`." + column : '`' + table + "`.`" + column + '`';
+                temp = column.equals("*") ? symbol + table + symbol + "." + column : symbol + table + symbol + "." + symbol + column + symbol;
             }
         }
         return temp + alias;

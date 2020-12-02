@@ -47,6 +47,8 @@ public interface Grammar {
 
     boolean hasGroup();
 
+    boolean hasOrderBy();
+
     String generateSql(SqlType sqlType);
 
     /**

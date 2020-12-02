@@ -4,6 +4,7 @@ import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.exception.BuilderNewInstanceException;
+import gaarason.database.exception.TypeNotSupportedException;
 import gaarason.database.query.MsSqlBuilder;
 import gaarason.database.query.MySqlBuilder;
 
@@ -13,7 +14,8 @@ import java.util.Map;
 public enum DatabaseType {
 
     MYSQL("mysql"),
-    MSSQL("mssql");
+    MSSQL("mssql"),
+    MSSQL_V2("microsoft sql server");
 
     private final String databaseProductName;
 
@@ -35,7 +37,11 @@ public enum DatabaseType {
      * @return DatabaseType
      */
     public static DatabaseType forDatabaseProductName(String databaseProductName) {
-        return databaseProductNameLookup.get(databaseProductName);
+        DatabaseType databaseType = databaseProductNameLookup.get(databaseProductName);
+        if(databaseType == null){
+            throw new TypeNotSupportedException("Database product name ["+databaseProductName+"] not supported yet.");
+        }
+        return databaseType;
     }
 
     /**
@@ -52,9 +58,26 @@ public enum DatabaseType {
             case MYSQL:
                 return new MySqlBuilder<>(gaarasonDataSource, model, entityClass);
             case MSSQL:
+            case MSSQL_V2:
                 return new MsSqlBuilder<>(gaarasonDataSource, model, entityClass);
             default:
-                throw new BuilderNewInstanceException();
+                throw new TypeNotSupportedException("Database type not supported.");
+        }
+    }
+
+    /**
+     * 根据数据库类型返回符号
+     * @return 符号
+     */
+    public String getValueSymbol() {
+        switch (this) {
+            case MYSQL:
+                return "\"";
+            case MSSQL:
+            case MSSQL_V2:
+                return "'";
+            default:
+                throw new TypeNotSupportedException("Database type not supported.");
         }
     }
 
