@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 结果集生成
@@ -39,7 +40,7 @@ public class RecordFactory {
             throw new EntityNotFoundException(sql);
         }
         final ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-        Map<String, Column>     stringColumnMap   = JDBCResultToMap(resultSetMetaData, resultSet);
+        Map<String, Column> stringColumnMap = JDBCResultToMap(resultSetMetaData, resultSet);
         return new RecordBean<>(entityClass, model, stringColumnMap, sql);
     }
 
@@ -78,7 +79,7 @@ public class RecordFactory {
      * @return 批量结果集(RecordList全新, Record为引用地址)
      */
     public static <T, K> RecordList<T, K> newRecordList(List<Record<T, K>> records) {
-        String           sql        = records.size() > 0 ? records.get(0).getOriginalSql() : "";
+        String sql = records.size() > 0 ? records.get(0).getOriginalSql() : "";
         RecordList<T, K> recordList = new RecordListBean<>(sql);
         for (Record<T, K> record : records) {
             // 此处不应使用, deepCopyRecord
@@ -105,8 +106,8 @@ public class RecordFactory {
 
     /**
      * 空的批量结果集
-     * @param <T>    实体类型
-     * @param <K>    实体主键类型
+     * @param <T> 实体类型
+     * @param <K> 实体主键类型
      * @return 批量结果集(RecordList全新, Record为引用地址)
      */
     public static <T, K> RecordList<T, K> newRecordList() {
@@ -121,10 +122,10 @@ public class RecordFactory {
      * @return 单个结果集
      */
     public static <T, K> Record<T, K> copyRecord(Record<T, K> originalRecord) {
-        Model<T, K>         model       = originalRecord.getModel();
-        Class<T>            entityClass = model.getEntityClass();
+        Model<T, K> model = originalRecord.getModel();
+        Class<T> entityClass = model.getEntityClass();
         Map<String, Column> metadataMap = copy(originalRecord.getMetadataMap());
-        String              originalSql = originalRecord.getOriginalSql();
+        String originalSql = originalRecord.getOriginalSql();
         return new RecordBean<>(entityClass, model, metadataMap, originalSql);
     }
 
@@ -138,10 +139,10 @@ public class RecordFactory {
     public static <T, K> RecordList<T, K> copyRecordList(RecordList<T, K> originalRecordList) {
         RecordList<T, K> recordList = new RecordListBean<>(originalRecordList.getOriginalSql());
         for (Record<T, K> originalRecord : originalRecordList) {
-            Model<T, K>         model       = originalRecord.getModel();
-            Class<T>            entityClass = model.getEntityClass();
+            Model<T, K> model = originalRecord.getModel();
+            Class<T> entityClass = model.getEntityClass();
             Map<String, Column> metadataMap = copy(originalRecord.getMetadataMap());
-            String              originalSql = originalRecord.getOriginalSql();
+            String originalSql = originalRecord.getOriginalSql();
             recordList.add(new RecordBean<>(entityClass, model, metadataMap, originalSql));
         }
         // 使用引用
@@ -157,10 +158,37 @@ public class RecordFactory {
      * @return 通用map
      * @throws SQLException 数据库异常
      */
-    public static Map<String, Column> JDBCResultToMap(ResultSetMetaData resultSetMetaData, ResultSet resultSet)
+    public static HashMap<String, Column> JDBCResultToMap(ResultSetMetaData resultSetMetaData, ResultSet resultSet)
         throws SQLException {
-        Map<String, Column> map                = new HashMap<>();
-        final int           columnCountMoreOne = resultSetMetaData.getColumnCount() + 1;
+        HashMap<String, Column> map = new HashMap<>();
+        return (HashMap<String, Column>) JDBCResultToMap(map, resultSetMetaData, resultSet);
+
+    }
+
+    /**
+     * jdbc结果集转化为通用map
+     * @param resultSetMetaData 源数据
+     * @param resultSet         结果集
+     * @return 通用map
+     * @throws SQLException 数据库异常
+     */
+    public static ConcurrentHashMap<String, Column> JDBCResultToConcurrentHashMap(ResultSetMetaData resultSetMetaData, ResultSet resultSet)
+        throws SQLException {
+        ConcurrentHashMap<String, Column> map = new ConcurrentHashMap<>();
+        return (ConcurrentHashMap<String, Column>) JDBCResultToMap(map, resultSetMetaData, resultSet);
+    }
+
+    /**
+     * jdbc结果集转化为通用map
+     * @param map               map类型
+     * @param resultSetMetaData 源数据
+     * @param resultSet         结果集
+     * @return 通用map
+     * @throws SQLException 数据库异常
+     */
+    protected static Map<String, Column> JDBCResultToMap(Map<String, Column> map, ResultSetMetaData resultSetMetaData,
+                                                         ResultSet resultSet) throws SQLException {
+        final int columnCountMoreOne = resultSetMetaData.getColumnCount() + 1;
         for (int i = 1; i < columnCountMoreOne; i++) {
             Column column = new Column();
             column.setName(resultSetMetaData.getColumnLabel(i));

@@ -61,8 +61,82 @@ public enum JdbcType {
         this.TYPE_CODE = code;
     }
 
-    public static JdbcType forCode(int code) {
+    /**
+     * @param code JdbcType
+     * @return JdbcType
+     */
+    public static JdbcType fromCode(int code) {
         return codeLookup.get(code);
     }
 
+    /**
+     * @param code JdbcType
+     * @return java 类型名称
+     */
+    public static String forClassName(int code) {
+        String className = String.class.getName();
+        switch (code) {
+            case Types.NUMERIC:
+            case Types.DECIMAL:
+                className = java.math.BigDecimal.class.getName();
+                break;
+
+            case Types.BIT:
+                className = java.lang.Boolean.class.getName();
+                break;
+
+            case Types.TINYINT:
+                className = java.lang.Byte.class.getName();
+                break;
+
+            case Types.SMALLINT:
+                className = java.lang.Short.class.getName();
+                break;
+
+            case Types.INTEGER:
+                className = java.lang.Integer.class.getName();
+                break;
+
+            case Types.BIGINT:
+                className = java.lang.Long.class.getName();
+                break;
+
+            case Types.REAL:
+                className = java.lang.Float.class.getName();
+                break;
+
+            case Types.FLOAT:
+            case Types.DOUBLE:
+                className = java.lang.Double.class.getName();
+                break;
+
+            case Types.BINARY:
+            case Types.VARBINARY:
+            case Types.LONGVARBINARY:
+                className = "Byte[]";
+                break;
+
+            case Types.DATE:
+                className = java.sql.Date.class.getName();
+                break;
+
+            case Types.TIME:
+                className = java.sql.Time.class.getName();
+                break;
+
+            case Types.TIMESTAMP:
+                className = java.sql.Timestamp.class.getName();
+                break;
+
+            case Types.BLOB:
+                className = java.sql.Blob.class.getName();
+                break;
+
+            case Types.CLOB:
+                className = java.sql.Clob.class.getName();
+                break;
+        }
+
+        return className;
+    }
 }

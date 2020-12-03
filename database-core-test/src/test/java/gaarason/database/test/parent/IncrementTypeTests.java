@@ -2,6 +2,9 @@ package gaarason.database.test.parent;
 
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
+import gaarason.database.provider.DBShadowProvider;
+import gaarason.database.support.Column;
+import gaarason.database.support.DBColumn;
 import gaarason.database.test.models.normal.PeopleModel;
 import gaarason.database.test.parent.base.BaseTests;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +17,7 @@ import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
@@ -24,6 +28,22 @@ abstract public class IncrementTypeTests extends BaseTests {
     protected List<DataSource> getDataSourceList() {
         GaarasonDataSource gaarasonDataSourceWrapper = peopleModel.getGaarasonDataSource();
         return gaarasonDataSourceWrapper.getMasterDataSourceList();
+    }
+
+    @Test
+    public void ss(){
+        GaarasonDataSource gaarasonDataSource = peopleModel.getGaarasonDataSource();
+        ConcurrentHashMap<String, DBColumn> student = DBShadowProvider.getTable(gaarasonDataSource, "data_type");
+
+        ConcurrentHashMap.KeySetView<String, DBColumn> strings = student.keySet();
+
+        for (String string : strings) {
+            System.out.println(string);
+            System.out.println(student.get(string));
+            System.out.println();
+
+        }
+
     }
 
     @Test

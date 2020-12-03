@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Model的实例化
+ * Model的实例化的工厂的提供者
  */
 final public class ModelInstanceProvider {
 

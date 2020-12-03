@@ -148,6 +148,10 @@ public class DatabaseUtilsTests {
 //        Set<Class<? extends Model>> subTypesOf1  = reflections1.getSubTypesOf(Model.class);
 //        System.out.println(subTypesOf1);
 
+    }
+
+    @Test
+    public void testDBShadowProvider(){
 
     }
 

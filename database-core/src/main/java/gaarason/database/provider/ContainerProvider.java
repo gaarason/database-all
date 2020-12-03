@@ -56,7 +56,7 @@ final public class ContainerProvider {
      * 只要没有实例化, 那么可以重复注册, 且后注册的覆盖先注册的
      * @param closure 实例化工厂
      */
-    public static <T> void register(Class<T> interfaceClass, InstanceCreatorFunctionalInterface<T> closure) {
+    public static synchronized <T> void register(Class<T> interfaceClass, InstanceCreatorFunctionalInterface<T> closure) {
         if (instanceMap.get(interfaceClass) != null) {
             throw new InvalidConfigException(interfaceClass + " should be registered before get bean.");
         }
