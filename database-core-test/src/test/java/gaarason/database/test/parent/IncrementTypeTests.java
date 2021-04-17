@@ -14,9 +14,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -33,9 +31,9 @@ abstract public class IncrementTypeTests extends BaseTests {
     @Test
     public void ss(){
         GaarasonDataSource gaarasonDataSource = peopleModel.getGaarasonDataSource();
-        ConcurrentHashMap<String, DBColumn> student = DBShadowProvider.getTable(gaarasonDataSource, "data_type");
+        Map<String, DBColumn> student = DBShadowProvider.getTable(gaarasonDataSource, "data_type");
 
-        ConcurrentHashMap.KeySetView<String, DBColumn> strings = student.keySet();
+        Set<String> strings = student.keySet();
 
         for (String string : strings) {
             System.out.println(string);

@@ -34,6 +34,7 @@ public class DBColumn implements Serializable {
     private final int    sqlDatetimeSub;
     private final int    charOctetLength;
     private final int    ordinalPosition;
+//    private final String    sourceDataType;
     private final String isNullable;
     private final String isAutoincrement;
 
@@ -48,6 +49,10 @@ public class DBColumn implements Serializable {
      */
     private final String javaClassName;
 
+    /**
+     * 是否无符号型
+     */
+    private final boolean unsigned;
 
     public DBColumn(ResultSet rs) throws SQLException {
 
@@ -68,9 +73,12 @@ public class DBColumn implements Serializable {
         sqlDatetimeSub = rs.getInt("SQL_DATETIME_SUB");
         charOctetLength = rs.getInt("CHAR_OCTET_LENGTH");
         ordinalPosition = rs.getInt("ORDINAL_POSITION");
+//        sourceDataType = rs.getString("SOURCE_DATA_TYPE");
         isNullable = rs.getString("IS_NULLABLE");
         isAutoincrement = rs.getString("IS_AUTOINCREMENT");
+
         jdbcType = JdbcType.fromCode(dataType);
+        unsigned = typeName.toLowerCase().contains("unsigned");
         javaClassName = JdbcType.forClassName(jdbcType.TYPE_CODE);
     }
 

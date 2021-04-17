@@ -103,7 +103,7 @@ public class FormatUtil {
         String alias        = "";
         if (whereIsAs != -1) {
             mayBeHasFunc = something.substring(0, whereIsAs); // eg: sum(order.amount)
-            alias = " as "+ symbol + something.substring(whereIsAs + 4) + "symbol";
+            alias = " as "+ symbol + something.substring(whereIsAs + 4) + symbol;
         }
         int whereIsQuote = mayBeHasFunc.indexOf('(');
         if (whereIsQuote != -1) {

@@ -5,6 +5,7 @@ import gaarason.database.support.Column;
 import gaarason.database.support.DBColumn;
 import gaarason.database.util.DatabaseInfoUtil;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,10 +14,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 final public class DBShadowProvider {
 
-    final protected static Map<GaarasonDataSource, ConcurrentHashMap<String, ConcurrentHashMap<String, DBColumn>>> info = new ConcurrentHashMap<>();
+    final protected static Map<GaarasonDataSource, ConcurrentHashMap<String, LinkedHashMap<String, DBColumn>>> info = new ConcurrentHashMap<>();
 
-    public static ConcurrentHashMap<String, DBColumn> getTable(GaarasonDataSource gaarasonDataSource, String table) {
-        ConcurrentHashMap<String, ConcurrentHashMap<String, DBColumn>> manyTableInfoMap = info.get(gaarasonDataSource);
+    public static LinkedHashMap<String, DBColumn> getTable(GaarasonDataSource gaarasonDataSource, String table) {
+        ConcurrentHashMap<String, LinkedHashMap<String, DBColumn>> manyTableInfoMap = info.get(gaarasonDataSource);
         if (manyTableInfoMap == null) {
             synchronized (gaarasonDataSource) {
                 manyTableInfoMap = info.get(gaarasonDataSource);
@@ -31,27 +32,9 @@ final public class DBShadowProvider {
         return getTableFromGaarasonDataSource(gaarasonDataSource, manyTableInfoMap, table);
     }
 
-//    public static ConcurrentHashMap<String, ConcurrentHashMap<String, Column>> getGaarasonDataSource(GaarasonDataSource gaarasonDataSource) {
-//        ConcurrentHashMap<String, ConcurrentHashMap<String, Column>> tableInfoMap = info.get(gaarasonDataSource);
-//        if (tableInfoMap == null) {
-//            synchronized (gaarasonDataSource) {
-//                tableInfoMap = info.get(gaarasonDataSource);
-//                if (tableInfoMap == null) {
-//                    // 获取表信息
-//                    tableInfoMap = new ConcurrentHashMap<>();
-//
-//                    // 缓存
-//                    info.put(gaarasonDataSource, tableInfoMap);
-//                }
-//            }
-//        }
-//        return tableInfoMap;
-//    }
-
-
-    protected static ConcurrentHashMap<String, DBColumn> getTableFromGaarasonDataSource(GaarasonDataSource gaarasonDataSource,
-        ConcurrentHashMap<String, ConcurrentHashMap<String, DBColumn>> manyTableInfoMap, String table) {
-        ConcurrentHashMap<String, DBColumn> tableInfoMap = manyTableInfoMap.get(table);
+    protected static LinkedHashMap<String, DBColumn> getTableFromGaarasonDataSource(GaarasonDataSource gaarasonDataSource,
+        ConcurrentHashMap<String, LinkedHashMap<String, DBColumn>> manyTableInfoMap, String table) {
+        LinkedHashMap<String, DBColumn> tableInfoMap = manyTableInfoMap.get(table);
         if (tableInfoMap == null) {
             String key = gaarasonDataSource.hashCode() + table;
             synchronized (key.intern()) {

@@ -7,6 +7,7 @@ CREATE TABLE `data_type`
     `name`         varchar(20)         NOT NULL DEFAULT '' COMMENT '姓名',
     `age`          tinyint(2) unsigned NOT NULL DEFAULT '0' COMMENT '年龄',
     `sex`          tinyint(2) unsigned NOT NULL DEFAULT '1' COMMENT '性别1男2女',
+    `sex_2`        tinyint(1) unsigned NOT NULL DEFAULT '1' COMMENT 'test',
     `subject`      varchar(20)         NOT NULL DEFAULT '' COMMENT '科目',
     `created_at`   timestamp           NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '新增时间',
     `updated_at`   timestamp           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',

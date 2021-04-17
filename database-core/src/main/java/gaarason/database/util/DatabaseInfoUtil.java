@@ -8,9 +8,7 @@ import lombok.SneakyThrows;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 
 public class DatabaseInfoUtil {
 
@@ -43,17 +41,23 @@ public class DatabaseInfoUtil {
      * @return 表字段信息MAP
      */
     @SneakyThrows
-    public static ConcurrentHashMap<String, DBColumn> getDBColumnsWIthTable(GaarasonDataSource gaarasonDataSource,
+    public static LinkedHashMap<String, DBColumn> getDBColumnsWIthTable(GaarasonDataSource gaarasonDataSource,
         @Nullable String tableNamePattern) {
         try (Connection connection = gaarasonDataSource.getConnection()) {
             DatabaseMetaData metaData = connection.getMetaData();
             ResultSet rs = metaData.getColumns(connection.getCatalog(), null, tableNamePattern, null);
-            ConcurrentHashMap<String, DBColumn> dbColumnConcurrentHashMap = new ConcurrentHashMap<>();
+            List<DBColumn> dbColumnList = new ArrayList<>();
+            LinkedHashMap<String, DBColumn> dbColumnLinkedHashMap = new LinkedHashMap<>();
             while (rs.next()) {
                 DBColumn dbColumn = new DBColumn(rs);
-                dbColumnConcurrentHashMap.put(dbColumn.getColumnName(), dbColumn);
+                dbColumnList.add(dbColumn);
             }
-            return dbColumnConcurrentHashMap;
+            // 排序
+            dbColumnList.sort((first, second) -> first.getOrdinalPosition() > second.getOrdinalPosition() ? 1 : -1);
+            for (DBColumn dbColumn : dbColumnList) {
+                dbColumnLinkedHashMap.put(dbColumn.getColumnName(), dbColumn);
+            }
+            return dbColumnLinkedHashMap;
         }
     }
 }
