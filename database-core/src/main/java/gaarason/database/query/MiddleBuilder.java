@@ -77,7 +77,8 @@ abstract public class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
 
     @Override
     public Record<T, K> firstOrFail() throws SQLRuntimeException, EntityNotFoundException {
-        if (!grammar.hasOrderBy()) {
+        // 可能没有主键
+        if (!grammar.hasOrderBy() && model.getPrimaryKeyColumnName() != null) {
             orderBy(model.getPrimaryKeyColumnName());
         }
         limit(1);

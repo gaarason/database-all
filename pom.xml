@@ -19,8 +19,8 @@
 
     <properties>
         <java.version>1.8</java.version>
-        <gaarason.database.springboot.version>2.3.5.RELEASE</gaarason.database.springboot.version>
-        <gaarason.database.druid.version>1.2.1</gaarason.database.druid.version>
+        <gaarason.database.springboot.version>2.4.3</gaarason.database.springboot.version>
+        <gaarason.database.druid.version>1.2.6</gaarason.database.druid.version>
         <gaarason.database.reflections8.version>0.11.7</gaarason.database.reflections8.version>
         <gaarason.database.jsr305.version>3.0.2</gaarason.database.jsr305.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

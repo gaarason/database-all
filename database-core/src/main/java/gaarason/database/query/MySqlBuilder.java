@@ -3,8 +3,6 @@ package gaarason.database.query;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
-import gaarason.database.contract.eloquent.Record;
-import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.core.lang.Nullable;
@@ -12,9 +10,6 @@ import gaarason.database.eloquent.appointment.JoinType;
 import gaarason.database.eloquent.appointment.OrderBy;
 import gaarason.database.eloquent.appointment.SqlType;
 import gaarason.database.exception.AggregatesNotSupportedGroupException;
-import gaarason.database.exception.EntityNotFoundException;
-import gaarason.database.exception.InsertNotSuccessException;
-import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.query.grammars.MySqlGrammar;
 import gaarason.database.util.FormatUtil;
@@ -365,7 +360,7 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
 
     @Override
     public Builder<T, K> selectFunction(String function, GenerateSqlPartFunctionalInterface closure,
-                                        @Nullable String alias) {
+        @Nullable String alias) {
         String completeSql = generateSql(closure);
         String sqlPart = function + FormatUtil.bracket(completeSql) + (alias == null ? "" :
             " as " + FormatUtil.quotes(alias));
@@ -374,14 +369,16 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> orderBy(String column, OrderBy type) {
-        String sqlPart = column(column) + " " + type.getOperation();
-        grammar.pushOrderBy(sqlPart);
+    public Builder<T, K> orderBy(@Nullable String column, OrderBy type) {
+        if (column != null) {
+            String sqlPart = column(column) + " " + type.getOperation();
+            grammar.pushOrderBy(sqlPart);
+        }
         return this;
     }
 
     @Override
-    public Builder<T, K> orderBy(String column) {
+    public Builder<T, K> orderBy(@Nullable String column) {
         return orderBy(column, OrderBy.ASC);
     }
 
