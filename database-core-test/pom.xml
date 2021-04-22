@@ -11,6 +11,18 @@
 
     <artifactId>database-core-test</artifactId>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.github.gaarason</groupId>
+                <artifactId>database-dependencies</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>com.github.gaarason</groupId>
@@ -23,7 +35,7 @@
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>sqljdbc4</artifactId>
             <version>4.0</version>
-            <scope>test</scope>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>

@@ -11,6 +11,18 @@
 
     <artifactId>database-core</artifactId>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.github.gaarason</groupId>
+                <artifactId>database-dependencies</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
