@@ -15,7 +15,7 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.github.gaarason</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>database-dependencies</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
@@ -26,11 +26,11 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.github.gaarason</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>database-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.gaarason</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>database-generator</artifactId>
         </dependency>
 
