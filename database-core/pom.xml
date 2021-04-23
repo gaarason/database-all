@@ -11,12 +11,22 @@
 
     <artifactId>database-core</artifactId>
 
+    <properties>
+        <java.version>1.8</java.version>
+        <gaarason.database.springboot.version>2.4.3</gaarason.database.springboot.version>
+        <gaarason.database.druid.version>1.2.5</gaarason.database.druid.version>
+        <gaarason.database.reflections8.version>0.11.7</gaarason.database.reflections8.version>
+        <gaarason.database.jsr305.version>3.0.2</gaarason.database.jsr305.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>database-dependencies</artifactId>
-                <version>${project.version}</version>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${gaarason.database.springboot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -27,6 +37,7 @@
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
+            <version>${gaarason.database.jsr305.version}</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
@@ -36,6 +47,7 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
+            <version>${gaarason.database.druid.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -44,6 +56,7 @@
         <dependency>
             <groupId>net.oneandone.reflections8</groupId>
             <artifactId>reflections8</artifactId>
+            <version>${gaarason.database.reflections8.version}</version>
         </dependency>
     </dependencies>
 </project>

@@ -395,6 +395,7 @@ final public class ModelShadowProvider {
                 if (field.isAnnotationPresent(Primary.class)) {
                     Primary primary = field.getAnnotation(Primary.class);
                     // 主键 索引键入
+                    modelInfo.primaryKeyDefinition = true;
                     modelInfo.primaryKeyFieldInfo = fieldInfo;
                     modelInfo.primaryKeyIncrement = primary.increment();
                     modelInfo.primaryKeyColumnName = fieldInfo.columnName;
@@ -408,32 +409,32 @@ final public class ModelShadowProvider {
                     // 主键生成器选择
                     switch (primary.idGenerator()) {
                         case SNOW_FLAKES_ID:
-                            modelInfo.idGenerator = ObjectUtil.typeCast(idGenerators.snowFlakesID);
+                            modelInfo.primaryKeyIdGenerator = ObjectUtil.typeCast(idGenerators.snowFlakesID);
                             break;
                         case UUID_36:
-                            modelInfo.idGenerator = ObjectUtil.typeCast(idGenerators.uuid36);
+                            modelInfo.primaryKeyIdGenerator = ObjectUtil.typeCast(idGenerators.uuid36);
                             break;
                         case UUID_32:
-                            modelInfo.idGenerator = ObjectUtil.typeCast(idGenerators.uuid32);
+                            modelInfo.primaryKeyIdGenerator = ObjectUtil.typeCast(idGenerators.uuid32);
                             break;
                         case NEVER:
-                            modelInfo.idGenerator = ObjectUtil.typeCast(idGenerators.never);
+                            modelInfo.primaryKeyIdGenerator = ObjectUtil.typeCast(idGenerators.never);
                             break;
                         case CUSTOM:
-                            modelInfo.idGenerator = ObjectUtil.typeCast(idGenerators.custom);
+                            modelInfo.primaryKeyIdGenerator = ObjectUtil.typeCast(idGenerators.custom);
                             break;
                         default:
                             // auto
                             if (fieldInfo.javaType == Long.class) {
-                                modelInfo.idGenerator = ObjectUtil.typeCast(idGenerators.snowFlakesID);
+                                modelInfo.primaryKeyIdGenerator = ObjectUtil.typeCast(idGenerators.snowFlakesID);
                             } else if (fieldInfo.javaType == String.class && fieldInfo.column != null) {
                                 if (fieldInfo.column.length() >= 36) {
-                                    modelInfo.idGenerator = ObjectUtil.typeCast(idGenerators.uuid36);
+                                    modelInfo.primaryKeyIdGenerator = ObjectUtil.typeCast(idGenerators.uuid36);
                                 } else if (fieldInfo.column.length() >= 32) {
-                                    modelInfo.idGenerator = ObjectUtil.typeCast(idGenerators.uuid32);
+                                    modelInfo.primaryKeyIdGenerator = ObjectUtil.typeCast(idGenerators.uuid32);
                                 }
                             } else {
-                                modelInfo.idGenerator = ObjectUtil.typeCast(idGenerators.never);
+                                modelInfo.primaryKeyIdGenerator = ObjectUtil.typeCast(idGenerators.never);
                             }
                     }
                 }
@@ -559,34 +560,44 @@ final public class ModelShadowProvider {
         protected volatile Class<T> entityClass;
 
         /**
+         * 主键信息是否存在
+         */
+        private volatile boolean primaryKeyDefinition = false;
+
+        /**
          * 主键列名(并非一定是实体的属性名)
          */
+        @Nullable
         protected volatile String primaryKeyColumnName;
 
         /**
          * 主键名(实体的属性名)
          */
+        @Nullable
         protected volatile String primaryKeyName;
 
         /**
          * 主键自动生成
          */
-        protected volatile IdGenerator<K> idGenerator;
+        @Nullable
+        protected volatile IdGenerator<K> primaryKeyIdGenerator;
 
         /**
          * 主键自增
          */
-        protected volatile boolean primaryKeyIncrement;
+        @Nullable
+        protected volatile Boolean primaryKeyIncrement;
+
+        /**
+         * 主键信息
+         */
+        @Nullable
+        protected volatile FieldInfo primaryKeyFieldInfo;
 
         /**
          * 主键类型
          */
         protected volatile Class<K> primaryKeyClass;
-
-        /**
-         * 主键信息
-         */
-        protected volatile FieldInfo primaryKeyFieldInfo;
 
         /**
          * 数据库表名

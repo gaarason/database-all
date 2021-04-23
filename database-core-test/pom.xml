@@ -11,12 +11,19 @@
 
     <artifactId>database-core-test</artifactId>
 
+    <properties>
+        <java.version>1.8</java.version>
+        <gaarason.database.springboot.version>2.4.3</gaarason.database.springboot.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>database-dependencies</artifactId>
-                <version>${project.version}</version>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${gaarason.database.springboot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

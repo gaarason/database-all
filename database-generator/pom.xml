@@ -11,22 +11,11 @@
 
     <artifactId>database-generator</artifactId>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>database-dependencies</artifactId>
-                <version>${project.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>database-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

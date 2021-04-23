@@ -72,7 +72,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      * @param stringColumnMap 元数据
      */
     public RecordBean(Class<T> entityClass, Model<T, K> model, Map<String, Column> stringColumnMap,
-                      String originalSql) {
+        String originalSql) {
         this.entityClass = entityClass;
         this.model = model;
         this.originalSql = originalSql;
@@ -249,7 +249,7 @@ public class RecordBean<T, K> implements Record<T, K> {
 
     @Override
     public Record<T, K> with(String column, GenerateSqlPartFunctionalInterface builderClosure,
-                             RelationshipRecordWithFunctionalInterface recordClosure) {
+        RelationshipRecordWithFunctionalInterface recordClosure) {
         // 效验参数
         if (!ObjectUtil.checkProperties(entityClass, column)) {
             throw new RelationNotFoundException(entityClass + " 不存在关联属性 : " + column);
@@ -440,11 +440,12 @@ public class RecordBean<T, K> implements Record<T, K> {
      * @param entity 实体
      */
     protected void primaryKeyAutoDeal(T entity) {
-        ModelShadowProvider.ModelInfo<T, K> modelInfo = ModelShadowProvider.get(this.model);
-        ModelShadowProvider.FieldInfo fieldInfo = modelInfo.getPrimaryKeyFieldInfo();
-        Object originallyPrimaryKeyValue = ModelShadowProvider.fieldGet(fieldInfo, entity);
-        if (originallyPrimaryKeyValue == null) {
-            K k = modelInfo.getIdGenerator().nextId();
+        if (!model.isPrimaryKeyDefinition()) {
+            return;
+        }
+        ModelShadowProvider.FieldInfo fieldInfo = model.getPrimaryKeyFieldInfo();
+        if (ModelShadowProvider.fieldGet(fieldInfo, entity) == null) {
+            K k = model.getPrimaryKeyIdGenerator().nextId();
             // 生成后赋值
             ModelShadowProvider.setPrimaryKeyValue(entity, k);
         }

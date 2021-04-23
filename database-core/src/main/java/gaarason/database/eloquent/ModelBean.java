@@ -5,11 +5,11 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.appointment.DatabaseType;
 import gaarason.database.exception.EntityNotFoundException;
+import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
-import gaarason.database.query.MySqlBuilder;
 import gaarason.database.provider.ModelShadowProvider;
 
 import java.util.Arrays;
@@ -18,7 +18,7 @@ import java.util.HashSet;
 
 abstract public class ModelBean<T, K> implements Model<T, K> {
 
-    public ModelBean(){
+    public ModelBean() {
 
     }
 
@@ -140,13 +140,13 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
     }
 
     @Override
-    public RecordList<T, K> findMany(Collection<K> ids) throws SQLRuntimeException{
+    public RecordList<T, K> findMany(Collection<K> ids) throws SQLRuntimeException {
         return newQuery().whereIn(getPrimaryKeyColumnName(), ids).get();
     }
 
     @SafeVarargs
     @Override
-    public final RecordList<T, K> findMany(K... ids) throws SQLRuntimeException{
+    public final RecordList<T, K> findMany(K... ids) throws SQLRuntimeException {
         return newQuery().whereIn(getPrimaryKeyColumnName(), new HashSet<>(Arrays.asList(ids))).get();
     }
 
@@ -162,18 +162,53 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
     }
 
     @Override
-    public String getPrimaryKeyColumnName() {
-        return ModelShadowProvider.get(this).getPrimaryKeyColumnName();
+    public boolean isPrimaryKeyDefinition() {
+        return ModelShadowProvider.get(this).isPrimaryKeyDefinition();
     }
 
     @Override
-    public String getPrimaryKeyName() {
-        return ModelShadowProvider.get(this).getPrimaryKeyName();
+    public String getPrimaryKeyColumnName() throws PrimaryKeyNotFoundException {
+        String primaryKeyColumnName = ModelShadowProvider.get(this).getPrimaryKeyColumnName();
+        if (null == primaryKeyColumnName) {
+            throw new PrimaryKeyNotFoundException();
+        }
+        return primaryKeyColumnName;
     }
 
     @Override
-    public boolean isPrimaryKeyIncrement() {
-        return ModelShadowProvider.get(this).isPrimaryKeyIncrement();
+    public String getPrimaryKeyName() throws PrimaryKeyNotFoundException {
+        String primaryKeyName = ModelShadowProvider.get(this).getPrimaryKeyName();
+        if (null == primaryKeyName) {
+            throw new PrimaryKeyNotFoundException();
+        }
+        return primaryKeyName;
+    }
+
+    @Override
+    public boolean isPrimaryKeyIncrement() throws PrimaryKeyNotFoundException {
+        Boolean primaryKeyIncrement = ModelShadowProvider.get(this).getPrimaryKeyIncrement();
+        if (null == primaryKeyIncrement) {
+            throw new PrimaryKeyNotFoundException();
+        }
+        return primaryKeyIncrement;
+    }
+
+    @Override
+    public ModelShadowProvider.FieldInfo getPrimaryKeyFieldInfo() throws PrimaryKeyNotFoundException {
+        ModelShadowProvider.FieldInfo primaryKeyFieldInfo = ModelShadowProvider.get(this).getPrimaryKeyFieldInfo();
+        if (null == primaryKeyFieldInfo) {
+            throw new PrimaryKeyNotFoundException();
+        }
+        return primaryKeyFieldInfo;
+    }
+
+    @Override
+    public IdGenerator<K> getPrimaryKeyIdGenerator() throws PrimaryKeyNotFoundException {
+        IdGenerator<K> primaryKeyIdGenerator = ModelShadowProvider.get(this).getPrimaryKeyIdGenerator();
+        if (null == primaryKeyIdGenerator) {
+            throw new PrimaryKeyNotFoundException();
+        }
+        return primaryKeyIdGenerator;
     }
 
     @Override
