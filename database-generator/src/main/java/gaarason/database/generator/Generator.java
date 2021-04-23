@@ -555,7 +555,7 @@ public class Generator {
         parameters.add(DBName());
         parameters.add(tableName);
         return getModel().newQuery()
-            .queryList("select * from information_schema.`columns` where table_schema = ? and table_name = ? ",
+            .queryList("select * from information_schema.`columns` where table_schema = ? and table_name = ? order by ordinal_position",
                 parameters)
             .toMapList();
     }
