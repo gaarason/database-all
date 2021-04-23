@@ -27,6 +27,8 @@ public class Generator {
 
     final private static String baseModelTemplateStr = fileGetContent(getAbsoluteReadFileName("baseModel"));
 
+    final private static String baseEntityTemplateStr = fileGetContent(getAbsoluteReadFileName("baseEntity"));
+
     final private static String modelTemplateStr = fileGetContent(getAbsoluteReadFileName("model"));
 
     /**
@@ -59,6 +61,22 @@ public class Generator {
     @Setter
     private String entitySuffix = "";
 
+    /**
+     * BaseEntity 中的字段
+     */
+    private List<String> baseEntityFields = new ArrayList<>();
+
+    /**
+     * BaseEntity 目录
+     */
+    @Setter
+    private String baseEntityDir = "base";
+
+    /**
+     * BaseEntity 类名
+     */
+    @Setter
+    private String baseEntityName = "BaseEntity";
     /**
      * model目录
      */
@@ -93,25 +111,25 @@ public class Generator {
      * 是否使用spring boot注解 model
      */
     @Setter
-    private Boolean isSpringBoot = false;
+    private boolean isSpringBoot = false;
 
     /**
      * 是否使用swagger注解 entity
      */
     @Setter
-    private Boolean isSwagger = false;
+    private boolean isSwagger = false;
 
     /**
      * 是否使用 org.hibernate.validator.constraints.* 注解 entity
      */
     @Setter
-    private Boolean isValidator = false;
+    private boolean isValidator = false;
 
     /**
      * 是否生成静态字段名
      */
     @Setter
-    private Boolean staticField = false;
+    private boolean entityStaticField = false;
 
     /**
      * 生成并发线程数
@@ -130,6 +148,8 @@ public class Generator {
     private String[] disUpdatable = {};
 
     private String baseModelNamespace;
+
+    private String baseEntityNamespace;
 
     private String modelNamespace;
 
@@ -271,6 +291,8 @@ public class Generator {
         }
         baseModelNamespace = namespace + ("".equals(modelDir) ? "" : ("." + modelDir)) + ("".equals(
             baseModelDir) ? "" : ("." + baseModelDir));
+        baseEntityNamespace = namespace + ("".equals(entityDir) ? "" : ("." + entityDir)) + ("".equals(
+            baseEntityDir) ? "" : ("." + baseEntityDir));
         modelNamespace = namespace + ("".equals(modelDir) ? "" : ("." + modelDir));
         entityNamespace = namespace + ("".equals(entityDir) ? "" : ("." + entityDir));
     }
@@ -287,6 +309,10 @@ public class Generator {
         String baseDaoTemplateStrReplace = fillBaseModelTemplate();
         // baseModel 写入文件
         filePutContent(getAbsoluteWriteFilePath(baseModelNamespace), baseModelName, baseDaoTemplateStrReplace);
+        // baseEntity 文件内容
+        String baseEntityTemplateStrReplace = fillBaseEntityTemplate(tables.get(0).entrySet().stream().findFirst().get().getValue().toString());
+        // baseEntity 写入文件
+        filePutContent(getAbsoluteWriteFilePath(baseEntityNamespace), baseEntityName, baseEntityTemplateStrReplace);
 
         ThreadPoolExecutor threadPool = new ThreadPoolExecutor(corePoolSize, corePoolSize + 1, 1,
             TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(65535));
@@ -342,8 +368,34 @@ public class Generator {
         Map<String, String> parameterMap = new HashMap<>();
         parameterMap.put("${namespace}", baseModelNamespace);
         parameterMap.put("${model_name}", baseModelName);
+        parameterMap.put("${base_entity_name}", baseEntityName);
+        parameterMap.put("${base_entity_namespace}", baseEntityNamespace);
 
         return fillTemplate(baseModelTemplateStr, parameterMap);
+    }
+
+    /**
+     * 填充baseEntity模板内容
+     * @return 内容
+     */
+    private String fillBaseEntityTemplate(String tableName) {
+        Map<String, String> parameterMap = new HashMap<>();
+        parameterMap.put("${namespace}", baseEntityNamespace);
+        parameterMap.put("${entity_name}", baseEntityName);
+
+        parameterMap.put("${swagger_import}", isSwagger ?
+            "import io.swagger.annotations.ApiModel;\n" +
+                "import io.swagger.annotations.ApiModelProperty;\n" : "");
+        parameterMap.put("${validator_import}", isValidator ?
+            "import org.hibernate.validator.constraints.Length;\n" +
+                "\n" +
+                "import javax.validation.constraints.Max;\n" +
+                "import javax.validation.constraints.Min;\n" : "\n");
+
+        parameterMap.put("${static_fields}", entityStaticField ? fillStaticFieldsTemplate(tableName, true) : "");
+        parameterMap.put("${fields}", fillFieldsTemplate(tableName, true));
+
+        return fillTemplate(baseEntityTemplateStr, parameterMap);
     }
 
     /**
@@ -377,6 +429,8 @@ public class Generator {
      */
     private String fillPojoTemplate(String tableName, String entityName, String comment) {
         Map<String, String> parameterMap = new HashMap<>();
+        parameterMap.put("${base_entity_namespace}", baseEntityNamespace);
+        parameterMap.put("${base_entity_name}", baseEntityName);
         parameterMap.put("${namespace}", entityNamespace);
         parameterMap.put("${entity_name}", entityName);
         parameterMap.put("${table}", tableName);
@@ -389,8 +443,8 @@ public class Generator {
                 "import javax.validation.constraints.Max;\n" +
                 "import javax.validation.constraints.Min;\n" : "\n");
         parameterMap.put("${swagger_annotation}", isSwagger ? "@ApiModel(\"" + comment + "\")\n" : "");
-        parameterMap.put("${static_fields}", staticField ? fillStaticFieldsTemplate(tableName) : "");
-        parameterMap.put("${fields}", fillFieldsTemplate(tableName));
+        parameterMap.put("${static_fields}", entityStaticField ? fillStaticFieldsTemplate(tableName, false) : "");
+        parameterMap.put("${fields}", fillFieldsTemplate(tableName, false));
 
         return fillTemplate(entityTemplateStr, parameterMap);
     }
@@ -398,9 +452,10 @@ public class Generator {
     /**
      * 填充所有字段
      * @param tableName 表名
+     * @param isForBaseEntity entity父类使用
      * @return 内容
      */
-    private String fillFieldsTemplate(String tableName) {
+    private String fillFieldsTemplate(String tableName, boolean isForBaseEntity) {
         consoleLog("处理表 : " + tableName);
 
         StringBuilder str = new StringBuilder();
@@ -409,7 +464,7 @@ public class Generator {
 
         for (Map<String, Object> field : fields) {
             // 每个字段的填充
-            String fieldTemplateStrReplace = fillFieldTemplate(field, tableName);
+            String fieldTemplateStrReplace = fillFieldTemplate(field, tableName, isForBaseEntity);
             // 追加
             str.append(fieldTemplateStrReplace);
         }
@@ -419,9 +474,10 @@ public class Generator {
     /**
      * 静态字段填充
      * @param tableName 表名
+     * @param isForBaseEntity entity父类使用
      * @return 内容
      */
-    private String fillStaticFieldsTemplate(String tableName) {
+    private String fillStaticFieldsTemplate(String tableName, boolean isForBaseEntity) {
         StringBuilder str = new StringBuilder();
         // 字段信息
         List<Map<String, Object>> fields = descTable(tableName);
@@ -429,6 +485,18 @@ public class Generator {
         for (Map<String, Object> field : fields) {
             // 原字段名
             String columnName = field.get("COLUMN_NAME").toString();
+
+            // 在baseEntity中已存在
+            if(baseEntityFields.contains(columnName)){
+                if(!isForBaseEntity){
+                    continue;
+                }
+            }else{
+                if(isForBaseEntity){
+                    continue;
+                }
+            }
+
             // 静态字段名
             String staticName = nameConverter(columnName).toUpperCase();
 
@@ -446,20 +514,33 @@ public class Generator {
      * 填充单个字段
      * @param fieldStringObjectMap 字段属性
      * @param tableName            表名
+     * @param isForBaseEntity entity父类使用
      * @return 内容
      */
-    private String fillFieldTemplate(Map<String, Object> fieldStringObjectMap, String tableName) {
+    private String fillFieldTemplate(Map<String, Object> fieldStringObjectMap, String tableName, boolean isForBaseEntity) {
 
         System.out.println(fieldStringObjectMap);
         // 判断数据源类型 目前仅支持mysql
 
         MysqlFieldGenerator mysqlFieldGenerator = new MysqlFieldGenerator();
+        mysqlFieldGenerator.setColumnName(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_NAME));
+
+        // 在 baseEntity 中存在了, 子类不需要
+        if(baseEntityFields.contains(mysqlFieldGenerator.getColumnName())){
+            if(!isForBaseEntity){
+                return "";
+            }
+        }else{
+            if(isForBaseEntity){
+                return "";
+            }
+        }
+
         mysqlFieldGenerator.setTableCatalog(getValue(fieldStringObjectMap, MysqlFieldGenerator.TABLE_CATALOG));
         mysqlFieldGenerator.setIsNullable(getValue(fieldStringObjectMap, MysqlFieldGenerator.IS_NULLABLE));
         mysqlFieldGenerator.setTableName(getValue(fieldStringObjectMap, MysqlFieldGenerator.TABLE_NAME));
         mysqlFieldGenerator.setTableSchema(getValue(fieldStringObjectMap, MysqlFieldGenerator.TABLE_NAME));
         mysqlFieldGenerator.setExtra(getValue(fieldStringObjectMap, MysqlFieldGenerator.EXTRA));
-        mysqlFieldGenerator.setColumnName(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_NAME));
         mysqlFieldGenerator.setColumnKey(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_KEY));
         mysqlFieldGenerator.setCharacterOctetLength(
             getValue(fieldStringObjectMap, MysqlFieldGenerator.CHARACTER_OCTET_LENGTH));
@@ -578,6 +659,10 @@ public class Generator {
             throw new RuntimeException("获取当前库名失败");
         }
         return name;
+    }
+
+    public void setBaseEntityFields(String... column) {
+        baseEntityFields = Arrays.asList(column);
     }
 
     public void setDisInsertable(String... column) {

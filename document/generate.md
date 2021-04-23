@@ -64,16 +64,31 @@ public class GeneratorTests {
         Generator generator = new Generator(jdbcUrl, username, password);
 
         // set
-        generator.setStaticField(true);
-        generator.setIsSpringBoot(true);
-//        generator.setIsSwagger(true);
-//        generator.setIsValidator(true);
-        generator.setCorePoolSize(20);
-        generator.setOutputDir("./src/test/java/");
-        generator.setNamespace("test.data");
-        generator.setDisInsertable("created_at", "updated_at");
-        generator.setDisUpdatable("created_at", "updated_at");
+        generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
+        generator.setNamespace("data");                 // 所有生成文件的所属命名空间
+        generator.setCorePoolSize(20);                  // 所用的线程数
+        generator.setSpringBoot(true);                  // 是否生成spring boot相关注解
+        generator.setSwagger(true);                     // 是否生成swagger相关注解
+        generator.setValidator(true);                   // 是否生成validator相关注解
 
+        generator.setEntityStaticField(true);           // 是否在实体中生成静态字段
+        generator.setBaseEntityDir("base");             // 实体父类的相对路径
+        generator.setBaseEntityFields("id");            // 实体父类存在的字段    (重要, 没有所有表100%满足的字段就请留空)
+        generator.setBaseEntityName("BaseEntity");      // 实体父类的类名
+        generator.setEntityDir("entity");               // 实体的相对路径
+        generator.setEntityPrefix("");                  // 实体的类名前缀
+        generator.setEntitySuffix("");                  // 实体的类名后缀
+
+        generator.setDisInsertable("created_at", "updated_at");     // 新增时,不可通过ORM更改的字段
+        generator.setDisUpdatable("created_at", "updated_at");      // 更新时,不可通过ORM更改的字段
+
+        generator.setBaseModelDir("base");              // 模型父类的相对路径
+        generator.setBaseModelName("BaseModel");        // 模型父类的类名
+        generator.setModelDir("model");                 // 模型的相对路径
+        generator.setModelPrefix("");                   // 模型的类名前缀
+        generator.setModelSuffix("Model");              // 模型的类名后缀
+
+        // 执行
         generator.run();
     }
 
@@ -195,20 +210,38 @@ import java.util.Map;
 public class TestApplicationTests {
 
     @Resource
-    GeneralGenerator generalGenerator;
+    GeneralGenerator generator;
 
     // 执行此方法即可生成    
     @Test
     public void 生成代码() {
-        // 设置
-        generalGenerator.setStaticField(true);
-        generalGenerator.setIsSpringBoot(true);
-        generalGenerator.setOutputDir("./src/main/java/");
-        generalGenerator.setNamespace("gaarason.database.spring.boot.starter.test.data");
-        generalGenerator.setDisInsertable("created_at", "updated_at");
-        generalGenerator.setDisUpdatable("created_at", "updated_at");
+        // set
+        generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
+        generator.setNamespace("data");                 // 所有生成文件的所属命名空间
+        generator.setCorePoolSize(20);                  // 所用的线程数
+        generator.setSpringBoot(true);                  // 是否生成spring boot相关注解
+        generator.setSwagger(true);                     // 是否生成swagger相关注解
+        generator.setValidator(true);                   // 是否生成validator相关注解
 
-        generalGenerator.run();
+        generator.setEntityStaticField(true);           // 是否在实体中生成静态字段
+        generator.setBaseEntityDir("base");             // 实体父类的相对路径
+        generator.setBaseEntityFields("id");            // 实体父类存在的字段    (重要, 没有所有表100%满足的字段就请留空)
+        generator.setBaseEntityName("BaseEntity");      // 实体父类的类名
+        generator.setEntityDir("entity");               // 实体的相对路径
+        generator.setEntityPrefix("");                  // 实体的类名前缀
+        generator.setEntitySuffix("");                  // 实体的类名后缀
+
+        generator.setDisInsertable("created_at", "updated_at");     // 新增时,不可通过ORM更改的字段
+        generator.setDisUpdatable("created_at", "updated_at");      // 更新时,不可通过ORM更改的字段
+
+        generator.setBaseModelDir("base");              // 模型父类的相对路径
+        generator.setBaseModelName("BaseModel");        // 模型父类的类名
+        generator.setModelDir("model");                 // 模型的相对路径
+        generator.setModelPrefix("");                   // 模型的类名前缀
+        generator.setModelSuffix("Model");              // 模型的类名后缀
+
+        // 执行
+        generator.run();
     }
 }
 ```

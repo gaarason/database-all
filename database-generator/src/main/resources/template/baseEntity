@@ -1,22 +1,16 @@
 package ${namespace};\n
 \n
-import ${base_entity_namespace}.${base_entity_name};\n
 import gaarason.database.eloquent.annotation.Column;\n
 import gaarason.database.eloquent.annotation.Primary;\n
-import gaarason.database.eloquent.annotation.Table;\n
 ${swagger_import}
 import lombok.Data;\n
-import lombok.EqualsAndHashCode;\n
 ${validator_import}
 import java.io.Serializable;\n
 import java.math.BigInteger;\n
 import java.util.Date;\n
 \n
 @Data\n
-@EqualsAndHashCode(callSuper = true)\n
-@Table(name = "${table}")\n
-${swagger_annotation}
-public class ${entity_name} extends ${base_entity_name} {\n
+abstract public class ${entity_name} implements Serializable {\n
     private static final long serialVersionUID = 1L;\n
 \n
     /** auto generator start **/\n

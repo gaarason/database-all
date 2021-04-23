@@ -13,9 +13,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -27,32 +24,47 @@ public class GeneratorTests {
     public void run有参构造() {
         String jdbcUrl = "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8" +
             "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
-        String    username  = "root";
-        String    password  = "root";
+        String username = "root";
+        String password = "root";
         Generator generator = new Generator(jdbcUrl, username, password);
 
         // set
-        generator.setStaticField(true);
-//        generator.setIsSpringBoot(true);
-//        generator.setIsSwagger(true);
-//        generator.setIsValidator(true);
-        generator.setCorePoolSize(20);
-        generator.setOutputDir("./src/test/java/");
-        generator.setNamespace("test.data");
-        generator.setDisInsertable("created_at", "updated_at");
-        generator.setDisUpdatable("created_at", "updated_at");
+        generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
+        generator.setNamespace("data");                 // 所有生成文件的所属命名空间
+        generator.setCorePoolSize(20);                  // 所用的线程数
+        generator.setSpringBoot(true);                // 是否生成spring boot相关注解
+        generator.setSwagger(true);                   // 是否生成swagger相关注解
+        generator.setValidator(true);                 // 是否生成validator相关注解
 
+        generator.setEntityStaticField(true);          // 是否在实体中生成静态字段
+        generator.setBaseEntityDir("base");             // 实体父类的相对路径
+        generator.setBaseEntityFields("id");            // 实体父类存在的字段
+        generator.setBaseEntityName("BaseEntity");      // 实体父类的类名
+        generator.setEntityDir("entity");               // 实体的相对路径
+        generator.setEntityPrefix("");                  // 实体的类名前缀
+        generator.setEntitySuffix("");                  // 实体的类名后缀
+
+        generator.setDisInsertable("created_at", "updated_at");     // 新增时,不可通过ORM更改的字段
+        generator.setDisUpdatable("created_at", "updated_at");      // 更新时,不可通过ORM更改的字段
+
+        generator.setBaseModelDir("base");              // 模型父类的相对路径
+        generator.setBaseModelName("BaseModel");        // 模型父类的类名
+        generator.setModelDir("model");                 // 模型的相对路径
+        generator.setModelPrefix("");                   // 模型的类名前缀
+        generator.setModelSuffix("Model");              // 模型的类名后缀
+
+        // 执行
         generator.run();
     }
 
     @Test
     public void run无参构造() {
         ToolModel.gaarasonDataSourceWrapper = proxyDataSource();
-        ToolModel     toolModel     = new ToolModel();
+        ToolModel toolModel = new ToolModel();
         AutoGenerator autoGenerator = new AutoGenerator(toolModel);
         // set
-        autoGenerator.setStaticField(true);
-        autoGenerator.setIsSpringBoot(true);
+        autoGenerator.setEntityStaticField(true);
+        autoGenerator.setSpringBoot(true);
         autoGenerator.setCorePoolSize(20);
         autoGenerator.setOutputDir("./src/test/java/");
         autoGenerator.setNamespace("test.data");

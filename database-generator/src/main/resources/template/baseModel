@@ -1,5 +1,6 @@
 package ${namespace};\n
 \n
+import ${base_entity_namespace}.${base_entity_name};\n
 import gaarason.database.contract.connection.GaarasonDataSource;\n
 import gaarason.database.eloquent.Model;\n
 import lombok.extern.slf4j.Slf4j;\n
@@ -8,7 +9,7 @@ import javax.annotation.Resource;\n
 import java.util.Collection;\n
 \n
 @Slf4j\n
-abstract public class ${model_name}<T, K> extends Model<T, K> {\n
+abstract public class ${model_name}<T extends ${base_entity_name}, K> extends Model<T, K> {\n
 \n
     // todo\n
     @Resource\n
