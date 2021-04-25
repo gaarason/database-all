@@ -927,7 +927,7 @@ abstract public class RelationTests extends BaseTests {
     @Test
     public void 一对多关系1() {
         // 声明但不使用
-        Record<Teacher, Integer> record = teacherModel.newQuery().where("id", "6").firstOrFail();
+        Record<Teacher, Long> record = teacherModel.newQuery().where("id", "6").firstOrFail();
         Teacher teacherHasMany = record.toObject();
         System.out.println(teacherHasMany);
         Assert.assertNull(teacherHasMany.getStudents());
@@ -937,7 +937,7 @@ abstract public class RelationTests extends BaseTests {
     public void 一对多关系2() {
 
         // 声明且使用
-        Record<Teacher, Integer> record2 =
+        Record<Teacher, Long> record2 =
             teacherModel.newQuery().where("id", "6").firstOrFail().with("students");
         Teacher teacherHasMany2 = record2.toObject();
         System.out.println(teacherHasMany2);
@@ -947,7 +947,7 @@ abstract public class RelationTests extends BaseTests {
     @Test
     public void 一对多关系3() {
         // 声明且使用,但无目标数据
-        Record<Teacher, Integer> record3 =
+        Record<Teacher, Long> record3 =
             teacherModel.newQuery().where("id", "6").firstOrFail().with("students", builder -> builder.where("id",
                 "222"));
         Teacher teacherHasMany3 = record3.toObject();
@@ -958,7 +958,7 @@ abstract public class RelationTests extends BaseTests {
     @Test
     public void 一对多关系_builder筛选() {
         // 声明且使用
-        Record<Teacher, Integer> record2 =
+        Record<Teacher, Long> record2 =
             teacherModel.newQuery().where("id", "6").firstOrFail().with("students",
                 (builder -> builder.orderBy("id", OrderBy.DESC).where("id", "<=", "2")));
         Teacher teacherHasMany2 = record2.toObject();
@@ -969,7 +969,7 @@ abstract public class RelationTests extends BaseTests {
     @Test
     public void 多数据结果_一对多关系_无线级关系() {
         // 声明且使用
-        Record<Teacher, Integer> record2 =
+        Record<Teacher, Long> record2 =
             teacherModel.newQuery().where("id", "6").firstOrFail().with("students",
                 (builder -> builder.orderBy("id", OrderBy.DESC).where("id", "<=", "2")), record -> record.with(
                     "teacher", builder -> builder, record1 -> record1.with("students", builder -> builder,

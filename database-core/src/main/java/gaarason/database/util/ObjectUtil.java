@@ -103,7 +103,8 @@ public class ObjectUtil {
         try {
             Class<?> tempClass = detectedClass;
             for (String attr : attrArr) {
-                Field field = tempClass.getDeclaredField(attr);
+                Field field = EntityUtil.getDeclaredFieldContainParent(tempClass, attr);
+//                Field field = tempClass.getDeclaredField(attr);
 
                 tempClass = field.getType();
                 boolean contains =

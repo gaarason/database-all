@@ -1,23 +1,23 @@
 package gaarason.database.test.models.relation.pojo;
 
 import gaarason.database.eloquent.annotation.Column;
-import gaarason.database.eloquent.annotation.Primary;
 import gaarason.database.eloquent.annotation.Table;
-import gaarason.database.eloquent.appointment.IdGeneratorType;
+import gaarason.database.test.models.relation.pojo.base.BaseEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import java.io.Serializable;
 import java.util.Date;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Table(name = "people")
-public class People implements Serializable {
+public class People extends BaseEntity {
+    private static final long serialVersionUID = 1L;
 
     /**
      * auto generator start
      **/
 
-    final public static String ID         = "id";
     final public static String NAME       = "name";
     final public static String AGE        = "age";
     final public static String SEX        = "sex";
@@ -25,10 +25,6 @@ public class People implements Serializable {
     final public static String IS_DELETED = "is_deleted";
     final public static String CREATED_AT = "created_at";
     final public static String UPDATED_AT = "updated_at";
-
-    @Primary(idGenerator = IdGeneratorType.SNOW_FLAKES_ID)
-    @Column(name = "id", unsigned = true)
-    private Long id;
 
     @Column(name = "name", length = 20L, comment = "姓名")
     private String name;

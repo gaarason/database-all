@@ -370,7 +370,9 @@ final public class ModelShadowProvider {
         modelProxyIndexMap.put(modelInfo.model.getClass(), modelInfo);
 
 
-        Field[] fields = entityClass.getDeclaredFields();
+//        Field[] fields = entityClass.getDeclaredFields();
+
+        List<Field> fields = EntityUtil.getDeclaredFieldsContainParent(entityClass);
 
         for (Field field : fields) {
             // 非静态 基本类型
@@ -484,7 +486,10 @@ final public class ModelShadowProvider {
     protected static <T, K> void relationFieldDeal(ModelInfo<T, K> modelInfo) {
 
         Class<T> entityClass = modelInfo.entityClass;
-        Field[] fields = entityClass.getDeclaredFields();
+
+        List<Field> fields = EntityUtil.getDeclaredFieldsContainParent(entityClass);
+
+//        Field[] fields = entityClass.getDeclaredFields();
 
         for (Field field : fields) {
             // 关联关系

@@ -105,7 +105,7 @@ VALUES ('20', '10', '2', '无备注', '2009-03-14 22:15:23', '2009-04-24 22:22:0
 DROP TABLE IF EXISTS `teacher`;
 CREATE TABLE `teacher`
 (
-    `id`         int(1)              NOT NULL AUTO_INCREMENT,
+    `id`         bigint(1) unsigned  NOT NULL AUTO_INCREMENT,
     `name`       varchar(20)         NOT NULL DEFAULT '' COMMENT '姓名',
     `age`        tinyint(2) unsigned NOT NULL DEFAULT '0' COMMENT '年龄',
     `sex`        tinyint(2) unsigned NOT NULL DEFAULT '1' COMMENT '性别1男2女',

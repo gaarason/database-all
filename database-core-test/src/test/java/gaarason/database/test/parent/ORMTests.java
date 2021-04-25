@@ -194,7 +194,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void attach_BelongsToMany_单个() {
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany").toObject();
         // 老师(id=1)已经有3个学生(id=1, id=2, id=3)
@@ -225,7 +225,7 @@ abstract public class ORMTests extends BaseTests {
     @Test
     public void attach_BelongsToMany_单个_附带信息到中间表() {
         String note = "ssssss";
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany")
             .with("relationshipStudentTeachers")
@@ -270,7 +270,7 @@ abstract public class ORMTests extends BaseTests {
     @Test
     public void attach_BelongsToMany_批量_附带信息到中间表() {
         String note = "ssssss";
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany")
             .with("relationshipStudentTeachers")
@@ -315,7 +315,7 @@ abstract public class ORMTests extends BaseTests {
     @Test
     public void attach_BelongsToMany_批量id() {
         String note = "ssssss";
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany")
             .with("relationshipStudentTeachers")
@@ -352,7 +352,7 @@ abstract public class ORMTests extends BaseTests {
     @Test
     public void attach_BelongsToMany_批量id_附带信息到中间表() {
         String note = "ssssss";
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany")
             .with("relationshipStudentTeachers")
@@ -393,7 +393,7 @@ abstract public class ORMTests extends BaseTests {
     public void attach_BelongsTo_单个() {
         Record<Student, Long> studentLongRecord = studentRelationModel.findOrFail(1L);
 
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Student student = studentLongRecord.with("teacher").toObject();
 
@@ -425,7 +425,7 @@ abstract public class ORMTests extends BaseTests {
     public void attach_BelongsTo_异常() {
         Record<Student, Long> studentLongRecord = studentRelationModel.findOrFail(1L);
 
-        RecordList<Teacher, Integer> all = teacherModel.findAll();
+        RecordList<Teacher, Long> all = teacherModel.findAll();
 
         Student student = studentLongRecord.with("teacher").toObject();
 
@@ -439,7 +439,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void attach_HasOneOrMany_单体_单个() {
-        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1L);
 
         // 先清除student
         int update = studentModel.newQuery().where("teacher_id", "1").data("teacher_id", "9").update();
@@ -460,7 +460,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void attach_HasOneOrMany_单体_多个() {
-        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1L);
 
         // 先清除student
         int update = studentModel.newQuery().where("teacher_id", "1").data("teacher_id", "9").update();
@@ -481,7 +481,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void attach_HasOneOrMany_集合_单个() {
-        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1L);
 
         Teacher teacher1 = teacherRecord.with("students").toObject();
         System.out.println(teacher1);
@@ -507,7 +507,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void attach_HasOneOrMany_集合_多个() {
-        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1L);
 
         Teacher teacher1 = teacherRecord.with("students").toObject();
         System.out.println(teacher1);
@@ -526,7 +526,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void attach_HasOneOrMany_集合_多个id() {
-        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1L);
 
         Teacher teacher1 = teacherRecord.with("students").toObject();
         System.out.println(teacher1);
@@ -542,7 +542,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void detach_BelongsToMany_单个() {
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany").toObject();
         // 老师(id=1)已经有3个学生(id=1, id=2, id=3)
@@ -569,7 +569,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void detach_BelongsToMany_多个() {
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany").toObject();
         // 老师(id=1)已经有3个学生(id=1, id=2, id=3)
@@ -599,7 +599,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void detach_BelongsToMany_单个id() {
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany").toObject();
         // 老师(id=1)已经有3个学生(id=1, id=2, id=3)
@@ -625,7 +625,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void detach_BelongsToMany_多个id() {
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany").toObject();
         // 老师(id=1)已经有3个学生(id=1, id=2, id=3)
@@ -653,7 +653,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void detach_BelongsToMany_ALL() {
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany").toObject();
         // 老师(id=1)已经有3个学生(id=1, id=2, id=3)
@@ -681,7 +681,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void detach_HasOneOrMany_单体_单个() {
-        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1L);
 
         Teacher teacher1 = teacherRecord.with("student").toObject();
         System.out.println(teacher1);
@@ -702,7 +702,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void detach_HasOneOrMany_单体_单个id() {
-        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1L);
 
         Teacher teacher1 = teacherRecord.with("student").toObject();
         System.out.println(teacher1);
@@ -721,7 +721,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void detach_HasOneOrMany_集合_单个() {
-        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1L);
 
         Teacher teacher1 = teacherRecord.with("students").toObject();
         System.out.println(teacher1);
@@ -744,7 +744,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void detach_HasOneOrMany_集合_多个() {
-        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1L);
 
         Teacher teacher1 = teacherRecord.with("students").toObject();
         System.out.println(teacher1);
@@ -767,7 +767,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void detach_HasOneOrMany_ALL() {
-        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1L);
 
         Teacher teacher1 = teacherRecord.with("students").toObject();
         System.out.println(teacher1);
@@ -784,7 +784,7 @@ abstract public class ORMTests extends BaseTests {
     @Test
     public void detach_BelongsTo_单个() {
         Record<Student, Long> studentLongRecord = studentRelationModel.findOrFail(1L);
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Student student = studentLongRecord.with("teacher").toObject();
         Assert.assertEquals(student.getTeacher().getId().intValue(), 6);
@@ -803,7 +803,7 @@ abstract public class ORMTests extends BaseTests {
     @Test
     public void detach_BelongsTo_多个() {
         Record<Student, Long> studentLongRecord = studentRelationModel.findOrFail(1L);
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Student student = studentLongRecord.with("teacher").toObject();
         Assert.assertEquals(student.getTeacher().getId().intValue(), 6);
@@ -813,7 +813,7 @@ abstract public class ORMTests extends BaseTests {
         Assert.assertEquals(student1.getTeacher().getId().intValue(), 1);
 
 
-        RecordList<Teacher, Integer> all = teacherModel.findAll();
+        RecordList<Teacher, Long> all = teacherModel.findAll();
         studentLongRecord.bind("teacher").detach(all);
 
         Student student2 = studentLongRecord.toObject();
@@ -824,7 +824,7 @@ abstract public class ORMTests extends BaseTests {
     @Test
     public void detach_BelongsTo_单个id() {
         Record<Student, Long> studentLongRecord = studentRelationModel.findOrFail(1L);
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Student student = studentLongRecord.with("teacher").toObject();
         Assert.assertEquals(student.getTeacher().getId().intValue(), 6);
@@ -843,7 +843,7 @@ abstract public class ORMTests extends BaseTests {
     @Test
     public void detach_BelongsTo_多个id() {
         Record<Student, Long> studentLongRecord = studentRelationModel.findOrFail(1L);
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Student student = studentLongRecord.with("teacher").toObject();
         Assert.assertEquals(student.getTeacher().getId().intValue(), 6);
@@ -861,7 +861,7 @@ abstract public class ORMTests extends BaseTests {
     @Test
     public void detach_BelongsTo_ALL() {
         Record<Student, Long> studentLongRecord = studentRelationModel.findOrFail(1L);
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Student student = studentLongRecord.with("teacher").toObject();
         Assert.assertEquals(student.getTeacher().getId().intValue(), 6);
@@ -874,7 +874,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void sync_BelongsToMany_单个_and_多个() {
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany").toObject();
         // 老师(id=1)已经有3个学生(id=1, id=2, id=3)
@@ -907,7 +907,7 @@ abstract public class ORMTests extends BaseTests {
     @Test
     public void sync_BelongsToMany_单个_and_多个_附带信息到中间表() {
         String note = "ssssss";
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord
             .with("studentsBelongsToMany")
@@ -954,7 +954,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void sync_BelongsToMany_单个_and_多个ID() {
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany").toObject();
         // 老师(id=1)已经有3个学生(id=1, id=2, id=3)
@@ -985,7 +985,7 @@ abstract public class ORMTests extends BaseTests {
     @Test
     public void sync_BelongsToMany_单个_and_多个ID_附带信息到中间表() {
         String note = "ssssss";
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord
             .with("studentsBelongsToMany")
@@ -1030,7 +1030,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void sync_HasOneOrMany_单体_单个() {
-        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1L);
 
         teacherRecord.with("student").toObject();
 
@@ -1046,7 +1046,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void sync_HasOneOrMany_单体_多个() {
-        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1L);
 
         Teacher teacher1 = teacherRecord.with("student").toObject();
 
@@ -1060,7 +1060,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void sync_HasOneOrMany_集合_单个() {
-        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1L);
 
         Teacher teacher1 = teacherRecord.with("students").toObject();
         System.out.println(teacher1);
@@ -1085,7 +1085,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void sync_HasOneOrMany_集合_多个() {
-        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1L);
 
         Teacher teacher1 = teacherRecord.with("students").toObject();
         System.out.println(teacher1);
@@ -1107,7 +1107,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void sync_HasOneOrMany_集合_多个id() {
-        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1L);
 
         Teacher teacher1 = teacherRecord.with("students").toObject();
         System.out.println(teacher1);
@@ -1126,7 +1126,7 @@ abstract public class ORMTests extends BaseTests {
     @Test
     public void sync_BelongsTo_单个() {
         Record<Student, Long> studentLongRecord = studentRelationModel.findOrFail(1L);
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
         Student student = studentLongRecord.with("teacher").toObject();
         Assert.assertEquals(student.getTeacher().getId().intValue(), 6);
         studentLongRecord.bind("teacher").sync(teacherIntegerRecord);
@@ -1147,7 +1147,7 @@ abstract public class ORMTests extends BaseTests {
     @Test
     public void sync_BelongsTo_异常() {
         Record<Student, Long> studentLongRecord = studentRelationModel.findOrFail(1L);
-        RecordList<Teacher, Integer> all = teacherModel.findAll();
+        RecordList<Teacher, Long> all = teacherModel.findAll();
         Student student = studentLongRecord.with("teacher").toObject();
         Assert.assertThrows(RelationAttachException.class, () -> {
             studentLongRecord.bind("teacher").sync(all);
@@ -1157,7 +1157,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void toggle_BelongsToMany_单个_and_多个() {
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany").toObject();
         // 老师(id=1)已经有3个学生(id=1, id=2, id=3)
@@ -1193,7 +1193,7 @@ abstract public class ORMTests extends BaseTests {
     @Test
     public void toggle_BelongsToMany_单个_and_多个_附带信息到中间表() {
         String note = "ssssss";
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord
             .with("studentsBelongsToMany")
@@ -1238,7 +1238,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void toggle_BelongsToMany_单个_and_多个ID() {
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord.with("studentsBelongsToMany").toObject();
         // 老师(id=1)已经有3个学生(id=1, id=2, id=3)
@@ -1269,7 +1269,7 @@ abstract public class ORMTests extends BaseTests {
     @Test
     public void toggle_BelongsToMany_单个_and_多个ID_附带信息到中间表() {
         String note = "ssssss";
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
 
         Teacher studentsBelongsToMany = teacherIntegerRecord
             .with("studentsBelongsToMany")
@@ -1313,7 +1313,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void toggle_HasOneOrMany_单体_单个() {
-        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1L);
         // 老师(id=1)已经有2个学生(id=5, id=6)
 
         teacherRecord.with("student").toObject();
@@ -1330,7 +1330,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void toggle_HasOneOrMany_单体_多个() {
-        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1L);
         // 老师(id=1)已经有2个学生(id=5, id=6)
 
         Teacher teacher1 = teacherRecord.with("student").toObject();
@@ -1346,7 +1346,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void toggle_HasOneOrMany_集合_单个() {
-        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1L);
 
         Teacher teacher1 = teacherRecord.with("students").toObject();
         System.out.println(teacher1);
@@ -1371,7 +1371,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void toggle_HasOneOrMany_集合_多个() {
-        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1L);
 
         Teacher teacher1 = teacherRecord.with("students", builder -> builder.orderBy("id", OrderBy.ASC)).toObject();
         System.out.println(teacher1);
@@ -1397,7 +1397,7 @@ abstract public class ORMTests extends BaseTests {
 
     @Test
     public void toggle_HasOneOrMany_集合_多个id() {
-        Record<Teacher, Integer> teacherRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1L);
 
         Teacher teacher1 = teacherRecord.with("students", builder -> builder.orderBy("id", OrderBy.ASC)).toObject();
         System.out.println(teacher1);
@@ -1421,7 +1421,7 @@ abstract public class ORMTests extends BaseTests {
     @Test
     public void toggle_BelongsTo_单个() {
         Record<Student, Long> studentLongRecord = studentRelationModel.findOrFail(1L);
-        Record<Teacher, Integer> teacherIntegerRecord = teacherModel.findOrFail(1);
+        Record<Teacher, Long> teacherIntegerRecord = teacherModel.findOrFail(1L);
         Student student = studentLongRecord.with("teacher").toObject();
         Assert.assertEquals(student.getTeacher().getId().intValue(), 6);
         studentLongRecord.bind("teacher").toggle(teacherIntegerRecord);
@@ -1442,7 +1442,7 @@ abstract public class ORMTests extends BaseTests {
     @Test
     public void toggle_BelongsTo_异常() {
         Record<Student, Long> studentLongRecord = studentRelationModel.findOrFail(1L);
-        RecordList<Teacher, Integer> all = teacherModel.findAll();
+        RecordList<Teacher, Long> all = teacherModel.findAll();
         Student student = studentLongRecord.with("teacher").toObject();
         Assert.assertThrows(RelationAttachException.class, () -> {
             studentLongRecord.bind("teacher").toggle(all);

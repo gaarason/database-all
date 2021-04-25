@@ -9,10 +9,7 @@ import gaarason.database.exception.TypeNotSupportedException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 实体处理工具
@@ -75,7 +72,7 @@ public class EntityUtil {
      * @throws TypeNotSupportedException 实体不支持
      */
     public static <T> List<T> entityAssignment(List<Map<String, gaarason.database.support.Column>> stringColumnMapList,
-                                               Class<T> entityClass)
+        Class<T> entityClass)
         throws TypeNotSupportedException {
         List<T> entityList = new ArrayList<>();
         for (Map<String, gaarason.database.support.Column> stringColumnMap : stringColumnMapList) {
@@ -94,13 +91,13 @@ public class EntityUtil {
      * @throws TypeNotSupportedException 实体不支持
      */
     public static <T> T entityAssignment(Map<String, gaarason.database.support.Column> stringColumnMap,
-                                         Class<T> entityClass) throws TypeNotSupportedException {
+        Class<T> entityClass) throws TypeNotSupportedException {
         try {
             T entity = entityClass.newInstance();
             for (Field field : entityClass.getDeclaredFields()) {
                 field.setAccessible(true);
-                String                           columnName = EntityUtil.columnName(field);
-                gaarason.database.support.Column column     = stringColumnMap.get(columnName);
+                String columnName = EntityUtil.columnName(field);
+                gaarason.database.support.Column column = stringColumnMap.get(columnName);
                 if (column != null) {
                     Object value = EntityUtil.columnFill(field, column.getValue());
                     field.set(entity, value);
@@ -151,6 +148,40 @@ public class EntityUtil {
             return (Boolean) value ? "1" : "0";
         } else
             return value == null ? null : value.toString();
+    }
+
+
+    /**
+     * 返回 clazz 中的所有属性(public/protected/private)包含父类的
+     * @param clazz 类型
+     * @return 所有字段
+     */
+    public static List<Field> getDeclaredFieldsContainParent(Class<?> clazz) {
+        List<Field> fields = new ArrayList<>(Arrays.asList(clazz.getDeclaredFields()));
+        Class<?> superclass = clazz.getSuperclass();
+        if (!superclass.equals(Object.class)) {
+            fields.addAll(getDeclaredFieldsContainParent(superclass));
+        }
+        return fields;
+    }
+
+    /**
+     * 返回 clazz 中的指定属性(public/protected/private)
+     * @param clazz 类型
+     * @param name  属性名称
+     * @return 属性对应的 Field
+     * @throws NoSuchFieldException 不存在这个属性
+     */
+    public static Field getDeclaredFieldContainParent(Class<?> clazz, String name) throws NoSuchFieldException {
+        Class<?> superclass = clazz.getSuperclass();
+        try {
+            return clazz.getDeclaredField(name);
+        } catch (NoSuchFieldException e) {
+            if (!superclass.equals(Object.class)) {
+                return getDeclaredFieldContainParent(superclass, name);
+            }
+            throw e;
+        }
     }
 
 }

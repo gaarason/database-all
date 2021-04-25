@@ -30,11 +30,11 @@ public class GeneratorTests {
 
         // set
         generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
-        generator.setNamespace("data");                 // 所有生成文件的所属命名空间
+        generator.setNamespace("gaarason.database.test.models.relation.pojo");                 // 所有生成文件的所属命名空间
         generator.setCorePoolSize(20);                  // 所用的线程数
         generator.setSpringBoot(true);                // 是否生成spring boot相关注解
-        generator.setSwagger(true);                   // 是否生成swagger相关注解
-        generator.setValidator(true);                 // 是否生成validator相关注解
+        generator.setSwagger(false);                   // 是否生成swagger相关注解
+        generator.setValidator(false);                 // 是否生成validator相关注解
 
         generator.setEntityStaticField(true);          // 是否在实体中生成静态字段
         generator.setBaseEntityDir("base");             // 实体父类的相对路径
