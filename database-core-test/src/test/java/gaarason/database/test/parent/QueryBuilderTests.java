@@ -1313,4 +1313,29 @@ abstract public class QueryBuilderTests extends BaseTests {
         });
     }
 
+    @Test
+    public void 原生_优化API() {
+        Record<StudentModel.Entity, Integer> record = studentModel.newQuery()
+            .query("select * from student where id=1");
+        Assert.assertNotNull(record);
+        Assert.assertEquals(record.toObject().getId().intValue(), 1);
+
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
+            .queryList("select * from student where sex= ? ", "2");
+        Assert.assertEquals(records.size(), 4);
+        Assert.assertEquals(records.get(0).toObject().getId().intValue(), 1);
+
+        int execute = studentModel.newQuery()
+            .execute("insert into `student`(`id`,`name`,`age`,`sex`) values( ? , ? , ? , ? )", "134","testNAme","11","1");
+        Assert.assertEquals(execute, 1);
+
+        Record<StudentModel.Entity, Integer> query = studentModel.newQuery()
+            .query("select * from student where sex=12");
+        Assert.assertNull(query);
+
+        Assert.assertThrows(EntityNotFoundException.class, () -> {
+            studentModel.newQuery().queryOrFail("select * from student where sex=12");
+        });
+    }
+
 }
