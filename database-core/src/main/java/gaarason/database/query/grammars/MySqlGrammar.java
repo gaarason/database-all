@@ -254,6 +254,11 @@ public class MySqlGrammar extends BaseGrammar {
     }
 
     @Override
+    public boolean hasSelect() {
+        return null != select;
+    }
+
+    @Override
     public boolean hasWhere() {
         return null != where;
     }
@@ -261,6 +266,11 @@ public class MySqlGrammar extends BaseGrammar {
     @Override
     public boolean hasGroup() {
         return null != group;
+    }
+
+    @Override
+    public String getGroup(){
+        return group;
     }
 
     @Override

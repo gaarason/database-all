@@ -57,18 +57,22 @@ Eloquent ORM for Java
 一下以示例的方式说明, 均来自源码中的单元测试
 
 ## 原生语句
-
+- 语句中使用 ? 做占位符, 注意问号(?)前后应该分别保留1个半角空格, 以便SQL日志记录
 ### 原生查询
 
 ```java
 // 查询单条
 Record<Student, Long> record = studentModel.newQuery()
-            .query("select * from student where id=1", new ArrayList<>());
+    .query("select * from student where id=1", new ArrayList<>());
+Record<Student, Long> record = studentModel.newQuery()
+    .query("select * from student where id=1");
 
 // 查询多条
 List<String> parameters = new ArrayList<>();
 parameters.add("2");
-RecordList<Student, Long>, Long> records = studentModel.newQuery().queryList("select * from student where sex=?", parameters);
+RecordList<Student, Long>, Long> records1 = studentModel.newQuery().queryList("select * from student where sex= ? ", parameters);
+
+RecordList<Student, Long>, Long> records2 = studentModel.newQuery().queryList("select * from student where sex= ? ", "2");
 ```
 ### 原生更新
 ```java
@@ -77,8 +81,10 @@ parameters.add("134");
 parameters.add("testNAme");
 parameters.add("11");
 parameters.add("1");
-int num = studentModel.newQuery()
+int num1 = studentModel.newQuery()
     .execute("insert into `student`(`id`,`name`,`age`,`sex`) values( ? , ? , ? , ? )", parameters);
+int num2 = studentModel.newQuery()
+    .execute("insert into `student`(`id`,`name`,`age`,`sex`) values( ? , ? , ? , ? )", "134","testNAme","11","1");
 ```
 ### 原生新增
 ```java
@@ -95,7 +101,7 @@ Object id = studentModel.newQuery()
 
 // 获取自增id列表
 List<Object> ids = studentModel.newQuery()
-    .executeGetIds("insert into `student`(`id`,`name`,`age`,`sex`) values( ? , ? , ? , ? )", parameters);
+    .executeGetIds("insert into `student`(`id`,`name`,`age`,`sex`) values( ? , ? , ? , ? )", "134","testNAme","11","1");
 ```
 
 ## 获取

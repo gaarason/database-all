@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,8 +44,8 @@ public class StringUtil {
         if (firstIsUpperCase.length != 0 && firstIsUpperCase[0]) {
             str = "_" + str;
         }
-        Matcher      matcher = linePattern.matcher(str);
-        StringBuffer sb      = new StringBuffer();
+        Matcher matcher = linePattern.matcher(str);
+        StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
             matcher.appendReplacement(sb, matcher.group(1).toUpperCase());
         }
@@ -58,8 +59,8 @@ public class StringUtil {
      * @return 处理后的字符
      */
     public static String humpToLine(String str) {
-        Matcher      matcher = humpPattern.matcher(str);
-        StringBuffer sb      = new StringBuffer();
+        Matcher matcher = humpPattern.matcher(str);
+        StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
             matcher.appendReplacement(sb, "_" + matcher.group(0).toLowerCase());
         }
@@ -125,6 +126,22 @@ public class StringUtil {
     }
 
     /**
+     * 生成指定长度的随机字符串
+     * @param length 字符串长度
+     * @return 字符串
+     */
+    public static String getRandomString(int length) {
+        String str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            int number = random.nextInt(52);
+            sb.append(str.charAt(number));
+        }
+        return sb.toString();
+    }
+
+    /**
      * md5
      * @param input 输入
      * @return 输出
@@ -140,9 +157,9 @@ public class StringUtil {
             // 获得密文
             byte[] md = mdInst.digest();
             // 把密文转换成十六进制的字符串形式
-            int    j   = md.length;
+            int j = md.length;
             char[] str = new char[j * 2];
-            int    k   = 0;
+            int k = 0;
             for (byte byte0 : md) {
                 str[k++] = hexDigits[byte0 >>> 4 & 0xf];
                 str[k++] = hexDigits[byte0 & 0xf];

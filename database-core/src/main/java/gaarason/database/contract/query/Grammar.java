@@ -43,9 +43,13 @@ public interface Grammar {
 
     List<String> getParameterList(SqlType sqlType);
 
+    boolean hasSelect();
+
     boolean hasWhere();
 
     boolean hasGroup();
+
+    String getGroup();
 
     boolean hasOrderBy();
 

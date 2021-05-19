@@ -1,25 +1,93 @@
 package gaarason.database.query;
 
 import gaarason.database.contract.connection.GaarasonDataSource;
+import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.eloquent.appointment.AggregatesType;
 import gaarason.database.eloquent.appointment.SqlType;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.InsertNotSuccessException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.FormatUtil;
+import gaarason.database.util.ObjectUtil;
+import gaarason.database.util.StringUtil;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.math.BigDecimal;
+import java.util.*;
 
 abstract public class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
 
     public MiddleBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
         super(gaarasonDataSource, model, entityClass);
+    }
+
+    @Override
+    public <R> R aggregate(AggregatesType op, String column) {
+        String alias = StringUtil.getRandomString(6);
+        Builder<T, K> builder = this;
+        if(grammar.hasGroup()){
+            if(!grammar.hasSelect()){
+                this.selectRaw(grammar.getGroup());
+            }
+            builder = model.newQuery().from(alias + "sub", this.toSql(SqlType.SELECT));
+        }
+
+        Map<String, Object> resMap = builder.selectFunction(op.toString(), column, alias).firstOrFail().toMap();
+        return ObjectUtil.typeCast(resMap.get(alias));
+    }
+
+    @Override
+    public Long count() {
+        return count("*");
+    }
+
+    @Override
+    public Long count(String column) {
+        return aggregate(AggregatesType.count, column);
+    }
+
+    @Override
+    public String max(String column) {
+        Object aggregate = aggregate(AggregatesType.max, column);
+        return String.valueOf(aggregate);
+    }
+
+    @Override
+    public String min(String column) {
+        Object aggregate = aggregate(AggregatesType.min, column);
+        return String.valueOf(aggregate);
+    }
+
+    @Override
+    public BigDecimal avg(String column) {
+        return aggregate(AggregatesType.avg, column);
+    }
+
+    @Override
+    public BigDecimal sum(String column) {
+        return aggregate(AggregatesType.sum, column);
+    }
+
+    @Override
+    public Builder<T, K> from(String table) {
+        grammar.pushFrom(FormatUtil.column(table));
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> from(String alias, GenerateSqlPartFunctionalInterface closure) {
+        grammar.pushFrom(FormatUtil.bracket(generateSql(closure)) + alias);
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> from(String alias, String sql) {
+        grammar.pushFrom(FormatUtil.bracket(sql) + alias);
+        return this;
     }
 
     /**
@@ -77,10 +145,6 @@ abstract public class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
 
     @Override
     public Record<T, K> firstOrFail() throws SQLRuntimeException, EntityNotFoundException {
-        // 可能没有主键
-        if (!grammar.hasOrderBy() && model.getPrimaryKeyColumnName() != null) {
-            orderBy(model.getPrimaryKeyColumnName());
-        }
         limit(1);
         return querySql();
     }

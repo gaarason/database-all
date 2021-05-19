@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import javax.sql.DataSource;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -413,17 +414,15 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(stringObjectMap.get("newKey"), "小明-1");
     }
 
-    // todo check
     @Test
     public void 查询_聚合函数() {
         Long count0 = studentModel.newQuery().where("sex", "1").count("id");
         Assert.assertEquals(count0.intValue(), 6);
+        Long count1 = studentModel.newQuery().where("sex", "1").count();
+        Assert.assertEquals(count1.intValue(), 6);
 
         Long count = studentModel.newQuery().where("sex", "1").count("age");
         Assert.assertEquals(count.intValue(), 6);
-
-//        String max0 = studentModel.newQuery().select("age").where("sex", "1").max("id");
-//        Assert.assertEquals(max0, "10");
 
         String max1 = studentModel.newQuery().where("sex", "1").max("id");
         Assert.assertEquals(max1, "10");
@@ -431,47 +430,88 @@ abstract public class QueryBuilderTests extends BaseTests {
         String min = studentModel.newQuery().where("sex", "1").min("id");
         Assert.assertEquals(min, "3");
 
-        String avg = studentModel.newQuery().where("sex", "1").avg("id");
-        Assert.assertEquals(avg, "7.1667");
+        BigDecimal avg = studentModel.newQuery().where("sex", "1").avg("id");
+        Assert.assertEquals(avg.toString(), "7.1667");
 
-        String sum = studentModel.newQuery().where("sex", "2").sum("id");
-        Assert.assertEquals(sum, "12");
+        BigDecimal sum = studentModel.newQuery().where("sex", "2").sum("id");
+        Assert.assertEquals(sum.toString(), "12");
     }
 
-    // todo check
     @Test
-    public void 查询_聚合函数_带group() {
-        Long count0 = studentModel.newQuery().where("sex", "1").count("*");
-        Assert.assertEquals(count0.intValue(), 6);
+    public void 查询_聚合函数_count_带group() {
 
+        Long count01 = studentModel.newQuery().group("sex").count("sex");
+        Assert.assertEquals(count01.longValue(), 2);
 
-        Assert.assertThrows(AggregatesNotSupportedGroupException.class, () -> {
-            Long count01 = studentModel.newQuery().where("sex", "1").group("sex").count("id");
-        });
+        Long count02 = studentModel.newQuery().group("sex").group("age","name").count("*");
+        Assert.assertEquals(count02.longValue(), 10);
 
-//        Long count02 = studentModel.newQuery().where("sex", "1").group("teacher_id").count("id");
-//        Assert.assertEquals(count02.intValue(), 5);
-//
-//        Long count1 = studentModel.newQuery().select("id").where("sex", "1").group("id", "age").count("id");
-//        Assert.assertEquals(count1.intValue(), 1);
+        Long count03 = studentModel.newQuery().group("sex").count("*");
+        Assert.assertEquals(count03.longValue(), 2);
 
-        Long count = studentModel.newQuery().where("sex", "1").count("age");
-        Assert.assertEquals(count.intValue(), 6);
+        Long count04 = studentModel.newQuery().group("sex").select("sex").count("*");
+        Assert.assertEquals(count04.longValue(), 2);
+    }
 
-//        String max0 = studentModel.newQuery().select("age").where("sex", "1").group("age").max("id");
-//        Assert.assertEquals(max0, "10");
+    @Test
+    public void 查询_聚合函数_max_带group() {
 
-        String max1 = studentModel.newQuery().where("sex", "1").max("id");
-        Assert.assertEquals(max1, "10");
+        String max1 = studentModel.newQuery().group("sex").max("sex");
+        Assert.assertEquals(max1, "2");
 
-        String min = studentModel.newQuery().where("sex", "1").min("id");
-        Assert.assertEquals(min, "3");
+        String count02 = studentModel.newQuery().group("sex").group("age","name").max("sex");
+        Assert.assertEquals(count02, "2");
 
-        String avg = studentModel.newQuery().where("sex", "1").avg("id");
-        Assert.assertEquals(avg, "7.1667");
+        String count03 = studentModel.newQuery().group("sex").max("sex");
+        Assert.assertEquals(count03, "2");
 
-        String sum = studentModel.newQuery().where("sex", "2").sum("id");
-        Assert.assertEquals(sum, "12");
+        String count04 = studentModel.newQuery().group("sex").select("sex").max("sex");
+        Assert.assertEquals(count04, "2");
+    }
+
+    @Test
+    public void 查询_聚合函数_min_带group() {
+        String min1 = studentModel.newQuery().group("sex").min("sex");
+        Assert.assertEquals(min1, "1");
+
+        String min2 = studentModel.newQuery().group("sex").group("age","name").min("sex");
+        Assert.assertEquals(min2, "1");
+
+        String min3 = studentModel.newQuery().group("sex").min("sex");
+        Assert.assertEquals(min3, "1");
+
+        String min4 = studentModel.newQuery().group("sex").select("sex").min("sex");
+        Assert.assertEquals(min4, "1");
+    }
+
+    @Test
+    public void 查询_聚合函数_avg_带group() {
+        BigDecimal min1 = studentModel.newQuery().group("sex").avg("sex");
+        Assert.assertEquals(min1.toString(), "1.5000");
+
+        BigDecimal min2 = studentModel.newQuery().group("sex").group("age","name").avg("sex");
+        Assert.assertEquals(min2.toString(), "1.4000");
+
+        BigDecimal min3 = studentModel.newQuery().group("sex").avg("sex");
+        Assert.assertEquals(min3.toString(), "1.5000");
+
+        BigDecimal min4 = studentModel.newQuery().group("sex").select("sex").avg("sex");
+        Assert.assertEquals(min4.toString(), "1.5000");
+    }
+
+    @Test
+    public void 查询_聚合函数_sum_带group() {
+        BigDecimal min1 = studentModel.newQuery().group("sex").sum("sex");
+        Assert.assertEquals(min1.toString(), "3");
+
+        BigDecimal min2 = studentModel.newQuery().group("sex").group("age","name").sum("sex");
+        Assert.assertEquals(min2.toString(), "14");
+
+        BigDecimal min3 = studentModel.newQuery().group("sex").sum("sex");
+        Assert.assertEquals(min3.toString(), "3");
+
+        BigDecimal min4 = studentModel.newQuery().group("sex").select("sex").sum("sex");
+        Assert.assertEquals(min4.toString(), "3");
     }
 
     @Test

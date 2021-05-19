@@ -6,13 +6,14 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.core.lang.Nullable;
+import gaarason.database.eloquent.appointment.AggregatesType;
 import gaarason.database.eloquent.appointment.JoinType;
 import gaarason.database.eloquent.appointment.OrderBy;
 import gaarason.database.eloquent.appointment.SqlType;
-import gaarason.database.exception.AggregatesNotSupportedGroupException;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.query.grammars.MySqlGrammar;
 import gaarason.database.util.FormatUtil;
+import gaarason.database.util.ObjectUtil;
 
 import java.util.*;
 
@@ -322,15 +323,15 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> from(String table) {
-        grammar.pushFrom(column(table));
+    public Builder<T, K> select(String column) {
+        String sqlPart = column(column);
+        grammar.pushSelect(sqlPart);
         return this;
     }
 
     @Override
-    public Builder<T, K> select(String column) {
-        String sqlPart = column(column);
-        grammar.pushSelect(sqlPart);
+    public Builder<T, K> selectRaw(String column) {
+        grammar.pushSelect(column);
         return this;
     }
 
@@ -478,62 +479,6 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
     public Builder<T, K> dataDecrement(String column, int steps) {
         String sqlPart = column(column) + '=' + column(column) + '-' + steps;
         return data(sqlPart);
-    }
-
-    @Override
-    public Long count(String column) {
-        if (grammar.hasGroup()) {
-            throw new AggregatesNotSupportedGroupException("Not support group when using count(), please retry " +
-                "by selectFunction()");
-        }
-        this.grammar.forAggregates();
-        String alias = UUID.randomUUID().toString();
-        Map<String, Object> countMap = selectFunction("count", column, alias).firstOrFail().toMap();
-        return (Long) countMap.get(alias);
-    }
-
-    @Override
-    public String max(String column) {
-        if (grammar.hasGroup()) {
-            throw new AggregatesNotSupportedGroupException("Not support group when using max(), please retry " +
-                "by selectFunction()");
-        }
-        String alias = UUID.randomUUID().toString();
-        Map<String, Object> countMap = selectFunction("max", column, alias).firstOrFail().toMap();
-        return countMap.get(alias).toString();
-    }
-
-    @Override
-    public String min(String column) {
-        if (grammar.hasGroup()) {
-            throw new AggregatesNotSupportedGroupException("Not support group when using min(), please retry " +
-                "by selectFunction()");
-        }
-        String alias = UUID.randomUUID().toString();
-        Map<String, Object> countMap = selectFunction("min", column, alias).firstOrFail().toMap();
-        return countMap.get(alias).toString();
-    }
-
-    @Override
-    public String avg(String column) {
-        if (grammar.hasGroup()) {
-            throw new AggregatesNotSupportedGroupException("Not support group when using avg(), please retry " +
-                "by selectFunction()");
-        }
-        String alias = UUID.randomUUID().toString();
-        Map<String, Object> countMap = selectFunction("avg", column, alias).firstOrFail().toMap();
-        return countMap.get(alias).toString();
-    }
-
-    @Override
-    public String sum(String column) {
-        if (grammar.hasGroup()) {
-            throw new AggregatesNotSupportedGroupException("Not support group when using sum(), please retry " +
-                "by selectFunction()");
-        }
-        String alias = UUID.randomUUID().toString();
-        Map<String, Object> countMap = selectFunction("sum", column, alias).firstOrFail().toMap();
-        return countMap.get(alias).toString();
     }
 
     @Override

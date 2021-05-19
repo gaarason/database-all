@@ -254,6 +254,11 @@ public class MsSqlGrammar extends BaseGrammar {
     }
 
     @Override
+    public boolean hasSelect() {
+        return null != select;
+    }
+
+    @Override
     public boolean hasWhere() {
         return null != where;
     }
@@ -262,6 +267,12 @@ public class MsSqlGrammar extends BaseGrammar {
     public boolean hasGroup() {
         return null != group;
     }
+
+    @Override
+    public String getGroup(){
+        return group;
+    }
+
 
     @Override
     public boolean hasOrderBy() {

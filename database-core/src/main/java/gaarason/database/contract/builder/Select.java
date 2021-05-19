@@ -22,6 +22,13 @@ public interface Select<T, K> {
 
     /**
      * 查询字段
+     * @param column 列名
+     * @return 查询构造器
+     */
+    Builder<T, K> selectRaw(String column);
+
+    /**
+     * 查询字段
      * @param column 列名数组
      * @return 查询构造器
      */

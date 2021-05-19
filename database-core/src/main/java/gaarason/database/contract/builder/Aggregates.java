@@ -1,11 +1,30 @@
 package gaarason.database.contract.builder;
 
+import gaarason.database.eloquent.appointment.AggregatesType;
+
+import java.math.BigDecimal;
+
 /**
  * 统计
  * @param <T>
  * @param <K>
  */
 public interface Aggregates<T, K> {
+
+    /**
+     * 统计
+     * @param op 操作类型
+     * @param column 统计字段
+     * @param <R> 响应类型
+     * @return 响应
+     */
+    <R> R aggregate(AggregatesType op, String column);
+
+    /**
+     * count(*) 条数统计,兼容 group
+     * @return 计数
+     */
+    Long count();
 
     /**
      * count 条数统计,兼容 group
@@ -33,12 +52,12 @@ public interface Aggregates<T, K> {
      * @param column 统计字段
      * @return 平均值
      */
-    String avg(String column);
+    BigDecimal avg(String column);
 
     /**
      * 求和
      * @param column 统计字段
      * @return 总和
      */
-    String sum(String column);
+    BigDecimal sum(String column);
 }
