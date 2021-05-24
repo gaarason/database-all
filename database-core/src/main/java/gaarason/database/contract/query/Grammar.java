@@ -17,6 +17,10 @@ public interface Grammar {
 
     void pushFrom(String something);
 
+    void pushForceIndex(String indexName);
+
+    void pushIgnoreIndex(String indexName);
+
     void pushOrderBy(String something);
 
     void pushLimit(String something);

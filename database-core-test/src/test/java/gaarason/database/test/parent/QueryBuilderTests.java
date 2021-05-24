@@ -1100,34 +1100,6 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertNotEquals(entity.getName(), "dddddd");
     }
 
-//    @Test
-//    public void 事物_单个数据连接不可嵌套事物() {
-//        Assert.assertThrows(NestedTransactionException.class, () -> {
-//            // 1层事物
-//            studentModel.newQuery().transaction(() -> {
-//                // 2层事物
-//                studentModel.newQuery().transaction(() -> {
-//                    // 3层事物
-//                    studentModel.newQuery().transaction(() -> {
-//                        try {
-//                            // 4层事物
-//                            studentModel.newQuery().transaction(() -> {
-//                                studentModel.newQuery().where("id", "1").data("name", "dddddd").update();
-//                                StudentModel.Entity entity = studentModel.newQuery()
-//                                    .where("id", "1")
-//                                    .firstOrFail()
-//                                    .toObject();
-//                                Assert.assertEquals(entity.getName(), "dddddd");
-//                                throw new RuntimeException("业务上抛了个异常");
-//                            }, 1);
-//                        } catch (RuntimeException e) {
-//                        }
-//                    }, 1);
-//                }, 1);
-//            }, 3);
-//        });
-//    }
-
     @Test
     public void 事物_lock_in_share_mode() {
         studentModel.newQuery().transaction(() -> {
@@ -1376,6 +1348,18 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertThrows(EntityNotFoundException.class, () -> {
             studentModel.newQuery().queryOrFail("select * from student where sex=12");
         });
+    }
+
+    @Test
+    public void forceAndIgnoreIndex(){
+        RecordList<StudentModel.Entity, Integer> records1 = studentModel.newQuery().whereRaw("1").forceIndex("PRI").get();
+        Assert.assertEquals(records1.size(), 10);
+
+        RecordList<StudentModel.Entity, Integer> records2 = studentModel.newQuery().whereRaw("1").ignoreIndex("PRI").get();
+        Assert.assertEquals(records2.size(), 10);
+
+        RecordList<StudentModel.Entity, Integer> records3 = studentModel.newQuery().whereRaw("1").forceIndex("PRI").ignoreIndex("PRI").get();
+        Assert.assertEquals(records3.size(), 10);
     }
 
 }

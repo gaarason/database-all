@@ -73,6 +73,18 @@ abstract public class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
     }
 
     @Override
+    public Builder<T, K> forceIndex(String indexName){
+        grammar.pushForceIndex(FormatUtil.column(indexName));
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> ignoreIndex(String indexName){
+        grammar.pushIgnoreIndex(FormatUtil.column(indexName));
+        return this;
+    }
+
+    @Override
     public Builder<T, K> from(String table) {
         grammar.pushFrom(FormatUtil.column(table));
         return this;
@@ -273,4 +285,12 @@ abstract public class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
         return update();
     }
 
+    /**
+     * 给字段加上引号
+     * @param something 字段 eg: sum(order.amount) AS sum_price
+     * @return eg: sum(`order`.`amount`) AS `sum_price`
+     */
+    protected static String column(String something) {
+        return FormatUtil.backQuote(something, "`");
+    }
 }

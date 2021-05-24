@@ -106,7 +106,6 @@ public class RecordListBean<T, K> extends ArrayList<Record<T, K>> implements Rec
     @Override
     public Map<String, List<Object>> toListMap() {
         Map<String, List<Object>> map = new HashMap<>();
-//        PerformanceUtil.steam(this).notifyAll();
         for (Record<T, K> record : this) {
             for (String column : record.getMetadataMap().keySet()) {
                 List<Object> list = map.computeIfAbsent(column, (key) -> new ArrayList<>());

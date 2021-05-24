@@ -23,6 +23,7 @@ Eloquent ORM for Java
 
 |版本|相关版本|升级描述|暂时兼容|不再兼容|
 |----|----|----|----|----|
+|2.3.6|com.alibaba:druid:1.2.5,spring-boot-dependencies:2.4.3|1.增加mysql中的`force index`与`ignore index`|||
 |2.3.5|com.alibaba:druid:1.2.5,spring-boot-dependencies:2.4.3|1.增加count/max/min/avg/sum对group的兼容, 2.增加from对子查询的支持|||
 
 
