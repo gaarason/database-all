@@ -17,7 +17,10 @@ import gaarason.database.util.ObjectUtil;
 import gaarason.database.util.StringUtil;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 abstract public class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
 
@@ -29,8 +32,8 @@ abstract public class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
     public <R> R aggregate(AggregatesType op, String column) {
         String alias = StringUtil.getRandomString(6);
         Builder<T, K> builder = this;
-        if(grammar.hasGroup()){
-            if(!grammar.hasSelect()){
+        if (grammar.hasGroup()) {
+            if (!grammar.hasSelect()) {
                 this.selectRaw(grammar.getGroup());
             }
             builder = model.newQuery().from(alias + "sub", this.toSql(SqlType.SELECT));
@@ -73,13 +76,13 @@ abstract public class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> forceIndex(String indexName){
+    public Builder<T, K> forceIndex(String indexName) {
         grammar.pushForceIndex(FormatUtil.column(indexName));
         return this;
     }
 
     @Override
-    public Builder<T, K> ignoreIndex(String indexName){
+    public Builder<T, K> ignoreIndex(String indexName) {
         grammar.pushIgnoreIndex(FormatUtil.column(indexName));
         return this;
     }
@@ -92,7 +95,7 @@ abstract public class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
 
     @Override
     public Builder<T, K> from(String alias, GenerateSqlPartFunctionalInterface closure) {
-        grammar.pushFrom(FormatUtil.bracket(generateSql(closure)) + alias);
+        grammar.pushFrom(generateSql(closure) + alias);
         return this;
     }
 

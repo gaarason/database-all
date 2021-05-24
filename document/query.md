@@ -18,7 +18,13 @@ Eloquent ORM for Java
     * [删除](#删除)
         * [默认删除](#默认删除)
         * [强力删除](#强力删除)
-    * [聚合函数](#聚合函数)
+    * [聚合统计函数](#聚合统计函数)
+        * [无group](#无group)
+        * [count](#count)
+        * [max](#max)
+        * [min](#min)
+        * [avg](#avg)
+        * [sum](#sum)
     * [自增或自减](#自增或自减)
     * [select](#select)
     * [where](#where)
@@ -37,6 +43,7 @@ Eloquent ORM for Java
     * [join](#join)
     * [limit](#limit)
     * [from](#from)
+    * [index](#index)
     * [data](#data)
     * [union](#union)
     * [事务](#事务)
@@ -241,25 +248,184 @@ studentModel.newQuery().forceDelete();
 studentModel.newQuery().whereRaw(1).forceDelete();
 ```
 
-## 聚合函数
+## 聚合统计函数
+
+count/max/min/avg/sum 使用是需要注意下各个方法返回的数据类型
+
+### 无group
+
+```java
+// select count(*) as 'eUTIdN' from `student` where `sex`="1" limit 1
+Long count0 = studentModel.newQuery().where("sex", "1").count("id");
+Assert.assertEquals(count0.intValue(), 6);
+
+// select count(*) as 'eUTIdN' from `student` where `sex`="1" limit 1
+Long count1 = studentModel.newQuery().where("sex", "1").count();
+Assert.assertEquals(count1.intValue(), 6);
+
+// select count(age) as 'DidUua' from `student` where `sex`="1" limit 1
+Long count = studentModel.newQuery().where("sex", "1").count("age");
+Assert.assertEquals(count.intValue(), 6);
+
+// select max(id) as 'KUjDrZ' from `student` where `sex`="1" limit 1
+String max1 = studentModel.newQuery().where("sex", "1").max("id");
+Assert.assertEquals(max1, "10");
+
+// select min(id) as 'PgtEoj' from `student` where `sex`="1" limit 1
+String min = studentModel.newQuery().where("sex", "1").min("id");
+Assert.assertEquals(min, "3");
+
+// select avg(id) as 'DKYNYr' from `student` where `sex`="1" limit 1
+BigDecimal avg = studentModel.newQuery().where("sex", "1").avg("id");
+Assert.assertEquals(avg.toString(), "7.1667");
+
+// select sum(id) as 'UGvQJm' from `student` where `sex`="2" limit 1
+BigDecimal sum = studentModel.newQuery().where("sex", "2").sum("id");
+Assert.assertEquals(sum.toString(), "12");
+```
+### count 
 select 中的字段应该确保已经出现在 group 中
 ```java
-Long count0 = studentModel.newQuery().where("sex", "1").group("age").count("id");
+// 以下为手动
+// select count(*) as 'ccc' from (select `sex` from `student` group by `sex`)t
+RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().selectFunction("count", "*", "ccc").from("t",
+    builder -> builder.group("sex").select("sex")).get();
+Assert.assertEquals(records.size(), 1);
+Assert.assertEquals(records.toMapList().get(0).get("ccc").toString(), "2");
 
-Long count1 = studentModel.newQuery().select("id").where("sex", "1").group("id","age").count("id");
+// select count(*) as 'ccc' from (select `sex` from `student` group by `sex`)t limit 1
+Record<StudentModel.Entity, Integer> record = studentModel.newQuery().selectFunction("count", "*", "ccc").from("t",
+    builder -> builder.group("sex").select("sex")).firstOrFail();
+Assert.assertEquals(record.toMap().get("ccc").toString(), "2");
 
-Long count2 = studentModel.newQuery().where("sex", "1").count("age");
+// 以下为自动
+// select count(sex) as 'qQhLPU' from (select `sex` from `student` group by `sex`)qQhLPUsub limit 1
+Long count01 = studentModel.newQuery().group("sex").count("sex");
+Assert.assertEquals(count01.longValue(), 2);
 
-String max0 = studentModel.newQuery().select("age").where("sex", "1").group("age").max("id");
+// select count(*) as 'GtMbMe' from (select `sex`,`age`,`name` from `student` group by `sex`,`age`,`name`)GtMbMesub limit 1
+Long count02 = studentModel.newQuery().group("sex").group("age","name").count("*");
+Assert.assertEquals(count02.longValue(), 10);
 
-String max1 = studentModel.newQuery().where("sex", "1").max("id");
+// select count(*) as 'oLmXhJ' from (select `sex` from `student` group by `sex`)oLmXhJsub limit 1
+Long count03 = studentModel.newQuery().group("sex").count();
+Assert.assertEquals(count03.longValue(), 2);
 
-String min = studentModel.newQuery().where("sex", "1").min("id");
-
-String avg = studentModel.newQuery().where("sex", "1").avg("id");
-
-String sum = studentModel.newQuery().where("sex", "2").sum("id");
+// select count(*) as 'HXXFaq' from (select `sex` from `student` group by `sex`)HXXFaqsub limit 1
+Long count04 = studentModel.newQuery().group("sex").select("sex").count("*");
+Assert.assertEquals(count04.longValue(), 2);
 ```
+
+### max
+```java
+// 以下为手动
+// select max(sex) as 'ccc' from (select `sex` from `student` group by `sex`)t
+RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().selectFunction("max", "sex", "ccc").from("t",
+    builder -> builder.group("sex").select("sex")).get();
+Assert.assertEquals(records.size(), 1);
+Assert.assertEquals(records.toMapList().get(0).get("ccc").toString(), "2");
+
+// select max(sex) as 'ccc' from (select `sex` from `student` group by `sex`)t limit 1
+Record<StudentModel.Entity, Integer> record = studentModel.newQuery().selectFunction("max", "sex", "ccc").from("t",
+    builder -> builder.group("sex").select("sex")).firstOrFail();
+Assert.assertEquals(record.toMap().get("ccc").toString(), "2");
+
+// 以下为自动
+// select max(sex) as 'MlXcWL' from (select `sex` from `student` group by `sex`)MlXcWLsub limit 1
+String max1 = studentModel.newQuery().group("sex").max("sex");
+Assert.assertEquals(max1, "2");
+
+// select max(sex) as 'ZldfCz' from (select `sex`,`age`,`name` from `student` group by `sex`,`age`,`name`)ZldfCzsub limit 1
+String count02 = studentModel.newQuery().group("sex").group("age","name").max("sex");
+Assert.assertEquals(count02, "2");
+
+// select max(sex) as 'uOhnwy' from (select `sex` from `student` group by `sex`)uOhnwysub limit 1
+String count03 = studentModel.newQuery().group("sex").max("sex");
+Assert.assertEquals(count03, "2");
+
+// select max(sex) as 'thbZAz' from (select `sex` from `student` group by `sex`)thbZAzsub limit 1
+String count04 = studentModel.newQuery().group("sex").select("sex").max("sex");
+Assert.assertEquals(count04, "2");
+```
+
+### min
+```java
+// 以下为手动
+// select min(sex) as 'ccc' from (select `sex` from `student` group by `sex`)t limit 1
+Record<StudentModel.Entity, Integer> record = studentModel.newQuery().selectFunction("min", "sex", "ccc").from("t",
+    builder -> builder.group("sex").select("sex")).firstOrFail();
+Assert.assertEquals(record.toMap().get("ccc").toString(), "1");
+
+// 以下为自动
+// select min(sex) as 'NZpuZx' from (select `sex` from `student` group by `sex`)NZpuZxsub limit 1
+String min1 = studentModel.newQuery().group("sex").min("sex");
+Assert.assertEquals(min1, "1");
+
+// select min(sex) as 'YAhmzr' from (select `sex`,`age`,`name` from `student` group by `sex`,`age`,`name`)YAhmzrsub limit 1
+String min2 = studentModel.newQuery().group("sex").group("age","name").min("sex");
+Assert.assertEquals(min2, "1");
+
+// select min(sex) as 'RntldM' from (select `sex` from `student` group by `sex`)RntldMsub limit 1
+String min3 = studentModel.newQuery().group("sex").min("sex");
+Assert.assertEquals(min3, "1");
+
+// select min(sex) as 'oUnMLS' from (select `sex` from `student` group by `sex`)oUnMLSsub limit 1
+String min4 = studentModel.newQuery().group("sex").select("sex").min("sex");
+Assert.assertEquals(min4, "1");
+```
+
+### avg
+```java
+// 以下为手动
+// select avg(sex) as 'ccc' from (select `sex` from `student` group by `sex`)t limit 1
+Record<StudentModel.Entity, Integer> record = studentModel.newQuery().selectFunction("avg", "sex", "ccc").from("t",
+    builder -> builder.group("sex").select("sex")).firstOrFail();
+Assert.assertEquals(record.toMap().get("ccc").toString(), "1.5000");
+
+// 以下为自动
+// select avg(sex) as 'IImErp' from (select `sex` from `student` group by `sex`)IImErpsub limit 1
+BigDecimal res1 = studentModel.newQuery().group("sex").avg("sex");
+Assert.assertEquals(res1.toString(), "1.5000");
+
+// select avg(sex) as 'JuDitC' from (select `sex`,`age`,`name` from `student` group by `sex`,`age`,`name`)JuDitCsub limit 1
+BigDecimal res2 = studentModel.newQuery().group("sex").group("age","name").avg("sex");
+Assert.assertEquals(res2.toString(), "1.4000");
+
+// select avg(sex) as 'LRxkwD' from (select `sex` from `student` group by `sex`)LRxkwDsub limit 1
+BigDecimal res3 = studentModel.newQuery().group("sex").avg("sex");
+Assert.assertEquals(res3.toString(), "1.5000");
+
+// select avg(sex) as 'tcRKqt' from (select `sex` from `student` group by `sex`)tcRKqtsub limit 1
+BigDecimal res4 = studentModel.newQuery().group("sex").select("sex").avg("sex");
+Assert.assertEquals(res4.toString(), "1.5000");
+```
+
+### sum
+```java
+// 以下为手动
+// select sum(sex) as 'ccc' from (select `sex` from `student` group by `sex`)t limit 1
+Record<StudentModel.Entity, Integer> record = studentModel.newQuery().selectFunction("sum", "sex", "ccc").from("t",
+    builder -> builder.group("sex").select("sex")).firstOrFail();
+Assert.assertEquals(record.toMap().get("ccc").toString(), "3");
+
+// 以下为自动
+// select sum(sex) as 'DLfORT' from (select `sex` from `student` group by `sex`)DLfORTsub limit 1
+BigDecimal min1 = studentModel.newQuery().group("sex").sum("sex");
+Assert.assertEquals(min1.toString(), "3");
+
+// select sum(sex) as 'yMpOUV' from (select `sex`,`age`,`name` from `student` group by `sex`,`age`,`name`)yMpOUVsub limit 1
+BigDecimal min2 = studentModel.newQuery().group("sex").group("age","name").sum("sex");
+Assert.assertEquals(min2.toString(), "14");
+
+// select sum(sex) as 'MxNqTs' from (select `sex` from `student` group by `sex`)MxNqTssub limit 1
+BigDecimal min3 = studentModel.newQuery().group("sex").sum("sex");
+Assert.assertEquals(min3.toString(), "3");
+
+// select sum(sex) as 'aVtVwE' from (select `sex` from `student` group by `sex`)aVtVwEsub limit 1
+BigDecimal min4 = studentModel.newQuery().group("sex").select("sex").sum("sex");
+Assert.assertEquals(min4.toString(), "3");
+```
+
 ## 自增或自减
 ```java
 int update = studentModel.newQuery().dataDecrement("age", 2).whereRaw("id=4").update();
@@ -417,11 +583,42 @@ RecordList<Student, Long>> records = studentModel.newQuery().orderBy("id", Order
 ```
 ## from
 
-用以指定表名,大多数情况下可以使用默认值
+用以指定表名,大多数情况下可以不手动调用, 使用默认值
 
 ```java
 RecordList<Student, Long>> records = studentModel.newQuery().from("student").get();
 ```
+
+子查询
+
+```java
+// select count(*) as 'ccc' from (select `sex` from `student` group by `sex`)t
+RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().selectFunction("count", "*", "ccc")
+    .from("t", builder -> builder.group("sex").select("sex"))
+    .get();
+
+Assert.assertEquals(records.size(), 1);
+Assert.assertEquals(records.toMapList().get(0).get("ccc").toString(), "2");
+
+// select count(*) as 'nvVeCH' from (select `sex` from `student` group by `sex`)nvVeCHsub limit 1
+Long count = studentModel.newQuery().group("sex").select("sex").count();
+Assert.assertEquals(count.intValue(), 2);
+```
+
+
+## index
+
+用以指定使用的索引或者不使用的索引
+
+```java
+RecordList<StudentModel.Entity, Integer> records1 = studentModel.newQuery().whereRaw("1").forceIndex("PRI").get();
+
+RecordList<StudentModel.Entity, Integer> records2 = studentModel.newQuery().whereRaw("1").ignoreIndex("PRI").get();
+
+// 举个例子, 不要在意细节
+RecordList<StudentModel.Entity, Integer> records3 = studentModel.newQuery().whereRaw("1").forceIndex("PRI").ignoreIndex("PRI").get();
+```
+
 ## data
 ```java
 Map<String, String> map = new HashMap<>();

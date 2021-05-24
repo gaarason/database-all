@@ -172,4 +172,9 @@ public class RecordListBean<T, K> extends ArrayList<Record<T, K>> implements Rec
         }
         return this;
     }
+
+    @Override
+    public String toString() {
+        return toMapList().toString();
+    }
 }
