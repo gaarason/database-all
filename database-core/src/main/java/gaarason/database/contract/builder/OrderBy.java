@@ -7,6 +7,7 @@ import gaarason.database.core.lang.Nullable;
  * 排序
  * @param <T>
  * @param <K>
+ * @author xt
  */
 public interface OrderBy<T, K> {
 

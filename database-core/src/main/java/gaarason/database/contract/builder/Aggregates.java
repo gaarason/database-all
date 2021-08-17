@@ -8,6 +8,7 @@ import java.math.BigDecimal;
  * 统计
  * @param <T>
  * @param <K>
+ * @author xt
  */
 public interface Aggregates<T, K> {
 

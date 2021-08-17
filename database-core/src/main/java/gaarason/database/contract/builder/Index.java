@@ -2,6 +2,12 @@ package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
 
+/**
+ * 指定索引
+ * @param <T>
+ * @param <K>
+ * @author xt
+ */
 public interface Index<T, K> {
 
     /**

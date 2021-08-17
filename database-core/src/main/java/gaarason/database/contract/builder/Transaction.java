@@ -7,6 +7,7 @@ import gaarason.database.exception.SQLRuntimeException;
  * 事物
  * @param <T>
  * @param <K>
+ * @author xt
  */
 public interface Transaction<T, K> {
 

@@ -6,6 +6,7 @@ import gaarason.database.contract.eloquent.Builder;
  * 能力
  * @param <T>
  * @param <K>
+ * @author xt
  */
 public interface Ability<T, K> {
 

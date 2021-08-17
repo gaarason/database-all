@@ -8,6 +8,7 @@ import java.util.Collection;
  * 分组
  * @param <T>
  * @param <K>
+ * @author xt
  */
 public interface Group<T, K> {
 

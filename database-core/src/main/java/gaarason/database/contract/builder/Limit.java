@@ -6,6 +6,7 @@ import gaarason.database.contract.eloquent.Builder;
  * 限制
  * @param <T>
  * @param <K>
+ * @author xt
  */
 public interface Limit<T, K> {
 

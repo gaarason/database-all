@@ -8,6 +8,7 @@ import gaarason.database.contract.function.RelationshipRecordWithFunctionalInter
  * 限制
  * @param <T>
  * @param <K>
+ * @author xt
  */
 public interface With<T, K> {
 

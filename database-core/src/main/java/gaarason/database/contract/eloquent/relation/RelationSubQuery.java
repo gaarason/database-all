@@ -21,7 +21,7 @@ public interface RelationSubQuery {
      * @return sql数组 [0 -> 目标表操作, 1 -> 中间表操作]
      */
     String[] prepareSqlArr(List<Map<String, Column>> stringColumnMapList,
-                           GenerateSqlPartFunctionalInterface generateSqlPart);
+        GenerateSqlPartFunctionalInterface generateSqlPart);
 
     /**
      * 批量关联查询
@@ -46,7 +46,7 @@ public interface RelationSubQuery {
      * @return 筛选后的查询结果集
      */
     List<?> filterBatchRecord(Record<?, ?> record, RecordList<?, ?> TargetRecordList,
-                              Map<String, RecordList<?, ?>> cacheRelationRecordList);
+        Map<String, RecordList<?, ?>> cacheRelationRecordList);
 
     /**
      * 增加关联关系

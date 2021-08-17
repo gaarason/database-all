@@ -9,6 +9,7 @@ import java.util.Collection;
  * 查询后过滤
  * @param <T>
  * @param <K>
+ * @author xt
  */
 public interface Having<T, K> {
 

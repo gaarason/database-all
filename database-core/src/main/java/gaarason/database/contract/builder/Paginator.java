@@ -7,6 +7,7 @@ import gaarason.database.exception.SQLRuntimeException;
  * 分页
  * @param <T>
  * @param <K>
+ * @author xt
  */
 public interface Paginator<T, K> {
 

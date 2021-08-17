@@ -8,6 +8,7 @@ import java.util.List;
  * 值
  * @param <T>
  * @param <K>
+ * @author xt
  */
 public interface Value<T, K> {
 

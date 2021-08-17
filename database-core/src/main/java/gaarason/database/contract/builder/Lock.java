@@ -6,6 +6,7 @@ import gaarason.database.contract.eloquent.Builder;
  * 锁
  * @param <T>
  * @param <K>
+ * @author xt
  */
 public interface Lock<T, K> {
 

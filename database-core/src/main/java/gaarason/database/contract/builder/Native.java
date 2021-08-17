@@ -13,6 +13,7 @@ import java.util.List;
  * 原生查询
  * @param <T>
  * @param <K>
+ * @author xt
  */
 public interface Native<T, K> {
 

@@ -10,6 +10,7 @@ import java.util.Collection;
  * 需求字段
  * @param <T>
  * @param <K>
+ * @author xt
  */
 public interface Select<T, K> {
 

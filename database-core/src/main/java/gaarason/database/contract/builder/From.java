@@ -7,6 +7,7 @@ import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
  * 数据表
  * @param <T>
  * @param <K>
+ * @author xt
  */
 public interface From<T, K> {
     /**

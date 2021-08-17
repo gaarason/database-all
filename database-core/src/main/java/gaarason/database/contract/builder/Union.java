@@ -7,6 +7,7 @@ import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
  * 结果集连接
  * @param <T>
  * @param <K>
+ * @author xt
  */
 public interface Union<T, K> {
 

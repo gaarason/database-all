@@ -9,6 +9,7 @@ import java.util.Collection;
  * 条件
  * @param <T>
  * @param <K>
+ * @author xt
  */
 public interface Where<T, K> {
 

@@ -8,6 +8,7 @@ import java.util.Map;
  * 数据
  * @param <T>
  * @param <K>
+ * @author xt
  */
 public interface Data<T, K> {
 

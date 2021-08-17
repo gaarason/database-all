@@ -7,6 +7,7 @@ import gaarason.database.eloquent.appointment.JoinType;
  * 连接
  * @param <T>
  * @param <K>
+ * @author xt
  */
 public interface Join<T, K> {
 
