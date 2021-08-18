@@ -11,6 +11,10 @@ import gaarason.database.support.Column;
 import java.io.Serializable;
 import java.util.Map;
 
+/**
+ * 结果集
+ * @author xt
+ */
 public interface Record<T, K> extends Friendly<T, K>, Operation<T, K>, Relationship<T, K>, Serializable {
 
     /**

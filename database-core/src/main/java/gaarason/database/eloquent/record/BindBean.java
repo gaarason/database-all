@@ -13,16 +13,20 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Bind的实现
+ * @author xt
+ */
 public class BindBean<T, K> implements Bind {
 
-    private final Record<T, K> record;
+    private final Record<T, K> tkRecord;
 
     private final RelationSubQuery relationSubQuery;
 
-    public BindBean(Record<T, K> record, String fieldName) {
-        this.record = record;
+    public BindBean(Record<T, K> tkRecord, String fieldName) {
+        this.tkRecord = tkRecord;
         // 模型信息
-        ModelShadowProvider.ModelInfo<?, ?> modelInfo = ModelShadowProvider.get(record.getModel());
+        ModelShadowProvider.ModelInfo<?, ?> modelInfo = ModelShadowProvider.get(tkRecord.getModel());
         // 关系信息
         ModelShadowProvider.RelationFieldInfo relationFieldInfo = modelInfo.getRelationFieldMap().get(fieldName);
         if (relationFieldInfo == null) {
@@ -49,7 +53,7 @@ public class BindBean<T, K> implements Bind {
 
     @Override
     public int attach(RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        return relationSubQuery.attach(record, targetRecords, stringStringMap);
+        return relationSubQuery.attach(tkRecord, targetRecords, stringStringMap);
     }
 
     @Override
@@ -70,12 +74,12 @@ public class BindBean<T, K> implements Bind {
 
     @Override
     public int attach(Collection<String> ids, Map<String, String> stringStringMap) {
-        return relationSubQuery.attach(record, ids, stringStringMap);
+        return relationSubQuery.attach(tkRecord, ids, stringStringMap);
     }
 
     @Override
     public int detach() {
-        return relationSubQuery.detach(record);
+        return relationSubQuery.detach(tkRecord);
     }
 
     @Override
@@ -85,7 +89,7 @@ public class BindBean<T, K> implements Bind {
 
     @Override
     public int detach(RecordList<?, ?> targetRecords) {
-        return relationSubQuery.detach(record, targetRecords);
+        return relationSubQuery.detach(tkRecord, targetRecords);
     }
 
     @Override
@@ -95,7 +99,7 @@ public class BindBean<T, K> implements Bind {
 
     @Override
     public int detach(Collection<String> ids) {
-        return relationSubQuery.detach(record, ids);
+        return relationSubQuery.detach(tkRecord, ids);
     }
 
     @Override
@@ -116,7 +120,7 @@ public class BindBean<T, K> implements Bind {
 
     @Override
     public int sync(RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        return relationSubQuery.sync(record, targetRecords, stringStringMap);
+        return relationSubQuery.sync(tkRecord, targetRecords, stringStringMap);
     }
 
     @Override
@@ -136,7 +140,7 @@ public class BindBean<T, K> implements Bind {
 
     @Override
     public int sync(Collection<String> ids, Map<String, String> stringStringMap) {
-        return relationSubQuery.sync(record, ids, stringStringMap);
+        return relationSubQuery.sync(tkRecord, ids, stringStringMap);
     }
 
     @Override
@@ -156,7 +160,7 @@ public class BindBean<T, K> implements Bind {
 
     @Override
     public int toggle(RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        return relationSubQuery.toggle(record, targetRecords, stringStringMap);
+        return relationSubQuery.toggle(tkRecord, targetRecords, stringStringMap);
     }
 
     @Override
@@ -176,6 +180,6 @@ public class BindBean<T, K> implements Bind {
 
     @Override
     public int toggle(Collection<String> ids, Map<String, String> stringStringMap) {
-        return relationSubQuery.toggle(record, ids, stringStringMap);
+        return relationSubQuery.toggle(tkRecord, ids, stringStringMap);
     }
 }

@@ -10,6 +10,10 @@ import java.util.Map;
 import java.util.RandomAccess;
 import java.util.Set;
 
+/**
+ * 结果集集合
+ * @author xt
+ */
 public interface RecordList<T, K> extends FriendlyList<T, K>, RelationshipList<T, K>, List<Record<T, K>>,
     RandomAccess, Cloneable, Serializable {
 

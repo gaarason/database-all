@@ -2,6 +2,9 @@ package gaarason.database.contract.function;
 
 import gaarason.database.contract.eloquent.RecordList;
 
+/**
+ * @author xt
+ */
 @FunctionalInterface
 public interface GenerateRecordListFunctionalInterface {
 

@@ -8,6 +8,10 @@ import gaarason.database.exception.SQLRuntimeException;
 import javax.sql.DataSource;
 import java.util.List;
 
+/**
+ * DataSource接口
+ * @author xt
+ */
 public interface GaarasonDataSource extends DataSource, SavepointManager, TransactionManager {
 
     /**

@@ -11,6 +11,7 @@ import java.util.Map;
 
 /**
  * 关联关系字段处理, 目前是 @HasOnePrMany @BelongsTo @BelongsToMany 所属范围
+ * @author xt
  */
 public interface RelationSubQuery {
 

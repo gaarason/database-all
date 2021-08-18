@@ -7,6 +7,10 @@ import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.provider.ModelShadowProvider;
 
+/**
+ * 数据模型
+ * @author xt
+ */
 public interface Model<T, K> extends Query<T, K>, Event<T, K>, SoftDelete<T, K> {
 
     /**

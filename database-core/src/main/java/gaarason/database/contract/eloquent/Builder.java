@@ -7,6 +7,7 @@ import gaarason.database.contract.query.Grammar;
  * SQL组装
  * @param <T> 实体类
  * @param <K> 主键类型
+ * @author xt
  */
 public interface Builder<T, K> extends Cloneable, Where<T, K>, Having<T, K>, Union<T, K>, Support<T, K>,
     From<T, K>, Execute<T, K>, With<T, K>, Select<T, K>, OrderBy<T, K>, Limit<T, K>, Group<T, K>, Value<T, K>,

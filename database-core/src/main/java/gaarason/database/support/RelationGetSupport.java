@@ -113,11 +113,11 @@ public class RelationGetSupport<T, K> {
                         () -> relationSubQuery.dealBatchPrepare(sqlArr[1]));
 
                     // 本级关系查询
-                    RecordList<?, ?> TargetRecordList = getTargetRecordsInCache(cacheRecords, sqlArr,
+                    RecordList<?, ?> targetRecordList = getTargetRecordsInCache(cacheRecords, sqlArr,
                         relationshipRecordWith, () -> relationSubQuery.dealBatch(sqlArr[0], relationRecords));
 
                     // 递归处理下级关系, 并筛选当前 record 所需要的属性
-                    List<?> objects = relationSubQuery.filterBatchRecord(record, TargetRecordList,
+                    List<?> objects = relationSubQuery.filterBatchRecord(record, targetRecordList,
                         cacheRecords);
 
                     // 是否是集合
