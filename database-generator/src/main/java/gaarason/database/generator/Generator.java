@@ -17,19 +17,23 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.*;
 
+/**
+ * 自动生成
+ * @author xt
+ */
 public class Generator {
 
-    final private static String ObjectName = "Object";
+    private static final String UNKNOWN_PRIMARY_KEY_TYPE = "Serializable";
 
-    final private static String entityTemplateStr = fileGetContent(getAbsoluteReadFileName("entity"));
+    private static final String ENTITY_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("entity"));
 
-    final private static String fieldTemplateStr = fileGetContent(getAbsoluteReadFileName("field"));
+    private static final String FIELD_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("field"));
 
-    final private static String baseModelTemplateStr = fileGetContent(getAbsoluteReadFileName("baseModel"));
+    private static final String BASE_MODEL_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("baseModel"));
 
-    final private static String baseEntityTemplateStr = fileGetContent(getAbsoluteReadFileName("baseEntity"));
+    private static final String BASE_ENTITY_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("baseEntity"));
 
-    final private static String modelTemplateStr = fileGetContent(getAbsoluteReadFileName("model"));
+    private static final String MODEL_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("model"));
 
     /**
      * 输出目录
@@ -340,7 +344,7 @@ public class Generator {
                     // 主键的java类型
                     String primaryKeyType = Optional.ofNullable(tablePrimaryKeyTypeMap.get(tableName))
                         .map(Object::toString)
-                        .orElse(ObjectName);
+                        .orElse(UNKNOWN_PRIMARY_KEY_TYPE);
                     // model文件名
                     String modelName = modelName(tableName);
                     // model文件内容
@@ -371,7 +375,7 @@ public class Generator {
         parameterMap.put("${base_entity_name}", baseEntityName);
         parameterMap.put("${base_entity_namespace}", baseEntityNamespace);
 
-        return fillTemplate(baseModelTemplateStr, parameterMap);
+        return fillTemplate(BASE_MODEL_TEMPLATE_STR, parameterMap);
     }
 
     /**
@@ -395,7 +399,7 @@ public class Generator {
         parameterMap.put("${static_fields}", entityStaticField ? fillStaticFieldsTemplate(tableName, true) : "");
         parameterMap.put("${fields}", fillFieldsTemplate(tableName, true));
 
-        return fillTemplate(baseEntityTemplateStr, parameterMap);
+        return fillTemplate(BASE_ENTITY_TEMPLATE_STR, parameterMap);
     }
 
     /**
@@ -417,7 +421,7 @@ public class Generator {
         parameterMap.put("${is_spring_boot}", isSpringBoot ? "import org.springframework.stereotype.Repository;" +
             "\n\n@Repository" : "");
 
-        return fillTemplate(modelTemplateStr, parameterMap);
+        return fillTemplate(MODEL_TEMPLATE_STR, parameterMap);
     }
 
     /**
@@ -446,7 +450,7 @@ public class Generator {
         parameterMap.put("${static_fields}", entityStaticField ? fillStaticFieldsTemplate(tableName, false) : "");
         parameterMap.put("${fields}", fillFieldsTemplate(tableName, false));
 
-        return fillTemplate(entityTemplateStr, parameterMap);
+        return fillTemplate(ENTITY_TEMPLATE_STR, parameterMap);
     }
 
     /**
@@ -564,7 +568,7 @@ public class Generator {
         // 暂存主键类型
         if (field.getPrimary()) {
             if( tablePrimaryKeyTypeMap.get(tableName) != null ){
-                tablePrimaryKeyTypeMap.put(tableName, ObjectName);
+                tablePrimaryKeyTypeMap.put(tableName, UNKNOWN_PRIMARY_KEY_TYPE);
             }else{
                 tablePrimaryKeyTypeMap.put(tableName, field.getJavaClassTypeString());
             }
@@ -580,7 +584,7 @@ public class Generator {
         parameterMap.put("${validator}", isValidator ? field.toAnnotationOrgHibernateValidatorConstraintValidator() :
             "");
 
-        return fillTemplate(fieldTemplateStr, parameterMap);
+        return fillTemplate(FIELD_TEMPLATE_STR, parameterMap);
     }
 
     /**

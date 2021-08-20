@@ -6,11 +6,12 @@ import gaarason.database.core.lang.NonNull;\n
 import gaarason.database.eloquent.Model;\n
 import lombok.extern.slf4j.Slf4j;\n
 \n
+import java.io.Serializable;\n
 import javax.annotation.Resource;\n
 import java.util.Collection;\n
 \n
 @Slf4j\n
-abstract public class ${model_name}<T extends ${base_entity_name}, K> extends Model<T, K> {\n
+public abstract class ${model_name}<T extends ${base_entity_name}, K extends Serializable> extends Model<T, K> {\n
 \n
     @Resource\n
     protected GaarasonDataSource gaarasonDataSource;\n

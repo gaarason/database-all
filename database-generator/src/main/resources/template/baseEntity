@@ -10,7 +10,7 @@ import java.math.BigInteger;\n
 import java.util.Date;\n
 \n
 @Data\n
-abstract public class ${entity_name} implements Serializable {\n
+public abstract class ${entity_name} implements Serializable {\n
     private static final long serialVersionUID = 1L;\n
 \n
     /** auto generator start **/\n
