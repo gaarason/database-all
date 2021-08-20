@@ -3,6 +3,9 @@ HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
 
+### MAC OS ###
+*.DS_Store
+
 ### STS ###
 .apt_generated
 .classpath

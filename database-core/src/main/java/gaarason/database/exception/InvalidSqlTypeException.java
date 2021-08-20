@@ -4,6 +4,7 @@ import gaarason.database.exception.base.BaseException;
 
 /**
  * 不支持的SQL类型
+ * @author xt
  */
-public class InvalidSQLTypeException extends BaseException {
+public class InvalidSqlTypeException extends BaseException {
 }
