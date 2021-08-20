@@ -7,6 +7,7 @@ import gaarason.database.eloquent.RecordBean;
 import gaarason.database.eloquent.RecordListBean;
 import gaarason.database.exception.EntityNotFoundException;
 
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -33,7 +34,7 @@ public class RecordFactory {
      * @throws SQLException            数据库异常
      * @throws EntityNotFoundException 数据为空
      */
-    public static <T, K> Record<T, K> newRecord(Class<T> entityClass, Model<T, K> model, ResultSet resultSet,
+    public static <T extends Serializable, K extends Serializable> Record<T, K> newRecord(Class<T> entityClass, Model<T, K> model, ResultSet resultSet,
                                                 String sql)
         throws SQLException, EntityNotFoundException {
         if (!resultSet.next()) {
@@ -55,7 +56,7 @@ public class RecordFactory {
      * @return 批量结果集(全新)
      * @throws SQLException 数据库异常
      */
-    public static <T, K> RecordList<T, K> newRecordList(Class<T> entityClass, Model<T, K> model, ResultSet resultSet,
+    public static <T extends Serializable, K extends Serializable> RecordList<T, K> newRecordList(Class<T> entityClass, Model<T, K> model, ResultSet resultSet,
                                                         String sql) throws SQLException {
         RecordList<T, K> recordList = new RecordListBean<>(sql);
         // 总的数据源
@@ -78,7 +79,7 @@ public class RecordFactory {
      * @param <K>     实体主键类型
      * @return 批量结果集(RecordList全新, Record为引用地址)
      */
-    public static <T, K> RecordList<T, K> newRecordList(List<Record<T, K>> records) {
+    public static <T extends Serializable, K extends Serializable> RecordList<T, K> newRecordList(List<Record<T, K>> records) {
         String sql = records.size() > 0 ? records.get(0).getOriginalSql() : "";
         RecordList<T, K> recordList = new RecordListBean<>(sql);
         for (Record<T, K> record : records) {
@@ -98,7 +99,7 @@ public class RecordFactory {
      * @param <K>    实体主键类型
      * @return 批量结果集(RecordList全新, Record为引用地址)
      */
-    public static <T, K> RecordList<T, K> newRecordList(Record<T, K> record) {
+    public static <T extends Serializable, K extends Serializable> RecordList<T, K> newRecordList(Record<T, K> record) {
         List<Record<T, K>> records = new ArrayList<>();
         records.add(record);
         return newRecordList(records);
@@ -110,7 +111,7 @@ public class RecordFactory {
      * @param <K> 实体主键类型
      * @return 批量结果集(RecordList全新, Record为引用地址)
      */
-    public static <T, K> RecordList<T, K> newRecordList() {
+    public static <T extends Serializable, K extends Serializable> RecordList<T, K> newRecordList() {
         return new RecordListBean<>("");
     }
 
@@ -121,7 +122,7 @@ public class RecordFactory {
      * @param <K>            实体主键类型
      * @return 单个结果集
      */
-    public static <T, K> Record<T, K> copyRecord(Record<T, K> originalRecord) {
+    public static <T extends Serializable, K extends Serializable> Record<T, K> copyRecord(Record<T, K> originalRecord) {
         Model<T, K> model = originalRecord.getModel();
         Class<T> entityClass = model.getEntityClass();
         Map<String, Column> metadataMap = copy(originalRecord.getMetadataMap());
@@ -136,7 +137,7 @@ public class RecordFactory {
      * @param <K>                实体主键类型
      * @return 批量结果集
      */
-    public static <T, K> RecordList<T, K> copyRecordList(RecordList<T, K> originalRecordList) {
+    public static <T extends Serializable, K extends Serializable> RecordList<T, K> copyRecordList(RecordList<T, K> originalRecordList) {
         RecordList<T, K> recordList = new RecordListBean<>(originalRecordList.getOriginalSql());
         for (Record<T, K> originalRecord : originalRecordList) {
             Model<T, K> model = originalRecord.getModel();

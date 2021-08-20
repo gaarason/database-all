@@ -4,6 +4,7 @@ import gaarason.database.exception.base.BaseException;
 
 /**
  * 链接关闭异常
+ * @author xt
  */
 public class ConnectionCloseException extends BaseException {
 

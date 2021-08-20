@@ -5,16 +5,13 @@ import gaarason.database.contract.record.RelationshipList;
 import gaarason.database.support.Column;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-import java.util.RandomAccess;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 结果集集合
  * @author xt
  */
-public interface RecordList<T, K> extends FriendlyList<T, K>, RelationshipList<T, K>, List<Record<T, K>>,
+public interface RecordList<T extends Serializable, K extends Serializable> extends FriendlyList<T, K>, RelationshipList<T, K>, List<Record<T, K>>,
     RandomAccess, Cloneable, Serializable {
 
     /**
@@ -33,11 +30,11 @@ public interface RecordList<T, K> extends FriendlyList<T, K>, RelationshipList<T
      * 内存缓存
      * @return 内存缓存
      */
-    Map<String, Set<String>> getCacheMap();
+    HashMap<String, Set<String>> getCacheMap();
 
     /**
      * 内存缓存
      * @param cacheMap 内存缓存
      */
-    void setCacheMap(Map<String, Set<String>> cacheMap);
+    void setCacheMap(HashMap<String, Set<String>> cacheMap);
 }

@@ -8,6 +8,7 @@ import java.util.Map;
 
 /**
  * 同步到关联关系, 任何不在指定范围的对应记录将会移除
+ * @author xt
  */
 public interface Sync {
 

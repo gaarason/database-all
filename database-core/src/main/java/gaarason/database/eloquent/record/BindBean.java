@@ -8,6 +8,7 @@ import gaarason.database.exception.RelationNotFoundException;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.RecordFactory;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,7 +18,7 @@ import java.util.Map;
  * Bind的实现
  * @author xt
  */
-public class BindBean<T, K> implements Bind {
+public class BindBean<T extends Serializable, K extends Serializable> implements Bind {
 
     private final Record<T, K> tkRecord;
 

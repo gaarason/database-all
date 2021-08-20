@@ -4,8 +4,9 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.InstantiationModelFunctionalInterface;
 import gaarason.database.exception.InvalidConfigException;
 import gaarason.database.exception.ModelNewInstanceException;
-import gaarason.database.util.ObjectUtil;
+import gaarason.database.util.ObjectUtils;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -56,12 +57,12 @@ final public class ModelInstanceProvider {
      * @param <K>        主键类
      * @return 模型对象
      */
-    public static <T, K> Model<T, K> getModel(Class<? extends Model<T, K>> modelClass) {
+    public static <T extends Serializable, K extends Serializable> Model<T, K> getModel(Class<? extends Model<T, K>> modelClass) {
         executed = true;
         List<Throwable> throwableList = new ArrayList<>();
         for (InstantiationModelFunctionalInterface<?, ?> instantiation : instantiations) {
             try {
-                return ObjectUtil.typeCast(instantiation.execute(ObjectUtil.typeCast(modelClass)));
+                return ObjectUtils.typeCast(instantiation.execute(ObjectUtils.typeCast(modelClass)));
             } catch (Throwable e) {
                 throwableList.add(e);
             }

@@ -4,6 +4,10 @@ import gaarason.database.exception.base.BaseException;
 
 import java.util.Collection;
 
+/**
+ * sql异常
+ * @author xt
+ */
 public class SQLRuntimeException extends BaseException {
 
     public SQLRuntimeException(String message, Throwable cause) {

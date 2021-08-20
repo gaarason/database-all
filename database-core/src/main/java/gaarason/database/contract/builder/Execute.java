@@ -9,6 +9,7 @@ import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.InsertNotSuccessException;
 import gaarason.database.exception.SQLRuntimeException;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -17,7 +18,7 @@ import java.util.List;
  * @param <K>
  * @author xt
  */
-public interface Execute<T, K> {
+public interface Execute<T extends Serializable, K extends Serializable> {
 
     /**
      * 转化为数据库查询语句(不会执行)

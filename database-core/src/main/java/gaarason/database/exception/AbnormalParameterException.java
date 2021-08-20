@@ -4,6 +4,7 @@ import gaarason.database.exception.base.BaseException;
 
 /**
  * 参数异常
+ * @author xt
  */
 public class AbnormalParameterException extends BaseException {
 

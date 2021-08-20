@@ -9,9 +9,14 @@ import gaarason.database.contract.function.RelationshipRecordWithFunctionalInter
 import gaarason.database.exception.EntityNewInstanceException;
 import gaarason.database.provider.ModelShadowProvider;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class RelationGetSupport<T, K> {
+/**
+ * 关联关系获取
+ * @author xt
+ */
+public class RelationGetSupport<T extends Serializable, K extends Serializable> {
 
     /**
      * 当前结果集
@@ -63,6 +68,7 @@ public class RelationGetSupport<T, K> {
 
     /**
      * 转化为对象列表
+     * @param cacheRecords 结果集缓存(用于优化递归算法)
      * @return 对象列表
      */
     public List<T> toObjectList(Map<String, RecordList<?, ?>> cacheRecords) {
@@ -71,7 +77,7 @@ public class RelationGetSupport<T, K> {
 
         List<T> list = new ArrayList<>();
         // 关联关系的临时性缓存
-        for (Record<T, K> record : records) {
+        for (Record<T, K> theRecord : records) {
             // 模型信息
             ModelShadowProvider.ModelInfo<T, K> modelInfo = ModelShadowProvider.get(records.get(0).getModel());
             try {
@@ -83,7 +89,7 @@ public class RelationGetSupport<T, K> {
                     // 普通属性信息
                     ModelShadowProvider.FieldInfo fieldInfo = entry.getValue();
                     // 普通属性赋值
-                    ModelShadowProvider.fieldAssignment(fieldInfo, record.getMetadataMap(), entity, record);
+                    ModelShadowProvider.fieldAssignment(fieldInfo, theRecord.getMetadataMap(), entity, theRecord);
                 }
 
                 // 关系属性集合
@@ -93,9 +99,9 @@ public class RelationGetSupport<T, K> {
                     ModelShadowProvider.RelationFieldInfo relationFieldInfo = entry.getValue();
 
                     // 获取关系的预处理
-                    GenerateSqlPartFunctionalInterface generateSqlPart = record.getRelationBuilderMap()
+                    GenerateSqlPartFunctionalInterface generateSqlPart = theRecord.getRelationBuilderMap()
                         .get(relationFieldInfo.getName());
-                    RelationshipRecordWithFunctionalInterface relationshipRecordWith = record.getRelationRecordMap()
+                    RelationshipRecordWithFunctionalInterface relationshipRecordWith = theRecord.getRelationRecordMap()
                         .get(relationFieldInfo.getName());
 
                     if (generateSqlPart == null || relationshipRecordWith == null || !attachedRelationship) {
@@ -117,7 +123,7 @@ public class RelationGetSupport<T, K> {
                         relationshipRecordWith, () -> relationSubQuery.dealBatch(sqlArr[0], relationRecords));
 
                     // 递归处理下级关系, 并筛选当前 record 所需要的属性
-                    List<?> objects = relationSubQuery.filterBatchRecord(record, targetRecordList,
+                    List<?> objects = relationSubQuery.filterBatchRecord(theRecord, targetRecordList,
                         cacheRecords);
 
                     // 是否是集合
@@ -171,8 +177,8 @@ public class RelationGetSupport<T, K> {
         // 使用复制结果
         RecordList<?, ?> recordsCopy = RecordFactory.copyRecordList(recordList);
         // 赋值关联关系
-        for (Record<?, ?> record : recordsCopy) {
-            relationshipRecordWith.execute(record);
+        for (Record<?, ?> theRecord : recordsCopy) {
+            relationshipRecordWith.execute(theRecord);
         }
         return recordsCopy;
     }

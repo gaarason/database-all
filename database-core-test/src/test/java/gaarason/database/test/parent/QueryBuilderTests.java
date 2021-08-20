@@ -27,7 +27,7 @@ import java.util.*;
 @FixMethodOrder(MethodSorters.JVM)
 abstract public class QueryBuilderTests extends BaseTests {
 
-    private static StudentModel studentModel = new StudentModel();
+    private static final StudentModel studentModel = new StudentModel();
 
     protected List<DataSource> getDataSourceList() {
         GaarasonDataSource gaarasonDataSourceWrapper = studentModel.getGaarasonDataSource();

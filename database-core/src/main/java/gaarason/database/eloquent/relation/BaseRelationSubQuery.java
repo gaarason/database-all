@@ -6,19 +6,21 @@ import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.eloquent.RecordListBean;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.Column;
-import gaarason.database.util.ObjectUtil;
+import gaarason.database.util.ObjectUtils;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
 /**
  * 关联关系
+ * @author xt
  */
-abstract public class BaseRelationSubQuery implements RelationSubQuery {
+public abstract class BaseRelationSubQuery implements RelationSubQuery {
 
     @Override
-    public RecordList<?, ?> dealBatchPrepare(String sql1) {
+    public RecordList<? extends Serializable, ? extends Serializable> dealBatchPrepare(String sql1) {
         return new RecordListBean<>();
     }
 
@@ -28,9 +30,9 @@ abstract public class BaseRelationSubQuery implements RelationSubQuery {
      * @param mayBeInstanceOfAbstractList 原集合
      * @return 集合(不保证引用关系)
      */
-    protected Collection<String> compatibleCollection(Collection<String> mayBeInstanceOfAbstractList){
+    protected Collection<String> compatibleCollection(Collection<String> mayBeInstanceOfAbstractList) {
         return mayBeInstanceOfAbstractList instanceof AbstractList ?
-                new HashSet<>(mayBeInstanceOfAbstractList) : mayBeInstanceOfAbstractList;
+            new HashSet<>(mayBeInstanceOfAbstractList) : mayBeInstanceOfAbstractList;
     }
 
     /**
@@ -41,7 +43,7 @@ abstract public class BaseRelationSubQuery implements RelationSubQuery {
     protected List<String> getTargetRecordPrimaryKeyIds(RecordList<?, ?> targetRecords) {
         // 应该目标表的主键列表
         return targetRecords.toList(recordTemp -> String.valueOf(
-                recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName()).getValue()));
+            recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName()).getValue()));
     }
 
     /**
@@ -50,9 +52,9 @@ abstract public class BaseRelationSubQuery implements RelationSubQuery {
      * @return Model实例
      */
     protected static Model<?, ?> getModelInstance(Field field) {
-        Class<?> clazz = ObjectUtil.isCollection(field.getType()) ?
-                ObjectUtil.getGenerics((ParameterizedType) field.getGenericType(), 0) :
-                field.getType();
+        Class<? extends Serializable> clazz = ObjectUtils.isCollection(field.getType()) ?
+            ObjectUtils.getGenerics((ParameterizedType) field.getGenericType(), 0) :
+            ObjectUtils.typeCast(field.getType());
         return ModelShadowProvider.getByEntityClass(clazz).getModel();
     }
 
@@ -61,8 +63,9 @@ abstract public class BaseRelationSubQuery implements RelationSubQuery {
      * @param modelClass Model类
      * @return Model实例
      */
-    protected static Model<?, ?> getModelInstance(Class<? extends Model<?, ?>> modelClass) {
-        return ModelShadowProvider.getByModelClass(ObjectUtil.typeCast(modelClass)).getModel();
+    protected static Model<? extends Serializable, ? extends Serializable> getModelInstance(
+        Class<? extends Model<? extends Serializable, ? extends Serializable>> modelClass) {
+        return ModelShadowProvider.getByModelClass(ObjectUtils.typeCast(modelClass)).getModel();
     }
 
     /**
@@ -86,16 +89,17 @@ abstract public class BaseRelationSubQuery implements RelationSubQuery {
      * @param fieldTargetValue       对象的属性的目标值
      * @return 对象列表
      */
-    protected static List<?> findObjList(List<?> relationshipObjectList, String columnName, String fieldTargetValue) {
-        List<Object> objectList = new ArrayList<>();
-        if (relationshipObjectList.size() > 0) {
+    protected static List<Serializable> findObjList(List<? extends Serializable> relationshipObjectList, String columnName, String fieldTargetValue) {
+        List<Serializable> objectList = new ArrayList<>();
+        if (!relationshipObjectList.isEmpty()) {
             // 模型信息
-            ModelShadowProvider.ModelInfo<?, Object> modelInfo = ModelShadowProvider.getByEntityClass(
-                    relationshipObjectList.get(0).getClass());
+            ModelShadowProvider.ModelInfo<? extends Serializable, Serializable> modelInfo = ModelShadowProvider.getByEntityClass(
+                relationshipObjectList.get(0).getClass());
+
             // 字段信息
             ModelShadowProvider.FieldInfo fieldInfo = modelInfo.getColumnFieldMap().get(columnName);
 
-            for (Object o : relationshipObjectList) {
+            for (Serializable o : relationshipObjectList) {
                 // 值
                 Object fieldValue = ModelShadowProvider.fieldGet(fieldInfo, o);
                 // 满足则加入
@@ -103,7 +107,6 @@ abstract public class BaseRelationSubQuery implements RelationSubQuery {
                     objectList.add(o);
                 }
             }
-
         }
         return objectList;
     }

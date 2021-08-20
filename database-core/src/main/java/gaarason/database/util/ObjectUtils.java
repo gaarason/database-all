@@ -15,7 +15,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-public class ObjectUtil {
+/**
+ * 对象工具类
+ * @author xt
+ */
+public class ObjectUtils {
+
+    private ObjectUtils() {
+    }
 
 
     /**
@@ -35,8 +42,8 @@ public class ObjectUtil {
     /**
      * 获取指定类中的第index个泛型的类
      * @param parameterizedType 指定类
-     * @param index 第几个
-     * @param <A>   泛型的类
+     * @param index             第几个
+     * @param <A>               泛型的类
      * @return 泛型的类
      */
     @SuppressWarnings("unchecked")
@@ -65,12 +72,12 @@ public class ObjectUtil {
     public static <T> T deepCopy(T original) {
         try {
             ByteArrayOutputStream bis = new ByteArrayOutputStream();
-            ObjectOutputStream    oos = new ObjectOutputStream(bis);
+            ObjectOutputStream oos = new ObjectOutputStream(bis);
             oos.writeObject(original);
             oos.flush();
             ObjectInputStream input = new ObjectInputStream(new ByteArrayInputStream(bis.toByteArray()));
             return (T) input.readObject();
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw new CloneNotSupportedRuntimeException(e.getMessage(), e);
         }
     }
@@ -86,7 +93,7 @@ public class ObjectUtil {
     public static <T, N> N typeCast(T original) {
         try {
             return (N) original;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw new TypeCastException(e.getMessage(), e);
         }
     }
@@ -103,9 +110,7 @@ public class ObjectUtil {
         try {
             Class<?> tempClass = detectedClass;
             for (String attr : attrArr) {
-                Field field = EntityUtil.getDeclaredFieldContainParent(tempClass, attr);
-//                Field field = tempClass.getDeclaredField(attr);
-
+                Field field = EntityUtils.getDeclaredFieldContainParent(tempClass, attr);
                 tempClass = field.getType();
                 boolean contains =
                     new ArrayList<>(Arrays.asList(tempClass.getInterfaces())).contains(Collection.class);

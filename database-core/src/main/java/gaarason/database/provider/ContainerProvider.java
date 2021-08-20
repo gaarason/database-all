@@ -7,7 +7,7 @@ import gaarason.database.contract.support.ReflectionScan;
 import gaarason.database.exception.InvalidConfigException;
 import gaarason.database.exception.ModelNewInstanceException;
 import gaarason.database.support.SnowFlakeIdGenerator;
-import gaarason.database.util.ObjectUtil;
+import gaarason.database.util.ObjectUtils;
 import org.reflections8.Reflections;
 
 import java.util.Set;
@@ -16,18 +16,19 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 容器化对象实例
+ * @author xt
  */
-final public class ContainerProvider {
+public final class ContainerProvider {
 
     /**
      * 实例化工厂 MAP
      */
-    private final static ConcurrentHashMap<Class<?>, InstanceCreatorFunctionalInterface<?>> instanceCreatorMap = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Class<?>, InstanceCreatorFunctionalInterface<?>> INSTANCE_CREATOR_MAP = new ConcurrentHashMap<>();
 
     /**
      * 实例对象 MAP
      */
-    private final static ConcurrentHashMap<Class<?>, Object> instanceMap = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Class<?>, Object> INSTANCE_MAP = new ConcurrentHashMap<>();
 
     static {
         // ID生成 雪花算法
@@ -46,9 +47,13 @@ final public class ContainerProvider {
 
             @Override
             public Set<Class<? extends Model<?, ?>>> scanModels() {
-                return ObjectUtil.typeCast(reflections.getSubTypesOf(Model.class));
+                return ObjectUtils.typeCast(reflections.getSubTypesOf(Model.class));
             }
         });
+    }
+
+    private ContainerProvider(){
+
     }
 
     /**
@@ -57,10 +62,10 @@ final public class ContainerProvider {
      * @param closure 实例化工厂
      */
     public static synchronized <T> void register(Class<T> interfaceClass, InstanceCreatorFunctionalInterface<T> closure) {
-        if (instanceMap.get(interfaceClass) != null) {
+        if (INSTANCE_MAP.get(interfaceClass) != null) {
             throw new InvalidConfigException(interfaceClass + " should be registered before get bean.");
         }
-        instanceCreatorMap.put(interfaceClass, closure);
+        INSTANCE_CREATOR_MAP.put(interfaceClass, closure);
     }
 
 
@@ -69,22 +74,22 @@ final public class ContainerProvider {
      * @return 对象
      */
     public static <T> T getBean(Class<T> interfaceClass) {
-        if (instanceMap.get(interfaceClass) == null) {
+        if (INSTANCE_MAP.get(interfaceClass) == null) {
             synchronized (interfaceClass) {
-                if (instanceMap.get(interfaceClass) == null) {
-                    InstanceCreatorFunctionalInterface<?> instanceCreatorFunctionalInterface = instanceCreatorMap.get(interfaceClass);
+                if (INSTANCE_MAP.get(interfaceClass) == null) {
+                    InstanceCreatorFunctionalInterface<?> instanceCreatorFunctionalInterface = INSTANCE_CREATOR_MAP.get(interfaceClass);
                     if (null == instanceCreatorFunctionalInterface) {
                         throw new InvalidConfigException("The interface[" + interfaceClass + "] has not been registered before get bean.");
                     }
                     try {
-                        Object bean = instanceCreatorFunctionalInterface.execute(ObjectUtil.typeCast(interfaceClass));
-                        instanceMap.put(interfaceClass, bean);
+                        Object bean = instanceCreatorFunctionalInterface.execute(ObjectUtils.typeCast(interfaceClass));
+                        INSTANCE_MAP.put(interfaceClass, bean);
                     } catch (Throwable e) {
                         throw new ModelNewInstanceException(interfaceClass, e.getMessage(), e);
                     }
                 }
             }
         }
-        return ObjectUtil.typeCast(instanceMap.get(interfaceClass));
+        return ObjectUtils.typeCast(INSTANCE_MAP.get(interfaceClass));
     }
 }

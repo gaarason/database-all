@@ -14,6 +14,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import java.io.Serializable;
 import java.util.*;
 
 @Slf4j
@@ -98,7 +99,7 @@ public class MysqlQuickStartTests {
          */
         @Data
         @Table(name = "student")
-        public static class Inner {
+        public static class Inner implements Serializable {
             @Primary
             private Integer id;
 

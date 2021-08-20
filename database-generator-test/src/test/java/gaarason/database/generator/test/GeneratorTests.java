@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import javax.sql.DataSource;
+import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -101,25 +102,30 @@ public class GeneratorTests {
         return new GaarasonDataSourceWrapper(dataSources);
     }
 
-    public static class ToolModel extends Model<ToolModel.Inner, Object> {
+    public static class ToolModel extends Model<ToolModel.Inner, Serializable> {
+
         public static GaarasonDataSourceWrapper gaarasonDataSourceWrapper;
 
+        @Override
         public GaarasonDataSourceWrapper getGaarasonDataSource() {
             return gaarasonDataSourceWrapper;
         }
 
-        public static class Inner {
+        public static class Inner implements Serializable{
+
         }
     }
 
     public static class AutoGenerator extends Generator {
-        private Model<?, ?> toolModel;
 
-        public AutoGenerator(Model<?, ?> model) {
+        private final Model<? extends Serializable, ? extends Serializable> toolModel;
+
+        public AutoGenerator(Model<? extends Serializable, ? extends Serializable> model) {
             toolModel = model;
         }
 
-        public Model<?, ?> getModel() {
+        @Override
+        public Model<? extends Serializable, ? extends Serializable> getModel() {
             return toolModel;
         }
 

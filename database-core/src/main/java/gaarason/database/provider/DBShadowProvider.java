@@ -1,9 +1,8 @@
 package gaarason.database.provider;
 
 import gaarason.database.contract.connection.GaarasonDataSource;
-import gaarason.database.support.Column;
 import gaarason.database.support.DBColumn;
-import gaarason.database.util.DatabaseInfoUtil;
+import gaarason.database.util.DatabaseInfoUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -40,7 +39,7 @@ final public class DBShadowProvider {
             synchronized (key.intern()) {
                 tableInfoMap = manyTableInfoMap.get(table);
                 if (tableInfoMap == null) {
-                    tableInfoMap = DatabaseInfoUtil.getDBColumnsWIthTable(gaarasonDataSource, table);
+                    tableInfoMap = DatabaseInfoUtils.getDBColumnsWIthTable(gaarasonDataSource, table);
                     manyTableInfoMap.put(table, tableInfoMap);
                 }
             }

@@ -6,17 +6,15 @@ import java.math.BigDecimal;
 
 /**
  * 统计
- * @param <T>
- * @param <K>
  * @author xt
  */
-public interface Aggregates<T, K> {
+public interface Aggregates {
 
     /**
      * 统计
-     * @param op 操作类型
+     * @param op     操作类型
      * @param column 统计字段
-     * @param <R> 响应类型
+     * @param <R>    响应类型
      * @return 响应
      */
     <R> R aggregate(AggregatesType op, String column);

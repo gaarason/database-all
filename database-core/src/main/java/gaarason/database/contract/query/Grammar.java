@@ -4,11 +4,14 @@ import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.eloquent.appointment.SqlType;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
-import gaarason.database.util.ObjectUtil;
+import gaarason.database.util.ObjectUtils;
 
 import java.util.List;
 import java.util.Map;
 
+/**
+ *
+ */
 public interface Grammar {
 
     void pushSelect(String something);
@@ -71,7 +74,7 @@ public interface Grammar {
      * @throws CloneNotSupportedRuntimeException 克隆异常
      */
     default Grammar deepCopy() throws CloneNotSupportedRuntimeException {
-        return ObjectUtil.deepCopy(this);
+        return ObjectUtils.deepCopy(this);
     }
 
     /**

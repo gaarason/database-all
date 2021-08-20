@@ -13,21 +13,24 @@ import gaarason.database.exception.RelationNotFoundException;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.Column;
 import gaarason.database.support.RelationGetSupport;
-import gaarason.database.util.EntityUtil;
-import gaarason.database.util.ObjectUtil;
-import gaarason.database.util.StringUtil;
+import gaarason.database.util.EntityUtils;
+import gaarason.database.util.ObjectUtils;
+import gaarason.database.util.StringUtils;
 
-import java.util.Arrays;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
-public class RecordBean<T, K> implements Record<T, K> {
+/**
+ * 结果集对象
+ * @author xt
+ */
+public class RecordBean<T extends Serializable, K extends Serializable> implements Record<T, K> {
 
     /**
      * 数据模型
      */
-    protected final Model<T, K> model;
+    protected final transient Model<T, K> model;
 
     /**
      * 数据实体类
@@ -38,7 +41,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      * 本表元数据
      * <数据库字段名 -> 字段信息>
      */
-    protected Map<String, Column> metadataMap;
+    protected transient Map<String, Column> metadataMap;
 
     /**
      * 原Sql
@@ -48,16 +51,22 @@ public class RecordBean<T, K> implements Record<T, K> {
     /**
      * 数据实体
      */
-    protected T entity;
+    protected transient T entity;
 
     /**
      * 是否已经绑定具体的数据
      */
     protected boolean hasBind;
 
-    protected Map<String, GenerateSqlPartFunctionalInterface> relationBuilderMap = new HashMap<>();
+    /**
+     * 关联关系(Builder)
+     */
+    protected HashMap<String, GenerateSqlPartFunctionalInterface<T, K>> relationBuilderMap = new HashMap<>();
 
-    protected Map<String, RelationshipRecordWithFunctionalInterface> relationRecordMap = new HashMap<>();
+    /**
+     * 关联关系(Record)
+     */
+    protected HashMap<String, RelationshipRecordWithFunctionalInterface> relationRecordMap = new HashMap<>();
 
     /**
      * 主键值
@@ -123,12 +132,12 @@ public class RecordBean<T, K> implements Record<T, K> {
     }
 
     @Override
-    public Map<String, GenerateSqlPartFunctionalInterface> getRelationBuilderMap() {
+    public Map<String, GenerateSqlPartFunctionalInterface<T, K>> getRelationBuilderMap() {
         return relationBuilderMap;
     }
 
     @Override
-    public void setRelationBuilderMap(Map<String, GenerateSqlPartFunctionalInterface> relationBuilderMap) {
+    public void setRelationBuilderMap(HashMap<String, GenerateSqlPartFunctionalInterface<T, K>> relationBuilderMap) {
         this.relationBuilderMap = relationBuilderMap;
     }
 
@@ -138,7 +147,7 @@ public class RecordBean<T, K> implements Record<T, K> {
     }
 
     @Override
-    public void setRelationRecordMap(Map<String, RelationshipRecordWithFunctionalInterface> relationRecordMap) {
+    public void setRelationRecordMap(HashMap<String, RelationshipRecordWithFunctionalInterface> relationRecordMap) {
         this.relationRecordMap = relationRecordMap;
     }
 
@@ -164,7 +173,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      */
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>(16);
         for (Column value : metadataMap.values()) {
             map.put(value.getName(), value.getValue());
         }
@@ -178,19 +187,8 @@ public class RecordBean<T, K> implements Record<T, K> {
     @Override
     public String toSearch() {
         Map<String, Object> stringObjectMap = toMap();
-        Set<String> keySet = stringObjectMap.keySet();
-        String[] keyArray = keySet.toArray(new String[0]);
-        Arrays.sort(keyArray);
-        StringBuilder sb = new StringBuilder();
-        for (String key : keyArray) {
-            Object s = stringObjectMap.get(key);
-            if (s != null) {
-                sb.append(key).append("=").append(s.toString()).append("&");
-            }
-        }
-        return StringUtil.rtrim(sb.toString(), "&");
+        return StringUtils.mapToQuerySearch(stringObjectMap, false);
     }
-
 
     /**
      * 转化为对象列表
@@ -227,7 +225,7 @@ public class RecordBean<T, K> implements Record<T, K> {
 
     @Override
     public <V> V toObject(Class<V> clazz) {
-        return EntityUtil.entityAssignment(this.metadataMap, clazz);
+        return EntityUtils.entityAssignment(this.metadataMap, clazz);
     }
 
     @Override
@@ -243,15 +241,15 @@ public class RecordBean<T, K> implements Record<T, K> {
     }
 
     @Override
-    public Record<T, K> with(String column, GenerateSqlPartFunctionalInterface builderClosure) {
-        return with(column, builderClosure, record -> record);
+    public Record<T, K> with(String column, GenerateSqlPartFunctionalInterface<T, K> builderClosure) {
+        return with(column, builderClosure, theRecord -> theRecord);
     }
 
     @Override
-    public Record<T, K> with(String column, GenerateSqlPartFunctionalInterface builderClosure,
+    public Record<T, K> with(String column, GenerateSqlPartFunctionalInterface<T, K> builderClosure,
         RelationshipRecordWithFunctionalInterface recordClosure) {
         // 效验参数
-        if (!ObjectUtil.checkProperties(entityClass, column)) {
+        if (!ObjectUtils.checkProperties(entityClass, column)) {
             throw new RelationNotFoundException(entityClass + " 不存在关联属性 : " + column);
         }
 
@@ -259,9 +257,9 @@ public class RecordBean<T, K> implements Record<T, K> {
         // 快捷类型
         if (columnArr.length > 1) {
             String lastLevelColumn = columnArr[columnArr.length - 1];
-            String otherLevelColumn = StringUtil.rtrim(column, "." + lastLevelColumn);
+            String otherLevelColumn = StringUtils.rtrim(column, "." + lastLevelColumn);
             return with(otherLevelColumn, builder -> builder,
-                record -> record.with(lastLevelColumn, builderClosure, recordClosure));
+                thrRecord -> thrRecord.with(lastLevelColumn, ObjectUtils.typeCast(builderClosure), recordClosure));
         }
 
         relationBuilderMap.put(column, builderClosure);
@@ -280,6 +278,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      * 更新情况下: saving -> updating -> updated -> saved
      * @return 执行成功
      */
+    @Override
     public boolean save() {
         // aop阻止
         if (!model.saving(this)) {
@@ -298,6 +297,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      * deleting -> deleted
      * @return 执行成功
      */
+    @Override
     public boolean delete() {
         // 主键未知
         if (originalPrimaryKeyValue == null) {
@@ -328,6 +328,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      * restoring -> restored
      * @return 执行成功
      */
+    @Override
     public boolean restore() {
         return restore(true);
     }
@@ -338,6 +339,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      * @param refresh 是否刷新自身
      * @return 执行成功
      */
+    @Override
     public boolean restore(boolean refresh) {
         // 主键未知
         if (originalPrimaryKeyValue == null) {
@@ -364,17 +366,18 @@ public class RecordBean<T, K> implements Record<T, K> {
      * retrieved
      * @return 执行成功
      */
+    @Override
     public Record<T, K> refresh() {
         // 主键未知
         if (originalPrimaryKeyValue == null) {
             throw new PrimaryKeyNotFoundException();
         }
-        Map<String, Column> metadataMap = model.withTrashed()
+        Map<String, Column> theMetadataMap = model.withTrashed()
             .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
             .firstOrFail().getMetadataMap();
 
         // 刷新自身属性
-        return refresh(metadataMap);
+        return refresh(theMetadataMap);
     }
 
     @Override
@@ -470,7 +473,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      */
     protected void selfUpdateMetadataMap(T entity, boolean insertType) {
         // 模型信息
-        ModelShadowProvider.ModelInfo<T, Object> modelInfo = ModelShadowProvider.getByEntityClass(entityClass);
+        ModelShadowProvider.ModelInfo<T, Serializable> modelInfo = ModelShadowProvider.getByEntityClass(entityClass);
         // 字段信息集合
         Map<String, ModelShadowProvider.FieldInfo> fieldInfoMap = insertType ? modelInfo.getJavaFieldInsertMap() : modelInfo.getJavaFieldUpdateMap();
 

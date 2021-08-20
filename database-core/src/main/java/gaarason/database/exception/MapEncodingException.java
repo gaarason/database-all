@@ -3,12 +3,11 @@ package gaarason.database.exception;
 import gaarason.database.exception.base.BaseException;
 
 /**
- * 查询不到结果
+ * map编码错误
  * @author xt
  */
-public class EntityNotFoundException extends BaseException {
-    public EntityNotFoundException(String message) {
+public class MapEncodingException extends BaseException {
+    public MapEncodingException(String message){
         super(message);
     }
-
 }

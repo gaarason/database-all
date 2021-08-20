@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table(name = "student")
-public class Student extends BaseEntity implements Serializable     {
+public class Student extends BaseEntity implements Serializable {
 
     final public static String NAME = "name";
     final public static String AGE = "age";

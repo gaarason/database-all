@@ -2,10 +2,12 @@ package gaarason.database.eloquent.annotation;
 
 import gaarason.database.contract.eloquent.Model;
 
+import java.io.Serializable;
 import java.lang.annotation.*;
 
 /**
  * 类属性必须是 复数
+ * @author xt
  */
 @Documented
 @Inherited
@@ -17,7 +19,7 @@ public @interface BelongsToMany {
      * `关系表`model
      * @return `关系表`
      */
-    Class<? extends Model<?, ?>> relationModel();
+    Class<? extends Model<? extends Serializable, ? extends Serializable>> relationModel();
 
     /**
      * `本表`中的`关联键`

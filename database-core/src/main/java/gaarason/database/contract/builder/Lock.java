@@ -2,13 +2,15 @@ package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
 
+import java.io.Serializable;
+
 /**
  * 锁
  * @param <T>
  * @param <K>
  * @author xt
  */
-public interface Lock<T, K> {
+public interface Lock<T extends Serializable, K extends Serializable> {
 
     /**
      * lock in share mode 不会阻塞其它事务读取被锁定行记录的值

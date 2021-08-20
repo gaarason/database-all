@@ -4,6 +4,10 @@ import gaarason.database.exception.SQLRuntimeException;
 
 import java.sql.Connection;
 
+/**
+ * 事物管理器
+ * @author xt
+ */
 public interface TransactionManager {
 
     /**
@@ -26,6 +30,7 @@ public interface TransactionManager {
 
     /**
      * 当前线程 是否在事物中
+     * @return 是否在事物中
      * @throws SQLRuntimeException 数据库异常
      */
     boolean isLocalThreadInTransaction() throws SQLRuntimeException;
@@ -33,7 +38,9 @@ public interface TransactionManager {
     /**
      * 当前线程 获取本地 connection
      * 判断当前线程是否在事务中
+     * @param isWrite 是否写
      * @return Connection
+     * @throws SQLRuntimeException 数据库异常
      */
     Connection getLocalConnection(boolean isWrite) throws SQLRuntimeException;
 

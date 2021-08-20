@@ -6,9 +6,9 @@ import gaarason.database.contract.query.Grammar;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.appointment.SqlType;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
-import gaarason.database.exception.InvalidSQLTypeException;
-import gaarason.database.util.FormatUtil;
-import gaarason.database.util.ObjectUtil;
+import gaarason.database.exception.InvalidSqlTypeException;
+import gaarason.database.util.FormatUtils;
+import gaarason.database.util.ObjectUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -83,7 +83,7 @@ abstract public class BaseGrammar implements Grammar, Serializable {
         if (where == null) {
             where = something;
         } else {
-            where += FormatUtil.spaces(relationship) + something;
+            where += FormatUtils.spaces(relationship) + something;
         }
     }
 
@@ -92,7 +92,7 @@ abstract public class BaseGrammar implements Grammar, Serializable {
         if (having == null) {
             having = something;
         } else {
-            having += FormatUtil.spaces(relationship) + something;
+            having += FormatUtils.spaces(relationship) + something;
         }
     }
 
@@ -183,9 +183,9 @@ abstract public class BaseGrammar implements Grammar, Serializable {
     @Override
     public void pushUnion(String something, String unionType) {
         if (union == null) {
-            union = " " + unionType + FormatUtil.bracket(something);
+            union = " " + unionType + FormatUtils.bracket(something);
         } else {
-            union += unionType + FormatUtil.bracket(something);
+            union += unionType + FormatUtils.bracket(something);
         }
     }
 
@@ -194,7 +194,7 @@ abstract public class BaseGrammar implements Grammar, Serializable {
     }
 
     protected String dealColumn() {
-        return null == select ? "" : FormatUtil.bracket(select);
+        return null == select ? "" : FormatUtils.bracket(select);
     }
 
     protected String dealFromSelect() {
@@ -206,15 +206,15 @@ abstract public class BaseGrammar implements Grammar, Serializable {
     }
 
     protected String dealForceIndex() {
-        return null == forceIndex ? "" : " force index" + FormatUtil.bracket(forceIndex);
+        return null == forceIndex ? "" : " force index" + FormatUtils.bracket(forceIndex);
     }
 
     protected String dealIgnoreIndex() {
-        return null == ignoreIndex ? "" : " ignore index" + FormatUtil.bracket(ignoreIndex);
+        return null == ignoreIndex ? "" : " ignore index" + FormatUtils.bracket(ignoreIndex);
     }
 
     protected String dealTable() {
-        return FormatUtil.backQuote(table, "`");
+        return FormatUtils.backQuote(table, "`");
     }
 
     protected String dealWhere(SqlType sqlType) {
@@ -287,14 +287,14 @@ abstract public class BaseGrammar implements Grammar, Serializable {
                 sql = "";
                 break;
             default:
-                throw new InvalidSQLTypeException();
+                throw new InvalidSqlTypeException();
         }
 
         sql += dealJoin() + dealWhere(sqlType) + dealGroup() + dealHaving(
             sqlType) + dealOrderBy() + dealLimit() + dealLock();
 
         if (union != null) {
-            sql = FormatUtil.bracket(sql);
+            sql = FormatUtils.bracket(sql);
         }
 
         sql += dealUnion();
@@ -304,8 +304,9 @@ abstract public class BaseGrammar implements Grammar, Serializable {
 
     @Override
     public List<String> getParameterList(SqlType sqlType) {
-        if (sqlType != SqlType.INSERT)
+        if (sqlType != SqlType.INSERT){
             dataParameterList.addAll(whereParameterList);
+        }
         return dataParameterList;
     }
 
@@ -383,7 +384,7 @@ abstract public class BaseGrammar implements Grammar, Serializable {
         // 移除
         withMap = null;
         // 拷贝
-        BaseGrammar baseGrammar = ObjectUtil.deepCopy(this);
+        BaseGrammar baseGrammar = ObjectUtils.deepCopy(this);
         // 还原
         baseGrammar.withMap = withMap = withMapTemp;
         return baseGrammar;

@@ -3,7 +3,7 @@ package gaarason.database.generator.element.field;
 import gaarason.database.generator.element.JavaClassification;
 import gaarason.database.generator.element.JavaVisibility;
 import gaarason.database.eloquent.appointment.MysqlNumericRange;
-import gaarason.database.util.StringUtil;
+import gaarason.database.util.StringUtils;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -189,7 +189,7 @@ public class MysqlFieldGenerator extends BaseFieldGenerator {
         field.setIncrement(extra != null && extra.contains("auto_increment"));
         field.setDataType(dataType);
         field.setColumnType(columnType);
-        field.setName(nameConverter(StringUtil.lineToHump(columnName)));
+        field.setName(nameConverter(StringUtils.lineToHump(columnName)));
         field.setColumnName(columnName);
         field.setUnique("UNI".equals(columnKey));
         field.setUnsigned(columnType.contains("unsigned"));

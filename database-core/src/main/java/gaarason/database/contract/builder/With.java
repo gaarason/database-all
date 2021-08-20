@@ -4,13 +4,15 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 
+import java.io.Serializable;
+
 /**
  * 限制
  * @param <T>
  * @param <K>
  * @author xt
  */
-public interface With<T, K> {
+public interface With<T extends Serializable, K extends Serializable> {
 
     /**
      * 渴求式关联
@@ -35,6 +37,6 @@ public interface With<T, K> {
      * @return 关联的Model的查询构造器
      */
     Builder<T, K> with(String column, GenerateSqlPartFunctionalInterface builderClosure,
-                       RelationshipRecordWithFunctionalInterface recordClosure);
+        RelationshipRecordWithFunctionalInterface recordClosure);
 
 }

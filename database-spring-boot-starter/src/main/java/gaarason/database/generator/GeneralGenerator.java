@@ -6,7 +6,12 @@ import gaarason.database.eloquent.Model;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.io.Serializable;
 
+/**
+ * 生成器
+ * @author xt
+ */
 @Component
 public class GeneralGenerator extends Generator {
 
@@ -15,7 +20,7 @@ public class GeneralGenerator extends Generator {
 
     @Override
     @NonNull
-    public Model<?, ?> getModel() {
+    public Model<GeneralModel.Table, Serializable> getModel() {
         return generalModel;
     }
 }

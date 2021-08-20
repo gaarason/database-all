@@ -2,12 +2,15 @@ package gaarason.database.contract.model;
 
 import gaarason.database.contract.eloquent.Builder;
 
+import java.io.Serializable;
+
 /**
  * 软删除
  * @param <T> 实体类
  * @param <K> 主键类型
+ * @author xt
  */
-public interface SoftDelete<T, K> {
+public interface SoftDelete<T extends Serializable, K extends Serializable> {
 
     /**
      * 删除(软/硬删除)

@@ -6,18 +6,23 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.appointment.AggregatesType;
 import gaarason.database.eloquent.appointment.JoinType;
 import gaarason.database.eloquent.appointment.OrderBy;
 import gaarason.database.eloquent.appointment.SqlType;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.query.grammars.MySqlGrammar;
-import gaarason.database.util.FormatUtil;
-import gaarason.database.util.ObjectUtil;
+import gaarason.database.util.FormatUtils;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
+/**
+ * Mysql sql生成器
+ * @param <T>
+ * @param <K>
+ * @author xt
+ */
+public class MySqlBuilder<T extends Serializable, K extends Serializable> extends MiddleBuilder<T, K> {
 
     public MySqlBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
         super(gaarasonDataSource, model, entityClass);
@@ -50,7 +55,7 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
 
     @Override
     public Builder<T, K> whereSubQuery(String column, String symbol, String completeSql) {
-        String sqlPart = column(column) + symbol + FormatUtil.bracket(completeSql);
+        String sqlPart = column(column) + symbol + FormatUtils.bracket(completeSql);
         return whereRaw(sqlPart);
     }
 
@@ -63,7 +68,7 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
 
     @Override
     public Builder<T, K> whereIn(String column, Collection<?> valueList) {
-        String sqlPart = column(column) + "in" + FormatUtil.bracket(formatValue(valueList));
+        String sqlPart = column(column) + "in" + FormatUtils.bracket(formatValue(valueList));
         return whereRaw(sqlPart);
     }
 
@@ -75,7 +80,7 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
 
     @Override
     public Builder<T, K> whereInRaw(String column, String sql) {
-        String sqlPart = column(column) + "in" + FormatUtil.bracket(sql);
+        String sqlPart = column(column) + "in" + FormatUtils.bracket(sql);
         return whereRaw(sqlPart);
     }
 
@@ -87,13 +92,13 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
 
     @Override
     public Builder<T, K> whereNotIn(String column, Collection<?> valueList) {
-        String sqlPart = column(column) + "not in" + FormatUtil.bracket(formatValue(valueList));
+        String sqlPart = column(column) + "not in" + FormatUtils.bracket(formatValue(valueList));
         return whereRaw(sqlPart);
     }
 
     @Override
     public Builder<T, K> whereNotInRaw(String column, String sql) {
-        String sqlPart = column(column) + "not in" + FormatUtil.bracket(sql);
+        String sqlPart = column(column) + "not in" + FormatUtils.bracket(sql);
         return whereRaw(sqlPart);
     }
 
@@ -136,7 +141,7 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
 
     @Override
     public Builder<T, K> whereExistsRaw(String sql) {
-        String sqlPart = "exists " + FormatUtil.bracket(sql);
+        String sqlPart = "exists " + FormatUtils.bracket(sql);
         return whereRaw(sqlPart);
     }
 
@@ -148,7 +153,7 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
 
     @Override
     public Builder<T, K> whereNotExistsRaw(String sql) {
-        String sqlPart = "not exists " + FormatUtil.bracket(sql);
+        String sqlPart = "not exists " + FormatUtils.bracket(sql);
         return whereRaw(sqlPart);
     }
 
@@ -202,7 +207,7 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
 
     @Override
     public Builder<T, K> havingIn(String column, Collection<?> valueList) {
-        String sqlPart = column(column) + "in" + FormatUtil.bracket(formatValue(valueList));
+        String sqlPart = column(column) + "in" + FormatUtils.bracket(formatValue(valueList));
         return havingRaw(sqlPart);
     }
 
@@ -214,7 +219,7 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
 
     @Override
     public Builder<T, K> havingInRaw(String column, String sql) {
-        String sqlPart = column(column) + "in" + FormatUtil.bracket(sql);
+        String sqlPart = column(column) + "in" + FormatUtils.bracket(sql);
         return havingRaw(sqlPart);
     }
 
@@ -226,7 +231,7 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
 
     @Override
     public Builder<T, K> havingNotIn(String column, Collection<?> valueList) {
-        String sqlPart = column(column) + "not in" + FormatUtil.bracket(formatValue(valueList));
+        String sqlPart = column(column) + "not in" + FormatUtils.bracket(formatValue(valueList));
         return havingRaw(sqlPart);
     }
 
@@ -238,7 +243,7 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
 
     @Override
     public Builder<T, K> havingNotInRaw(String column, String sql) {
-        String sqlPart = column(column) + "not in" + FormatUtil.bracket(sql);
+        String sqlPart = column(column) + "not in" + FormatUtils.bracket(sql);
         return havingRaw(sqlPart);
     }
 
@@ -275,7 +280,7 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
 
     @Override
     public Builder<T, K> havingExistsRaw(String sql) {
-        String sqlPart = "exists " + FormatUtil.bracket(sql);
+        String sqlPart = "exists " + FormatUtils.bracket(sql);
         return havingRaw(sqlPart);
     }
 
@@ -287,7 +292,7 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
 
     @Override
     public Builder<T, K> havingNotExistsRaw(String sql) {
-        String sqlPart = "not exists " + FormatUtil.bracket(sql);
+        String sqlPart = "not exists " + FormatUtils.bracket(sql);
         return havingRaw(sqlPart);
     }
 
@@ -353,8 +358,8 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
 
     @Override
     public Builder<T, K> selectFunction(String function, String parameter, @Nullable String alias) {
-        String sqlPart = function + FormatUtil.bracket(parameter) + (alias == null ? "" :
-            " as " + FormatUtil.quotes(alias));
+        String sqlPart = function + FormatUtils.bracket(parameter) + (alias == null ? "" :
+            " as " + FormatUtils.quotes(alias));
         grammar.pushSelect(sqlPart);
         return this;
     }
@@ -363,8 +368,8 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
     public Builder<T, K> selectFunction(String function, GenerateSqlPartFunctionalInterface closure,
         @Nullable String alias) {
         String completeSql = generateSql(closure);
-        String sqlPart = function + FormatUtil.bracket(completeSql) + (alias == null ? "" :
-            " as " + FormatUtil.quotes(alias));
+        String sqlPart = function + FormatUtils.bracket(completeSql) + (alias == null ? "" :
+            " as " + FormatUtils.quotes(alias));
         grammar.pushSelect(sqlPart);
         return this;
     }
@@ -433,7 +438,7 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
         }
         StringBuilder sqlPartBuilder = new StringBuilder("(");
         for (String value : valueList) {
-            String stub = FormatUtil.data(value, grammar);
+            String stub = FormatUtils.data(value, grammar);
             sqlPartBuilder.append(stub).append(',');
         }
         String sqlPart = sqlPartBuilder.deleteCharAt(sqlPartBuilder.length() - 1).append(')').toString();
@@ -515,7 +520,7 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
     @Override
     public Builder<T, K> join(JoinType joinType, String table, String column1, String symbol, String column2) {
         String sqlPart =
-            FormatUtil.spaces(joinType.getOperation()) + "join " + column(table) + FormatUtil.spaces(
+            FormatUtils.spaces(joinType.getOperation()) + "join " + column(table) + FormatUtils.spaces(
                 "on") +
                 column(column1) + symbol + column(column2);
         grammar.pushJoin(sqlPart);
@@ -541,6 +546,6 @@ public class MySqlBuilder<T, K> extends MiddleBuilder<T, K> {
      * @return eg: sum(`order`.`amount`) AS `sum_price`
      */
     protected static String column(String something) {
-        return FormatUtil.backQuote(something, "`");
+        return FormatUtils.backQuote(something, "`");
     }
 }

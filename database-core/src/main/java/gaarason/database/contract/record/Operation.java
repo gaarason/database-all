@@ -3,9 +3,14 @@ package gaarason.database.contract.record;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.support.Column;
 
+import java.io.Serializable;
 import java.util.Map;
 
-public interface Operation<T, K> {
+/**
+ * ORM 操作
+ * @author xt
+ */
+public interface Operation<T extends Serializable, K extends Serializable> {
     /**
      * 新增或者更新
      * 新增情况下: saving -> creating -> created -> saved

@@ -3,27 +3,40 @@ package gaarason.database.eloquent.appointment;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
-import gaarason.database.exception.BuilderNewInstanceException;
 import gaarason.database.exception.TypeNotSupportedException;
 import gaarason.database.query.MsSqlBuilder;
 import gaarason.database.query.MySqlBuilder;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 数据库类型
+ * @author xt
+ */
 public enum DatabaseType {
 
+    /**
+     * mysql
+     */
     MYSQL("mysql"),
+    /**
+     * mssql
+     */
     MSSQL("mssql"),
+    /**
+     * mssql
+     */
     MSSQL_V2("microsoft sql server");
 
     private final String databaseProductName;
 
-    private static final Map<String, DatabaseType> databaseProductNameLookup = new HashMap<>();
+    private static final Map<String, DatabaseType> DATABASE_PRODUCT_NAME_LOOKUP = new HashMap<>();
 
     static {
         for (DatabaseType type : DatabaseType.values()) {
-            databaseProductNameLookup.put(type.databaseProductName, type);
+            DATABASE_PRODUCT_NAME_LOOKUP.put(type.databaseProductName, type);
         }
     }
 
@@ -37,9 +50,9 @@ public enum DatabaseType {
      * @return DatabaseType
      */
     public static DatabaseType forDatabaseProductName(String databaseProductName) {
-        DatabaseType databaseType = databaseProductNameLookup.get(databaseProductName);
-        if(databaseType == null){
-            throw new TypeNotSupportedException("Database product name ["+databaseProductName+"] not supported yet.");
+        DatabaseType databaseType = DATABASE_PRODUCT_NAME_LOOKUP.get(databaseProductName);
+        if (databaseType == null) {
+            throw new TypeNotSupportedException("Database product name [" + databaseProductName + "] not supported yet.");
         }
         return databaseType;
     }
@@ -47,13 +60,13 @@ public enum DatabaseType {
     /**
      * 根据数据库类型返回查询构造器
      * @param gaarasonDataSource 数据源
-     * @param model 数据模型
-     * @param entityClass 实体类
-     * @param <T> 实体类型
-     * @param <K> 主键类型
+     * @param model              数据模型
+     * @param entityClass        实体类
+     * @param <T>                实体类型
+     * @param <K>                主键类型
      * @return 查询构造器
      */
-    public <T, K> Builder<T, K> getBuilderByDatabaseType(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
+    public <T extends Serializable, K extends Serializable> Builder<T, K> getBuilderByDatabaseType(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
         switch (this) {
             case MYSQL:
                 return new MySqlBuilder<>(gaarasonDataSource, model, entityClass);

@@ -4,9 +4,14 @@ import gaarason.database.contract.connection.GaarasonDataSource;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
+import java.io.Serializable;
 
+/**
+ * 通用model
+ * @author xt
+ */
 @Repository
-public class GeneralModel extends Model<GeneralModel.Table, Object> {
+public class GeneralModel extends Model<GeneralModel.Table, Serializable> {
 
     @Resource
     private GaarasonDataSource gaarasonDataSource;
@@ -16,7 +21,7 @@ public class GeneralModel extends Model<GeneralModel.Table, Object> {
         return gaarasonDataSource;
     }
 
-    public static class Table {
+    public static class Table implements Serializable {
 
     }
 

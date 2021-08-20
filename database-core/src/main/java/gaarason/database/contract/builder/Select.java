@@ -4,6 +4,7 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.core.lang.Nullable;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 /**
@@ -12,7 +13,7 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public interface Select<T, K> {
+public interface Select<T extends Serializable, K extends Serializable> {
 
     /**
      * 查询字段

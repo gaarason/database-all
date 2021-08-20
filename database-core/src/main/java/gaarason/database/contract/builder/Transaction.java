@@ -5,11 +5,9 @@ import gaarason.database.exception.SQLRuntimeException;
 
 /**
  * 事物
- * @param <T>
- * @param <K>
  * @author xt
  */
-public interface Transaction<T, K> {
+public interface Transaction {
 
     /**
      * 标记开启一个事物

@@ -3,13 +3,14 @@ package gaarason.database.contract.builder;
 import gaarason.database.eloquent.Paginate;
 import gaarason.database.exception.SQLRuntimeException;
 
+import java.io.Serializable;
+
 /**
  * 分页
  * @param <T>
- * @param <K>
  * @author xt
  */
-public interface Paginator<T, K> {
+public interface Pager<T extends Serializable> {
 
     /**
      * 不包含总数的分页

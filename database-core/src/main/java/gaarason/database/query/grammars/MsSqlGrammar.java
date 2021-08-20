@@ -1,9 +1,9 @@
 package gaarason.database.query.grammars;
 
 import gaarason.database.eloquent.appointment.SqlType;
-import gaarason.database.exception.InvalidSQLTypeException;
+import gaarason.database.exception.InvalidSqlTypeException;
 import gaarason.database.exception.OperationNotSupportedException;
-import gaarason.database.util.FormatUtil;
+import gaarason.database.util.FormatUtils;
 
 import java.util.List;
 
@@ -45,14 +45,14 @@ public class MsSqlGrammar extends BaseGrammar {
                 sql = "";
                 break;
             default:
-                throw new InvalidSQLTypeException();
+                throw new InvalidSqlTypeException();
         }
 
         sql += dealJoin() + dealWhere(sqlType) + dealGroup() + dealHaving(
             sqlType) + dealOrderBy() + dealLimit() + dealLock();
 
         if (union != null) {
-            sql = FormatUtil.bracket(sql);
+            sql = FormatUtils.bracket(sql);
         }
 
         sql += dealUnion();

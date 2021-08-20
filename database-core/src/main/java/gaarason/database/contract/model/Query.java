@@ -7,14 +7,16 @@ import gaarason.database.core.lang.Nullable;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 /**
  * model接口
  * @param <T> 实体类
  * @param <K> 主键类型
+ * @author xt
  */
-public interface Query<T, K> {
+public interface Query<T extends Serializable, K extends Serializable> {
     /**
      * 新的查询构造器
      * @return 查询构造器

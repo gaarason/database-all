@@ -2,13 +2,15 @@ package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
 
+import java.io.Serializable;
+
 /**
  * 限制
  * @param <T>
  * @param <K>
  * @author xt
  */
-public interface Limit<T, K> {
+public interface Limit<T extends Serializable, K extends Serializable> {
 
     /**
      * 查询数量限制

@@ -10,7 +10,14 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.util.*;
 
-public class DatabaseInfoUtil {
+/**
+ * 数据库信息
+ * @author xt
+ */
+public class DatabaseInfoUtils {
+
+    private DatabaseInfoUtils() {
+    }
 
     /**
      * 获取表名集合

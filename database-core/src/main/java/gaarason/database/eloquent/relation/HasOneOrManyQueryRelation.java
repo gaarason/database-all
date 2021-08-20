@@ -9,12 +9,17 @@ import gaarason.database.eloquent.appointment.SqlType;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.Column;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 一对一/一对多关系
+ * @author xt
+ */
 public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
     private final HasOneOrManyTemplate hasOneOrManyTemplate;
@@ -46,29 +51,30 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public List<?> filterBatchRecord(Record<?, ?> record, RecordList<?, ?> TargetRecordList,
+    public List<? extends Serializable> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
                                      Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         // 子表的外键字段名
         String column = hasOneOrManyTemplate.sonModelForeignKey;
         // 本表的关系键值
-        String value = String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
+        String value = String.valueOf(theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
 
-        return findObjList(TargetRecordList.toObjectList(cacheRelationRecordList), column, value);
+        return findObjList(targetRecordList.toObjectList(cacheRelationRecordList), column, value);
     }
 
     @Override
-    public int attach(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        return attach(record, getTargetRecordPrimaryKeyIds(targetRecords), stringStringMap);
+    public int attach(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
+        return attach(theRecord, getTargetRecordPrimaryKeyIds(targetRecords), stringStringMap);
     }
 
     @Override
-    public int attach(Record<?, ?> record, Collection<String> targetPrimaryKeyValues,
+    public int attach(Record<?, ?> theRecord, Collection<String> targetPrimaryKeyValues,
                       Map<String, String> stringStringMap) {
-        if (targetPrimaryKeyValues.size() == 0)
+        if (targetPrimaryKeyValues.isEmpty()){
             return 0;
+        }
 
         // 关联键值(当前表关系键(默认当前表主键))(子表外键)
-        String relationKeyValue = String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
+        String relationKeyValue = String.valueOf(theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
 
         // 执行更新
         return hasOneOrManyTemplate.sonModel.newQuery()
@@ -78,9 +84,9 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public int detach(Record<?, ?> record) {
+    public int detach(Record<?, ?> theRecord) {
         // 关联键值(当前表关系键(默认当前表主键))(子表外键)
-        String relationKeyValue = String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
+        String relationKeyValue = String.valueOf(theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
 
         // 执行更新
         // 目标,必须是关联关系, 才解除
@@ -90,21 +96,22 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public int detach(Record<?, ?> record, RecordList<?, ?> targetRecords) {
+    public int detach(Record<?, ?> theRecord, RecordList<?, ?> targetRecords) {
         // 应该更新的子表的主键列表
         List<String> targetRecordPrimaryKeyIds = targetRecords.toList(
                 recordTemp -> String.valueOf(
                         recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName()).getValue()));
-        return detach(record, targetRecordPrimaryKeyIds);
+        return detach(theRecord, targetRecordPrimaryKeyIds);
     }
 
     @Override
-    public int detach(Record<?, ?> record, Collection<String> targetPrimaryKeyValues) {
-        if (targetPrimaryKeyValues.size() == 0)
+    public int detach(Record<?, ?> theRecord, Collection<String> targetPrimaryKeyValues) {
+        if (targetPrimaryKeyValues.isEmpty()){
             return 0;
+        }
 
         // 关联键值(当前表关系键(默认当前表主键))(子表外键)
-        String relationKeyValue = String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
+        String relationKeyValue = String.valueOf(theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
 
         // 执行更新
         // 目标,必须是关联关系, 才解除
@@ -115,14 +122,14 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public int sync(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        return sync(record, getTargetRecordPrimaryKeyIds(targetRecords), stringStringMap);
+    public int sync(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
+        return sync(theRecord, getTargetRecordPrimaryKeyIds(targetRecords), stringStringMap);
     }
 
     @Override
-    public int sync(Record<?, ?> record, Collection<String> targetPrimaryKeyValues, Map<String, String> stringStringMap) {
+    public int sync(Record<?, ?> theRecord, Collection<String> targetPrimaryKeyValues, Map<String, String> stringStringMap) {
         // 关联键值(当前表关系键(默认当前表主键))(子表外键)
-        String relationKeyValue = String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
+        String relationKeyValue = String.valueOf(theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
 
         return hasOneOrManyTemplate.sonModel.newQuery().transaction(() -> {
             // 现存的关联关系, 不需要据需存在的, 解除
@@ -142,18 +149,18 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public int toggle(Record<?, ?> record, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        return toggle(record, getTargetRecordPrimaryKeyIds(targetRecords), stringStringMap);
+    public int toggle(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
+        return toggle(theRecord, getTargetRecordPrimaryKeyIds(targetRecords), stringStringMap);
     }
 
     @Override
-    public int toggle(Record<?, ?> record, Collection<String> targetPrimaryKeyValues, Map<String, String> stringStringMap) {
-        if (targetPrimaryKeyValues.size() == 0) {
+    public int toggle(Record<?, ?> theRecord, Collection<String> targetPrimaryKeyValues, Map<String, String> stringStringMap) {
+        if (targetPrimaryKeyValues.isEmpty()) {
             return 0;
         }
 
         // 关联键值(当前表关系键(默认当前表主键))(子表外键)
-        String relationKeyValue = String.valueOf(record.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
+        String relationKeyValue = String.valueOf(theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue());
 
         return hasOneOrManyTemplate.sonModel.newQuery().transaction(() -> {
             // 现存的关联关系 主键值集合

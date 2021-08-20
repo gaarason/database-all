@@ -1,24 +1,32 @@
 package gaarason.database.util;
 
+import gaarason.database.exception.MapEncodingException;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class StringUtil {
-    final private static String[] javaKeywords = {"abstract", "case", "continue", "enum", "for", "instanceof", "new",
+/**
+ * 字符串工具
+ * @author xt
+ */
+public class StringUtils {
+
+    private StringUtils() {
+    }
+
+    private static final String[] JAVA_KEYWORDS = {"abstract", "case", "continue", "enum", "for", "instanceof", "new",
         "return", "switch", "transient", "assert", "catch", "default", "extends", "goto", "int", "package", "short",
         "synchronized", "try", "boolean", "char", "do", "final", "if", "interface", "private", "static", "this", "void",
         "break", "class", "double", "finally", "implements", "long", "protected", "strictfp", "throw", "volatile", "byte",
         "const", "else", "float", "import", "native", "public", "super", "throws", "while", "byValue", "cast", "false",
         "future", "generic", "inner", "null", "operator", "outer", "rest", "true", "var"};
 
-    final private static Pattern linePattern = Pattern.compile("_(\\w)");
+    private static final Pattern LINE_PATTERN = Pattern.compile("_(\\w)");
 
-    final private static Pattern humpPattern = Pattern.compile("[A-Z]");
+    private static final Pattern HUMP_PATTERN = Pattern.compile("[A-Z]");
 
     /**
      * 将首字符转化为小写
@@ -44,7 +52,7 @@ public class StringUtil {
         if (firstIsUpperCase.length != 0 && firstIsUpperCase[0]) {
             str = "_" + str;
         }
-        Matcher matcher = linePattern.matcher(str);
+        Matcher matcher = LINE_PATTERN.matcher(str);
         StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
             matcher.appendReplacement(sb, matcher.group(1).toUpperCase());
@@ -59,13 +67,36 @@ public class StringUtil {
      * @return 处理后的字符
      */
     public static String humpToLine(String str) {
-        Matcher matcher = humpPattern.matcher(str);
+        Matcher matcher = HUMP_PATTERN.matcher(str);
         StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
             matcher.appendReplacement(sb, "_" + matcher.group(0).toLowerCase());
         }
         matcher.appendTail(sb);
         return ltrim(sb.toString(), "_");
+    }
+
+    /**
+     * 格式化参数到 query 形式( 经过 url encode)
+     * @param paramsMap 参数map
+     * @param sort      是否key排序
+     * @return 字符串 eg: name=zhang&age=1
+     * @throws MapEncodingException HTTP参数构造异常
+     */
+    public static String mapToQuerySearch(Map<String, Object> paramsMap, boolean sort) {
+        try {
+            String reString;
+            // 遍历数组形成akey=avalue&bkey=bvalue&ckey=cvalue形式的的字符串
+            reString = StringUtils.realQueryBuild(paramsMap, "", true, sort);
+            reString = StringUtils.rtrim(reString, "&");
+
+            // 将得到的字符串进行处理得到目标格式的字符串：utf8处理中文出错
+            reString = java.net.URLEncoder.encode(reString, "utf-8");
+            reString = reString.replace("%3D", "=").replace("%26", "&");
+            return reString;
+        } catch (Exception e) {
+            throw new MapEncodingException("原始map对象 : " + paramsMap);
+        }
     }
 
     /**
@@ -121,7 +152,7 @@ public class StringUtil {
      * @return 是否
      */
     public static boolean isJavaKeyword(String input) {
-        List<String> keyList = Arrays.asList(javaKeywords);
+        List<String> keyList = Arrays.asList(JAVA_KEYWORDS);
         return keyList.contains(input);
     }
 
@@ -169,4 +200,46 @@ public class StringUtil {
             throw new RuntimeException(e);
         }
     }
+
+
+    /**
+     * 递归解析map到query
+     * @param object    对象
+     * @param parentStr 里层分隔符
+     * @param first     是否最外层
+     * @param sort      是否排序
+     * @return 字符串 eg: name=zhang&age=1
+     */
+    private static String realQueryBuild(Object object, String parentStr, boolean first, boolean sort) {
+        StringBuilder r = new StringBuilder();
+        if (object instanceof Map) {
+            List<Map.Entry<String, Object>> list = new ArrayList<>(((Map<String, Object>) object).entrySet());
+            // 按照map的key排序
+            if (sort) {
+                // 升序排序
+                list.sort(Map.Entry.comparingByKey());
+            }
+            for (Map.Entry<String, Object> mapping : list) {
+                String key = mapping.getKey();
+                Object value = mapping.getValue();
+
+                if (first) {
+                    r.append(StringUtils.realQueryBuild(value, key, false, sort));
+                } else {
+                    r.append(StringUtils.realQueryBuild(value, parentStr + "[" + key + "]", false, sort));
+                }
+            }
+        } else if (object instanceof List) {
+            for (int i = 0; i < ((List) object).size(); i++) {
+                r.append(StringUtils.realQueryBuild(((List) object).get(i), parentStr + "[" + i + "]", false, sort));
+            }
+            // 叶节点是String或者Number
+        } else if (object instanceof String) {
+            r.append(parentStr).append("=").append(object).append("&");
+        } else if (object instanceof Number) {
+            r.append(parentStr).append("=").append(object).append("&");
+        }
+        return r.toString();
+    }
+
 }

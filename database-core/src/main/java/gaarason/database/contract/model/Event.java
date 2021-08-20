@@ -2,6 +2,7 @@ package gaarason.database.contract.model;
 
 import gaarason.database.contract.eloquent.Record;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 /**
@@ -13,8 +14,9 @@ import java.util.Collection;
  * 恢复 : restoring -> restored
  * @param <T> 实体类
  * @param <K> 主键类型
+ * @author xt
  */
-public interface Event<T, K> {
+public interface Event<T extends Serializable, K extends Serializable> {
 
     /**
      * sql日志记录

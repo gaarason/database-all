@@ -6,6 +6,7 @@ import gaarason.database.eloquent.annotation.Table;
 import gaarason.database.test.models.normal.base.SingleModel;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 public class PeopleModel extends SingleModel<PeopleModel.Entity, Long> {
@@ -28,7 +29,7 @@ public class PeopleModel extends SingleModel<PeopleModel.Entity, Long> {
 
     @Data
     @Table(name = "people")
-    public static class Entity {
+    public static class Entity implements Serializable {
         @Primary
         private Long id;
 

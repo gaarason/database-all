@@ -7,11 +7,13 @@ import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.provider.ModelShadowProvider;
 
+import java.io.Serializable;
+
 /**
  * 数据模型
  * @author xt
  */
-public interface Model<T, K> extends Query<T, K>, Event<T, K>, SoftDelete<T, K> {
+public interface Model<T extends Serializable, K extends Serializable> extends Query<T, K>, Event<T, K>, SoftDelete<T, K> {
 
     /**
      * 主键是否存在定义 (约等于数据表中主键是否可以存在)

@@ -6,13 +6,14 @@ import gaarason.database.eloquent.annotation.Table;
 import gaarason.database.test.models.normal.base.SingleModel;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 public class Student3Model extends SingleModel<Student3Model.Entity, Integer> {
 
     @Data
     @Table(name = "student")
-    public static class Entity {
+    public static class Entity implements Serializable {
         @Primary
         private Integer id;
 

@@ -1,5 +1,10 @@
 package gaarason.database.eloquent;
 
-abstract public class Model<T, K> extends ModelBean<T, K> {
+import java.io.Serializable;
+
+/**
+ * @author xt
+ */
+public abstract class Model<T extends Serializable, K extends Serializable> extends ModelBean<T, K> {
 
 }

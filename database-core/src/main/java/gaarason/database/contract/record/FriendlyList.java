@@ -3,6 +3,7 @@ package gaarason.database.contract.record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.FilterRecordAttributeFunctionalInterface;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -10,8 +11,9 @@ import java.util.Map;
  * 结果友好转化
  * @param <T> 实体类
  * @param <K> 主键类型
+ * @author xt
  */
-public interface FriendlyList<T, K> {
+public interface FriendlyList<T extends Serializable, K extends Serializable> {
 
     /**
      * 转化为对象列表
@@ -27,9 +29,10 @@ public interface FriendlyList<T, K> {
 
     /**
      * 转化为对象列表
+     * @param cacheRelationRecordList 结果集缓存(用于优化递归算法)
      * @return 对象列表
      */
-    List<T> toObjectList(Map<String, RecordList<?, ?>> cacheRelationRecordList);
+    List<T> toObjectList(Map<String, RecordList<? extends Serializable, ? extends Serializable>> cacheRelationRecordList);
 
     /**
      * 转化为map list
@@ -45,6 +48,8 @@ public interface FriendlyList<T, K> {
 
     /**
      * 过滤成list
+     * @param filterRecordAttributeFunctionalInterface 结果集过滤
+     * @param <V> 指定的响应类型
      * @return 单个字段列表
      */
     <V> List<V> toList(FilterRecordAttributeFunctionalInterface<T, K, V> filterRecordAttributeFunctionalInterface);
@@ -54,7 +59,6 @@ public interface FriendlyList<T, K> {
      * @return 单个字段列表
      */
     List<String> toOneColumnList();
-
 
     /**
      * 元数据转实体对象列表, 不体现关联关系

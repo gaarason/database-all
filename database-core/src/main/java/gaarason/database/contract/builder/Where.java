@@ -3,6 +3,7 @@ package gaarason.database.contract.builder;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 /**
@@ -11,7 +12,7 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public interface Where<T, K> {
+public interface Where<T extends Serializable, K extends Serializable> {
 
     /**
      * 加入sql片段

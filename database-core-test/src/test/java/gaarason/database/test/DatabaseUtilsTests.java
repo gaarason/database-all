@@ -4,10 +4,10 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.test.models.relation.pojo.Teacher;
 import gaarason.database.test.utils.MultiThreadUtil;
-import gaarason.database.util.ExceptionUtil;
-import gaarason.database.util.FormatUtil;
-import gaarason.database.util.ObjectUtil;
-import gaarason.database.util.StringUtil;
+import gaarason.database.util.ExceptionUtils;
+import gaarason.database.util.FormatUtils;
+import gaarason.database.util.ObjectUtils;
+import gaarason.database.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -32,59 +32,59 @@ public class DatabaseUtilsTests {
     @Test
     public void testExceptionUtil() {
         Throwable e = new RuntimeException("message deadlock detected");
-        Assert.assertTrue(ExceptionUtil.causedByDeadlock(e));
+        Assert.assertTrue(ExceptionUtils.causedByDeadlock(e));
         Throwable e2 = new RuntimeException("message dea1dlock detected");
-        Assert.assertFalse(ExceptionUtil.causedByDeadlock(e2));
+        Assert.assertFalse(ExceptionUtils.causedByDeadlock(e2));
 
     }
 
     @Test
     public void testFormatUtil() {
         // 给字段加上反引号
-        Assert.assertEquals(FormatUtil.column(" sum(order.amount) AS sum_price  "), "sum(`order`.`amount`) as " +
+        Assert.assertEquals(FormatUtils.column(" sum(order.amount) AS sum_price  "), "sum(`order`.`amount`) as " +
             "`sum_price`");
 
         // 给字段加上单引号
-        Assert.assertEquals(FormatUtil.quotes(" alice  "), "'alice'");
+        Assert.assertEquals(FormatUtils.quotes(" alice  "), "'alice'");
 
         // 字段格式化
         List<String> testList = new ArrayList<>();
         testList.add("name");
         testList.add("age");
         testList.add("sex");
-        Assert.assertEquals(FormatUtil.column(testList), "`name`,`age`,`sex`");
+        Assert.assertEquals(FormatUtils.column(testList), "`name`,`age`,`sex`");
 
         // 值加上括号
-        Assert.assertEquals(FormatUtil.bracket("1765595948"), "(1765595948)");
+        Assert.assertEquals(FormatUtils.bracket("1765595948"), "(1765595948)");
 
         // 给与sql片段两端空格
-        Assert.assertEquals(FormatUtil.spaces("abd"), " abd ");
+        Assert.assertEquals(FormatUtils.spaces("abd"), " abd ");
     }
 
     @Test
     public void testStringUtil() {
         // 下划线转驼峰
-        Assert.assertEquals(StringUtil.lineToHump("t_invoice"), "tInvoice");
-        Assert.assertEquals(StringUtil.lineToHump("t_invoice", true), "TInvoice");
-        Assert.assertEquals(StringUtil.lineToHump("_t_invoice", true), "TInvoice");
-        Assert.assertEquals(StringUtil.lineToHump("_t_invoice"), "tInvoice");
+        Assert.assertEquals(StringUtils.lineToHump("t_invoice"), "tInvoice");
+        Assert.assertEquals(StringUtils.lineToHump("t_invoice", true), "TInvoice");
+        Assert.assertEquals(StringUtils.lineToHump("_t_invoice", true), "TInvoice");
+        Assert.assertEquals(StringUtils.lineToHump("_t_invoice"), "tInvoice");
 
         // 小驼峰转下划线
-        Assert.assertEquals(StringUtil.humpToLine("tInvoice"), "t_invoice");
-        Assert.assertEquals(StringUtil.humpToLine("invoice"), "invoice");
-        Assert.assertEquals(StringUtil.humpToLine("_tInvoice"), "t_invoice");
+        Assert.assertEquals(StringUtils.humpToLine("tInvoice"), "t_invoice");
+        Assert.assertEquals(StringUtils.humpToLine("invoice"), "invoice");
+        Assert.assertEquals(StringUtils.humpToLine("_tInvoice"), "t_invoice");
 
         // 移除字符串左侧的所有character
-        Assert.assertEquals(StringUtil.ltrim("tInvoice", "t"), "Invoice");
-        Assert.assertEquals(StringUtil.ltrim("tInvoiceR", "tInvoice"), "R");
-        Assert.assertEquals(StringUtil.ltrim("tTTtTTInvoice", "tTT"), "Invoice");
-        Assert.assertEquals(StringUtil.ltrim("####Invoice", "##"), "Invoice");
-        Assert.assertEquals(StringUtil.ltrim("#####Invoice", "##"), "#Invoice");
+        Assert.assertEquals(StringUtils.ltrim("tInvoice", "t"), "Invoice");
+        Assert.assertEquals(StringUtils.ltrim("tInvoiceR", "tInvoice"), "R");
+        Assert.assertEquals(StringUtils.ltrim("tTTtTTInvoice", "tTT"), "Invoice");
+        Assert.assertEquals(StringUtils.ltrim("####Invoice", "##"), "Invoice");
+        Assert.assertEquals(StringUtils.ltrim("#####Invoice", "##"), "#Invoice");
 
         // 移除字符串右侧的所有character
-        Assert.assertEquals(StringUtil.rtrim("tInvoice@@", "@"), "tInvoice");
-        Assert.assertEquals(StringUtil.rtrim("tInvoice\n\n", "\n"), "tInvoice");
-        Assert.assertEquals(StringUtil.rtrim("tInvoice", "Invoice"), "t");
+        Assert.assertEquals(StringUtils.rtrim("tInvoice@@", "@"), "tInvoice");
+        Assert.assertEquals(StringUtils.rtrim("tInvoice\n\n", "\n"), "tInvoice");
+        Assert.assertEquals(StringUtils.rtrim("tInvoice", "Invoice"), "t");
     }
 
     @Test
@@ -112,28 +112,28 @@ public class DatabaseUtilsTests {
 
     @Test
     public void testCheckProperties() {
-        boolean student = ObjectUtil.checkProperties(Teacher.class, "students");
+        boolean student = ObjectUtils.checkProperties(Teacher.class, "students");
         Assert.assertTrue(student);
 
-        boolean student11 = ObjectUtil.checkProperties(Teacher.class, "students11");
+        boolean student11 = ObjectUtils.checkProperties(Teacher.class, "students11");
         Assert.assertFalse(student11);
 
-        boolean o = ObjectUtil.checkProperties(Teacher.class, "student");
+        boolean o = ObjectUtils.checkProperties(Teacher.class, "student");
         Assert.assertTrue(o);
 
-        boolean o1 = ObjectUtil.checkProperties(Teacher.class, "student.teacherId");
+        boolean o1 = ObjectUtils.checkProperties(Teacher.class, "student.teacherId");
         Assert.assertTrue(o1);
 
-        boolean o11 = ObjectUtil.checkProperties(Teacher.class, "student.teacherIds");
+        boolean o11 = ObjectUtils.checkProperties(Teacher.class, "student.teacherIds");
         Assert.assertFalse(o11);
 
-        boolean o2 = ObjectUtil.checkProperties(Teacher.class, "student.teacher.age");
+        boolean o2 = ObjectUtils.checkProperties(Teacher.class, "student.teacher.age");
         Assert.assertTrue(o2);
 
-        boolean o3 = ObjectUtil.checkProperties(Teacher.class, "student.teacher.age2");
+        boolean o3 = ObjectUtils.checkProperties(Teacher.class, "student.teacher.age2");
         Assert.assertFalse(o3);
 
-        boolean o4 = ObjectUtil.checkProperties(Teacher.class, "student.teacher.students.teacher.students" +
+        boolean o4 = ObjectUtils.checkProperties(Teacher.class, "student.teacher.students.teacher.students" +
             ".teacher.id");
         Assert.assertTrue(o4);
     }

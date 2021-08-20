@@ -4,6 +4,7 @@ import gaarason.database.exception.base.BaseException;
 
 /**
  * 克隆失败
+ * @author xt
  */
 public class CloneNotSupportedRuntimeException extends BaseException {
 

@@ -1,7 +1,7 @@
 package gaarason.database.generator.element.field;
 
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.util.StringUtil;
+import gaarason.database.util.StringUtils;
 
 import java.util.regex.Pattern;
 
@@ -18,7 +18,7 @@ abstract class BaseFieldGenerator {
      * @return 合法的java标识符
      */
     protected static String nameConverter(String name) {
-        return StringUtil.isJavaIdentifier(name) ? name : "a" + StringUtil.md5(name);
+        return StringUtils.isJavaIdentifier(name) ? name : "a" + StringUtils.md5(name);
     }
 
     /**

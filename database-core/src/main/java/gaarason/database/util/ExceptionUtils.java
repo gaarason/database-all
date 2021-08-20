@@ -1,6 +1,13 @@
 package gaarason.database.util;
 
-public class ExceptionUtil {
+/**
+ * 异常
+ * @author xt
+ */
+public class ExceptionUtils {
+
+    private ExceptionUtils(){
+    }
 
     /**
      * 是否为数据库死锁导致的异常

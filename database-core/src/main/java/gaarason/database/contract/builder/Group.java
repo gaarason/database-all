@@ -2,6 +2,7 @@ package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 /**
@@ -10,7 +11,7 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public interface Group<T, K> {
+public interface Group<T extends Serializable, K extends Serializable> {
 
     /**
      * 分组

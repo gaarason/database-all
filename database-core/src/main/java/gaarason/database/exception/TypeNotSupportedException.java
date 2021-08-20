@@ -2,6 +2,10 @@ package gaarason.database.exception;
 
 import gaarason.database.exception.base.BaseException;
 
+/**
+ * 类型错误
+ * @author xt
+ */
 public class TypeNotSupportedException extends BaseException {
 
     public TypeNotSupportedException(String message) {

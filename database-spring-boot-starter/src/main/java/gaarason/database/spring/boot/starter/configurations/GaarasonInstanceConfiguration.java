@@ -5,8 +5,8 @@ import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.ModelInstanceProvider;
 import gaarason.database.spring.boot.starter.properties.GaarasonDatabaseProperties;
 import gaarason.database.support.SnowFlakeIdGenerator;
-import gaarason.database.util.ObjectUtil;
-import gaarason.database.util.StringUtil;
+import gaarason.database.util.ObjectUtils;
+import gaarason.database.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -28,9 +28,9 @@ public class GaarasonInstanceConfiguration implements ApplicationListener<Contex
     public void onApplicationEvent(ContextRefreshedEvent event) {
         ModelInstanceProvider.register((modelClass) -> {
             try {
-                return ObjectUtil.typeCast(applicationContext.getBean(modelClass));
+                return ObjectUtils.typeCast(applicationContext.getBean(modelClass));
             } catch (BeansException e) {
-                return ObjectUtil.typeCast(applicationContext.getBean(StringUtil.lowerFirstChar(modelClass.getSimpleName())));
+                return ObjectUtils.typeCast(applicationContext.getBean(StringUtils.lowerFirstChar(modelClass.getSimpleName())));
             }
         });
         log.info("Model instance provider has been registered success.");

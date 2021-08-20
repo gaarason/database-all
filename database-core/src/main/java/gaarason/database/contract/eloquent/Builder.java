@@ -3,15 +3,17 @@ package gaarason.database.contract.eloquent;
 import gaarason.database.contract.builder.*;
 import gaarason.database.contract.query.Grammar;
 
+import java.io.Serializable;
+
 /**
  * SQL组装
  * @param <T> 实体类
  * @param <K> 主键类型
  * @author xt
  */
-public interface Builder<T, K> extends Cloneable, Where<T, K>, Having<T, K>, Union<T, K>, Support<T, K>,
+public interface Builder<T extends Serializable, K extends Serializable> extends Cloneable, Where<T, K>, Having<T, K>, Union<T, K>, Support,
     From<T, K>, Execute<T, K>, With<T, K>, Select<T, K>, OrderBy<T, K>, Limit<T, K>, Group<T, K>, Value<T, K>,
-    Data<T, K>, Transaction<T, K>, Aggregates<T, K>, Paginator<T, K>, Index<T, K>, Lock<T, K>, Native<T, K>, Join<T, K>,
+    Data<T, K>, Transaction, Aggregates, Pager<T>, Index<T, K>, Lock<T, K>, Native<T, K>, Join<T, K>,
     Ability<T, K> {
 
     /**

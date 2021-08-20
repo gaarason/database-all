@@ -6,6 +6,7 @@ import java.util.Map;
 
 /**
  * 结果友好转化
+ * @author xt
  * @param <T> 实体类
  * @param <K> 主键类型
  */

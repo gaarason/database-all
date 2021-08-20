@@ -13,8 +13,12 @@ import java.util.*;
 
 /**
  * 实体处理工具
+ * @author xt
  */
-public class EntityUtil {
+public class EntityUtils {
+
+    private EntityUtils() {
+    }
 
     /**
      * 通过entity解析对应的表名
@@ -27,7 +31,7 @@ public class EntityUtil {
             return table.name();
         }
         String[] split = entityClass.getName().split("\\.");
-        return StringUtil.humpToLine(split[split.length - 1]);
+        return StringUtils.humpToLine(split[split.length - 1]);
     }
 
     /**
@@ -60,7 +64,7 @@ public class EntityUtil {
                 return column.name();
             }
         }
-        return StringUtil.humpToLine(field.getName());
+        return StringUtils.humpToLine(field.getName());
     }
 
     /**
@@ -96,10 +100,10 @@ public class EntityUtil {
             T entity = entityClass.newInstance();
             for (Field field : entityClass.getDeclaredFields()) {
                 field.setAccessible(true);
-                String columnName = EntityUtil.columnName(field);
+                String columnName = EntityUtils.columnName(field);
                 gaarason.database.support.Column column = stringColumnMap.get(columnName);
                 if (column != null) {
-                    Object value = EntityUtil.columnFill(field, column.getValue());
+                    Object value = EntityUtils.columnFill(field, column.getValue());
                     field.set(entity, value);
                 }
             }

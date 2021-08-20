@@ -19,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -99,7 +100,7 @@ public class TestApplicationTests {
 
     @Test
     public void 简单查询_通用() {
-        Record<GeneralModel.Table, Object> first = generalModel.newQuery().from("student").where("id", "3").first();
+        Record<GeneralModel.Table, Serializable> first = generalModel.newQuery().from("student").where("id", "3").first();
         Assert.assertNotNull(first);
         Map<String, Object> stringObjectMap = first.toMap();
         Assert.assertEquals(stringObjectMap.get("id").toString(), "3");

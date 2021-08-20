@@ -2,6 +2,7 @@ package gaarason.database.exception.base;
 
 /**
  * 定义异常基类
+ * @author xt
  */
 public class BaseException extends RuntimeException {
 

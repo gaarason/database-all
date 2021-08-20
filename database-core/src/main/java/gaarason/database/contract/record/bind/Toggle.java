@@ -8,6 +8,7 @@ import java.util.Map;
 
 /**
  * 切换关系, 如果指定关系已存在，则解除，如果指定关系不存在，则增加
+ * @author xt
  */
 public interface Toggle {
 

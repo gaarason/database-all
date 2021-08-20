@@ -9,13 +9,14 @@ import gaarason.database.core.lang.Nullable;
 import gaarason.database.support.Column;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
  * 结果集
  * @author xt
  */
-public interface Record<T, K> extends Friendly<T, K>, Operation<T, K>, Relationship<T, K>, Serializable {
+public interface Record<T extends Serializable, K extends Serializable> extends Friendly<T, K>, Operation<T, K>, Relationship<T, K>, Serializable {
 
     /**
      * 本表元数据
@@ -59,13 +60,13 @@ public interface Record<T, K> extends Friendly<T, K>, Operation<T, K>, Relations
      * 关联关系 Builder 补充设置
      * @return <属性 -> GenerateSqlPart>
      */
-    Map<String, GenerateSqlPartFunctionalInterface> getRelationBuilderMap();
+    Map<String, GenerateSqlPartFunctionalInterface<T, K>> getRelationBuilderMap();
 
     /**
      * 关联关系 Builder 补充设置
      * @param relationBuilderMap <属性 -> GenerateSqlPart>
      */
-    void setRelationBuilderMap(Map<String, GenerateSqlPartFunctionalInterface> relationBuilderMap);
+    void setRelationBuilderMap(HashMap<String, GenerateSqlPartFunctionalInterface<T, K>> relationBuilderMap);
 
     /**
      * 关联关系 递归 设置
@@ -77,6 +78,6 @@ public interface Record<T, K> extends Friendly<T, K>, Operation<T, K>, Relations
      * 关联关系 递归 设置
      * @param relationRecordMap <属性 -> RelationshipRecordWith>
      */
-    void setRelationRecordMap(Map<String, RelationshipRecordWithFunctionalInterface> relationRecordMap);
+    void setRelationRecordMap(HashMap<String, RelationshipRecordWithFunctionalInterface> relationRecordMap);
 
 }

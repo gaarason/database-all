@@ -6,6 +6,7 @@ import gaarason.database.core.lang.Nullable;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
  * @param <K>
  * @author xt
  */
-public interface Native<T, K> {
+public interface Native<T extends Serializable, K extends Serializable> {
 
     /**
      * 获取第一条数据, 数据为空时返回null

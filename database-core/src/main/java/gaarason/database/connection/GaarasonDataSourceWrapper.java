@@ -171,8 +171,9 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
     @Override
     public void localConnectionClose(Connection connection) throws SQLRuntimeException {
         try {
-            if (!isLocalThreadInTransaction())
+            if (!isLocalThreadInTransaction()){
                 connection.close();
+            }
         } catch (SQLException e) {
             throw new SQLRuntimeException(e.getMessage(), e);
         }

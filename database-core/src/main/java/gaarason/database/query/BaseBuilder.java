@@ -13,14 +13,21 @@ import gaarason.database.eloquent.appointment.FinalVariable;
 import gaarason.database.eloquent.appointment.SqlType;
 import gaarason.database.exception.*;
 import gaarason.database.support.RecordFactory;
-import gaarason.database.util.ExceptionUtil;
-import gaarason.database.util.FormatUtil;
-import gaarason.database.util.ObjectUtil;
+import gaarason.database.util.ExceptionUtils;
+import gaarason.database.util.FormatUtils;
+import gaarason.database.util.ObjectUtils;
 
+import java.io.Serializable;
 import java.sql.*;
 import java.util.*;
 
-abstract public class BaseBuilder<T, K> implements Builder<T, K> {
+/**
+ * 基础查询构造器(sql生成器)
+ * @param <T>
+ * @param <K>
+ * @author xt
+ */
+public abstract class BaseBuilder<T extends Serializable, K extends Serializable> implements Builder<T, K> {
 
     /**
      * 数据库连接
@@ -76,7 +83,7 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
      * @param closure 闭包
      * @return sqlPart eg:(`id`="3" and `age` between "12" and "19")
      */
-    String generateSqlPart(GenerateSqlPartFunctionalInterface closure) {
+    String generateSqlPart(GenerateSqlPartFunctionalInterface<T, K> closure) {
         return generateSql(closure, false);
     }
 
@@ -85,7 +92,7 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
      * @param closure 闭包
      * @return sqlPart eg:(select * from `student` where `id`="3" and `age` between "12" and "19")
      */
-    String generateSql(GenerateSqlPartFunctionalInterface closure) {
+    String generateSql(GenerateSqlPartFunctionalInterface<T, K> closure) {
         return generateSql(closure, true);
     }
 
@@ -214,7 +221,7 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
                 return result;
             } catch (Throwable e) {
                 rollBack();
-                if (currentAttempt >= maxAttempts || !ExceptionUtil.causedByDeadlock(e)) {
+                if (currentAttempt >= maxAttempts || !ExceptionUtils.causedByDeadlock(e)) {
                     throw e;
                 }
             }
@@ -237,7 +244,7 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
                 return;
             } catch (Throwable e) {
                 rollBack();
-                if (currentAttempt >= maxAttempts || !ExceptionUtil.causedByDeadlock(e)) {
+                if (currentAttempt >= maxAttempts || !ExceptionUtils.causedByDeadlock(e)) {
                     throw e;
                 }
             }
@@ -301,7 +308,7 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
 
     @Override
     public RecordList<T, K> queryList(String sql, Collection<String> parameters) throws SQLRuntimeException {
-        return doSomethingInConnection((preparedStatement) -> {
+        return doSomethingInConnection(preparedStatement -> {
             ResultSet resultSet = preparedStatement.executeQuery();
             return RecordFactory.newRecordList(entityClass, model, resultSet, sql);
         }, sql, parameters, false);
@@ -407,15 +414,15 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
     private K getGeneratedKeys(ResultSet generatedKeys) throws SQLException, PrimaryKeyTypeNotSupportException {
         Class<K> primaryKeyClass = model.getPrimaryKeyClass();
         if (Byte.class.equals(primaryKeyClass) || byte.class.equals(primaryKeyClass)) {
-            return ObjectUtil.typeCast(generatedKeys.getByte(1));
+            return ObjectUtils.typeCast(generatedKeys.getByte(1));
         } else if (Integer.class.equals(primaryKeyClass) || int.class.equals(primaryKeyClass)) {
-            return ObjectUtil.typeCast(generatedKeys.getInt(1));
+            return ObjectUtils.typeCast(generatedKeys.getInt(1));
         } else if (Long.class.equals(primaryKeyClass) || long.class.equals(primaryKeyClass)) {
-            return ObjectUtil.typeCast(generatedKeys.getLong(1));
+            return ObjectUtils.typeCast(generatedKeys.getLong(1));
         } else if (String.class.equals(primaryKeyClass)) {
-            return ObjectUtil.typeCast(generatedKeys.getString(1));
+            return ObjectUtils.typeCast(generatedKeys.getString(1));
         } else if (Object.class.equals(primaryKeyClass)) {
-            return ObjectUtil.typeCast(generatedKeys.getString(1));
+            return ObjectUtils.typeCast(generatedKeys.getString(1));
         }
         throw new PrimaryKeyTypeNotSupportException("Primary key type [" + primaryKeyClass + "] not support get " +
             "generated keys yet.");
@@ -487,9 +494,10 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
      * @throws SQLRuntimeException 数据库异常
      */
     int updateSql(SqlType sqlType) throws SQLRuntimeException {
-        if (sqlType != SqlType.INSERT && !grammar.hasWhere())
+        if (sqlType != SqlType.INSERT && !grammar.hasWhere()){
             throw new ConfirmOperationException("You made a risky operation without where conditions, use where(1) " +
                 "for sure");
+        }
         // sql组装执行
         String sql = grammar.generateSql(sqlType);
         List<String> parameterList = grammar.getParameterList(sqlType);
@@ -525,14 +533,14 @@ abstract public class BaseBuilder<T, K> implements Builder<T, K> {
      * @param wholeSql 是否生成完整sql
      * @return sql
      */
-    private String generateSql(GenerateSqlPartFunctionalInterface closure, boolean wholeSql) {
+    private String generateSql(GenerateSqlPartFunctionalInterface<T, K> closure, boolean wholeSql) {
         Builder<?, ?> subBuilder = closure.execute(getNewSelf());
         List<String> parameterList = subBuilder.getGrammar().getParameterList(SqlType.SUB_QUERY);
         for (String parameter : parameterList) {
             grammar.pushWhereParameter(parameter);
         }
         SqlType sqlType = wholeSql ? SqlType.SELECT : SqlType.SUB_QUERY;
-        return FormatUtil.bracket(subBuilder.getGrammar().generateSql(sqlType));
+        return FormatUtils.bracket(subBuilder.getGrammar().generateSql(sqlType));
     }
 
 }

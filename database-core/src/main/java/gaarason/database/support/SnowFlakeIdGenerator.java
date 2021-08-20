@@ -131,6 +131,7 @@ public class SnowFlakeIdGenerator implements IdGenerator.SnowFlakesID {
      * 获得下一个ID (用同步锁保证线程安全,在高并发场景同步锁性能和资源消耗优于CAS；并且测试中单线程即使用CAS也没有提升性能)
      * @return SnowflakeId
      */
+    @Override
     public synchronized Long nextId() {
         long currentTimestamp = getSystemCurrentTimeMillis();
         // 如果当前时间小于上一次ID生成的时间戳，说明系统时钟回退过这个时候应当抛出异常

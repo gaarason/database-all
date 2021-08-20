@@ -12,20 +12,27 @@ import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.provider.ModelShadowProvider;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
-abstract public class ModelBean<T, K> implements Model<T, K> {
+/**
+ * 数据模型对象
+ * @author xt
+ */
+public abstract class ModelBean<T extends Serializable, K extends Serializable> implements Model<T, K> {
 
-    public ModelBean() {
+    private static final String DEFAULT_SOFT_DELETED_COLUMN_NAME = "is_deleted";
 
-    }
+    private static final String DEFAULT_SOFT_DELETED_VALUE_YSE = "1";
+
+    private static final String DEFAULT_SOFT_DELETED_VALUE_NO = "0";
 
     /**
      * @return dataSource代理
      */
-    abstract protected GaarasonDataSource getGaarasonDataSource();
+    protected abstract GaarasonDataSource getGaarasonDataSource();
 
     @Override
     public int delete(Builder<T, K> builder) {
@@ -49,7 +56,7 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
      * @param builder 查询构造器
      */
     protected void scopeSoftDeleteOnlyTrashed(Builder<T, K> builder) {
-        builder.where("is_deleted", "1");
+        builder.where(DEFAULT_SOFT_DELETED_COLUMN_NAME, DEFAULT_SOFT_DELETED_VALUE_YSE);
     }
 
     /**
@@ -65,7 +72,7 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
      * @param builder 查询构造器
      */
     protected void scopeSoftDelete(Builder<T, K> builder) {
-        builder.where("is_deleted", "0");
+        builder.where(DEFAULT_SOFT_DELETED_COLUMN_NAME, DEFAULT_SOFT_DELETED_VALUE_NO);
     }
 
 
@@ -75,7 +82,7 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
      * @return 删除的行数
      */
     protected int softDelete(Builder<T, K> builder) {
-        return builder.data("is_deleted", "1").update();
+        return builder.data(DEFAULT_SOFT_DELETED_COLUMN_NAME, DEFAULT_SOFT_DELETED_VALUE_YSE).update();
     }
 
     /**
@@ -84,7 +91,7 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
      * @return 恢复的行数
      */
     protected int softDeleteRestore(Builder<T, K> builder) {
-        return builder.data("is_deleted", "0").update();
+        return builder.data(DEFAULT_SOFT_DELETED_COLUMN_NAME, DEFAULT_SOFT_DELETED_VALUE_NO).update();
     }
 
     /**
@@ -103,7 +110,6 @@ abstract public class ModelBean<T, K> implements Model<T, K> {
     protected Builder<T, K> theBuilder() {
         GaarasonDataSource gaarasonDataSource = getGaarasonDataSource();
         return apply(gaarasonDataSource.getDatabaseType().getBuilderByDatabaseType(gaarasonDataSource, this, getEntityClass()));
-//        return apply(new MySqlBuilder<>(gaarasonDataSource, this, getEntityClass()));
     }
 
     @Override

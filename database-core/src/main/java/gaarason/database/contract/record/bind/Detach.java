@@ -7,6 +7,7 @@ import java.util.Collection;
 
 /**
  * 解除关系
+ * @author xt
  */
 public interface Detach {
 

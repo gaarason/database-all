@@ -12,17 +12,24 @@ import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.InsertNotSuccessException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.provider.ModelShadowProvider;
-import gaarason.database.util.FormatUtil;
-import gaarason.database.util.ObjectUtil;
-import gaarason.database.util.StringUtil;
+import gaarason.database.util.FormatUtils;
+import gaarason.database.util.ObjectUtils;
+import gaarason.database.util.StringUtils;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-abstract public class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
+/**
+ * 中间查询构造器
+ * @param <T>
+ * @param <K>
+ * @author xt
+ */
+public abstract class MiddleBuilder<T extends Serializable, K extends Serializable> extends BaseBuilder<T, K> {
 
     public MiddleBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
         super(gaarasonDataSource, model, entityClass);
@@ -30,7 +37,7 @@ abstract public class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
 
     @Override
     public <R> R aggregate(AggregatesType op, String column) {
-        String alias = StringUtil.getRandomString(6);
+        String alias = StringUtils.getRandomString(6);
         Builder<T, K> builder = this;
         if (grammar.hasGroup()) {
             if (!grammar.hasSelect()) {
@@ -40,7 +47,7 @@ abstract public class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
         }
 
         Map<String, Object> resMap = builder.selectFunction(op.toString(), column, alias).firstOrFail().toMap();
-        return ObjectUtil.typeCast(resMap.get(alias));
+        return ObjectUtils.typeCast(resMap.get(alias));
     }
 
     @Override
@@ -77,19 +84,19 @@ abstract public class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
 
     @Override
     public Builder<T, K> forceIndex(String indexName) {
-        grammar.pushForceIndex(FormatUtil.column(indexName));
+        grammar.pushForceIndex(FormatUtils.column(indexName));
         return this;
     }
 
     @Override
     public Builder<T, K> ignoreIndex(String indexName) {
-        grammar.pushIgnoreIndex(FormatUtil.column(indexName));
+        grammar.pushIgnoreIndex(FormatUtils.column(indexName));
         return this;
     }
 
     @Override
     public Builder<T, K> from(String table) {
-        grammar.pushFrom(FormatUtil.column(table));
+        grammar.pushFrom(FormatUtils.column(table));
         return this;
     }
 
@@ -101,7 +108,7 @@ abstract public class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
 
     @Override
     public Builder<T, K> from(String alias, String sql) {
-        grammar.pushFrom(FormatUtil.bracket(sql) + alias);
+        grammar.pushFrom(FormatUtils.bracket(sql) + alias);
         return this;
     }
 
@@ -111,7 +118,7 @@ abstract public class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
      * @return 参数占位符?
      */
     protected String formatValue(String value) {
-        return FormatUtil.value(value, grammar);
+        return FormatUtils.value(value, grammar);
     }
 
     /**
@@ -120,7 +127,7 @@ abstract public class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
      * @return 参数占位符?
      */
     protected String formatData(String value) {
-        return FormatUtil.data(value, grammar);
+        return FormatUtils.data(value, grammar);
     }
 
     /**
@@ -129,7 +136,7 @@ abstract public class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
      * @return 参数占位符?
      */
     protected String formatValue(Collection<?> valueList) {
-        return FormatUtil.value(valueList, grammar);
+        return FormatUtils.value(valueList, grammar);
     }
 
     @Override
@@ -294,6 +301,6 @@ abstract public class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
      * @return eg: sum(`order`.`amount`) AS `sum_price`
      */
     protected static String column(String something) {
-        return FormatUtil.backQuote(something, "`");
+        return FormatUtils.backQuote(something, "`");
     }
 }

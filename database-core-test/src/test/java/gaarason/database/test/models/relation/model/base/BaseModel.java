@@ -8,13 +8,14 @@ import gaarason.database.test.utils.DatabaseTypeUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.sql.DataSource;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
 @Slf4j
-abstract public class BaseModel<T, K> extends Model<T, K> {
+abstract public class BaseModel<T extends Serializable, K extends Serializable> extends Model<T, K> {
 
     private static final GaarasonDataSource mysql = mysqlDataSource();
 

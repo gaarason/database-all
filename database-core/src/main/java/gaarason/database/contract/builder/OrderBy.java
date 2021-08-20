@@ -3,13 +3,15 @@ package gaarason.database.contract.builder;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.core.lang.Nullable;
 
+import java.io.Serializable;
+
 /**
  * 排序
  * @param <T>
  * @param <K>
  * @author xt
  */
-public interface OrderBy<T, K> {
+public interface OrderBy<T extends Serializable, K extends Serializable> {
 
     /**
      * 排序

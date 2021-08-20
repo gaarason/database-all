@@ -4,6 +4,7 @@ import gaarason.database.exception.base.BaseException;
 
 /**
  * 强制类型转化异常
+ * @author xt
  */
 public class TypeCastException extends BaseException {
 

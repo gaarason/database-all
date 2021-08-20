@@ -5,7 +5,14 @@ import gaarason.database.contract.query.Grammar;
 import java.util.Collection;
 import java.util.List;
 
-public class FormatUtil {
+/**
+ * 格式化
+ * @author xt
+ */
+public class FormatUtils {
+
+    private FormatUtils() {
+    }
 
     /**
      * 给字段加上反引号
@@ -31,11 +38,11 @@ public class FormatUtil {
      * @return eg: `name`,`age`,`sex`
      */
     public static String column(List<String> somethingList) {
-        StringBuilder StringBuilder = new StringBuilder();
+        StringBuilder stringBuilder = new StringBuilder();
         for (String value : somethingList) {
-            StringBuilder.append(FormatUtil.column(value)).append(',');
+            stringBuilder.append(FormatUtils.column(value)).append(',');
         }
-        return StringUtil.rtrim(StringBuilder.toString(), ",");
+        return StringUtils.rtrim(stringBuilder.toString(), ",");
     }
 
     /**
@@ -64,11 +71,11 @@ public class FormatUtil {
      * @return eg: ? , ? , ?
      */
     public static String value(Collection<?> somethingList, Grammar grammar) {
-        StringBuilder StringBuilder = new StringBuilder();
+        StringBuilder stringBuilder = new StringBuilder();
         for (Object value : somethingList) {
-            StringBuilder.append(FormatUtil.value(String.valueOf(value), grammar)).append(',');
+            stringBuilder.append(FormatUtils.value(String.valueOf(value), grammar)).append(',');
         }
-        return StringUtil.rtrim(StringBuilder.toString(), ",");
+        return StringUtils.rtrim(stringBuilder.toString(), ",");
     }
 
     /**
@@ -92,27 +99,27 @@ public class FormatUtil {
     /**
      * 给字段加上反引号
      * @param something 字段 eg: sum(order.amount) AS sum_price
-     * @param symbol 符号 eg: `
+     * @param symbol    符号 eg: `
      * @return eg: sum(`order`.`amount`) AS `sum_price`
      */
     public static String backQuote(String something, String symbol) {
         something = something.trim();
-        int    whereIsAs    = something.toLowerCase().indexOf(" as ");
+        int whereIsAs = something.toLowerCase().indexOf(" as ");
         String temp;
         String mayBeHasFunc = something;
-        String alias        = "";
+        String alias = "";
         if (whereIsAs != -1) {
             mayBeHasFunc = something.substring(0, whereIsAs); // eg: sum(order.amount)
-            alias = " as "+ symbol + something.substring(whereIsAs + 4) + symbol;
+            alias = " as " + symbol + something.substring(whereIsAs + 4) + symbol;
         }
         int whereIsQuote = mayBeHasFunc.indexOf('(');
         if (whereIsQuote != -1) {
-            String func     = mayBeHasFunc.substring(0, whereIsQuote); // eg: sum
+            String func = mayBeHasFunc.substring(0, whereIsQuote); // eg: sum
             String someElse = mayBeHasFunc.replace(func, "").replace("(", "").replace(")", ""); // eg: order.amount
 
             int whereIsPoint = someElse.indexOf('.');
             if (whereIsPoint != -1) {
-                String table  = someElse.substring(0, whereIsPoint); // eg: order
+                String table = someElse.substring(0, whereIsPoint); // eg: order
                 String column = someElse.replace(table + '.', ""); // eg: amount
                 temp = column.equals("*") ? symbol + table + symbol + "." + column : symbol + table + symbol + "." + symbol + column + symbol;
             } else if ("".equals(someElse)) {
@@ -126,7 +133,7 @@ public class FormatUtil {
             if (whereIsPoint == -1) {
                 temp = symbol + mayBeHasFunc + symbol;
             } else {
-                String table  = mayBeHasFunc.substring(0, whereIsPoint); // eg: order
+                String table = mayBeHasFunc.substring(0, whereIsPoint); // eg: order
                 String column = mayBeHasFunc.replace(table + '.', ""); // eg: amount
                 temp = column.equals("*") ? symbol + table + symbol + "." + column : symbol + table + symbol + "." + symbol + column + symbol;
             }

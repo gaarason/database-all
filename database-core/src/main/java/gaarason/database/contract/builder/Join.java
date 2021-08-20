@@ -3,13 +3,15 @@ package gaarason.database.contract.builder;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.eloquent.appointment.JoinType;
 
+import java.io.Serializable;
+
 /**
  * 连接
  * @param <T>
  * @param <K>
  * @author xt
  */
-public interface Join<T, K> {
+public interface Join<T extends Serializable, K extends Serializable> {
 
     /**
      * 连接查询

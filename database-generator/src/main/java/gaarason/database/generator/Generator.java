@@ -8,7 +8,7 @@ import gaarason.database.eloquent.ModelBean;
 import gaarason.database.generator.element.field.Field;
 import gaarason.database.generator.element.field.MysqlFieldGenerator;
 import gaarason.database.provider.ModelShadowProvider;
-import gaarason.database.util.StringUtil;
+import gaarason.database.util.StringUtils;
 import lombok.Setter;
 
 import javax.sql.DataSource;
@@ -155,7 +155,7 @@ public class Generator {
 
     private String entityNamespace;
 
-    private Model<?, ?> model;
+    private Model<? extends Serializable, ? extends Serializable> model;
 
     private final ConcurrentHashMap<String, String> tablePrimaryKeyTypeMap = new ConcurrentHashMap<>();
 
@@ -251,7 +251,7 @@ public class Generator {
      * @return 合法的java标识符
      */
     private static String nameConverter(String name) {
-        return StringUtil.isJavaIdentifier(name) ? name : "a" + StringUtil.md5(name);
+        return StringUtils.isJavaIdentifier(name) ? name : "a" + StringUtils.md5(name);
     }
 
     /**
@@ -277,7 +277,7 @@ public class Generator {
      * 使用无惨可重写
      * @return 数据库操作model
      */
-    public Model getModel() {
+    public Model<? extends Serializable, ? extends Serializable> getModel() {
         return model;
     }
 
@@ -589,7 +589,7 @@ public class Generator {
      * @return 实体类名
      */
     private String entityName(String tableName) {
-        String name = entityPrefix + StringUtil.lineToHump(tableName, true) + entitySuffix;
+        String name = entityPrefix + StringUtils.lineToHump(tableName, true) + entitySuffix;
         return nameConverter(name);
     }
 
@@ -599,7 +599,7 @@ public class Generator {
      * @return 模型类名
      */
     private String modelName(String tableName) {
-        String name = modelPrefix + StringUtil.lineToHump(tableName, true) + modelSuffix;
+        String name = modelPrefix + StringUtils.lineToHump(tableName, true) + modelSuffix;
         return nameConverter(name);
     }
 
@@ -674,18 +674,20 @@ public class Generator {
     }
 
     private String getAbsoluteWriteFilePath(String namespace) {
-        return StringUtil.rtrim(outputDir, "/") + "/" + namespace2dir(namespace) + '/';
+        return StringUtils.rtrim(outputDir, "/") + "/" + namespace2dir(namespace) + '/';
     }
 
-    public static class ToolModel extends ModelBean<ToolModel.Inner, Object> {
+    public static class ToolModel extends ModelBean<ToolModel.Inner, Serializable> {
 
         protected static GaarasonDataSourceWrapper gaarasonDataSource = null;
 
+        @Override
         public GaarasonDataSourceWrapper getGaarasonDataSource() {
             return gaarasonDataSource;
         }
 
-        public static class Inner {
+        public static class Inner implements Serializable {
+            private static final long serialVersionUID = 1L;
         }
     }
 }

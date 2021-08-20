@@ -4,6 +4,7 @@ import gaarason.database.exception.base.BaseException;
 
 /**
  * 出现此错误, 一般是高并发下的线程同步问题
+ * @author xt
  */
 public class InternalConcurrentException extends BaseException {
 

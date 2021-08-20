@@ -1,9 +1,12 @@
 package gaarason.database.contract.support;
 
+import java.io.Serializable;
+
 /**
  * ID 生成器
+ * @author xt
  */
-public interface IdGenerator<K> {
+public interface IdGenerator<K extends Serializable> {
 
     /**
      * 生成主键值
@@ -35,21 +38,21 @@ public interface IdGenerator<K> {
     /**
      * 自定义
      */
-    interface Custom extends IdGenerator<Object> {
+    interface Custom extends IdGenerator<Serializable> {
 
     }
 
     /**
      * 自动判断,
      */
-    interface Auto extends IdGenerator<Object> {
+    interface Auto extends IdGenerator<Serializable> {
 
     }
 
     /**
      * 永不自动
      */
-    interface Never extends IdGenerator<Object> {
+    interface Never extends IdGenerator<Serializable> {
 
     }
 

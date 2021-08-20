@@ -4,13 +4,17 @@ import gaarason.database.contract.eloquent.Builder;
 
 import java.io.Serializable;
 
+/**
+ * 生成代码片段
+ * @author xt
+ */
 @FunctionalInterface
-public interface GenerateSqlPartFunctionalInterface extends Serializable {
+public interface GenerateSqlPartFunctionalInterface<T extends Serializable, K extends Serializable> extends Serializable {
 
     /**
      * 生成代码片段
      * @param builder 生成器
      * @return 生成器
      */
-    Builder<?, ?> execute(Builder<?, ?> builder);
+    Builder<T, K> execute(Builder<T, K> builder);
 }
