@@ -7,6 +7,7 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.eloquent.ModelBean;
 import gaarason.database.generator.element.field.Field;
 import gaarason.database.generator.element.field.MysqlFieldGenerator;
+import gaarason.database.generator.exception.GeneratorException;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.StringUtils;
 import lombok.Setter;
@@ -23,16 +24,34 @@ import java.util.concurrent.*;
  */
 public class Generator {
 
+    /**
+     * 未知主键类型时, 使用的java类
+     */
     private static final String UNKNOWN_PRIMARY_KEY_TYPE = "Serializable";
 
-    private static final String ENTITY_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("entity"));
-
-    private static final String FIELD_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("field"));
-
-    private static final String BASE_MODEL_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("baseModel"));
-
+    /**
+     * entity父类 对应的模板字符串
+     */
     private static final String BASE_ENTITY_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("baseEntity"));
 
+    /**
+     * entity 对应的模板字符串
+     */
+    private static final String ENTITY_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("entity"));
+
+    /**
+     * entity field 对应的模板字符串
+     */
+    private static final String FIELD_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("field"));
+
+    /**
+     * model父类 对应的模板字符串
+     */
+    private static final String BASE_MODEL_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("baseModel"));
+
+    /**
+     * model 对应的模板字符串
+     */
     private static final String MODEL_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("model"));
 
     /**
@@ -151,19 +170,35 @@ public class Generator {
      */
     private String[] disUpdatable = {};
 
+    /**
+     * model父类 所在的命名空间
+     */
     private String baseModelNamespace;
 
+    /**
+     * entity父类 所在的命名空间
+     */
     private String baseEntityNamespace;
 
+    /**
+     * model 所在的命名空间
+     */
     private String modelNamespace;
 
+    /**
+     * entity 所在的命名空间
+     */
     private String entityNamespace;
 
+    /**
+     * 用于委托执行的model
+     */
     private Model<? extends Serializable, ? extends Serializable> model;
 
+    /**
+     * 存储 表名 -> 主键类型 的映射关系, 稍微提高性能
+     */
     private final ConcurrentHashMap<String, String> tablePrimaryKeyTypeMap = new ConcurrentHashMap<>();
-
-    protected GaarasonDataSourceWrapper gaarasonDataSourceWrapper;
 
     /**
      * 使用无参构造时,需要重写 getModel 方法
@@ -172,6 +207,12 @@ public class Generator {
 
     }
 
+    /**
+     * 有参构造
+     * @param jdbcUrl 数据库连接地址
+     * @param username 数据库用户名
+     * @param password 数据库密码
+     */
     public Generator(String jdbcUrl, String username, String password) {
         DruidDataSource druidDataSource = new DruidDataSource();
         druidDataSource.setUrl(jdbcUrl);
@@ -192,6 +233,11 @@ public class Generator {
         this.model = ModelShadowProvider.getByModelClass(ToolModel.class).getModel();
     }
 
+    /**
+     * 将类的命名空间转化为对应的目录
+     * @param namespace 命名空间
+     * @return 目录
+     */
     private static String namespace2dir(String namespace) {
         return namespace.replace('.', '/');
     }
@@ -209,10 +255,20 @@ public class Generator {
         return template;
     }
 
+    /**
+     * 获取绝对路径
+     * @param name 文件名
+     * @return 绝对路径
+     */
     private static String getAbsoluteReadFileName(String name) {
         return "/template/" + name;
     }
 
+    /**
+     * 获取文件内容
+     * @param fileName 文件名
+     * @return 文件内容
+     */
     private static String fileGetContent(String fileName) {
         InputStream    is               = Generator.class.getResourceAsStream(fileName);
         BufferedReader br               = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
@@ -223,12 +279,18 @@ public class Generator {
                 configContentStr.append(s);
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new GeneratorException(e);
         }
 
         return configContentStr.toString();
     }
 
+    /**
+     * 写入文件内容
+     * @param path 文件路径
+     * @param fileName 文件名
+     * @param content 文件内容
+     */
     private static void filePutContent(String path, String fileName, String content) {
         try {
             File file = new File(path);
@@ -236,16 +298,16 @@ public class Generator {
                 OutputStreamWriter outputStreamWriter = new OutputStreamWriter(
                     new FileOutputStream(path + fileName + ".java"), StandardCharsets.UTF_8);
 
-                outputStreamWriter.write(content.replaceAll("\\\\n", "\n"));
+                outputStreamWriter.write(content.replace("\\\\n", "\n"));
                 outputStreamWriter.flush();
                 outputStreamWriter.close();
                 // 控制台输出
                 consoleLog(fileName + " 生成完毕, 路径 : " + path);
                 return;
             }
-            throw new RuntimeException("目录建立失败 : " + file);
+            throw new GeneratorException("目录建立失败 : " + file);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new GeneratorException(e);
         }
     }
 
@@ -259,15 +321,15 @@ public class Generator {
     }
 
     /**
-     * 记录
-     * @param str
+     * 打印记录
+     * @param str 记录
      */
     private static void consoleLog(String str) {
         System.out.println(str);
     }
 
     /**
-     * 获取值,并转化为字符串 or Null
+     * 获取值, 并转化为字符串 or Null
      * @param fieldStringObjectMap
      * @param keyName
      * @return 字符串 or Null
@@ -281,6 +343,7 @@ public class Generator {
      * 使用无惨可重写
      * @return 数据库操作model
      */
+    @Nullable
     public Model<? extends Serializable, ? extends Serializable> getModel() {
         return model;
     }
@@ -290,7 +353,7 @@ public class Generator {
      */
     private void init() {
         if (getModel() == null) {
-            throw new RuntimeException("使用无参构造`public void Generator()`时,需要重写`getModel`方法,否则请使用`public void " +
+            throw new GeneratorException("使用无参构造`public void Generator()`时,需要重写`getModel`方法,否则请使用`public void " +
                 "Generator(String jdbcUrl, String username, String password)`");
         }
         baseModelNamespace = namespace + ("".equals(modelDir) ? "" : ("." + modelDir)) + ("".equals(
@@ -566,7 +629,7 @@ public class Generator {
         Field field = mysqlFieldGenerator.toField(disInsertable, disUpdatable);
 
         // 暂存主键类型
-        if (field.getPrimary()) {
+        if (field.isPrimary()) {
             if( tablePrimaryKeyTypeMap.get(tableName) != null ){
                 tablePrimaryKeyTypeMap.put(tableName, UNKNOWN_PRIMARY_KEY_TYPE);
             }else{
@@ -660,7 +723,7 @@ public class Generator {
             }
         }
         if ("".equals(name)) {
-            throw new RuntimeException("获取当前库名失败");
+            throw new GeneratorException("获取当前库名失败");
         }
         return name;
     }

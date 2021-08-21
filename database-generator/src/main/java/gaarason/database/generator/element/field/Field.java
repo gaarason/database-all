@@ -33,17 +33,17 @@ public class Field extends JavaElement {
     /**
      * 是否唯一
      */
-    private Boolean unique = false;
+    private boolean unique = false;
 
     /**
      * 是否,仅为正数
      */
-    private Boolean unsigned = false;
+    private boolean unsigned = false;
 
     /**
      * 字段可否为 null
      */
-    private Boolean nullable = false;
+    private boolean nullable = false;
 
     /**
      * 字段默认值
@@ -53,12 +53,12 @@ public class Field extends JavaElement {
     /**
      * 是否允许新增时赋值
      */
-    private Boolean insertable = true;
+    private boolean insertable = true;
 
     /**
      * 是否允许更新时赋值
      */
-    private Boolean updatable = true;
+    private boolean updatable = true;
 
     /**
      * 字段长度
@@ -73,12 +73,12 @@ public class Field extends JavaElement {
     /**
      * 是否主键
      */
-    private Boolean primary = false;
+    private boolean primary = false;
 
     /**
      * 是否自增
      */
-    private Boolean increment = false;
+    private boolean increment = false;
 
     /**
      * java中的类型
