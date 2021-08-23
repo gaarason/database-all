@@ -2,8 +2,8 @@ package gaarason.database.generator;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import gaarason.database.connection.GaarasonDataSourceWrapper;
-import gaarason.database.core.lang.Nullable;
 import gaarason.database.contract.eloquent.Model;
+import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.ModelBean;
 import gaarason.database.generator.element.field.Field;
 import gaarason.database.generator.element.field.MysqlFieldGenerator;
@@ -100,6 +100,7 @@ public class Generator {
      */
     @Setter
     private String baseEntityName = "BaseEntity";
+
     /**
      * model目录
      */
@@ -209,7 +210,7 @@ public class Generator {
 
     /**
      * 有参构造
-     * @param jdbcUrl 数据库连接地址
+     * @param jdbcUrl  数据库连接地址
      * @param username 数据库用户名
      * @param password 数据库密码
      */
@@ -270,10 +271,10 @@ public class Generator {
      * @return 文件内容
      */
     private static String fileGetContent(String fileName) {
-        InputStream    is               = Generator.class.getResourceAsStream(fileName);
-        BufferedReader br               = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-        String         s;
-        StringBuilder  configContentStr = new StringBuilder();
+        InputStream is = Generator.class.getResourceAsStream(fileName);
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+        String s;
+        StringBuilder configContentStr = new StringBuilder();
         try {
             while ((s = br.readLine()) != null) {
                 configContentStr.append(s);
@@ -287,9 +288,9 @@ public class Generator {
 
     /**
      * 写入文件内容
-     * @param path 文件路径
+     * @param path     文件路径
      * @param fileName 文件名
-     * @param content 文件内容
+     * @param content  文件内容
      */
     private static void filePutContent(String path, String fileName, String content) {
         try {
@@ -298,7 +299,7 @@ public class Generator {
                 OutputStreamWriter outputStreamWriter = new OutputStreamWriter(
                     new FileOutputStream(path + fileName + ".java"), StandardCharsets.UTF_8);
 
-                outputStreamWriter.write(content.replace("\\\\n", "\n"));
+                outputStreamWriter.write(content.replaceAll("\\\\n", "\n"));
                 outputStreamWriter.flush();
                 outputStreamWriter.close();
                 // 控制台输出
@@ -317,7 +318,7 @@ public class Generator {
      * @return 合法的java标识符
      */
     private static String nameConverter(String name) {
-        return StringUtils.isJavaIdentifier(name) ? name : "a" + StringUtils.md5(name);
+        return StringUtils.isJavaIdentifier(name) ? name : "auto" + StringUtils.md5(name);
     }
 
     /**
@@ -343,7 +344,6 @@ public class Generator {
      * 使用无惨可重写
      * @return 数据库操作model
      */
-    @Nullable
     public Model<? extends Serializable, ? extends Serializable> getModel() {
         return model;
     }
@@ -518,7 +518,7 @@ public class Generator {
 
     /**
      * 填充所有字段
-     * @param tableName 表名
+     * @param tableName       表名
      * @param isForBaseEntity entity父类使用
      * @return 内容
      */
@@ -540,7 +540,7 @@ public class Generator {
 
     /**
      * 静态字段填充
-     * @param tableName 表名
+     * @param tableName       表名
      * @param isForBaseEntity entity父类使用
      * @return 内容
      */
@@ -554,12 +554,12 @@ public class Generator {
             String columnName = field.get("COLUMN_NAME").toString();
 
             // 在baseEntity中已存在
-            if(baseEntityFields.contains(columnName)){
-                if(!isForBaseEntity){
+            if (baseEntityFields.contains(columnName)) {
+                if (!isForBaseEntity) {
                     continue;
                 }
-            }else{
-                if(isForBaseEntity){
+            } else {
+                if (isForBaseEntity) {
                     continue;
                 }
             }
@@ -569,7 +569,7 @@ public class Generator {
 
             // 每个字段的填充(避免静态字段与普通属性名一样导致冲突, 一样时使用$前缀)
             String fieldTemplateStrReplace =
-                "    final public static String " + (staticName.equals(columnName) ? "$" : "") + staticName +
+                "    public static final String " + (staticName.equals(columnName) ? "$" : "") + staticName +
                     " = \"" + columnName + "\";\n";
             // 追加
             str.append(fieldTemplateStrReplace);
@@ -581,7 +581,7 @@ public class Generator {
      * 填充单个字段
      * @param fieldStringObjectMap 字段属性
      * @param tableName            表名
-     * @param isForBaseEntity entity父类使用
+     * @param isForBaseEntity      用于entity父类使用
      * @return 内容
      */
     private String fillFieldTemplate(Map<String, Object> fieldStringObjectMap, String tableName, boolean isForBaseEntity) {
@@ -592,27 +592,16 @@ public class Generator {
         MysqlFieldGenerator mysqlFieldGenerator = new MysqlFieldGenerator();
         mysqlFieldGenerator.setColumnName(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_NAME));
 
-        // 在 baseEntity 中存在了, 子类不需要
-        if(baseEntityFields.contains(mysqlFieldGenerator.getColumnName())){
-            if(!isForBaseEntity){
-                return "";
-            }
-        }else{
-            if(isForBaseEntity){
-                return "";
-            }
-        }
-
         mysqlFieldGenerator.setTableCatalog(getValue(fieldStringObjectMap, MysqlFieldGenerator.TABLE_CATALOG));
         mysqlFieldGenerator.setIsNullable(getValue(fieldStringObjectMap, MysqlFieldGenerator.IS_NULLABLE));
         mysqlFieldGenerator.setTableName(getValue(fieldStringObjectMap, MysqlFieldGenerator.TABLE_NAME));
         mysqlFieldGenerator.setTableSchema(getValue(fieldStringObjectMap, MysqlFieldGenerator.TABLE_NAME));
-        mysqlFieldGenerator.setExtra(getValue(fieldStringObjectMap, MysqlFieldGenerator.EXTRA));
+        mysqlFieldGenerator.setExtra(getValue(fieldStringObjectMap, MysqlFieldGenerator.THE_EXTRA));
         mysqlFieldGenerator.setColumnKey(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_KEY));
         mysqlFieldGenerator.setCharacterOctetLength(
             getValue(fieldStringObjectMap, MysqlFieldGenerator.CHARACTER_OCTET_LENGTH));
         mysqlFieldGenerator.setNumericPrecision(getValue(fieldStringObjectMap, MysqlFieldGenerator.NUMERIC_PRECISION));
-        mysqlFieldGenerator.setPrivileges(getValue(fieldStringObjectMap, MysqlFieldGenerator.PRIVILEGES));
+        mysqlFieldGenerator.setPrivileges(getValue(fieldStringObjectMap, MysqlFieldGenerator.THE_PRIVILEGES));
         mysqlFieldGenerator.setColumnComment(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_COMMENT));
         mysqlFieldGenerator.setDatetimePrecision(
             getValue(fieldStringObjectMap, MysqlFieldGenerator.DATETIME_PRECISION));
@@ -630,15 +619,22 @@ public class Generator {
 
         // 暂存主键类型
         if (field.isPrimary()) {
-            if( tablePrimaryKeyTypeMap.get(tableName) != null ){
-                tablePrimaryKeyTypeMap.put(tableName, UNKNOWN_PRIMARY_KEY_TYPE);
-            }else{
-                tablePrimaryKeyTypeMap.put(tableName, field.getJavaClassTypeString());
+            tablePrimaryKeyTypeMap.put(tableName, field.getJavaClassTypeString());
+        }
+
+        // 在 baseEntity 中存在了, 子类不需要
+        if (baseEntityFields.contains(mysqlFieldGenerator.getColumnName())) {
+            if (!isForBaseEntity) {
+                return "";
+            }
+        } else {
+            if (isForBaseEntity) {
+                return "";
             }
         }
 
         // 模板替换参数
-        Map<String, String> parameterMap = new HashMap<>();
+        Map<String, String> parameterMap = new HashMap<>(16);
         parameterMap.put("${primary}", field.toAnnotationDatabasePrimary());
         parameterMap.put("${column}", field.toAnnotationDatabaseColumn());
         parameterMap.put("${field}", field.toFieldName());
@@ -713,9 +709,9 @@ public class Generator {
      */
     @SuppressWarnings("unchecked")
     private String DBName() {
-        String              name  = "";
-        Model               model = getModel();
-        Map<String, Object> map   = model.newQuery().queryOrFail("select database()", new ArrayList<>()).toMap();
+        String name = "";
+        Model model = getModel();
+        Map<String, Object> map = model.newQuery().queryOrFail("select database()", new ArrayList<>()).toMap();
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             if (entry.getValue() != null) {
                 name = entry.getValue().toString();
@@ -754,6 +750,7 @@ public class Generator {
         }
 
         public static class Inner implements Serializable {
+
             private static final long serialVersionUID = 1L;
         }
     }

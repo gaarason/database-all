@@ -6,6 +6,10 @@ import gaarason.database.generator.element.JavaVisibility;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * 数据库列属性
+ * @author xt
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class Field extends JavaElement {
@@ -179,14 +183,16 @@ public class Field extends JavaElement {
                     "message = \"" + describe + "[" + columnName + "]需要大于等于" + min + "\"" +
                     ")\n";
             case STRING:
-                if (max == 0)
+                if (max == 0){
                     return "";
-                else
+                }
+                else{
                     return indentation() + "@Length(" +
                         "min = " + min + ", " +
                         "max = " + max + ", " +
                         "message = \"" + describe + "[" + columnName + "]长度需要在" + min + "和" + max + "之间" + "\"" +
                         ")\n";
+                }
             default:
                 return "";
         }

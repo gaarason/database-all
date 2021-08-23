@@ -6,8 +6,8 @@ import gaarason.database.core.lang.NonNull;\n
 import gaarason.database.eloquent.Model;\n
 import lombok.extern.slf4j.Slf4j;\n
 \n
-import java.io.Serializable;\n
 import javax.annotation.Resource;\n
+import java.io.Serializable;\n
 import java.util.Collection;\n
 \n
 @Slf4j\n

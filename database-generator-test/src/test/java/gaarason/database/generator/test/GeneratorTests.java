@@ -17,6 +17,10 @@ import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.*;
 
+/**
+ * 测试
+ * @author xt
+ */
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
 public class GeneratorTests {

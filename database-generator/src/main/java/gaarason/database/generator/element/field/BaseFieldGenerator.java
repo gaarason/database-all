@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
  */
 abstract class BaseFieldGenerator {
 
-    final protected static Pattern tinyintPattern = Pattern.compile("tinyint\\((\\d)\\)");
+    protected static final Pattern tinyintPattern = Pattern.compile("tinyint\\((\\d)\\)");
 
     /**
      * 将不合法的java标识符转换
@@ -43,7 +43,7 @@ abstract class BaseFieldGenerator {
      * @param classType 全限定类名(类)
      * @return 类名
      */
-    protected static String cutClassName(Class classType) {
+    protected static String cutClassName(Class<?> classType) {
         String   className = classType.getName();
         String[] split     = className.split("\\.");
         return split[split.length - 1];
@@ -55,5 +55,5 @@ abstract class BaseFieldGenerator {
      * @param disUpdatable  不可更新的字段
      * @return Field
      */
-    abstract public Field toField(String[] disInsertable, String[] disUpdatable);
+    public abstract Field toField(String[] disInsertable, String[] disUpdatable);
 }
