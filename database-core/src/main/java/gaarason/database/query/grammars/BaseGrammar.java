@@ -272,43 +272,41 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
     @Override
     public String generateSql(SqlType sqlType) {
-        String sql;
+        StringBuilder sqlBuilder = new StringBuilder();
         switch (sqlType) {
             case REPLACE:
-                return "replace into " + dealFrom() + dealColumn() + " values" + dealValue();
+                return sqlBuilder.append("replace into ").append(dealFrom()).append(dealColumn()).append(" values").append(dealValue()).toString();
             case INSERT:
-                return "insert into " + dealFrom() + dealColumn() + " values" + dealValue();
+                return sqlBuilder.append("insert into ").append(dealFrom()).append(dealColumn()).append(" values").append(dealValue()).toString();
             case SELECT:
-                sql = "select " + dealSelect() + dealFromSelect() + dealForceIndex() + dealIgnoreIndex();
+                sqlBuilder.append("select ").append(dealSelect()).append(dealFromSelect()).append(dealForceIndex()).append(dealIgnoreIndex());
                 break;
             case UPDATE:
-                sql = "update " + dealFrom() + dealForceIndex() + dealIgnoreIndex() + " set" + dealData();
+                sqlBuilder.append("update ").append(dealFrom()).append(dealForceIndex()).append(dealIgnoreIndex()).append(" set").append(dealData());
                 break;
             case DELETE:
-                sql = "delete from " + dealFrom() + dealForceIndex() + dealIgnoreIndex();
+                sqlBuilder.append("delete from ").append(dealFrom()).append(dealForceIndex()).append(dealIgnoreIndex());
                 break;
             case SUB_QUERY:
-                sql = "";
                 break;
             default:
                 throw new InvalidSqlTypeException();
         }
-
-        sql += dealJoin() + dealWhere(sqlType) + dealGroup() + dealHaving(
-            sqlType) + dealOrderBy() + dealLimit() + dealLock();
+        sqlBuilder.append(dealJoin()).append(dealWhere(sqlType)).append(dealGroup()).append(dealHaving(sqlType)).append(dealOrderBy()).append(
+            dealLimit()).append(dealLock());
 
         if (union != null) {
-            sql = FormatUtils.bracket(sql);
+            FormatUtils.bracket(sqlBuilder);
         }
 
-        sql += dealUnion();
+        sqlBuilder.append(dealUnion());
 
-        return sql;
+        return sqlBuilder.toString();
     }
 
     @Override
     public List<String> getParameterList(SqlType sqlType) {
-        if (sqlType != SqlType.INSERT){
+        if (sqlType != SqlType.INSERT) {
             dataParameterList.addAll(whereParameterList);
         }
         return dataParameterList;

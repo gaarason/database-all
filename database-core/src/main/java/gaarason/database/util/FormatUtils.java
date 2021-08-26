@@ -84,7 +84,17 @@ public class FormatUtils {
      * @return eg:(1765595948)
      */
     public static String bracket(String something) {
-        return '(' + something + ')';
+        StringBuilder stringBuilder = new StringBuilder(something);
+        bracket(stringBuilder);
+        return stringBuilder.toString();
+    }
+
+    /**
+     * 值加上括号
+     * @param stringBuilder 字段 eg:1765595948
+     */
+    public static void bracket(StringBuilder stringBuilder) {
+        stringBuilder.insert(0, '(').append(')');
     }
 
     /**
