@@ -5,6 +5,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.io.Serializable;
 
+/**
+ * Properties
+ * @author xt
+ */
 @Data
 @ConfigurationProperties(prefix = "gaarason.database")
 public class GaarasonDatabaseProperties implements Serializable {

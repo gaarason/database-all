@@ -20,6 +20,10 @@ import org.springframework.context.annotation.Import;
 import javax.sql.DataSource;
 import java.util.Collections;
 
+/**
+ * 自动配置
+ * @author xt
+ */
 @Slf4j
 @Configuration
 @AutoConfigureBefore(DruidDataSourceAutoConfigure.class)

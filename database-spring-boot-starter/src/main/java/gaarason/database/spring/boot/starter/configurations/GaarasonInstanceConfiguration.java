@@ -15,6 +15,10 @@ import org.springframework.context.event.ContextRefreshedEvent;
 
 import javax.annotation.Resource;
 
+/**
+ * 自动配置
+ * @author xt
+ */
 @Slf4j
 public class GaarasonInstanceConfiguration implements ApplicationListener<ContextRefreshedEvent> {
 
