@@ -5,6 +5,10 @@ import gaarason.database.contract.connection.GaarasonDataSource;
 import javax.sql.DataSource;
 import java.util.List;
 
+/**
+ * DataSource 构建器
+ * @author xt
+ */
 public class GaarasonDataSourceBuilder {
 
     public static GaarasonDataSourceBuilder create() {

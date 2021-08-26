@@ -6,7 +6,10 @@ import gaarason.database.exception.OperationNotSupportedException;
 import gaarason.database.util.FormatUtils;
 
 import java.util.List;
-
+/**
+ * mssql 语法分析基类
+ * @author xt
+ */
 public class MsSqlGrammar extends BaseGrammar {
 
     public MsSqlGrammar(String tableName) {

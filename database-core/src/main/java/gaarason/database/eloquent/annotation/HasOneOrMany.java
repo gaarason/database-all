@@ -6,6 +6,7 @@ import java.lang.annotation.*;
  * 当前表的当前属性存在一个or多个下级关系
  * 数据库中表结构, 一般为下级表中存在 foreignKey 指向当前表的 id
  * 类属性 可是是单数 or 复数
+ * @author xt
  */
 @Documented
 @Inherited

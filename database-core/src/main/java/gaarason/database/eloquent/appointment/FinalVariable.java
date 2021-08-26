@@ -12,6 +12,7 @@ import java.util.List;
 
 /**
  * 全局可用的常量
+ * @author xt
  */
 public class FinalVariable {
 

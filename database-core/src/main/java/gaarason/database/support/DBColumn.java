@@ -10,6 +10,7 @@ import java.sql.SQLException;
 
 /**
  * jdbc字段值对象
+ * @author xt
  */
 @Getter
 @ToString

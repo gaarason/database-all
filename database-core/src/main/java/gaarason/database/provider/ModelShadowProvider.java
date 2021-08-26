@@ -38,23 +38,23 @@ public final class ModelShadowProvider {
     /**
      * Model Class做为索引
      */
-    protected static final Map<Class<? extends Model<? extends Serializable, ? extends Serializable>>, ModelInfo<? extends Serializable, ? extends Serializable>> modelIndexMap = new ConcurrentHashMap<>();
+    private static final Map<Class<? extends Model<? extends Serializable, ? extends Serializable>>, ModelInfo<? extends Serializable, ? extends Serializable>> modelIndexMap = new ConcurrentHashMap<>();
 
     /**
      * Model proxy Class做为索引
      */
-    protected static final Map<Class<?>, ModelInfo<? extends Serializable, ? extends Serializable>> modelProxyIndexMap = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, ModelInfo<? extends Serializable, ? extends Serializable>> modelProxyIndexMap = new ConcurrentHashMap<>();
 
     /**
      * Entity Class作为索引
      */
-    protected static final Map<Class<? extends Serializable>, ModelInfo<? extends Serializable, ? extends Serializable>> entityIndexMap = new ConcurrentHashMap<>();
+    private static final Map<Class<? extends Serializable>, ModelInfo<? extends Serializable, ? extends Serializable>> entityIndexMap = new ConcurrentHashMap<>();
 
     /**
      * id生成器
      */
     @Getter
-    protected static final IdGenerators idGenerators;
+    private static final IdGenerators idGenerators;
 
     static {
         // 静态初始化
@@ -284,7 +284,7 @@ public final class ModelShadowProvider {
      * @param obj   对象
      * @param value 值
      */
-    protected static void fieldSet(Field field, Object obj, @Nullable Object value) {
+    private static void fieldSet(Field field, Object obj, @Nullable Object value) {
         try {
             field.set(obj, value);
         } catch (IllegalAccessException e) {
@@ -299,7 +299,7 @@ public final class ModelShadowProvider {
      * @param insertType 是否是新增,会通过字段上的注解column(insertable, updatable)进行忽略
      * @return 有效
      */
-    protected static boolean effectiveField(FieldInfo fieldInfo, @Nullable Object value, boolean insertType) {
+    private static boolean effectiveField(FieldInfo fieldInfo, @Nullable Object value, boolean insertType) {
         // 不可插入 or 不可更新
         if (insertType ? !fieldInfo.insertable : !fieldInfo.updatable) {
             return false;
@@ -311,7 +311,7 @@ public final class ModelShadowProvider {
     /**
      * 构建索引
      */
-    protected static void initModelInformation() {
+    private static void initModelInformation() {
         Set<Class<? extends Model<?, ?>>> modelClasses = ContainerProvider.getBean(ReflectionScan.class).scanModels();
 
         for (Class<? extends Model<?, ?>> modelClass : modelClasses) {
@@ -325,7 +325,7 @@ public final class ModelShadowProvider {
      * @param <T>        实体类
      * @param <K>        主键类型
      */
-    protected static <T extends Serializable, K extends Serializable> void initModelInformation(Class<? extends Model<T, K>> modelClass) {
+    private static <T extends Serializable, K extends Serializable> void initModelInformation(Class<? extends Model<T, K>> modelClass) {
         ModelInfo<T, K> modelInfo = new ModelInfo<>();
         modelInfo.modelClass = modelClass;
         try {
@@ -346,7 +346,7 @@ public final class ModelShadowProvider {
      * @param <T>       实体类
      * @param <K>       主键类型
      */
-    protected static <T extends Serializable, K extends Serializable> void modelDeal(ModelInfo<T, K> modelInfo) {
+    private static <T extends Serializable, K extends Serializable> void modelDeal(ModelInfo<T, K> modelInfo) {
         modelInfo.entityClass = ObjectUtils.getGenerics(modelInfo.modelClass, 0);
         modelInfo.primaryKeyClass = ObjectUtils.getGenerics(modelInfo.modelClass, 1);
         modelInfo.tableName = EntityUtils.tableName(modelInfo.entityClass);
@@ -355,7 +355,7 @@ public final class ModelShadowProvider {
     /**
      * 补充基本字段信息
      */
-    protected static void primitiveFieldDeal() {
+    private static void primitiveFieldDeal() {
         for (Map.Entry<Class<? extends Model<?, ?>>, ModelInfo<?, ?>> entry : modelIndexMap.entrySet()) {
             ModelInfo<?, ?> modelInfo = entry.getValue();
             primitiveFieldDeal(modelInfo);
@@ -368,7 +368,7 @@ public final class ModelShadowProvider {
      * @param <T>       实体类
      * @param <K>       主键类型
      */
-    protected static <T extends Serializable, K extends Serializable> void primitiveFieldDeal(ModelInfo<T, K> modelInfo) {
+    private static <T extends Serializable, K extends Serializable> void primitiveFieldDeal(ModelInfo<T, K> modelInfo) {
         Class<T> entityClass = modelInfo.entityClass;
         // 模型实体缓存
         modelInfo.model = ModelInstanceProvider.getModel(modelInfo.modelClass);
@@ -474,7 +474,7 @@ public final class ModelShadowProvider {
     /**
      * 补充关系字段信息
      */
-    protected static void relationFieldDeal() {
+    private static void relationFieldDeal() {
         for (Map.Entry<Class<? extends Model<?, ?>>, ModelInfo<?, ?>> entry : modelIndexMap.entrySet()) {
             relationFieldDeal(entry.getValue());
         }
@@ -486,7 +486,7 @@ public final class ModelShadowProvider {
      * @param <T>       实体类
      * @param <K>       主键类型
      */
-    protected static <T extends Serializable, K extends Serializable> void relationFieldDeal(ModelInfo<T, K> modelInfo) {
+    private static <T extends Serializable, K extends Serializable> void relationFieldDeal(ModelInfo<T, K> modelInfo) {
 
         Class<T> entityClass = modelInfo.entityClass;
 
@@ -527,7 +527,7 @@ public final class ModelShadowProvider {
      * @param field 字段
      * @return yes/no
      */
-    protected static boolean effectiveRelationField(Field field) {
+    private static boolean effectiveRelationField(Field field) {
         // 非静态类型
         boolean isNotStatic = !EntityUtils.isStaticField(field);
         // 非基础类型

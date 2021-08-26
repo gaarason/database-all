@@ -4,6 +4,7 @@ import gaarason.database.contract.support.IdGenerator;
 
 /**
  * 雪花id工具类
+ * @author xt
  */
 public class SnowFlakeIdGenerator implements IdGenerator.SnowFlakesID {
 

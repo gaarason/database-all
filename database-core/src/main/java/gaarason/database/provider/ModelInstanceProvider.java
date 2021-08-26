@@ -13,6 +13,7 @@ import java.util.List;
 
 /**
  * Model的实例化的工厂的提供者
+ * @author xt
  */
 final public class ModelInstanceProvider {
 

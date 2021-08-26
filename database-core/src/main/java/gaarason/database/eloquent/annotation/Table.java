@@ -2,7 +2,10 @@ package gaarason.database.eloquent.annotation;
 
 import java.lang.annotation.*;
 
-
+/**
+ * 数据表
+ * @author xt
+ */
 @Documented
 @Inherited
 @Target({ElementType.TYPE})

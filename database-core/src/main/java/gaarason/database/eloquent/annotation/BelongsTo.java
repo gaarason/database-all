@@ -4,6 +4,7 @@ import java.lang.annotation.*;
 
 /**
  * 类属性必须是 单数
+ * @author xt
  */
 @Documented
 @Inherited

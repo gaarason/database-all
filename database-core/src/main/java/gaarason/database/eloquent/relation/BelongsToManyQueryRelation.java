@@ -14,6 +14,10 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.*;
 
+/**
+ * 关联关系 多对多
+ * @author xt
+ */
 public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
     private final BelongsToManyTemplate belongsToManyTemplate;

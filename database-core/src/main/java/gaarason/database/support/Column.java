@@ -6,6 +6,7 @@ import java.io.Serializable;
 
 /**
  * jdbc字段值对象
+ * @author xt
  */
 @Data
 public class Column implements Serializable {

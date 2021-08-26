@@ -2,6 +2,7 @@ package gaarason.database.eloquent.appointment;
 
 /**
  * 事物传播性
+ * @author xt
  */
 public enum Propagation {
 

@@ -4,7 +4,10 @@ import gaarason.database.eloquent.appointment.IdGeneratorType;
 
 import java.lang.annotation.*;
 
-
+/**
+ * 主键
+ * @author xt
+ */
 @Documented
 @Inherited
 @Target({ElementType.FIELD, ElementType.METHOD})

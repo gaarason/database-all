@@ -4,10 +4,14 @@ import lombok.Getter;
 
 /**
  * Mysql 数字类型取值范围
+ * @author xt
  */
 @Getter
 public enum MysqlNumericRange {
 
+    /**
+     * 范围
+     */
     TINYINT("tinyint", Byte.MAX_VALUE, Byte.MIN_VALUE, Integer.class),
     TINYINT_UNSIGNED("tinyint unsigned", Byte.MAX_VALUE - Byte.MIN_VALUE, 0, Integer.class),
     SMALLINT("smallint", 32767, -32768, Integer.class),

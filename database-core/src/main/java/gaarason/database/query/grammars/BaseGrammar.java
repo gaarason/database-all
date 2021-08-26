@@ -16,7 +16,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-abstract public class BaseGrammar implements Grammar, Serializable {
+/**
+ * 语法分析基类
+ * @author xt
+ */
+public abstract class BaseGrammar implements Grammar, Serializable {
 
     /**
      * column -> [ GenerateSqlPart , RelationshipRecordWith ]

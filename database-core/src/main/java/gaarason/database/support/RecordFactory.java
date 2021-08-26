@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 结果集生成
+ * @author xt
  */
 public class RecordFactory {
 

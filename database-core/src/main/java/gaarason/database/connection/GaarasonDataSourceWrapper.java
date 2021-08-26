@@ -26,6 +26,7 @@ import java.util.logging.Logger;
  * 事物传播性: 使用 nested .如果不存在事务，创建事务。如果存在事务，则嵌套在事务内，嵌套事务依赖外层事务提交，不进行独立事务提交。
  * 嵌套事务如果发生异常，则抛出异常，回滚嵌套事务的操作，回到开始嵌套事务的“保存点”，由外层事务的逻辑继续执行（外层捕获异常并处理即可）。
  * 嵌套事务如果不发生异常，则继续执行，不提交。由外层事务的逻辑继续执行，若外层事务后续发生异常，则回滚包括嵌套事务在内的所有事务。
+ * @author xt
  */
 @ToString
 public class GaarasonDataSourceWrapper implements GaarasonDataSource {

@@ -4,8 +4,15 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * jdbc类型
+ * @author xt
+ */
 public enum JdbcType {
 
+    /**
+     * 类型
+     */
     ARRAY(Types.ARRAY),
     BIT(Types.BIT),
     TINYINT(Types.TINYINT),
