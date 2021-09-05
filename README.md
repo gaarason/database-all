@@ -109,7 +109,7 @@ public class TestApplicationTests {
 
     @Test
     public void 简单查询() {
-
+        // select * from student where id=3 limit 1
         Record<GeneralModel.Table, Object> first = generalModel.newQuery().from("student").where("id", "3").first();
         
         Assert.assertNotNull(first);
