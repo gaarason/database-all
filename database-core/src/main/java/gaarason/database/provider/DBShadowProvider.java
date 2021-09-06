@@ -12,12 +12,16 @@ import java.util.concurrent.ConcurrentHashMap;
  * 数据库信息大全
  * @author xt
  */
-final public class DBShadowProvider {
+public final class DBShadowProvider {
 
     /**
      * 表信息
      */
     private final static Map<GaarasonDataSource, ConcurrentHashMap<String, LinkedHashMap<String, DBColumn>>> info = new ConcurrentHashMap<>();
+
+    private DBShadowProvider(){
+
+    }
 
     /**
      * 获取表的信息

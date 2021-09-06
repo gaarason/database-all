@@ -4,10 +4,10 @@ import com.alibaba.druid.pool.DruidDataSource;
 import gaarason.database.connection.GaarasonDataSourceWrapper;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.eloquent.Model;
+import gaarason.database.exception.base.BaseException;
 import gaarason.database.test.utils.DatabaseTypeUtil;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.sql.DataSource;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,6 +51,7 @@ abstract public class BaseModel<T extends Serializable, K extends Serializable> 
         druidDataSource.setUseGlobalDataSourceStat(true);
         return new GaarasonDataSourceWrapper(druidDataSource);
     }
+
     private static GaarasonDataSource mssqlDataSource() {
         DruidDataSource druidDataSource = new DruidDataSource();
 //        druidDataSource.setUrl(
@@ -84,13 +85,13 @@ abstract public class BaseModel<T extends Serializable, K extends Serializable> 
 
     @Override
     public GaarasonDataSource getGaarasonDataSource() {
-        switch (DatabaseTypeUtil.getDatabaseType()){
+        switch (DatabaseTypeUtil.getDatabaseType()) {
             case MYSQL:
                 return mysql;
             case MSSQL:
                 return mssql;
             default:
-                throw new RuntimeException();
+                throw new BaseException();
         }
     }
 

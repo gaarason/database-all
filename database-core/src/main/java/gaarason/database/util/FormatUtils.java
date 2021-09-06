@@ -91,7 +91,7 @@ public class FormatUtils {
 
     /**
      * 值加上括号
-     * @param stringBuilder 字段 eg:1765595948
+     * @param stringBuilder 字段 eg:1765595948 -> (1765595948)
      */
     public static void bracket(StringBuilder stringBuilder) {
         stringBuilder.insert(0, '(').append(')');

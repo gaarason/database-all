@@ -1,6 +1,7 @@
 package gaarason.database.util;
 
 import gaarason.database.exception.MapEncodingException;
+import gaarason.database.exception.base.BaseException;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -197,10 +198,9 @@ public class StringUtils {
             }
             return new String(str);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new BaseException(e);
         }
     }
-
 
     /**
      * 递归解析map到query
@@ -235,9 +235,9 @@ public class StringUtils {
             }
             // 叶节点是String或者Number
         } else if (object instanceof String) {
-            r.append(parentStr).append("=").append(object).append("&");
+            r.append(parentStr).append('=').append(object).append('&');
         } else if (object instanceof Number) {
-            r.append(parentStr).append("=").append(object).append("&");
+            r.append(parentStr).append('=').append(object).append('&');
         }
         return r.toString();
     }

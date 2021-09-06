@@ -1,6 +1,7 @@
 package gaarason.database.support;
 
 import gaarason.database.contract.support.IdGenerator;
+import gaarason.database.exception.SnowFlakeIdGeneratorException;
 
 /**
  * 雪花id工具类
@@ -76,7 +77,7 @@ public class SnowFlakeIdGenerator implements IdGenerator.SnowFlakesID {
     /**
      * 毫秒内序列(0~8191)
      */
-    private long sequence = 0L;
+    private long sequence;
 
     /**
      * 上次生成ID的时间截
@@ -144,11 +145,11 @@ public class SnowFlakeIdGenerator implements IdGenerator.SnowFlakesID {
                 currentTimestamp = tilNextMillis(lastTimestamp);
                 // 当前仍然时间小于上一次ID生成的时间戳,抛异常并上报
                 if (currentTimestamp < lastTimestamp) {
-                    throw new RuntimeException(
+                    throw new SnowFlakeIdGeneratorException(
                         "当前时间 " + currentTimestamp + " 等待后仍然小于上一次记录的时间戳 " + lastTimestamp + " !");
                 }
             } else {
-                throw new RuntimeException("当前时间 " + currentTimestamp + " 小于上一次记录的时间戳 " + lastTimestamp + " !");
+                throw new SnowFlakeIdGeneratorException("当前时间 " + currentTimestamp + " 小于上一次记录的时间戳 " + lastTimestamp + " !");
             }
         }
 

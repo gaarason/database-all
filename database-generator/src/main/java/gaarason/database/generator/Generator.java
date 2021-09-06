@@ -135,25 +135,25 @@ public class Generator {
      * 是否使用spring boot注解 model
      */
     @Setter
-    private boolean isSpringBoot = false;
+    private boolean isSpringBoot;
 
     /**
      * 是否使用swagger注解 entity
      */
     @Setter
-    private boolean isSwagger = false;
+    private boolean isSwagger;
 
     /**
      * 是否使用 org.hibernate.validator.constraints.* 注解 entity
      */
     @Setter
-    private boolean isValidator = false;
+    private boolean isValidator;
 
     /**
      * 是否生成静态字段名
      */
     @Setter
-    private boolean entityStaticField = false;
+    private boolean entityStaticField;
 
     /**
      * 生成并发线程数
@@ -742,7 +742,7 @@ public class Generator {
 
     public static class ToolModel extends ModelBean<ToolModel.Inner, Serializable> {
 
-        protected static GaarasonDataSourceWrapper gaarasonDataSource = null;
+        protected static GaarasonDataSourceWrapper gaarasonDataSource;
 
         @Override
         public GaarasonDataSourceWrapper getGaarasonDataSource() {

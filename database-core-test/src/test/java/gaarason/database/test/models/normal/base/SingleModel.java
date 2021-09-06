@@ -5,6 +5,7 @@ import gaarason.database.connection.GaarasonDataSourceWrapper;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.eloquent.Model;
+import gaarason.database.exception.base.BaseException;
 import gaarason.database.test.utils.DatabaseTypeUtil;
 import lombok.extern.slf4j.Slf4j;
 
@@ -85,13 +86,13 @@ public class SingleModel<T extends Serializable, K extends Serializable> extends
 
     @Override
     public GaarasonDataSource getGaarasonDataSource() {
-        switch (DatabaseTypeUtil.getDatabaseType()){
+        switch (DatabaseTypeUtil.getDatabaseType()) {
             case MYSQL:
                 return mysql;
             case MSSQL:
                 return mssql;
             default:
-                throw new RuntimeException();
+                throw new BaseException();
         }
     }
 

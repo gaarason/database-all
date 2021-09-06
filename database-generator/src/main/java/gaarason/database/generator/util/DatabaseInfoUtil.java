@@ -1,10 +1,7 @@
 package gaarason.database.generator.util;
 
-import com.alibaba.druid.sql.ast.SQLDataType;
-import com.alibaba.druid.sql.ast.SQLStructDataType;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.appointment.FinalVariable;
 import gaarason.database.support.Column;
 import gaarason.database.support.RecordFactory;
 import lombok.SneakyThrows;
@@ -15,7 +12,15 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.util.*;
 
+/**
+ * 数据库信息工具
+ * @author xt
+ */
 public class DatabaseInfoUtil {
+
+    private DatabaseInfoUtil() {
+
+    }
 
     /**
      * 获取数据库名称
@@ -37,7 +42,7 @@ public class DatabaseInfoUtil {
      */
     @SneakyThrows
     public static Set<String> tableNames(GaarasonDataSource gaarasonDataSource, String databaseName, String userName,
-                                         @Nullable String tableNamePattern) {
+        @Nullable String tableNamePattern) {
         Set<String> tableNames = new HashSet<>();
         try (Connection connection = gaarasonDataSource.getConnection()) {
             DatabaseMetaData metaData = connection.getMetaData();
@@ -53,7 +58,7 @@ public class DatabaseInfoUtil {
 
     @SneakyThrows
     public static List<Map<String, Column>> columns(GaarasonDataSource gaarasonDataSource, String databaseName, String userName,
-                                                    @Nullable String tableNamePattern) {
+        @Nullable String tableNamePattern) {
         List<Map<String, Column>> columns = new ArrayList<>();
         try (Connection connection = gaarasonDataSource.getConnection()) {
             DatabaseMetaData metaData = connection.getMetaData();

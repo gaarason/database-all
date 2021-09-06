@@ -1,7 +1,7 @@
 package gaarason.database;
 
 public class ThisDatabaseDependenciesPom {
-    public static void show(){
+    public void show(){
         System.out.println("This is database dependencies pom");
     }
 }

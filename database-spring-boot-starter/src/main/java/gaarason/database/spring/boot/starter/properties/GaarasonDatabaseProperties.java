@@ -24,6 +24,6 @@ public class GaarasonDatabaseProperties implements Serializable {
         /**
          * 雪花算法 工作ID
          */
-        private int workerId = 0;
+        private int workerId;
     }
 }

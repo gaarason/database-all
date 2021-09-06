@@ -26,7 +26,7 @@ public final class ModelInstanceProvider {
     /**
      * 是否已经实例化过
      */
-    private static volatile boolean executed = false;
+    private static volatile boolean executed;
 
     static {
         // 初始化默认的 Model实例化工厂

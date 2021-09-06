@@ -20,12 +20,12 @@ public class JavaElement {
     /**
      * 静态
      */
-    protected boolean isStatic = false;
+    protected boolean isStatic;
 
     /**
      * 不可变
      */
-    protected boolean isFinal = false;
+    protected boolean isFinal;
 
     /**
      * 注解
@@ -41,7 +41,7 @@ public class JavaElement {
         // 对齐用的空格
         StringBuilder spaceBuilder = new StringBuilder();
         for (int i = 0; i < numberOfSpaces; i++) {
-            spaceBuilder.append(" ");
+            spaceBuilder.append(' ');
         }
         String spaces = spaceBuilder.toString();
 
@@ -49,7 +49,7 @@ public class JavaElement {
         StringBuilder stringBuilder = new StringBuilder();
         for (Annotation annotation : annotations) {
             // eg:        @ApiModelProperty(
-            stringBuilder.append(spaces).append("@").append(annotation.getName()).append("(");
+            stringBuilder.append(spaces).append('@').append(annotation.getName()).append('(');
 
             for (Annotation.Attribute attribute : annotation.getAttributes()) {
                 // eg:value = "消息id",

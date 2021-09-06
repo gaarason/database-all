@@ -23,6 +23,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class RecordFactory {
 
+    private RecordFactory(){
+
+    }
+
     /**
      * 单个结果集(来源 : 数据库查询结果)
      * @param entityClass 实体类型
