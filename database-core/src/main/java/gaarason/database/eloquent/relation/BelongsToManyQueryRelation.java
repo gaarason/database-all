@@ -90,7 +90,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
     @Override
     public List<? extends Serializable> filterBatchRecord(Record<?, ?> theRecord, RecordList<? ,?> targetRecordList,
-        Map<String, RecordList<? extends Serializable, ? extends Serializable>> cacheRelationRecordList) {
+        Map<String, RecordList<? ,?>> cacheRelationRecordList) {
         // 目标关系表的外键字段名
         String targetModelLocalKey = belongsToManyTemplate.targetModelLocalKey;
         // 本表的关系键值

@@ -95,7 +95,7 @@ public class DatabaseUtilsTests {
         int b = 30000;
 
         MultiThreadUtil.run(a, b, () -> {
-            long id = ModelShadowProvider.getIdGenerators().getSnowFlakesID().nextId();
+            long id = ModelShadowProvider.getID_GENERATORS().getSnowFlakesID().nextId();
             synchronized (ids) {
                 ids.add(id);
             }

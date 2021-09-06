@@ -38,27 +38,27 @@ public final class ModelShadowProvider {
     /**
      * Model Class做为索引
      */
-    private static final Map<Class<? extends Model<? extends Serializable, ? extends Serializable>>, ModelInfo<? extends Serializable, ? extends Serializable>> modelIndexMap = new ConcurrentHashMap<>();
+    private static final Map<Class<? extends Model<? extends Serializable, ? extends Serializable>>, ModelInfo<? extends Serializable, ? extends Serializable>> MODEL_INDEX_MAP = new ConcurrentHashMap<>();
 
     /**
      * Model proxy Class做为索引
      */
-    private static final Map<Class<?>, ModelInfo<? extends Serializable, ? extends Serializable>> modelProxyIndexMap = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, ModelInfo<? extends Serializable, ? extends Serializable>> MODEL_PROXY_INDEX_MAP = new ConcurrentHashMap<>();
 
     /**
      * Entity Class作为索引
      */
-    private static final Map<Class<? extends Serializable>, ModelInfo<? extends Serializable, ? extends Serializable>> entityIndexMap = new ConcurrentHashMap<>();
+    private static final Map<Class<? extends Serializable>, ModelInfo<? extends Serializable, ? extends Serializable>> ENTITY_INDEX_MAP = new ConcurrentHashMap<>();
 
     /**
      * id生成器
      */
     @Getter
-    private static final IdGenerators idGenerators;
+    private static final IdGenerators ID_GENERATORS;
 
     static {
         // 静态初始化
-        idGenerators = new IdGenerators(
+        ID_GENERATORS = new IdGenerators(
             ContainerProvider.getBean(IdGenerator.SnowFlakesID.class),
             ContainerProvider.getBean(IdGenerator.UUID32.class),
             ContainerProvider.getBean(IdGenerator.UUID36.class),
@@ -66,7 +66,7 @@ public final class ModelShadowProvider {
             ContainerProvider.getBean(IdGenerator.Custom.class)
         );
 
-        // 一轮初始化Model基础信息, 不存在依赖递归等复杂情况
+        // 一轮初始化模型的基本信息(主键类型/实体类型/模型类型/表名等等), 并构建索引(实体索引/模型索引), 不存在依赖递归等复杂情况
         // 并过滤不需要的model, 比如抽象类等
         initModelInformation();
 
@@ -79,7 +79,7 @@ public final class ModelShadowProvider {
         relationFieldDeal();
     }
 
-    private ModelShadowProvider(){
+    private ModelShadowProvider() {
 
     }
 
@@ -102,9 +102,9 @@ public final class ModelShadowProvider {
      * @return 格式化后的Model信息
      */
     public static <T extends Serializable, K extends Serializable> ModelInfo<T, K> getByModelClass(Class<? extends Model<T, K>> modelClass) {
-        ModelInfo<?, ?> result1 = modelIndexMap.get(modelClass);
+        ModelInfo<?, ?> result1 = MODEL_INDEX_MAP.get(modelClass);
         if (null == result1) {
-            ModelInfo<?, ?> result2 = modelProxyIndexMap.get(modelClass);
+            ModelInfo<?, ?> result2 = MODEL_PROXY_INDEX_MAP.get(modelClass);
             if (null == result2) {
                 throw new InvalidEntityException("Model class[" + modelClass + "] have no information in the Shadow.");
             }
@@ -119,7 +119,7 @@ public final class ModelShadowProvider {
      * @return 格式化后的Model信息
      */
     public static <T extends Serializable> ModelInfo<T, Serializable> getByEntityClass(Class<T> clazz) {
-        ModelInfo<? extends Serializable, ? extends Serializable> result = entityIndexMap.get(clazz);
+        ModelInfo<? extends Serializable, ? extends Serializable> result = ENTITY_INDEX_MAP.get(clazz);
         if (null == result) {
             throw new InvalidEntityException("Entity class[" + clazz + "] have no information in the Shadow.");
         }
@@ -208,8 +208,8 @@ public final class ModelShadowProvider {
      * @param entity          数据表实体对象
      */
     public static <T extends Serializable, K extends Serializable> void fieldAssignment(FieldInfo fieldInfo,
-                                              Map<String, gaarason.database.support.Column> stringColumnMap,
-                                              T entity, Record<T, K> theRecord) throws TypeNotSupportedException {
+        Map<String, gaarason.database.support.Column> stringColumnMap,
+        T entity, Record<T, K> theRecord) throws TypeNotSupportedException {
         gaarason.database.support.Column column = stringColumnMap.get(fieldInfo.columnName);
         if (column != null) {
             try {
@@ -309,46 +309,55 @@ public final class ModelShadowProvider {
     }
 
     /**
-     * 构建索引
+     * 初始化模型的基本信息(主键类型/实体类型/模型类型/表名等等), 并构建索引(实体索引/模型索引)
      */
     private static void initModelInformation() {
+        // 通过静态扫描, 获取所有 Model 的子类 (含抽象类等)
         Set<Class<? extends Model<?, ?>>> modelClasses = ContainerProvider.getBean(ReflectionScan.class).scanModels();
 
+        // 所有 Model 的子类 (含抽象类等)进行初始化分析
         for (Class<? extends Model<?, ?>> modelClass : modelClasses) {
+            // 初始化模型的基本信息, 并构建索引
             initModelInformation(ObjectUtils.typeCast(modelClass));
         }
     }
 
     /**
-     * 构建索引
+     * 初始化模型的基本信息, 并构建索引
      * @param modelClass 模型类
      * @param <T>        实体类
      * @param <K>        主键类型
      */
     private static <T extends Serializable, K extends Serializable> void initModelInformation(Class<? extends Model<T, K>> modelClass) {
+        // 模型信息 初始化
         ModelInfo<T, K> modelInfo = new ModelInfo<>();
+        // 模型信息 设置 model 的 java类
         modelInfo.modelClass = modelClass;
         try {
-            // 模型信息
+            // 模型信息 设置详情信息
             modelDeal(modelInfo);
         } catch (Throwable e) {
             // 父类, 抽象类跳过
             return;
         }
-        // 建立实体类索引
-        entityIndexMap.put(modelInfo.entityClass, modelInfo);
-        modelIndexMap.put(modelClass, modelInfo);
+        // 建立实体类索引 (建立后, 可支持通过entity查询)
+        ENTITY_INDEX_MAP.put(modelInfo.entityClass, modelInfo);
+        // 建立模型类索引 (建立后, 可支持通过model查询)
+        MODEL_INDEX_MAP.put(modelClass, modelInfo);
     }
 
     /**
-     * 补充Model信息
+     * 模型信息 设置详情信息
      * @param modelInfo Model信息
      * @param <T>       实体类
      * @param <K>       主键类型
      */
     private static <T extends Serializable, K extends Serializable> void modelDeal(ModelInfo<T, K> modelInfo) {
+        // 设置实体的java类
         modelInfo.entityClass = ObjectUtils.getGenerics(modelInfo.modelClass, 0);
+        // 设置主键的java类
         modelInfo.primaryKeyClass = ObjectUtils.getGenerics(modelInfo.modelClass, 1);
+        // 设置表名
         modelInfo.tableName = EntityUtils.tableName(modelInfo.entityClass);
     }
 
@@ -356,8 +365,10 @@ public final class ModelShadowProvider {
      * 补充基本字段信息
      */
     private static void primitiveFieldDeal() {
-        for (Map.Entry<Class<? extends Model<?, ?>>, ModelInfo<?, ?>> entry : modelIndexMap.entrySet()) {
+        // 处理所有模型
+        for (Map.Entry<Class<? extends Model<?, ?>>, ModelInfo<?, ?>> entry : MODEL_INDEX_MAP.entrySet()) {
             ModelInfo<?, ?> modelInfo = entry.getValue();
+            // 单个模型处理
             primitiveFieldDeal(modelInfo);
         }
     }
@@ -369,105 +380,125 @@ public final class ModelShadowProvider {
      * @param <K>       主键类型
      */
     private static <T extends Serializable, K extends Serializable> void primitiveFieldDeal(ModelInfo<T, K> modelInfo) {
+        // 实体类型
         Class<T> entityClass = modelInfo.entityClass;
-        // 模型实体缓存
-        modelInfo.model = ModelInstanceProvider.getModel(modelInfo.modelClass);
-        // 模型代理索引建立
-        modelProxyIndexMap.put(modelInfo.model.getClass(), modelInfo);
 
+        // 获取模型对象 (是否是单例, 仅取决于Model实例化工厂), 但是缓存之后就是单例的了~
+        modelInfo.model = ModelInstanceProvider.getModel(modelInfo.modelClass);
+
+        // 模型代理索引建立
+        MODEL_PROXY_INDEX_MAP.put(modelInfo.model.getClass(), modelInfo);
+
+        // 返回 实体 中的所有属性(public/protected/private)包含父类的
         List<Field> fields = EntityUtils.getDeclaredFieldsContainParent(entityClass);
 
         for (Field field : fields) {
-            // 非静态 基本类型
-            if (!EntityUtils.isStaticField(field) && EntityUtils.isBasicField(field)) {
-                // 设置属性是可访问
-                field.setAccessible(true);
-                // 对象实例
-                FieldInfo fieldInfo = new FieldInfo();
-                fieldInfo.field = field;
-                fieldInfo.name = field.getName();
-                fieldInfo.javaType = field.getType();
-                // todo 应该优先使用数据库默认值, 当默认值不存在时, 再才使用如下方法
-                fieldInfo.defaultValue = Number.class.isAssignableFrom(fieldInfo.javaType) ? "0" : "";
-
-                // 数据库属性
-                fieldInfo.column = field.isAnnotationPresent(Column.class) ? field.getAnnotation(Column.class) : null;
-
-                // 数据库列名
-                fieldInfo.columnName = columnName(field);
-
-                // 主键处理
-                if (field.isAnnotationPresent(Primary.class)) {
-                    Primary primary = field.getAnnotation(Primary.class);
-                    // 主键 索引键入
-                    modelInfo.primaryKeyDefinition = true;
-                    modelInfo.primaryKeyFieldInfo = fieldInfo;
-                    modelInfo.primaryKeyIncrement = primary.increment();
-                    modelInfo.primaryKeyColumnName = fieldInfo.columnName;
-                    modelInfo.primaryKeyName = field.getName();
-                    // 主键类型检测
-                    if (!modelInfo.primaryKeyClass.equals(Object.class) && !modelInfo.primaryKeyClass.equals(field.getType())) {
-                        throw new InvalidPrimaryKeyTypeException(
-                            "The primary key type [" + field.getType() + "] of the entity does not match with the " +
-                                "generic [" + modelInfo.primaryKeyClass + "]");
-                    }
-                    // 主键生成器选择
-                    switch (primary.idGenerator()) {
-                        case SNOW_FLAKES_ID:
-                            modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(idGenerators.snowFlakesID);
-                            break;
-                        case UUID_36:
-                            modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(idGenerators.uuid36);
-                            break;
-                        case UUID_32:
-                            modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(idGenerators.uuid32);
-                            break;
-                        case NEVER:
-                            modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(idGenerators.never);
-                            break;
-                        case CUSTOM:
-                            modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(idGenerators.custom);
-                            break;
-                        default:
-                            // auto
-                            if (fieldInfo.javaType == Long.class) {
-                                modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(idGenerators.snowFlakesID);
-                            } else if (fieldInfo.javaType == String.class && fieldInfo.column != null) {
-                                if (fieldInfo.column != null && fieldInfo.column.length() >= 36) {
-                                    modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(idGenerators.uuid36);
-                                } else if (fieldInfo.column.length() >= 32) {
-                                    modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(idGenerators.uuid32);
-                                }
-                            } else {
-                                modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(idGenerators.never);
-                            }
-                    }
-                }
-
-                // 属性名 索引键入
-                modelInfo.javaFieldMap.put(fieldInfo.name, fieldInfo);
-
-                // 数据库字段名 索引键入
-                modelInfo.columnFieldMap.put(fieldInfo.columnName, fieldInfo);
-
-                // 属性名 可新增的字段 索引键入
-                Column column = fieldInfo.column;
-                if (column == null || column.insertable()) {
-                    fieldInfo.insertable = true;
-                    modelInfo.javaFieldInsertMap.put(fieldInfo.name, fieldInfo);
-                }
-
-                // 属性名 可更新的字段 索引键入
-                if (column == null || column.updatable()) {
-                    fieldInfo.updatable = true;
-                    modelInfo.javaFieldUpdateMap.put(fieldInfo.name, fieldInfo);
-                }
-
-                // 属性名 可 null
-                if (column == null || !column.nullable()) {
-                    fieldInfo.nullable = false;
-                }
+            // 跳过(静态属性 or 非基本类型(由关联关系去处理))
+            if (EntityUtils.isStaticField(field) || !EntityUtils.isBasicField(field)) {
+                continue;
             }
+
+            // 设置属性是可访问
+            field.setAccessible(true);
+
+            // 对象实例
+            FieldInfo fieldInfo = new FieldInfo();
+            fieldInfo.field = field;
+            fieldInfo.name = field.getName();
+            fieldInfo.javaType = field.getType();
+            // todo 应该优先使用数据库默认值, 当默认值不存在时, 再才使用如下方法
+            fieldInfo.defaultValue = Number.class.isAssignableFrom(fieldInfo.javaType) ? "0" : "";
+
+            // 数据库属性
+            fieldInfo.column = field.isAnnotationPresent(Column.class) ? field.getAnnotation(Column.class) : null;
+
+            // 数据库列名
+            fieldInfo.columnName = columnName(field);
+
+            // 主键处理
+            if (field.isAnnotationPresent(Primary.class)) {
+                dealPrimary(fieldInfo, modelInfo);
+            }
+
+            // 属性名 索引键入
+            modelInfo.javaFieldMap.put(fieldInfo.name, fieldInfo);
+
+            // 数据库字段名 索引键入
+            modelInfo.columnFieldMap.put(fieldInfo.columnName, fieldInfo);
+
+            // 属性名 可新增的字段 索引键入
+            Column column = fieldInfo.column;
+            if (column == null || column.insertable()) {
+                fieldInfo.insertable = true;
+                modelInfo.javaFieldInsertMap.put(fieldInfo.name, fieldInfo);
+            }
+
+            // 属性名 可更新的字段 索引键入
+            if (column == null || column.updatable()) {
+                fieldInfo.updatable = true;
+                modelInfo.javaFieldUpdateMap.put(fieldInfo.name, fieldInfo);
+            }
+
+            // 属性名 可 null
+            if (column == null || !column.nullable()) {
+                fieldInfo.nullable = false;
+            }
+        }
+    }
+
+    /**
+     * 处理主键信息
+     * @param fieldInfo 字段信息
+     * @param modelInfo 格式化后的Model信息
+     * @param <T>       实体类
+     * @param <K>       主键类型
+     */
+    private static <T extends Serializable, K extends Serializable> void dealPrimary(FieldInfo fieldInfo, ModelInfo<T, K> modelInfo) {
+
+        Primary primary = fieldInfo.field.getAnnotation(Primary.class);
+        // 主键 索引键入
+        modelInfo.primaryKeyDefinition = true;
+        modelInfo.primaryKeyFieldInfo = fieldInfo;
+        modelInfo.primaryKeyIncrement = primary.increment();
+        modelInfo.primaryKeyColumnName = fieldInfo.columnName;
+        modelInfo.primaryKeyName = fieldInfo.field.getName();
+        // 主键类型检测
+        if (!modelInfo.primaryKeyClass.equals(Object.class) && !modelInfo.primaryKeyClass.equals(fieldInfo.field.getType())) {
+            throw new InvalidPrimaryKeyTypeException(
+                "The primary key type [" + fieldInfo.field.getType() + "] of the entity does not match with the " +
+                    "generic [" + modelInfo.primaryKeyClass + "]");
+        }
+        // 主键生成器选择
+        switch (primary.idGenerator()) {
+            case SNOW_FLAKES_ID:
+                modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ID_GENERATORS.snowFlakesID);
+                break;
+            case UUID_36:
+                modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ID_GENERATORS.uuid36);
+                break;
+            case UUID_32:
+                modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ID_GENERATORS.uuid32);
+                break;
+            case NEVER:
+                modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ID_GENERATORS.never);
+                break;
+            case CUSTOM:
+                modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ID_GENERATORS.custom);
+                break;
+            default:
+                // auto
+                if (fieldInfo.javaType == Long.class) {
+                    modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ID_GENERATORS.snowFlakesID);
+                } else if (fieldInfo.javaType == String.class && fieldInfo.column != null) {
+                    if (fieldInfo.column.length() >= 36) {
+                        modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ID_GENERATORS.uuid36);
+                    } else if (fieldInfo.column.length() >= 32) {
+                        modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ID_GENERATORS.uuid32);
+                    }
+                } else {
+                    modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ID_GENERATORS.never);
+                }
+
         }
     }
 
@@ -475,7 +506,7 @@ public final class ModelShadowProvider {
      * 补充关系字段信息
      */
     private static void relationFieldDeal() {
-        for (Map.Entry<Class<? extends Model<?, ?>>, ModelInfo<?, ?>> entry : modelIndexMap.entrySet()) {
+        for (Map.Entry<Class<? extends Model<?, ?>>, ModelInfo<?, ?>> entry : MODEL_INDEX_MAP.entrySet()) {
             relationFieldDeal(entry.getValue());
         }
     }
@@ -568,7 +599,7 @@ public final class ModelShadowProvider {
         /**
          * 主键信息是否存在
          */
-        private boolean primaryKeyDefinition = false;
+        private boolean primaryKeyDefinition;
 
         /**
          * 主键列名(并非一定是实体的属性名)
@@ -661,12 +692,12 @@ public final class ModelShadowProvider {
         /**
          * 可新增
          */
-        protected boolean insertable = false;
+        protected boolean insertable;
 
         /**
          * 可更新
          */
-        protected boolean updatable = false;
+        protected boolean updatable;
 
         /**
          * 可 null

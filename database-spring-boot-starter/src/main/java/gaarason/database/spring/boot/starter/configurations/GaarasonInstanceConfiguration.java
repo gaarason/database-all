@@ -30,7 +30,7 @@ public class GaarasonInstanceConfiguration implements ApplicationListener<Contex
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        ModelInstanceProvider.register((modelClass) -> {
+        ModelInstanceProvider.register(modelClass -> {
             try {
                 return ObjectUtils.typeCast(applicationContext.getBean(modelClass));
             } catch (BeansException e) {

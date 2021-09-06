@@ -15,12 +15,12 @@ import java.util.List;
  * Model的实例化的工厂的提供者
  * @author xt
  */
-final public class ModelInstanceProvider {
+public final class ModelInstanceProvider {
 
     /**
      * Model实例化工厂 列表
      */
-    private final static List<InstantiationModelFunctionalInterface<?, ?>> instantiations = Collections.synchronizedList(
+    private static final List<InstantiationModelFunctionalInterface<?, ?>> INSTANTIATIONS = Collections.synchronizedList(
         new ArrayList<>());
 
     /**
@@ -30,13 +30,17 @@ final public class ModelInstanceProvider {
 
     static {
         // 初始化默认的 Model实例化工厂
-        instantiations.add((modelClass) -> {
+        INSTANTIATIONS.add(modelClass -> {
             try {
                 return modelClass.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new ModelNewInstanceException(modelClass, e.getMessage(), e);
             }
         });
+    }
+
+    private ModelInstanceProvider(){
+
     }
 
     /**
@@ -47,7 +51,7 @@ final public class ModelInstanceProvider {
         if (executed) {
             throw new InvalidConfigException("Should be registered before execution.");
         }
-        instantiations.add(0, closure);
+        INSTANTIATIONS.add(0, closure);
     }
 
     /**
@@ -61,7 +65,7 @@ final public class ModelInstanceProvider {
     public static <T extends Serializable, K extends Serializable> Model<T, K> getModel(Class<? extends Model<T, K>> modelClass) {
         executed = true;
         List<Throwable> throwableList = new ArrayList<>();
-        for (InstantiationModelFunctionalInterface<?, ?> instantiation : instantiations) {
+        for (InstantiationModelFunctionalInterface<?, ?> instantiation : INSTANTIATIONS) {
             try {
                 return ObjectUtils.typeCast(instantiation.execute(ObjectUtils.typeCast(modelClass)));
             } catch (Throwable e) {
