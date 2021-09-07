@@ -451,8 +451,8 @@ public final class ModelShadowProvider {
         modelInfo.primaryKeyColumnName = fieldInfo.columnName;
         modelInfo.primaryKeyName = fieldInfo.field.getName();
 
-        // 主键类型检测(  )
-        if (!modelInfo.primaryKeyClass.equals(Object.class) && !modelInfo.primaryKeyClass.equals(fieldInfo.field.getType())) {
+        // 主键类型检测( 实体上的主键的类型是否与模型上的泛型一致 )
+        if (!modelInfo.primaryKeyClass.equals(fieldInfo.field.getType())) {
             throw new InvalidPrimaryKeyTypeException(
                 "The primary key type [" + fieldInfo.field.getType() + "] of the entity does not match with the " +
                     "generic [" + modelInfo.primaryKeyClass + "]");

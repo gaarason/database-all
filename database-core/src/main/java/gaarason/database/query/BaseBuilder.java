@@ -38,17 +38,18 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * 数据模型
      */
     protected final Model<T, K> model;
+
     /**
      * 数据实体类
      */
-    final           Class<T>    entityClass;
+    final Class<T> entityClass;
 
     /**
      * sql生成器
      */
     Grammar grammar;
 
-    public BaseBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
+    protected BaseBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
         this.gaarasonDataSource = gaarasonDataSource;
         this.model = model;
         this.entityClass = entityClass;
@@ -122,7 +123,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      */
     @Override
     public Builder<T, K> with(String column) {
-        return with(column, builder -> builder, record -> record);
+        return with(column, builder -> builder, theRecord -> theRecord);
     }
 
     /**
@@ -132,8 +133,8 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * @return 关联的Model的查询构造器
      */
     @Override
-    public Builder<T, K> with(String column, GenerateSqlPartFunctionalInterface builderClosure) {
-        return with(column, builderClosure, record -> record);
+    public Builder<T, K> with(String column, GenerateSqlPartFunctionalInterface<?, ?> builderClosure) {
+        return with(column, builderClosure, theRecord -> theRecord);
     }
 
     /**
@@ -144,7 +145,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * @return 关联的Model的查询构造器
      */
     @Override
-    public Builder<T, K> with(String column, GenerateSqlPartFunctionalInterface builderClosure,
+    public Builder<T, K> with(String column, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
         RelationshipRecordWithFunctionalInterface recordClosure) {
         grammar.pushWith(column, builderClosure, recordClosure);
         return this;
@@ -295,7 +296,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
 
     @Override
     public Record<T, K> queryOrFail(String sql, Collection<String> parameters) throws SQLRuntimeException, EntityNotFoundException {
-        return doSomethingInConnection((preparedStatement) -> {
+        return doSomethingInConnection(preparedStatement -> {
             ResultSet resultSet = preparedStatement.executeQuery();
             return RecordFactory.newRecord(entityClass, model, resultSet, sql);
         }, sql, parameters, false);
@@ -331,10 +332,10 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
 
     @Override
     public List<K> executeGetIds(String sql, Collection<String> parameters) throws SQLRuntimeException {
-        return doSomethingInConnection((preparedStatement) -> {
+        return doSomethingInConnection(preparedStatement -> {
             List<K> ids = new ArrayList<>();
             // 执行
-            int affectedRows = preparedStatement.executeUpdate();
+            preparedStatement.executeUpdate();
             // 执行成功
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
             while (generatedKeys.next()) {
@@ -353,7 +354,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
     @Override
     @Nullable
     public K executeGetId(String sql, Collection<String> parameters) throws SQLRuntimeException {
-        return doSomethingInConnection((preparedStatement) -> {
+        return doSomethingInConnection(preparedStatement -> {
             // 执行
             int affectedRows = preparedStatement.executeUpdate();
             // 执行成功
@@ -419,9 +420,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
             return ObjectUtils.typeCast(generatedKeys.getInt(1));
         } else if (Long.class.equals(primaryKeyClass) || long.class.equals(primaryKeyClass)) {
             return ObjectUtils.typeCast(generatedKeys.getLong(1));
-        } else if (String.class.equals(primaryKeyClass)) {
-            return ObjectUtils.typeCast(generatedKeys.getString(1));
-        } else if (Object.class.equals(primaryKeyClass)) {
+        } else if (String.class.equals(primaryKeyClass) || Object.class.equals(primaryKeyClass) || Serializable.class.equals(primaryKeyClass)) {
             return ObjectUtils.typeCast(generatedKeys.getString(1));
         }
         throw new PrimaryKeyTypeNotSupportException("Primary key type [" + primaryKeyClass + "] not support get " +
@@ -439,13 +438,13 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
         String sql = grammar.generateSql(SqlType.SELECT);
         List<String> parameterList = grammar.getParameterList(SqlType.SELECT);
         Map<String, Object[]> columnMap = grammar.pullWith();
-        Record<T, K> record = queryOrFail(sql, parameterList);
+        Record<T, K> theRecord = queryOrFail(sql, parameterList);
         for (Map.Entry<String, Object[]> stringEntry : columnMap.entrySet()) {
             Object[] value = stringEntry.getValue();
-            record.with(stringEntry.getKey(), (GenerateSqlPartFunctionalInterface) value[0],
+            theRecord.with(stringEntry.getKey(), (GenerateSqlPartFunctionalInterface) value[0],
                 (RelationshipRecordWithFunctionalInterface) value[1]);
         }
-        return record;
+        return theRecord;
     }
 
     /**
@@ -494,7 +493,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * @throws SQLRuntimeException 数据库异常
      */
     int updateSql(SqlType sqlType) throws SQLRuntimeException {
-        if (sqlType != SqlType.INSERT && !grammar.hasWhere()){
+        if (sqlType != SqlType.INSERT && !grammar.hasWhere()) {
             throw new ConfirmOperationException("You made a risky operation without where conditions, use where(1) " +
                 "for sure");
         }

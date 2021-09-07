@@ -27,7 +27,7 @@ public interface With<T extends Serializable, K extends Serializable> {
      * @param builderClosure 所关联的Model的查询构造器约束
      * @return 关联的Model的查询构造器
      */
-    Builder<T, K> with(String column, GenerateSqlPartFunctionalInterface builderClosure);
+    Builder<T, K> with(String column, GenerateSqlPartFunctionalInterface<?, ?> builderClosure);
 
     /**
      * 渴求式关联
@@ -36,7 +36,7 @@ public interface With<T extends Serializable, K extends Serializable> {
      * @param recordClosure  所关联的Model的再一级关联
      * @return 关联的Model的查询构造器
      */
-    Builder<T, K> with(String column, GenerateSqlPartFunctionalInterface builderClosure,
+    Builder<T, K> with(String column, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
         RelationshipRecordWithFunctionalInterface recordClosure);
 
 }
