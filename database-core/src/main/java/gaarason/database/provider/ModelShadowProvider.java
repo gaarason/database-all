@@ -415,54 +415,43 @@ public final class ModelShadowProvider {
             // 数据库列名
             fieldInfo.columnName = columnName(field);
 
-            // 主键处理
-            if (field.isAnnotationPresent(Primary.class)) {
-                dealPrimary(fieldInfo, modelInfo);
-            }
+            // 处理主键@Primary信息
+            dealPrimaryAnnotation(fieldInfo, modelInfo);
+
+            // 处理列@Column信息
+            dealColumnAnnotation(fieldInfo, modelInfo);
 
             // 属性名 索引键入
             modelInfo.javaFieldMap.put(fieldInfo.name, fieldInfo);
 
             // 数据库字段名 索引键入
             modelInfo.columnFieldMap.put(fieldInfo.columnName, fieldInfo);
-
-            // 属性名 可新增的字段 索引键入
-            Column column = fieldInfo.column;
-            if (column == null || column.insertable()) {
-                fieldInfo.insertable = true;
-                modelInfo.javaFieldInsertMap.put(fieldInfo.name, fieldInfo);
-            }
-
-            // 属性名 可更新的字段 索引键入
-            if (column == null || column.updatable()) {
-                fieldInfo.updatable = true;
-                modelInfo.javaFieldUpdateMap.put(fieldInfo.name, fieldInfo);
-            }
-
-            // 属性名 可 null
-            if (column == null || !column.nullable()) {
-                fieldInfo.nullable = false;
-            }
         }
     }
 
     /**
-     * 处理主键信息
+     * 处理主键@Primary信息
      * @param fieldInfo 字段信息
      * @param modelInfo 格式化后的Model信息
      * @param <T>       实体类
      * @param <K>       主键类型
      */
-    private static <T extends Serializable, K extends Serializable> void dealPrimary(FieldInfo fieldInfo, ModelInfo<T, K> modelInfo) {
+    private static <T extends Serializable, K extends Serializable> void dealPrimaryAnnotation(FieldInfo fieldInfo, ModelInfo<T, K> modelInfo) {
+        // 没有注解的就不是主键
+        if (!fieldInfo.field.isAnnotationPresent(Primary.class)) {
+            return;
+        }
 
         Primary primary = fieldInfo.field.getAnnotation(Primary.class);
+
         // 主键 索引键入
         modelInfo.primaryKeyDefinition = true;
         modelInfo.primaryKeyFieldInfo = fieldInfo;
         modelInfo.primaryKeyIncrement = primary.increment();
         modelInfo.primaryKeyColumnName = fieldInfo.columnName;
         modelInfo.primaryKeyName = fieldInfo.field.getName();
-        // 主键类型检测
+
+        // 主键类型检测(  )
         if (!modelInfo.primaryKeyClass.equals(Object.class) && !modelInfo.primaryKeyClass.equals(fieldInfo.field.getType())) {
             throw new InvalidPrimaryKeyTypeException(
                 "The primary key type [" + fieldInfo.field.getType() + "] of the entity does not match with the " +
@@ -498,7 +487,36 @@ public final class ModelShadowProvider {
                 } else {
                     modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ID_GENERATORS.never);
                 }
+        }
+    }
 
+    /**
+     * 处理列@Column信息
+     * @param fieldInfo 字段信息
+     * @param modelInfo 格式化后的Model信息
+     * @param <T>       实体类
+     * @param <K>       主键类型
+     */
+    private static <T extends Serializable, K extends Serializable> void dealColumnAnnotation(FieldInfo fieldInfo, ModelInfo<T, K> modelInfo) {
+        Column column = fieldInfo.column;
+
+        // 属性名 可新增的字段 索引键入
+        if (column != null && !column.insertable()) {
+            fieldInfo.insertable = false;
+        } else {
+            modelInfo.javaFieldInsertMap.put(fieldInfo.name, fieldInfo);
+        }
+
+        // 属性名 可更新的字段 索引键入
+        if (column != null && !column.updatable()) {
+            fieldInfo.updatable = false;
+        } else {
+            modelInfo.javaFieldUpdateMap.put(fieldInfo.name, fieldInfo);
+        }
+
+        // 属性名 可 null
+        if (column != null && column.nullable()) {
+            fieldInfo.nullable = true;
         }
     }
 
@@ -632,7 +650,7 @@ public final class ModelShadowProvider {
         protected FieldInfo primaryKeyFieldInfo;
 
         /**
-         * 主键类型
+         * 主键类型 (通过model上的第2个泛型类型得到)
          */
         protected Class<K> primaryKeyClass;
 
@@ -692,17 +710,17 @@ public final class ModelShadowProvider {
         /**
          * 可新增
          */
-        protected boolean insertable;
+        protected boolean insertable = true;
 
         /**
          * 可更新
          */
-        protected boolean updatable;
+        protected boolean updatable = true;
 
         /**
          * 可 null
          */
-        protected boolean nullable = true;
+        protected boolean nullable;
 
         /**
          * java中的字段类型

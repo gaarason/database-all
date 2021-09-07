@@ -4,6 +4,10 @@ import gaarason.database.eloquent.appointment.JdbcType;
 
 import java.lang.annotation.*;
 
+/**
+ * 数据库列(字段)注解
+ * @author xt
+ */
 @Documented
 @Inherited
 @Target({ElementType.FIELD, ElementType.METHOD})
