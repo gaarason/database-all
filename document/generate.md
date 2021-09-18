@@ -68,19 +68,19 @@ public class GeneratorTests {
         generator.setNamespace("data");                 // 所有生成文件的所属命名空间
         generator.setCorePoolSize(20);                  // 所用的线程数
         generator.setSpringBoot(true);                  // 是否生成spring boot相关注解
-        generator.setSwagger(true);                     // 是否生成swagger相关注解
-        generator.setValidator(true);                   // 是否生成validator相关注解
+//        generator.setSwagger(true);                     // 是否生成swagger相关注解
+//        generator.setValidator(true);                   // 是否生成validator相关注解
 
         generator.setEntityStaticField(true);           // 是否在实体中生成静态字段
         generator.setBaseEntityDir("base");             // 实体父类的相对路径
-        generator.setBaseEntityFields("id");            // 实体父类存在的字段    (重要, 没有所有表100%满足的字段就请留空)
+//        generator.setBaseEntityFields("id");            // 实体父类存在的字段    (重要, 没有所有表100%满足的字段就请留空)
         generator.setBaseEntityName("BaseEntity");      // 实体父类的类名
         generator.setEntityDir("entity");               // 实体的相对路径
         generator.setEntityPrefix("");                  // 实体的类名前缀
         generator.setEntitySuffix("");                  // 实体的类名后缀
 
-        generator.setDisInsertable("created_at", "updated_at");     // 新增时,不可通过ORM更改的字段
-        generator.setDisUpdatable("created_at", "updated_at");      // 更新时,不可通过ORM更改的字段
+//        generator.setDisInsertable("created_at", "updated_at");     // 新增时,不可通过ORM更改的字段
+//        generator.setDisUpdatable("created_at", "updated_at");      // 更新时,不可通过ORM更改的字段
 
         generator.setBaseModelDir("base");              // 模型父类的相对路径
         generator.setBaseModelName("BaseModel");        // 模型父类的类名
