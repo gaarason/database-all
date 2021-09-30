@@ -2,8 +2,7 @@ package gaarason.database.test.parent;
 
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
-import gaarason.database.provider.DBShadowProvider;
-import gaarason.database.support.Column;
+import gaarason.database.provider.DatabaseShadowProvider;
 import gaarason.database.support.DBColumn;
 import gaarason.database.test.models.normal.PeopleModel;
 import gaarason.database.test.parent.base.BaseTests;
@@ -15,7 +14,6 @@ import org.junit.runners.MethodSorters;
 
 import javax.sql.DataSource;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
@@ -31,7 +29,7 @@ abstract public class IncrementTypeTests extends BaseTests {
     @Test
     public void ss(){
         GaarasonDataSource gaarasonDataSource = peopleModel.getGaarasonDataSource();
-        Map<String, DBColumn> student = DBShadowProvider.getTable(gaarasonDataSource, "data_type");
+        Map<String, DBColumn> student = DatabaseShadowProvider.getTable(gaarasonDataSource, "data_type");
 
         Set<String> strings = student.keySet();
 
