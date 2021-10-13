@@ -209,7 +209,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
 
     @Override
     public <V> V transaction(TransactionFunctionalInterface<V> closure) {
-        return transaction(closure, FinalVariable.defaultCausedByDeadlockRetryCount);
+        return transaction(closure, FinalVariable.DEFAULT_CAUSED_BY_DEADLOCK_RETRY_COUNT);
     }
 
     @Override
@@ -232,7 +232,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
 
     @Override
     public void transaction(Runnable closure) {
-        transaction(closure, FinalVariable.defaultCausedByDeadlockRetryCount);
+        transaction(closure, FinalVariable.DEFAULT_CAUSED_BY_DEADLOCK_RETRY_COUNT);
     }
 
     @Override

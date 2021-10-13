@@ -40,8 +40,7 @@ public class RecordFactory {
      * @throws EntityNotFoundException 数据为空
      */
     public static <T extends Serializable, K extends Serializable> Record<T, K> newRecord(Class<T> entityClass, Model<T, K> model, ResultSet resultSet,
-                                                String sql)
-        throws SQLException, EntityNotFoundException {
+                                                String sql) throws SQLException, EntityNotFoundException {
         if (!resultSet.next()) {
             throw new EntityNotFoundException(sql);
         }
@@ -87,10 +86,10 @@ public class RecordFactory {
     public static <T extends Serializable, K extends Serializable> RecordList<T, K> newRecordList(List<Record<T, K>> records) {
         String sql = records.size() > 0 ? records.get(0).getOriginalSql() : "";
         RecordList<T, K> recordList = new RecordListBean<>(sql);
-        for (Record<T, K> record : records) {
+        for (Record<T, K> tkRecord : records) {
             // 此处不应使用, deepCopyRecord
-            recordList.add(record);
-            recordList.getOriginalMetadataMapList().add(copy(record.getMetadataMap()));
+            recordList.add(tkRecord);
+            recordList.getOriginalMetadataMapList().add(copy(tkRecord.getMetadataMap()));
         }
         return recordList;
     }
@@ -98,15 +97,15 @@ public class RecordFactory {
     /**
      * 单体结果集列表,转化为 批量结果集
      * 仅 ToObject 构造方法中使用
-     * 保持 record 对象地址一致
-     * @param record 单体结果集
+     * 保持 theRecord 对象地址一致
+     * @param theRecord 单体结果集
      * @param <T>    实体类型
      * @param <K>    实体主键类型
      * @return 批量结果集(RecordList全新, Record为引用地址)
      */
-    public static <T extends Serializable, K extends Serializable> RecordList<T, K> newRecordList(Record<T, K> record) {
+    public static <T extends Serializable, K extends Serializable> RecordList<T, K> newRecordList(Record<T, K> theRecord) {
         List<Record<T, K>> records = new ArrayList<>();
-        records.add(record);
+        records.add(theRecord);
         return newRecordList(records);
     }
 

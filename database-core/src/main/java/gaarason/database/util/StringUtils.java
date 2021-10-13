@@ -108,8 +108,9 @@ public class StringUtils {
      */
     public static String ltrim(String str, String character) {
         final int length = character.length();
-        if (str.equals("") || str.length() < length)
+        if ("".equals(str) || str.length() < length){
             return str;
+        }
         return str.substring(0, length).equals(character) ? ltrim(str.substring(length), character) : str;
     }
 
@@ -121,8 +122,9 @@ public class StringUtils {
      */
     public static String rtrim(String str, String character) {
         final int length = character.length();
-        if ("".equals(str) || str.length() < length)
+        if ("".equals(str) || str.length() < length){
             return str;
+        }
         return str.substring(str.length() - length).equals(character) ? rtrim(str.substring(0, str.length() - length),
             character) : str;
     }

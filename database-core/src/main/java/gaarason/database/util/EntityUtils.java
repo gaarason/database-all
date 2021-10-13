@@ -49,7 +49,7 @@ public class EntityUtils {
      * @return 是否
      */
     public static boolean isBasicField(Field field) {
-        return field.getType().isPrimitive() || FinalVariable.allowFieldTypes.contains(field.getType());
+        return field.getType().isPrimitive() || FinalVariable.ALLOW_FIELD_TYPES.contains(field.getType());
     }
 
     /**
@@ -121,8 +121,9 @@ public class EntityUtils {
      */
     @Nullable
     public static Object columnFill(Field field, @Nullable Object value) {
-        if (value == null)
+        if (value == null) {
             return null;
+        }
         switch (field.getType().toString()) {
             case "class java.lang.Byte":
                 return Byte.valueOf(value.toString());
@@ -133,6 +134,12 @@ public class EntityUtils {
             case "class java.lang.Long":
             case "class java.math.BigInteger":
                 return Long.valueOf(value.toString());
+            case "class java.time.LocalDateTime":
+                return value instanceof Date ? LocalDateUtils.date2LocalDateTime((Date) value) : value;
+            case "class java.time.LocalDate":
+                return value instanceof Date ? LocalDateUtils.date2LocalDate((Date) value) : value;
+            case "class java.time.LocalTime":
+                return value instanceof Date ? LocalDateUtils.date2LocalTime((Date) value) : value;
             default:
                 return value;
         }
@@ -150,8 +157,9 @@ public class EntityUtils {
             return formatter.format(value);
         } else if (value instanceof Boolean) {
             return (Boolean) value ? "1" : "0";
-        } else
+        } else {
             return value == null ? null : value.toString();
+        }
     }
 
 

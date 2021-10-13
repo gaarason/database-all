@@ -213,6 +213,7 @@ public final class ModelShadowProvider {
         gaarason.database.support.Column column = stringColumnMap.get(fieldInfo.columnName);
         if (column != null) {
             try {
+                // 属性赋值
                 Object value = EntityUtils.columnFill(fieldInfo.field, column.getValue());
                 fieldInfo.field.set(entity, value);
                 // 主键值记录
@@ -584,7 +585,7 @@ public final class ModelShadowProvider {
         // 有相应的注解
         boolean hasRelationAnnotation = false;
 
-        for (Class<? extends Annotation> relationAnnotation : FinalVariable.relationAnnotations) {
+        for (Class<? extends Annotation> relationAnnotation : FinalVariable.RELATION_ANNOTATIONS) {
             if (field.isAnnotationPresent(relationAnnotation)) {
                 hasRelationAnnotation = true;
                 break;

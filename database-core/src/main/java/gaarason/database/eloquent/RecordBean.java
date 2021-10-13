@@ -191,8 +191,8 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
     }
 
     /**
-     * 转化为对象列表
-     * @return 对象列表
+     * 转化为对象
+     * @return 对象
      */
     @Override
     public T toObject() {
@@ -202,8 +202,8 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
     }
 
     /**
-     * 转化为对象列表
-     * @return 对象列表
+     * 转化为对象
+     * @return 对象
      */
     @Override
     public T toObject(Map<String, RecordList<?, ?>> cacheRelationRecordList) {

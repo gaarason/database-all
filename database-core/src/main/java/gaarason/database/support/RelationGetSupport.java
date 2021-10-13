@@ -33,14 +33,14 @@ public class RelationGetSupport<T extends Serializable, K extends Serializable> 
 
     /**
      * 基本对象转化
-     * @param record               结果集
+     * @param tkRecord               结果集
      * @param attachedRelationship 是否启用关联关系
      */
-    public RelationGetSupport(Record<T, K> record, boolean attachedRelationship) {
-        List<Record<T, K>> records = new ArrayList<>();
-        records.add(record);
+    public RelationGetSupport(Record<T, K> tkRecord, boolean attachedRelationship) {
+        List<Record<T, K>> recordList = new ArrayList<>();
+        recordList.add(tkRecord);
         this.attachedRelationship = attachedRelationship;
-        this.records = RecordFactory.newRecordList(records);
+        this.records = RecordFactory.newRecordList(recordList);
     }
 
     public RelationGetSupport(List<Record<T, K>> records, boolean attachedRelationship) {

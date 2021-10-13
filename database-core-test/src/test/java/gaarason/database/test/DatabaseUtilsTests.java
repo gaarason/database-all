@@ -104,8 +104,8 @@ public class DatabaseUtilsTests {
         Assert.assertEquals(a * b, ids.size());
 
         // 去重
-        LinkedHashSet<Long> hashSet               = new LinkedHashSet<>(ids);
-        ArrayList<Long>     listWithoutDuplicates = new ArrayList<>(hashSet);
+        LinkedHashSet<Long> hashSet = new LinkedHashSet<>(ids);
+        ArrayList<Long> listWithoutDuplicates = new ArrayList<>(hashSet);
         Assert.assertEquals("存在重复的id", ids.size(), listWithoutDuplicates.size());
         System.out.println("没有重复id");
     }
@@ -140,8 +140,8 @@ public class DatabaseUtilsTests {
 
     @Test
     public void test() {
-        Reflections                 reflections = new Reflections("lombok","gaarason.database","");
-        Set<Class<? extends Model>> subTypesOf  = reflections.getSubTypesOf(Model.class);
+        Reflections reflections = new Reflections("lombok", "gaarason.database", "");
+        Set<Class<? extends Model>> subTypesOf = reflections.getSubTypesOf(Model.class);
         System.out.println(subTypesOf);
 
 //        Reflections                 reflections1 = new Reflections("lombok");
@@ -151,7 +151,7 @@ public class DatabaseUtilsTests {
     }
 
     @Test
-    public void testDBShadowProvider(){
+    public void testDBShadowProvider() {
 
     }
 
