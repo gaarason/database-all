@@ -23,7 +23,7 @@ public interface RelationSubQuery {
      * @return sql数组 [0 -> 目标表操作, 1 -> 中间表操作]
      */
     String[] prepareSqlArr(List<Map<String, Column>> stringColumnMapList,
-        GenerateSqlPartFunctionalInterface generateSqlPart);
+        GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart);
 
     /**
      * 批量关联查询
@@ -66,7 +66,7 @@ public interface RelationSubQuery {
      * @param stringStringMap        仅 @BelongsToMany 时有效, 增加额外信息到中间表
      * @return 受影响的行数
      */
-    int attach(Record<?, ?> theRecord, Collection<String> targetPrimaryKeyValues, Map<String, String> stringStringMap);
+    int attach(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, String> stringStringMap);
 
     /**
      * 解除所有关联关系
@@ -89,7 +89,7 @@ public interface RelationSubQuery {
      * @param targetPrimaryKeyValues 目标的recordList的主键集合
      * @return 受影响的行数
      */
-    int detach(Record<?, ?> theRecord, Collection<String> targetPrimaryKeyValues);
+    int detach(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues);
 
     /**
      * 同步到关联关系, 任何不在指定范围的对应记录将会移除
@@ -107,7 +107,7 @@ public interface RelationSubQuery {
      * @param stringStringMap        仅 @BelongsToMany 时有效, 增加额外信息到中间表
      * @return 受影响的行数
      */
-    int sync(Record<?, ?> theRecord, Collection<String> targetPrimaryKeyValues, Map<String, String> stringStringMap);
+    int sync(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, String> stringStringMap);
 
     /**
      * 切换关系, 如果指定关系已存在，则解除，如果指定关系不存在，则增加
@@ -125,6 +125,6 @@ public interface RelationSubQuery {
      * @param stringStringMap        仅 @BelongsToMany 时有效, 增加额外信息到中间表
      * @return 受影响的行数
      */
-    int toggle(Record<?, ?> theRecord, Collection<String> targetPrimaryKeyValues, Map<String, String> stringStringMap);
+    int toggle(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, String> stringStringMap);
 
 }

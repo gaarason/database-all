@@ -58,7 +58,7 @@ public interface FriendlyList<T extends Serializable, K extends Serializable> {
      * 过滤成list(取Record中的第一列)
      * @return 单个字段列表
      */
-    List<String> toOneColumnList();
+    List<Object> toOneColumnList();
 
     /**
      * 元数据转实体对象列表, 不体现关联关系

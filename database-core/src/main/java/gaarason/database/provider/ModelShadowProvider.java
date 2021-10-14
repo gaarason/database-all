@@ -184,9 +184,9 @@ public final class ModelShadowProvider {
      * @param columnNameList 有效的属性名
      * @return 字段的值组成的list
      */
-    public static <T extends Serializable> List<String> valueList(T entity, List<String> columnNameList) {
+    public static <T extends Serializable> List<Object> valueList(T entity, List<String> columnNameList) {
         // 结果集
-        List<String> valueList = new ArrayList<>();
+        List<Object> valueList = new ArrayList<>();
         // 属性信息集合
         Map<String, FieldInfo> columnFieldMap = getByEntityClass(entity.getClass()).getColumnFieldMap();
         for (Map.Entry<String, FieldInfo> entry : columnFieldMap.entrySet()) {

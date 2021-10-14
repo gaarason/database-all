@@ -18,13 +18,13 @@ public interface Value<T extends Serializable, K extends Serializable> {
      * @param valueList 值列表
      * @return 查询构造器
      */
-    Builder<T, K> value(List<String> valueList);
+    Builder<T, K> value(List<Object> valueList);
 
     /**
      * 批量插入数据使用
      * @param valueList 值列表的列表
      * @return 查询构造器
      */
-    Builder<T, K> valueList(List<List<String>> valueList);
+    Builder<T, K> valueList(List<List<Object>> valueList);
 
 }

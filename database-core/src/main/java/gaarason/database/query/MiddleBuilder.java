@@ -186,7 +186,7 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
         // 获取entity所有有效sql字段
         List<String> columnNameList = ModelShadowProvider.columnNameList(entity, true);
         // 获取entity所有有效字段的值
-        List<String> valueList = ModelShadowProvider.valueList(entity, columnNameList);
+        List<Object> valueList = ModelShadowProvider.valueList(entity, columnNameList);
         // 字段加入grammar
         select(columnNameList);
         // 字段的值加入grammar
@@ -215,7 +215,7 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
         // 获取entity所有有效sql字段
         List<String> columnNameList = ModelShadowProvider.columnNameList(entity, true);
         // 获取entity所有有效字段的值
-        List<String> valueList = ModelShadowProvider.valueList(entity, columnNameList);
+        List<Object> valueList = ModelShadowProvider.valueList(entity, columnNameList);
         // 字段加入grammar
         select(columnNameList);
         // 字段的值加入grammar
@@ -268,10 +268,10 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     protected void beforeBatchInsert(List<T> entityList) {
         // 获取entity所有有效字段
         List<String> columnNameList = ModelShadowProvider.columnNameList(entityList.get(0), true);
-        List<List<String>> valueListList = new ArrayList<>();
+        List<List<Object>> valueListList = new ArrayList<>();
         for (T entity : entityList) {
             // 获取entity所有有效字段的值
-            List<String> valueList = ModelShadowProvider.valueList(entity, columnNameList);
+            List<Object> valueList = ModelShadowProvider.valueList(entity, columnNameList);
             valueListList.add(valueList);
         }
         // 字段加入grammar

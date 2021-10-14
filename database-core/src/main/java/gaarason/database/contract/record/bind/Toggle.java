@@ -47,14 +47,14 @@ public interface Toggle {
      * @param id 目标record的主键
      * @return 受影响的行数
      */
-    int toggle(String id);
+    int toggle(Object id);
 
     /**
      * 切换关系, 如果指定关系已存在，则解除，如果指定关系不存在，则增加
      * @param ids 目标records的主键集合
      * @return 受影响的行数
      */
-    int toggle(Collection<String> ids);
+    int toggle(Collection<Object> ids);
 
     /**
      * 切换关系, 如果指定关系已存在，则解除，如果指定关系不存在，则增加
@@ -62,7 +62,7 @@ public interface Toggle {
      * @param stringStringMap 当BelongsToMany时生效, 将数据插入中间表
      * @return 受影响的行数
      */
-    int toggle(String id, Map<String, String> stringStringMap);
+    int toggle(Object id, Map<String, String> stringStringMap);
 
     /**
      * 切换关系, 如果指定关系已存在，则解除，如果指定关系不存在，则增加
@@ -70,5 +70,5 @@ public interface Toggle {
      * @param stringStringMap 当BelongsToMany时生效, 将数据插入中间表
      * @return 受影响的行数
      */
-    int toggle(Collection<String> ids, Map<String, String> stringStringMap);
+    int toggle(Collection<Object> ids, Map<String, String> stringStringMap);
 }

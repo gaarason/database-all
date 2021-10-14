@@ -36,12 +36,12 @@ public interface Detach {
      * @param id 目标record的主键
      * @return 受影响的行数
      */
-    int detach(String id);
+    int detach(Object id);
 
     /**
      * 解除多个关系
      * @param ids 目标records的主键集合
      * @return 受影响的行数
      */
-    int detach(Collection<String> ids);
+    int detach(Collection<Object> ids);
 }

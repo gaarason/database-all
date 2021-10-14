@@ -30,7 +30,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @param mayBeInstanceOfAbstractList 原集合
      * @return 集合(不保证引用关系)
      */
-    protected Collection<String> compatibleCollection(Collection<String> mayBeInstanceOfAbstractList) {
+    protected Collection<Object> compatibleCollection(Collection<Object> mayBeInstanceOfAbstractList) {
         return mayBeInstanceOfAbstractList instanceof AbstractList ?
             new HashSet<>(mayBeInstanceOfAbstractList) : mayBeInstanceOfAbstractList;
     }
@@ -40,10 +40,9 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @param targetRecords 目标结果集合
      * @return 目标表的主键集合
      */
-    protected List<String> getTargetRecordPrimaryKeyIds(RecordList<?, ?> targetRecords) {
+    protected List<Object> getTargetRecordPrimaryKeyIds(RecordList<?, ?> targetRecords) {
         // 应该目标表的主键列表
-        return targetRecords.toList(recordTemp -> String.valueOf(
-            recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName()).getValue()));
+        return targetRecords.toList(recordTemp -> recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName()).getValue());
     }
 
     /**
@@ -89,7 +88,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @param fieldTargetValue       对象的属性的目标值
      * @return 对象列表
      */
-    protected static List<Serializable> findObjList(List<? extends Serializable> relationshipObjectList, String columnName, String fieldTargetValue) {
+    protected static List<Serializable> findObjList(List<? extends Serializable> relationshipObjectList, String columnName, Object fieldTargetValue) {
         List<Serializable> objectList = new ArrayList<>();
         if (!relationshipObjectList.isEmpty()) {
             // 模型信息
@@ -103,7 +102,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
                 // 值
                 Object fieldValue = ModelShadowProvider.fieldGet(fieldInfo, o);
                 // 满足则加入
-                if (fieldTargetValue.equals(String.valueOf(fieldValue))) {
+                if (fieldTargetValue.equals(fieldValue)) {
                     objectList.add(o);
                 }
             }

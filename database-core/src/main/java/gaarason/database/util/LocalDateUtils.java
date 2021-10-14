@@ -27,9 +27,9 @@ public class LocalDateUtils {
     /**
      * 自定义常用时间格式化字符串
      */
-    private static final List<String> DATE_TIME_FORMATTER_CUSTOMIZE_DATETIME_STR_LIST = Arrays.asList("yyyy-MM-dd HH:mm:ss:SSS",
-        "yyyy-MM-dd HH:mm:ss:SS",
-        "yyyy-MM-dd HH:mm:ss:S", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "HH:mm:ss:SSS", "HH:mm:ss:SS", "HH:mm:ss:S", "HH:mm:ss");
+    private static final List<String> DATE_TIME_FORMATTER_CUSTOMIZE_DATETIME_STR_LIST = Arrays.asList("yyyy-MM-dd HH:mm:ss.SSS",
+        "yyyy-MM-dd HH:mm:ss.SS",
+        "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "HH:mm:ss.SSS", "HH:mm:ss.SS", "HH:mm:ss.S", "HH:mm:ss");
 
     /**
      * 时间戳最小日期

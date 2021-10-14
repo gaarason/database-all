@@ -439,14 +439,14 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> value(List<String> valueList) {
+    public Builder<T, K> value(List<Object> valueList) {
         if (valueList.isEmpty()) {
             grammar.pushValue("()");
             return this;
         }
         StringBuilder sqlPartBuilder = new StringBuilder("(");
-        for (String value : valueList) {
-            String stub = FormatUtils.data(value, grammar);
+        for (Object value : valueList) {
+            String stub = formatData(value);
             sqlPartBuilder.append(stub).append(',');
         }
         String sqlPart = sqlPartBuilder.deleteCharAt(sqlPartBuilder.length() - 1).append(')').toString();
@@ -455,8 +455,8 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> valueList(List<List<String>> valueList) {
-        for (List<String> value : valueList) {
+    public Builder<T, K> valueList(List<List<Object>> valueList) {
+        for (List<Object> value : valueList) {
             value(value);
         }
         return this;

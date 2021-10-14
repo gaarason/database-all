@@ -47,14 +47,14 @@ public interface Sync {
      * @param id 目标record的主键
      * @return 受影响的行数
      */
-    int sync(String id);
+    int sync(Object id);
 
     /**
      * 同步到关联关系, 任何不在指定范围的对应记录将会移除
      * @param ids 目标records的主键集合
      * @return 受影响的行数
      */
-    int sync(Collection<String> ids);
+    int sync(Collection<Object> ids);
 
     /**
      * 同步到关联关系, 任何不在指定范围的对应记录将会移除
@@ -62,7 +62,7 @@ public interface Sync {
      * @param stringStringMap 当BelongsToMany时生效, 将数据插入中间表
      * @return 受影响的行数
      */
-    int sync(String id, Map<String, String> stringStringMap);
+    int sync(Object id, Map<String, String> stringStringMap);
 
     /**
      * 同步到关联关系, 任何不在指定范围的对应记录将会移除
@@ -70,5 +70,5 @@ public interface Sync {
      * @param stringStringMap 当BelongsToMany时生效, 将数据插入中间表
      * @return 受影响的行数
      */
-    int sync(Collection<String> ids, Map<String, String> stringStringMap);
+    int sync(Collection<Object> ids, Map<String, String> stringStringMap);
 }

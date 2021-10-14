@@ -30,11 +30,11 @@ public interface RecordList<T extends Serializable, K extends Serializable> exte
      * 内存缓存
      * @return 内存缓存
      */
-    HashMap<String, Set<String>> getCacheMap();
+    HashMap<Object, Set<Object>> getCacheMap();
 
     /**
      * 内存缓存
      * @param cacheMap 内存缓存
      */
-    void setCacheMap(HashMap<String, Set<String>> cacheMap);
+    void setCacheMap(HashMap<Object, Set<Object>> cacheMap);
 }

@@ -47,14 +47,14 @@ public interface Attach {
      * @param id 目标record的主键
      * @return 受影响的行数
      */
-    int attach(String id);
+    int attach(Object id);
 
     /**
      * 新增多个关系
      * @param ids 目标records的主键集合
      * @return 受影响的行数
      */
-    int attach(Collection<String> ids);
+    int attach(Collection<Object> ids);
 
     /**
      * 新增单个关系
@@ -62,7 +62,7 @@ public interface Attach {
      * @param stringStringMap 当BelongsToMany时生效, 将数据插入中间表
      * @return 受影响的行数
      */
-    int attach(String id, Map<String, String> stringStringMap);
+    int attach(Object id, Map<String, String> stringStringMap);
 
     /**
      * 新增多个关系
@@ -70,6 +70,6 @@ public interface Attach {
      * @param stringStringMap 当BelongsToMany时生效, 将数据插入中间表
      * @return 受影响的行数
      */
-    int attach(Collection<String> ids, Map<String, String> stringStringMap);
+    int attach(Collection<Object> ids, Map<String, String> stringStringMap);
 
 }

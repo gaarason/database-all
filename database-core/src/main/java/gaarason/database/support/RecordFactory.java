@@ -284,8 +284,8 @@ public class RecordFactory {
         } else if (Timestamp.class.equals(fieldType)) {
             return resultSet.getTimestamp(column);
         } else if (Date.class.equals(fieldType)) {
-            java.sql.Date tempDate = resultSet.getDate(column);
-            return tempDate != null ? Date.from(Instant.ofEpochMilli(tempDate.getTime())) : null;
+            Timestamp timestamp = resultSet.getTimestamp(column);
+            return timestamp != null ? Date.from(timestamp.toInstant()) : null;
         } else if (LocalDate.class.equals(fieldType)) {
             return resultSet.getDate(column).toLocalDate();
         } else if (LocalTime.class.equals(fieldType)) {

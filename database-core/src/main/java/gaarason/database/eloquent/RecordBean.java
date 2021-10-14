@@ -501,4 +501,19 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
         hasBind = true;
     }
 
+    /**
+     * 结果集序列化
+     * @return 结果集序列化
+     */
+    @Override
+    public String toString(){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(getClass().getName()).append('@').append(Integer.toHexString(hashCode()));
+        stringBuilder.append('{');
+        for (Map.Entry<String, Column> entry : getMetadataMap().entrySet()) {
+            stringBuilder.append(entry.getKey()).append("=\"").append(entry.getValue().getValue()).append("\", ");
+        }
+        return StringUtils.rtrim(StringUtils.rtrim(stringBuilder.toString(), " "), ",") + "}";
+    }
+
 }

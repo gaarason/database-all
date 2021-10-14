@@ -9,6 +9,7 @@ import gaarason.database.eloquent.appointment.SqlType;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.Column;
 import gaarason.database.support.RecordFactory;
+import gaarason.database.util.ObjectUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -28,8 +29,9 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
     @Override
     public String[] prepareSqlArr(List<Map<String, Column>> stringColumnMapList,
-        GenerateSqlPartFunctionalInterface generateSqlPart) {
-        return new String[]{generateSqlPart.execute(belongsToManyTemplate.targetModel.newQuery()).toSql(
+        GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart) {
+
+        return new String[]{generateSqlPart.execute(ObjectUtils.typeCast(belongsToManyTemplate.targetModel.newQuery())).toSql(
             SqlType.SUB_QUERY), belongsToManyTemplate.relationModel.newQuery()
             .whereIn(belongsToManyTemplate.foreignKeyForLocalModel,
                 getColumnInMapList(stringColumnMapList, belongsToManyTemplate.localModelLocalKey))
@@ -50,7 +52,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         Set<Object> targetModelForeignKeySet = new HashSet<>();
         for (Map<String, Object> map : relationMaps) {
             Object result = map.get(belongsToManyTemplate.foreignKeyForTargetModel);
-            if (null == result){
+            if (null == result) {
                 continue;
             }
             targetModelForeignKeySet.add(result);
@@ -67,19 +69,18 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
         // 循环关系表, 筛选本表需要的数据
         for (Record<?, ?> targetRecord : targetRecordList) {
-            String targetKey = targetRecord.getMetadataMap()
+            Object targetKey = targetRecord.getMetadataMap()
                 .get(belongsToManyTemplate.targetModelLocalKey)
-                .getValue()
-                .toString();
+                .getValue();
 
             for (Map<String, Object> relationMap : relationMaps) {
-                String localModelKeyInMap = relationMap.get(belongsToManyTemplate.foreignKeyForLocalModel).toString();
-                String targetModelKeyInMap = relationMap.get(belongsToManyTemplate.foreignKeyForTargetModel).toString();
+                Object localModelKeyInMap = relationMap.get(belongsToManyTemplate.foreignKeyForLocalModel);
+                Object targetModelKeyInMap = relationMap.get(belongsToManyTemplate.foreignKeyForTargetModel);
 
                 if (targetModelKeyInMap.equals(targetKey)) {
                     // 暂存
                     // 存储到 RecordList 上
-                    Set<String> relationIds = targetRecordList.getCacheMap().computeIfAbsent(localModelKeyInMap,
+                    Set<Object> relationIds = targetRecordList.getCacheMap().computeIfAbsent(localModelKeyInMap,
                         key -> new HashSet<>());
                     relationIds.add(targetModelKeyInMap);
                 }
@@ -89,16 +90,15 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public List<? extends Serializable> filterBatchRecord(Record<?, ?> theRecord, RecordList<? ,?> targetRecordList,
-        Map<String, RecordList<? ,?>> cacheRelationRecordList) {
+    public List<? extends Serializable> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
+        Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         // 目标关系表的外键字段名
         String targetModelLocalKey = belongsToManyTemplate.targetModelLocalKey;
         // 本表的关系键值
-        String localModelLocalKeyValue = String.valueOf(
-            theRecord.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey).getValue());
+        Object localModelLocalKeyValue = theRecord.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey).getValue();
 
         // 本表应该关联的 目标表id列表
-        Set<String> targetModelLocalKayValueSet = targetRecordList.getCacheMap().get(localModelLocalKeyValue);
+        Set<Object> targetModelLocalKayValueSet = targetRecordList.getCacheMap().get(localModelLocalKeyValue);
 
         List<Serializable> objectList = new ArrayList<>();
         List<? extends Serializable> objects = targetRecordList.toObjectList(cacheRelationRecordList);
@@ -112,7 +112,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
             for (Serializable obj : objects) {
                 // 目标值
-                String targetModelLocalKeyValue = String.valueOf(ModelShadowProvider.fieldGet(fieldInfo, obj));
+                Object targetModelLocalKeyValue = ModelShadowProvider.fieldGet(fieldInfo, obj);
                 // 满足则加入
                 if (targetModelLocalKayValueSet != null && targetModelLocalKayValueSet.contains(
                     targetModelLocalKeyValue)) {
@@ -125,13 +125,13 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
     @Override
     public int attach(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        if (targetRecords.isEmpty()){
+        if (targetRecords.isEmpty()) {
             return 0;
         }
 
         // 目标表的关系键(默认目标表的主键)
-        Collection<String> compatibleForeignKeyForTargetModelValues = targetRecords.toList(recordTemp -> String.valueOf(
-            recordTemp.getMetadataMap().get(belongsToManyTemplate.targetModelLocalKey).getValue()));
+        Collection<Object> compatibleForeignKeyForTargetModelValues = targetRecords.toList(recordTemp ->
+            recordTemp.getMetadataMap().get(belongsToManyTemplate.targetModelLocalKey).getValue());
 
         // 事物
         return belongsToManyTemplate.relationModel.newQuery().transaction(
@@ -140,7 +140,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public int attach(Record<?, ?> theRecord, Collection<String> targetPrimaryKeyValues,
+    public int attach(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues,
         Map<String, String> stringStringMap) {
         if (targetPrimaryKeyValues.isEmpty()) {
             return 0;
@@ -149,7 +149,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         // 事物
         return belongsToManyTemplate.relationModel.newQuery().transaction(() -> {
             // 目标表中的关系键的集合, 即使中间表中指向目标表的外键的集合
-            Collection<String> targetModelLocalKeyValues = targetModelLocalKeyValuesByPrimaryKeyValues(
+            Collection<Object> targetModelLocalKeyValues = targetModelLocalKeyValuesByPrimaryKeyValues(
                 targetPrimaryKeyValues);
 
             return attachWithTargetModelLocalKeyValues(theRecord, targetModelLocalKeyValues, stringStringMap, true);
@@ -159,8 +159,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     @Override
     public int detach(Record<?, ?> theRecord) {
         // 本表的关系键值
-        String localModelLocalKeyValue = String.valueOf(
-            theRecord.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey).getValue());
+        Object localModelLocalKeyValue = theRecord.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey).getValue();
 
         return belongsToManyTemplate.relationModel.newQuery()
             .where(belongsToManyTemplate.foreignKeyForLocalModel, localModelLocalKeyValue)
@@ -170,14 +169,13 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     @Override
     public int detach(Record<?, ?> theRecord, RecordList<?, ?> targetRecords) {
         // 目标表的关系键值列表
-        List<String> targetModelLocalKeyValues = targetRecords.toList(
-            recordTemp -> String.valueOf(
-                recordTemp.getMetadataMap().get(belongsToManyTemplate.targetModelLocalKey).getValue()));
+        List<Object> targetModelLocalKeyValues = targetRecords.toList(
+            recordTemp -> recordTemp.getMetadataMap().get(belongsToManyTemplate.targetModelLocalKey).getValue());
         return detachWithTargetModelLocalKeyValues(theRecord, targetModelLocalKeyValues);
     }
 
     @Override
-    public int detach(Record<?, ?> theRecord, Collection<String> targetPrimaryKeyValues) {
+    public int detach(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues) {
         // 无需处理则直接返回
         if (targetPrimaryKeyValues.isEmpty()) {
             return 0;
@@ -185,7 +183,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         // 事物
         return belongsToManyTemplate.relationModel.newQuery().transaction(() -> {
             // 目标表中的关系键的集合, 即使中间表中指向目标表的外键的集合
-            Collection<String> targetModelLocalKeyValues = targetModelLocalKeyValuesByPrimaryKeyValues(
+            Collection<Object> targetModelLocalKeyValues = targetModelLocalKeyValuesByPrimaryKeyValues(
                 targetPrimaryKeyValues);
             return detachWithTargetModelLocalKeyValues(theRecord, targetModelLocalKeyValues);
 
@@ -196,21 +194,20 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     @Override
     public int sync(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
         // 目标表的关系键值列表
-        List<String> targetModelLocalKeyValues = targetRecords.toList(
-            recordTemp -> String.valueOf(
-                recordTemp.getMetadataMap().get(belongsToManyTemplate.targetModelLocalKey).getValue()));
+        List<Object> targetModelLocalKeyValues = targetRecords.toList(
+            recordTemp -> recordTemp.getMetadataMap().get(belongsToManyTemplate.targetModelLocalKey).getValue());
         // 事物
         return belongsToManyTemplate.relationModel.newQuery().transaction(
             () -> syncWithTargetModelLocalKeyValues(theRecord, targetModelLocalKeyValues, stringStringMap));
     }
 
     @Override
-    public int sync(Record<?, ?> theRecord, Collection<String> targetPrimaryKeyValues,
+    public int sync(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues,
         Map<String, String> stringStringMap) {
         // 事物
         return belongsToManyTemplate.relationModel.newQuery().transaction(() -> {
             // 目标表中的关系键的集合, 即使中间表中指向目标表的外键的集合
-            Collection<String> targetModelLocalKeyValues = targetModelLocalKeyValuesByPrimaryKeyValues(
+            Collection<Object> targetModelLocalKeyValues = targetModelLocalKeyValuesByPrimaryKeyValues(
                 targetPrimaryKeyValues);
             return syncWithTargetModelLocalKeyValues(theRecord, targetModelLocalKeyValues, stringStringMap);
         });
@@ -223,23 +220,22 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         }
 
         // 目标表的关系键值的集合
-        List<String> targetModelLocalKeyValues = targetRecords.toList(
-            recordTemp -> String.valueOf(
-                recordTemp.getMetadataMap().get(belongsToManyTemplate.targetModelLocalKey).getValue()));
+        List<Object> targetModelLocalKeyValues = targetRecords.toList(
+            recordTemp -> recordTemp.getMetadataMap().get(belongsToManyTemplate.targetModelLocalKey).getValue());
         // 事物
         return belongsToManyTemplate.relationModel.newQuery().transaction(
             () -> toggleWithTargetModelLocalKeyValues(theRecord, targetModelLocalKeyValues, stringStringMap));
     }
 
     @Override
-    public int toggle(Record<?, ?> theRecord, Collection<String> targetPrimaryKeyValues, Map<String, String> stringStringMap) {
+    public int toggle(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, String> stringStringMap) {
         if (targetPrimaryKeyValues.isEmpty()) {
             return 0;
         }
         // 事物
         return belongsToManyTemplate.relationModel.newQuery().transaction(() -> {
             // 目标表中的关系键值的集合, 即使中间表中指向目标表的外键的集合
-            Collection<String> targetModelLocalKeyValues = targetModelLocalKeyValuesByPrimaryKeyValues(
+            Collection<Object> targetModelLocalKeyValues = targetModelLocalKeyValuesByPrimaryKeyValues(
                 targetPrimaryKeyValues);
 
             return toggleWithTargetModelLocalKeyValues(theRecord, targetModelLocalKeyValues, stringStringMap);
@@ -251,12 +247,12 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
      * @param targetPrimaryKeyValues 目标表的主键集合
      * @return 目标表的关系键集合
      */
-    protected Collection<String> targetModelLocalKeyValuesByPrimaryKeyValues(
-        Collection<String> targetPrimaryKeyValues) {
+    protected Collection<Object> targetModelLocalKeyValuesByPrimaryKeyValues(
+        Collection<Object> targetPrimaryKeyValues) {
         // 目标表中的关系键的集合, 即使中间表中指向目标表的外键的集合
-        Collection<String> targetModelLocalKeyValues;
+        Collection<Object> targetModelLocalKeyValues;
 
-        // 如果目标表的主键即是关系键, 那么可以简化
+        // 如果目标表的主键既是关系键, 那么可以简化
         if (belongsToManyTemplate.targetModelLocalKey.equals(
             belongsToManyTemplate.targetModel.getPrimaryKeyColumnName())) {
             // 目标表的主键 处理下 AbstractList
@@ -280,7 +276,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
      * @param checkAlreadyExist         是否多一次查询, 以验证关系是否已存在
      * @return 受影响的行数
      */
-    protected int attachWithTargetModelLocalKeyValues(Record<?, ?> theRecord, Collection<String> targetModelLocalKeyValues,
+    protected int attachWithTargetModelLocalKeyValues(Record<?, ?> theRecord, Collection<Object> targetModelLocalKeyValues,
         Map<String, String> stringStringMap, boolean checkAlreadyExist) {
         // 无需处理则直接返回
         if (targetModelLocalKeyValues.isEmpty()) {
@@ -288,18 +284,16 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         }
 
         // 本表的关系键值
-        String localModelLocalKeyValue = String.valueOf(
-            theRecord.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey).getValue());
+        Object localModelLocalKeyValue = theRecord.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey).getValue();
 
         if (checkAlreadyExist) {
             // 查询中间表(relationModel)是否存在已经存在对应的关系
-            List<String> alreadyExistTargetModelLocalKeyValueList = belongsToManyTemplate.relationModel.newQuery()
+            List<Object> alreadyExistTargetModelLocalKeyValueList = belongsToManyTemplate.relationModel.newQuery()
                 .select(belongsToManyTemplate.foreignKeyForLocalModel,
                     belongsToManyTemplate.foreignKeyForTargetModel)
                 .where(belongsToManyTemplate.foreignKeyForLocalModel, localModelLocalKeyValue)
                 .whereIn(belongsToManyTemplate.foreignKeyForTargetModel, targetModelLocalKeyValues)
-                .get().toList(recordTemp -> String.valueOf(
-                    recordTemp.getMetadataMap().get(belongsToManyTemplate.foreignKeyForTargetModel).getValue()));
+                .get().toList(recordTemp -> recordTemp.getMetadataMap().get(belongsToManyTemplate.foreignKeyForTargetModel).getValue());
 
             // 剔除已经存在的关系, 保留需要插入的ids
             targetModelLocalKeyValues.removeAll(alreadyExistTargetModelLocalKeyValueList);
@@ -322,11 +316,11 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
             middleValueList.add(entry.getValue());
         }
 
-        List<List<String>> valuesList = new ArrayList<>();
+        List<List<Object>> valuesList = new ArrayList<>();
         for (Object o : targetModelLocalKeyValues) {
-            List<String> valueList = new ArrayList<>();
+            List<Object> valueList = new ArrayList<>();
             valueList.add(localModelLocalKeyValue);
-            valueList.add(o.toString());
+            valueList.add(o);
             // 加入中间表数据
             valueList.addAll(middleValueList);
             valuesList.add(valueList);
@@ -342,10 +336,9 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
      * @param targetModelLocalKeyValues 目标表关系键集合
      * @return 受影响的行数
      */
-    protected int detachWithTargetModelLocalKeyValues(Record<?, ?> theRecord, Collection<String> targetModelLocalKeyValues) {
+    protected int detachWithTargetModelLocalKeyValues(Record<?, ?> theRecord, Collection<Object> targetModelLocalKeyValues) {
         // 本表的关系键值
-        String localModelLocalKeyValue = String.valueOf(
-            theRecord.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey).getValue());
+        Object localModelLocalKeyValue = theRecord.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey).getValue();
 
         return belongsToManyTemplate.relationModel.newQuery()
             .where(belongsToManyTemplate.foreignKeyForLocalModel, localModelLocalKeyValue)
@@ -360,11 +353,10 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
      * @param stringStringMap           中间表新增是要附带的数据
      * @return 受影响的行数
      */
-    protected int syncWithTargetModelLocalKeyValues(Record<?, ?> theRecord, Collection<String> targetModelLocalKeyValues,
+    protected int syncWithTargetModelLocalKeyValues(Record<?, ?> theRecord, Collection<Object> targetModelLocalKeyValues,
         Map<String, String> stringStringMap) {
         // 本表的关系键值
-        String localModelLocalKeyValue = String.valueOf(
-            theRecord.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey).getValue());
+        Object localModelLocalKeyValue = theRecord.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey).getValue();
 
 
         // 现存的关联关系, 不需要据需存在的, 解除
@@ -386,17 +378,16 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
      * @param stringStringMap           中间表新增是要附带的数据
      * @return 受影响的行数
      */
-    protected int toggleWithTargetModelLocalKeyValues(Record<?, ?> theRecord, Collection<String> targetModelLocalKeyValues,
+    protected int toggleWithTargetModelLocalKeyValues(Record<?, ?> theRecord, Collection<Object> targetModelLocalKeyValues,
         Map<String, String> stringStringMap) {
         if (targetModelLocalKeyValues.isEmpty()) {
             return 0;
         }
         // 本表的关系键值
-        String localModelLocalKeyValue = String.valueOf(
-            theRecord.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey).getValue());
+        Object localModelLocalKeyValue = theRecord.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey).getValue();
 
         // 现存的关联关系 中间表指向目标表的外键值的集合
-        List<String> alreadyExistTargetModelLocalKeyValues = belongsToManyTemplate.relationModel.newQuery()
+        List<Object> alreadyExistTargetModelLocalKeyValues = belongsToManyTemplate.relationModel.newQuery()
             .select(belongsToManyTemplate.foreignKeyForTargetModel)
             .where(belongsToManyTemplate.foreignKeyForLocalModel, localModelLocalKeyValue)
             .whereIn(belongsToManyTemplate.foreignKeyForTargetModel, targetModelLocalKeyValues)
@@ -410,7 +401,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
         // 需要增加的关系(不存在就增加) 中间表指向目标表的外键值的集合
         // compatibleTargetModelLocalKeyValues 与 targetModelLocalKeyValues 可能是同一个对象(相同内存地址)
-        Collection<String> compatibleTargetModelLocalKeyValues = compatibleCollection(targetModelLocalKeyValues);
+        Collection<Object> compatibleTargetModelLocalKeyValues = compatibleCollection(targetModelLocalKeyValues);
         compatibleTargetModelLocalKeyValues.removeAll(alreadyExistTargetModelLocalKeyValues);
 
         // 不存在的关系, 新增

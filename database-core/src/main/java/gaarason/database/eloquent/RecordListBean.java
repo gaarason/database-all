@@ -34,7 +34,7 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
     /**
      * 临时缓存
      */
-    protected HashMap<String, Set<String>> cacheMap = new HashMap<>();
+    protected HashMap<Object, Set<Object>> cacheMap = new HashMap<>();
 
     public RecordListBean() {
 
@@ -56,12 +56,12 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
     }
 
     @Override
-    public HashMap<String, Set<String>> getCacheMap() {
+    public HashMap<Object, Set<Object>> getCacheMap() {
         return cacheMap;
     }
 
     @Override
-    public void setCacheMap(HashMap<String, Set<String>> cacheMap) {
+    public void setCacheMap(HashMap<Object, Set<Object>> cacheMap) {
         this.cacheMap = cacheMap;
     }
 
@@ -136,12 +136,11 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
     }
 
     @Override
-    public List<String> toOneColumnList() {
+    public List<Object> toOneColumnList() {
         return toList(theRecord -> {
             Set<Map.Entry<String, Column>> entries = theRecord.getMetadataMap().entrySet();
             for (Map.Entry<String, Column> entry : entries) {
-                Object value = entry.getValue().getValue();
-                return value == null ? null : String.valueOf(value);
+                return entry.getValue().getValue();
             }
             return null;
         });

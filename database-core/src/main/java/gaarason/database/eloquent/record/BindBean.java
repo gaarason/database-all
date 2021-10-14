@@ -58,23 +58,23 @@ public class BindBean<T extends Serializable, K extends Serializable> implements
     }
 
     @Override
-    public int attach(String id) {
+    public int attach(Object id) {
         return attach(Collections.singletonList(id), new HashMap<>());
     }
 
     @Override
-    public int attach(Collection<String> ids) {
+    public int attach(Collection<Object> ids) {
         return attach(ids, new HashMap<>());
 
     }
 
     @Override
-    public int attach(String id, Map<String, String> stringStringMap) {
+    public int attach(Object id, Map<String, String> stringStringMap) {
         return attach(Collections.singletonList(id), stringStringMap);
     }
 
     @Override
-    public int attach(Collection<String> ids, Map<String, String> stringStringMap) {
+    public int attach(Collection<Object> ids, Map<String, String> stringStringMap) {
         return relationSubQuery.attach(tkRecord, ids, stringStringMap);
     }
 
@@ -94,12 +94,12 @@ public class BindBean<T extends Serializable, K extends Serializable> implements
     }
 
     @Override
-    public int detach(String id) {
+    public int detach(Object id) {
         return detach(Collections.singletonList(id));
     }
 
     @Override
-    public int detach(Collection<String> ids) {
+    public int detach(Collection<Object> ids) {
         return relationSubQuery.detach(tkRecord, ids);
     }
 
@@ -125,22 +125,22 @@ public class BindBean<T extends Serializable, K extends Serializable> implements
     }
 
     @Override
-    public int sync(String id) {
+    public int sync(Object id) {
         return sync(Collections.singletonList(id), new HashMap<>());
     }
 
     @Override
-    public int sync(Collection<String> ids) {
+    public int sync(Collection<Object> ids) {
         return sync(ids, new HashMap<>());
     }
 
     @Override
-    public int sync(String id, Map<String, String> stringStringMap) {
+    public int sync(Object id, Map<String, String> stringStringMap) {
         return sync(Collections.singletonList(id), stringStringMap);
     }
 
     @Override
-    public int sync(Collection<String> ids, Map<String, String> stringStringMap) {
+    public int sync(Collection<Object> ids, Map<String, String> stringStringMap) {
         return relationSubQuery.sync(tkRecord, ids, stringStringMap);
     }
 
@@ -165,22 +165,22 @@ public class BindBean<T extends Serializable, K extends Serializable> implements
     }
 
     @Override
-    public int toggle(String id) {
+    public int toggle(Object id) {
         return toggle(Collections.singletonList(id), new HashMap<>());
     }
 
     @Override
-    public int toggle(Collection<String> ids) {
+    public int toggle(Collection<Object> ids) {
         return toggle(ids, new HashMap<>());
     }
 
     @Override
-    public int toggle(String id, Map<String, String> stringStringMap) {
+    public int toggle(Object id, Map<String, String> stringStringMap) {
         return toggle(Collections.singletonList(id), stringStringMap);
     }
 
     @Override
-    public int toggle(Collection<String> ids, Map<String, String> stringStringMap) {
+    public int toggle(Collection<Object> ids, Map<String, String> stringStringMap) {
         return relationSubQuery.toggle(tkRecord, ids, stringStringMap);
     }
 }

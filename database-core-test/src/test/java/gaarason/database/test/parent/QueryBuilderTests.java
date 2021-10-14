@@ -12,6 +12,7 @@ import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.test.models.normal.StudentModel;
 import gaarason.database.test.parent.base.BaseTests;
 import gaarason.database.test.utils.MultiThreadUtil;
+import gaarason.database.util.LocalDateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -21,6 +22,8 @@ import org.junit.runners.MethodSorters;
 import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 @Slf4j
@@ -46,7 +49,7 @@ abstract public class QueryBuilderTests extends BaseTests {
             columnNameList.add("name");
             columnNameList.add("age");
             columnNameList.add("sex");
-            List<String> valueList = new ArrayList<>();
+            List<Object> valueList = new ArrayList<>();
             valueList.add("testNAme134");
             valueList.add("11");
             valueList.add("1");
@@ -151,9 +154,9 @@ abstract public class QueryBuilderTests extends BaseTests {
         columnNameList.add("name");
         columnNameList.add("age");
         columnNameList.add("sex");
-        List<List<String>> valuesList = new ArrayList<>();
+        List<List<Object>> valuesList = new ArrayList<>();
         for (int i = 1; i < 10; i++) {
-            List<String> valueList = new ArrayList<>();
+            List<Object> valueList = new ArrayList<>();
             valueList.add("testNAme=" + i);
             valueList.add("11");
             valueList.add("1");
@@ -276,12 +279,13 @@ abstract public class QueryBuilderTests extends BaseTests {
             "created_at").first();
         Assert.assertNotNull(RecordFirst2);
         StudentModel.Entity first2 = RecordFirst2.toObject();
+        System.out.println("first2 : " + first2);
         Assert.assertEquals(first2.getId(), new Integer(1));
         Assert.assertEquals(first2.getId().intValue(), 1);
         Assert.assertEquals(first2.getName(), "小明");
         Assert.assertNull(first2.getAge());
         Assert.assertNull(first2.getTeacherId());
-        Assert.assertEquals(first2.getCreatedAt().toString(), "2009-03-14 17:15:23.0");
+        Assert.assertEquals(first2.getCreatedAt().getTime()/1000L, LocalDateUtils.str2LocalDateTime("2009-03-14 17:15:23.0").toEpochSecond(ZoneOffset.of("+8")));
         Assert.assertNull(first2.getUpdatedAt());
 
         Assert.assertNotNull(first1);
@@ -298,7 +302,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertNull(first3);
 
         Record<StudentModel.Entity, Integer> RecordFirst5 = studentModel.newQuery().first();
-        System.out.println(RecordFirst5);
+        System.out.println("RecordFirst5 : " + RecordFirst5);
         Assert.assertNotNull(RecordFirst5);
         StudentModel.Entity first5 = RecordFirst5.toObject();
         Assert.assertEquals(first5.getId(), new Integer(1));
@@ -306,8 +310,8 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(first5.getName(), "小明");
         Assert.assertEquals(first5.getAge().intValue(), 6);
         Assert.assertEquals(first5.getTeacherId().intValue(), 6);
-        Assert.assertEquals(first5.getCreatedAt().toString(), "2009-03-14 17:15:23.0");
-        Assert.assertEquals(first5.getUpdatedAt().toString(), "2010-04-24 22:11:03.0");
+        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first5.getCreatedAt()), LocalDateUtils.str2LocalDateTime("2009-03-14 17:15:23.0"));
+        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first5.getUpdatedAt()), LocalDateUtils.str2LocalDateTime("2010-04-24 22:11:03.0"));
 
         Assert.assertThrows(EntityNotFoundException.class, () -> {
             studentModel.newQuery().select("name", "id").where("id", "not found").firstOrFail();
@@ -600,8 +604,9 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(first.getName(), "小腾");
         Assert.assertEquals(first.getAge().intValue(), 16);
         Assert.assertEquals(first.getTeacherId().intValue(), 6);
-        Assert.assertEquals(first.getCreatedAt().toString(), "2009-03-14 15:11:23.0");
-        Assert.assertEquals(first.getUpdatedAt().toString(), "2010-04-24 22:11:03.0");
+        Assert.assertNotEquals(LocalDateUtils.date2LocalDateTime(first.getCreatedAt()), LocalDateUtils.str2LocalDateTime("2009-03-14 15:11:29.0"));
+        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first.getCreatedAt()), LocalDateUtils.str2LocalDateTime("2009-03-14 15:11:23.0"));
+        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first.getUpdatedAt()), LocalDateUtils.str2LocalDateTime("2010-04-24 22:11:03.0"));
 
         Record<StudentModel.Entity, Integer> entityRecord2 =
             studentModel.newQuery().whereColumn("id", "sex").first();
@@ -613,8 +618,9 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(first2.getName(), "小张");
         Assert.assertEquals(first2.getAge().intValue(), 11);
         Assert.assertEquals(first2.getTeacherId().intValue(), 6);
-        Assert.assertEquals(first2.getCreatedAt().toString(), "2009-03-14 15:15:23.0");
-        Assert.assertEquals(first2.getUpdatedAt().toString(), "2010-04-24 22:11:03.0");
+        Assert.assertNotEquals(LocalDateUtils.date2LocalDateTime(first2.getCreatedAt()), LocalDateUtils.str2LocalDateTime("2009-03-14 15:11:29.0"));
+        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first2.getCreatedAt()), LocalDateUtils.str2LocalDateTime("2009-03-14 15:15:23.0"));
+        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first2.getUpdatedAt()), LocalDateUtils.str2LocalDateTime("2010-04-24 22:11:03.0"));
     }
 
     @Test
@@ -628,8 +634,9 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(first.getName(), "小腾");
         Assert.assertEquals(first.getAge().intValue(), 16);
         Assert.assertEquals(first.getTeacherId().intValue(), 6);
-        Assert.assertEquals(first.getCreatedAt().toString(), "2009-03-14 15:11:23.0");
-        Assert.assertEquals(first.getUpdatedAt().toString(), "2010-04-24 22:11:03.0");
+        Assert.assertNotEquals(LocalDateUtils.date2LocalDateTime(first.getCreatedAt()), LocalDateUtils.str2LocalDateTime("2009-03-14 15:11:29.0"));
+        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first.getCreatedAt()), LocalDateUtils.str2LocalDateTime("2009-03-14 15:11:23.0"));
+        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first.getUpdatedAt()), LocalDateUtils.str2LocalDateTime("2010-04-24 22:11:03.0"));
 
 
         List<StudentModel.Entity> entityList1 = studentModel.newQuery()
