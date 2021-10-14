@@ -5,7 +5,12 @@ import gaarason.database.eloquent.annotation.BelongsToMany;
 import gaarason.database.eloquent.annotation.HasOneOrMany;
 
 import java.lang.annotation.Annotation;
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -19,16 +24,12 @@ import java.util.List;
  */
 public class FinalVariable {
 
-    private FinalVariable() {
-
-    }
-
     /**
      * 实体中普通属性支持的包装类型
      */
     public static final List<Class<?>> ALLOW_FIELD_TYPES = Arrays.asList(Boolean.class, Byte.class, Character.class, Short.class,
-        Integer.class, Long.class, Float.class, Double.class, BigInteger.class, Date.class, LocalDateTime.class, LocalDate.class,
-        LocalTime.class, String.class);
+        Integer.class, Long.class, Float.class, Double.class, BigInteger.class, java.sql.Date.class, Time.class, Timestamp.class, Date.class,
+        LocalDate.class, LocalTime.class, LocalDateTime.class, String.class, BigDecimal.class, Blob.class, Clob.class);
 
     /**
      * 关联关系声明注解
@@ -48,4 +49,8 @@ public class FinalVariable {
         "DATA_TYPE", "COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS", "NUM_PREC_RADIX", "NULLABLE", "REMARKS", "COLUMN_DEF",
         "SQL_DATA_TYPE", "SQL_DATETIME_SUB", "CHAR_OCTET_LENGTH", "ORDINAL_POSITION", "IS_NULLABLE", "SCOPE_CATALOG",
         "SCOPE_SCHEMA", "SCOPE_TABLE", "SOURCE_DATA_TYPE", "IS_AUTOINCREMENT", "IS_GENERATEDCOLUMN");
+
+    private FinalVariable() {
+
+    }
 }

@@ -156,11 +156,11 @@ public class GeneratorTests {
         Set<String> test = DatabaseInfoUtil.tableNames(gaarasonDataSourceWrapper, "test_master_0", null, null);
         System.out.println(test);
 
-        List<Map<String, Column>> test1 = DatabaseInfoUtil.columns(gaarasonDataSourceWrapper, "test_master_0", null, null);
+//        List<Map<String, Column>> test1 = DatabaseInfoUtil.columns(gaarasonDataSourceWrapper, "test_master_0", null, null);
 
-        for (Map<String, Column> stringObjectMap : test1) {
-            System.out.println(stringObjectMap);
-        }
+//        for (Map<String, Column> stringObjectMap : test1) {
+//            System.out.println(stringObjectMap);
+//        }
 
 
     }

@@ -68,7 +68,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
         }
 
         // 目标表(父表)model的关联键值
-        String parentModelLocalKeyValue = parentModelLocalKeyValue(targetRecords);
+        Object parentModelLocalKeyValue = parentModelLocalKeyValue(targetRecords);
 
         // 执行更新, 自我更新需要手动刷新属性
         return attachAndRefresh(theRecord, parentModelLocalKeyValue);
@@ -197,7 +197,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
         });
     }
 
-    protected String parentModelLocalKeyValue(RecordList<?, ?> targetRecords) {
+    protected Object parentModelLocalKeyValue(RecordList<?, ?> targetRecords) {
         if (targetRecords.size() > 1) {
             throw new RelationAttachException("The relationship \"@BelongsTo\" could only attach/toggle/sync a relationship with " +
                 "one, but now more than one.");
@@ -214,7 +214,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
         }
 
         // 目标表(父表)model的关联键值
-        return String.valueOf(value);
+        return value;
     }
 
     /**

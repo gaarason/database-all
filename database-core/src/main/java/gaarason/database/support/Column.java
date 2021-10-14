@@ -25,6 +25,7 @@ public class Column implements Serializable {
 
     /**
      * 字段类型 java.sql.Types
+     * @see java.sql.Types
      */
     private int type;
 

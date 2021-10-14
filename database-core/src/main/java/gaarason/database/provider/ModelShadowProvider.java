@@ -214,7 +214,8 @@ public final class ModelShadowProvider {
         if (column != null) {
             try {
                 // 属性赋值
-                Object value = EntityUtils.columnFill(fieldInfo.field, column.getValue());
+//                Object value = EntityUtils.columnFill(fieldInfo.field, column.getValue());
+                Object value = column.getValue();
                 fieldInfo.field.set(entity, value);
                 // 主键值记录
                 if (fieldInfo.field.isAnnotationPresent(Primary.class) && value != null) {

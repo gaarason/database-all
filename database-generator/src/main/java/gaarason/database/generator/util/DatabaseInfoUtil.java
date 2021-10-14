@@ -69,7 +69,7 @@ public class DatabaseInfoUtil {
 
                 ResultSetMetaData resultSetMetaData = rs.getMetaData();
 
-                Map<String, Column> stringColumnMap = RecordFactory.JDBCResultToMap(resultSetMetaData, rs);
+//                Map<String, Column> stringColumnMap = RecordFactory.JDBCResultToMap(resultSetMetaData, rs);
 
 //                Map<String, Object> info = new HashMap<>();
 //                for (String label : FinalVariable.metaDataLabel) {
@@ -82,7 +82,7 @@ public class DatabaseInfoUtil {
 //                    }
 //                    info.put(label, object);
 //                }
-                columns.add(stringColumnMap);
+//                columns.add(stringColumnMap);
             }
             return columns;
         }

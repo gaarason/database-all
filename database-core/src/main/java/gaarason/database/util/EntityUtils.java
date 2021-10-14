@@ -102,8 +102,8 @@ public class EntityUtils {
                 String columnName = EntityUtils.columnName(field);
                 gaarason.database.support.Column column = stringColumnMap.get(columnName);
                 if (column != null) {
-                    Object value = EntityUtils.columnFill(field, column.getValue());
-                    field.set(entity, value);
+//                    Object value = EntityUtils.columnFill(field, column.getValue());
+                    field.set(entity, column.getValue());
                 }
             }
             return entity;
@@ -112,37 +112,39 @@ public class EntityUtils {
         }
     }
 
-    /**
-     * 用数据库字段填充类属性
-     * @param field 属性
-     * @param value 值
-     * @return 数据库字段值, 且对应实体entity的数据类型
-     */
-    @Nullable
-    public static Object columnFill(Field field, @Nullable Object value) {
-        if (value == null) {
-            return null;
-        }
-        switch (field.getType().toString()) {
-            case "class java.lang.Byte":
-                return Byte.valueOf(value.toString());
-            case "class java.lang.String":
-                return value.toString();
-            case "class java.lang.Integer":
-                return Integer.valueOf(value.toString());
-            case "class java.lang.Long":
-            case "class java.math.BigInteger":
-                return Long.valueOf(value.toString());
-            case "class java.time.LocalDateTime":
-                return value instanceof Date ? LocalDateUtils.date2LocalDateTime((Date) value) : value;
-            case "class java.time.LocalDate":
-                return value instanceof Date ? LocalDateUtils.date2LocalDate((Date) value) : value;
-            case "class java.time.LocalTime":
-                return value instanceof Date ? LocalDateUtils.date2LocalTime((Date) value) : value;
-            default:
-                return value;
-        }
-    }
+//    /**
+//     * 用数据库字段填充类属性
+//     * @param field 属性
+//     * @param value 值
+//     * @return 数据库字段值, 且对应实体entity的数据类型
+//     */
+//    @Nullable
+//    public static Object columnFill(Field field, @Nullable Object value) {
+//        if (value == null) {
+//            return null;
+//        }
+//        switch (field.getType().toString()) {
+//            case "class java.lang.Byte":
+//                return Byte.valueOf(value.toString());
+//            case "class java.lang.String":
+//                return value.toString();
+//            case "class java.lang.Integer":
+//                return Integer.valueOf(value.toString());
+//            case "class java.lang.Long":
+//            case "class java.math.BigInteger":
+//                return Long.valueOf(value.toString());
+//            case "class java.time.LocalDateTime":
+//                return value instanceof Date ? LocalDateUtils.date2LocalDateTime((Date) value) : value;
+//            case "class java.time.LocalDate":
+//                return value instanceof Date ? LocalDateUtils.date2LocalDate((Date) value) : value;
+//            case "class java.time.LocalTime":
+//                return value instanceof Date ? LocalDateUtils.date2LocalTime((Date) value) : value;
+//            default:
+//                return value;
+//        }
+//    }
+
+
 
     /**
      * 格式化值到字符串

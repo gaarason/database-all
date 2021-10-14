@@ -3,18 +3,22 @@ package gaarason.database.support;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.RecordBean;
 import gaarason.database.eloquent.RecordListBean;
 import gaarason.database.exception.EntityNotFoundException;
+import gaarason.database.provider.ModelShadowProvider;
 
 import java.io.Serializable;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.sql.*;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Date;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -23,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class RecordFactory {
 
-    private RecordFactory(){
+    private RecordFactory() {
 
     }
 
@@ -39,13 +43,14 @@ public class RecordFactory {
      * @throws SQLException            数据库异常
      * @throws EntityNotFoundException 数据为空
      */
-    public static <T extends Serializable, K extends Serializable> Record<T, K> newRecord(Class<T> entityClass, Model<T, K> model, ResultSet resultSet,
-                                                String sql) throws SQLException, EntityNotFoundException {
+    public static <T extends Serializable, K extends Serializable> Record<T, K> newRecord(Class<T> entityClass, Model<T, K> model,
+        ResultSet resultSet,
+        String sql) throws SQLException, EntityNotFoundException {
         if (!resultSet.next()) {
             throw new EntityNotFoundException(sql);
         }
         final ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-        Map<String, Column> stringColumnMap = JDBCResultToMap(resultSetMetaData, resultSet);
+        Map<String, Column> stringColumnMap = JDBCResultToMap(entityClass, resultSetMetaData, resultSet);
         return new RecordBean<>(entityClass, model, stringColumnMap, sql);
     }
 
@@ -60,14 +65,15 @@ public class RecordFactory {
      * @return 批量结果集(全新)
      * @throws SQLException 数据库异常
      */
-    public static <T extends Serializable, K extends Serializable> RecordList<T, K> newRecordList(Class<T> entityClass, Model<T, K> model, ResultSet resultSet,
-                                                        String sql) throws SQLException {
+    public static <T extends Serializable, K extends Serializable> RecordList<T, K> newRecordList(Class<T> entityClass, Model<T, K> model,
+        ResultSet resultSet,
+        String sql) throws SQLException {
         RecordList<T, K> recordList = new RecordListBean<>(sql);
         // 总的数据源
         final ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         while (resultSet.next()) {
             // 拆分的数据源
-            Map<String, Column> stringColumnMap = JDBCResultToMap(resultSetMetaData, resultSet);
+            Map<String, Column> stringColumnMap = JDBCResultToMap(entityClass, resultSetMetaData, resultSet);
             recordList.add(new RecordBean<>(entityClass, model, stringColumnMap, sql));
             recordList.getOriginalMetadataMapList().add(stringColumnMap);
         }
@@ -99,8 +105,8 @@ public class RecordFactory {
      * 仅 ToObject 构造方法中使用
      * 保持 theRecord 对象地址一致
      * @param theRecord 单体结果集
-     * @param <T>    实体类型
-     * @param <K>    实体主键类型
+     * @param <T>       实体类型
+     * @param <K>       实体主键类型
      * @return 批量结果集(RecordList全新, Record为引用地址)
      */
     public static <T extends Serializable, K extends Serializable> RecordList<T, K> newRecordList(Record<T, K> theRecord) {
@@ -157,30 +163,32 @@ public class RecordFactory {
     }
 
     /**
-     * jdbc结果集转化为通用map
+     * jdbc结果集转化为 HashMap
      * @param resultSetMetaData 源数据
      * @param resultSet         结果集
      * @return 通用map
      * @throws SQLException 数据库异常
      */
-    public static HashMap<String, Column> JDBCResultToMap(ResultSetMetaData resultSetMetaData, ResultSet resultSet)
+    public static <T extends Serializable> HashMap<String, Column> JDBCResultToMap(Class<T> entityClass, ResultSetMetaData resultSetMetaData,
+        ResultSet resultSet)
         throws SQLException {
         HashMap<String, Column> map = new HashMap<>();
-        return (HashMap<String, Column>) JDBCResultToMap(map, resultSetMetaData, resultSet);
+        return (HashMap<String, Column>) JDBCResultToMap(map, entityClass, resultSetMetaData, resultSet);
 
     }
 
     /**
-     * jdbc结果集转化为通用map
+     * jdbc结果集转化为 ConcurrentHashMap
      * @param resultSetMetaData 源数据
      * @param resultSet         结果集
      * @return 通用map
      * @throws SQLException 数据库异常
      */
-    public static ConcurrentHashMap<String, Column> JDBCResultToConcurrentHashMap(ResultSetMetaData resultSetMetaData, ResultSet resultSet)
+    public static <T extends Serializable> ConcurrentHashMap<String, Column> JDBCResultToConcurrentHashMap(Class<T> entityClass,
+        ResultSetMetaData resultSetMetaData, ResultSet resultSet)
         throws SQLException {
         ConcurrentHashMap<String, Column> map = new ConcurrentHashMap<>();
-        return (ConcurrentHashMap<String, Column>) JDBCResultToMap(map, resultSetMetaData, resultSet);
+        return (ConcurrentHashMap<String, Column>) JDBCResultToMap(map, entityClass, resultSetMetaData, resultSet);
     }
 
     /**
@@ -191,13 +199,22 @@ public class RecordFactory {
      * @return 通用map
      * @throws SQLException 数据库异常
      */
-    protected static Map<String, Column> JDBCResultToMap(Map<String, Column> map, ResultSetMetaData resultSetMetaData,
-                                                         ResultSet resultSet) throws SQLException {
+    protected static <T extends Serializable> Map<String, Column> JDBCResultToMap(Map<String, Column> map, Class<T> entityClass,
+        ResultSetMetaData resultSetMetaData,
+        ResultSet resultSet) throws SQLException {
+
+        // 字段信息大全
+        Map<String, ModelShadowProvider.FieldInfo> columnInfo = ModelShadowProvider.getByEntityClass(entityClass).getColumnFieldMap();
+
         final int columnCountMoreOne = resultSetMetaData.getColumnCount() + 1;
         for (int i = 1; i < columnCountMoreOne; i++) {
             Column column = new Column();
-            column.setName(resultSetMetaData.getColumnLabel(i));
-            column.setValue(resultSet.getObject(column.getName()));
+            // 列名
+            String columnName = resultSetMetaData.getColumnLabel(i);
+            column.setName(columnName);
+
+            // *尽量* 使用同类型赋值
+            column.setValue(getValueFromJdbcResultSet(columnInfo.get(columnName), resultSet, columnName));
             column.setType(resultSetMetaData.getColumnType(i));
             column.setTypeName(resultSetMetaData.getColumnTypeName(i));
             column.setCount(resultSetMetaData.getColumnCount());
@@ -221,6 +238,71 @@ public class RecordFactory {
             map.put(column.getName(), column);
         }
         return map;
+    }
+
+    /**
+     * 根据java类型，获取jdbc中的数据结果
+     * @param fieldInfo FieldInfo
+     * @param resultSet 结果集
+     * @param column    列名
+     * @return 值
+     * @throws SQLException 数据库异常
+     * @see gaarason.database.eloquent.appointment.FinalVariable ALLOW_FIELD_TYPES
+     */
+    @Nullable
+    protected static Object getValueFromJdbcResultSet(@Nullable ModelShadowProvider.FieldInfo fieldInfo, ResultSet resultSet,
+        String column) throws SQLException {
+        if (fieldInfo == null) {
+            return resultSet.getObject(column);
+        }
+
+        Class<?> fieldType = fieldInfo.getJavaType();
+
+        if (Boolean.class.equals(fieldType)) {
+            return resultSet.getBoolean(column);
+        } else if (Byte.class.equals(fieldType)) {
+            return resultSet.getByte(column);
+        } else if (Character.class.equals(fieldType)) {
+            String tempStr = resultSet.getString(column);
+            return tempStr != null ? tempStr.toCharArray()[0] : null;
+        } else if (Short.class.equals(fieldType)) {
+            return resultSet.getShort(column);
+        } else if (Integer.class.equals(fieldType)) {
+            return resultSet.getInt(column);
+        } else if (Long.class.equals(fieldType)) {
+            return resultSet.getLong(column);
+        } else if (Float.class.equals(fieldType)) {
+            return resultSet.getFloat(column);
+        } else if (Double.class.equals(fieldType)) {
+            return resultSet.getDouble(column);
+        } else if (BigInteger.class.equals(fieldType)) {
+            return new BigInteger(resultSet.getString(column));
+        } else if (java.sql.Date.class.equals(fieldType)) {
+            return resultSet.getDate(column);
+        } else if (Time.class.equals(fieldType)) {
+            return resultSet.getTime(column);
+        } else if (Timestamp.class.equals(fieldType)) {
+            return resultSet.getTimestamp(column);
+        } else if (Date.class.equals(fieldType)) {
+            java.sql.Date tempDate = resultSet.getDate(column);
+            return tempDate != null ? Date.from(Instant.ofEpochMilli(tempDate.getTime())) : null;
+        } else if (LocalDate.class.equals(fieldType)) {
+            return resultSet.getDate(column).toLocalDate();
+        } else if (LocalTime.class.equals(fieldType)) {
+            return resultSet.getTime(column).toLocalTime();
+        } else if (LocalDateTime.class.equals(fieldType)) {
+            return resultSet.getTimestamp(column).toLocalDateTime();
+        } else if (String.class.equals(fieldType)) {
+            return resultSet.getString(column);
+        } else if (BigDecimal.class.equals(fieldType)) {
+            return resultSet.getBigDecimal(column);
+        } else if (Blob.class.equals(fieldType)) {
+            return resultSet.getBlob(column);
+        } else if (Clob.class.equals(fieldType)) {
+            return resultSet.getClob(column);
+        } else {
+            return resultSet.getObject(column, fieldType);
+        }
     }
 
     /**
