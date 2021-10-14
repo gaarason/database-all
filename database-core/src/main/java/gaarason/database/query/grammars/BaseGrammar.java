@@ -6,6 +6,7 @@ import gaarason.database.contract.query.Grammar;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.appointment.SqlType;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
+import gaarason.database.exception.GrammarException;
 import gaarason.database.exception.InvalidSqlTypeException;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
@@ -24,8 +25,10 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
     /**
      * column -> [ GenerateSqlPart , RelationshipRecordWith ]
+     * @see RelationshipRecordWithFunctionalInterface
+     * @see GenerateSqlPartFunctionalInterface
      */
-    protected Map<String, Object[]> withMap = new HashMap<>();
+    protected final HashMap<String, Object[]> withMap;
 
     protected final String table;
 
@@ -71,15 +74,18 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     @Nullable
     protected String union;
 
-    protected final List<String> valueList = new ArrayList<>();
+    protected final ArrayList<String> valueList;
 
-    protected final List<String> whereParameterList = new ArrayList<>();
+    protected final ArrayList<String> whereParameterList;
 
-    protected final List<String> dataParameterList = new ArrayList<>();
+    protected final ArrayList<String> dataParameterList;
 
-
-    public BaseGrammar(String tableName) {
+    protected BaseGrammar(String tableName) {
         table = tableName;
+        withMap = new HashMap<>();
+        valueList = new ArrayList<>();
+        whereParameterList = new ArrayList<>();
+        dataParameterList = new ArrayList<>();
     }
 
     @Override
@@ -252,7 +258,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     }
 
     protected String dealValue() {
-        if (valueList.size() == 0) {
+        if (valueList.isEmpty()) {
             return "()";
         }
         StringBuilder stringBuilder = new StringBuilder();
@@ -306,10 +312,11 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
     @Override
     public List<String> getParameterList(SqlType sqlType) {
+        final ArrayList<String> list = new ArrayList<>(dataParameterList);
         if (sqlType != SqlType.INSERT) {
-            dataParameterList.addAll(whereParameterList);
+            list.addAll(whereParameterList);
         }
-        return dataParameterList;
+        return list;
     }
 
     @Override
@@ -328,7 +335,10 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     }
 
     @Override
-    public String getGroup() {
+    public String getGroup() throws GrammarException {
+        if (group == null) {
+            throw new GrammarException("group is null");
+        }
         return group;
     }
 
@@ -352,7 +362,6 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         dataParameterList.add(value);
     }
 
-
     /**
      * 记录with信息
      * @param column         所关联的Model(当前模块的属性名)
@@ -360,7 +369,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
      * @param recordClosure  所关联的Model的再一级关联
      */
     @Override
-    public void pushWith(String column, GenerateSqlPartFunctionalInterface builderClosure,
+    public void pushWith(String column, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
         RelationshipRecordWithFunctionalInterface recordClosure) {
         withMap.put(column, new Object[]{builderClosure, recordClosure});
     }
@@ -372,23 +381,5 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     @Override
     public Map<String, Object[]> pullWith() {
         return withMap;
-    }
-
-    /**
-     * 深度copy
-     * @return 和当前属性值一样的全新对象
-     * @throws CloneNotSupportedRuntimeException 克隆异常
-     */
-    @Override
-    public Grammar deepCopy() throws CloneNotSupportedRuntimeException {
-        // 暂存
-        Map<String, Object[]> withMapTemp = withMap;
-        // 移除
-        withMap = null;
-        // 拷贝
-        BaseGrammar baseGrammar = ObjectUtils.deepCopy(this);
-        // 还原
-        baseGrammar.withMap = withMap = withMapTemp;
-        return baseGrammar;
     }
 }

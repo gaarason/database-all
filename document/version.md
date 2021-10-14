@@ -10,25 +10,54 @@ Eloquent ORM for Java
 * [关联关系](/document/relationship.md)
 * [版本信息](/document/version.md)
     * [版本规范](#版本规范)
-    * [历史版本](#历史版本)
     * [版本升级指引](#版本升级指引)
-        * [1.0.x->2.0.x](#1.0.x->2.0.x)
 ## 版本规范
 参照 a.b.c 方式, 例如 1.0.11 版本  
 主版本号 a ：第一个数字，产品改动较大，一般无法向前兼容（要看具体项目）  
 子版本号 b ：第二个数字，增加了新功能，一般情况下向前兼容, 可能存在小部分不兼容情况   
-修正版本号 c ：第三个数字，修复 BUG 或 添加新功能，向前兼容   
-
-## 历史版本
-
-|版本|相关版本|升级描述|暂时兼容|不再兼容|
-|----|----|----|----|----|
-|2.3.7|com.alibaba:druid:1.2.5,spring-boot-dependencies:2.4.3|1.优化代码生成逻辑||`gaarason.database.eloquent.Model<T, K>`的前面更改为`gaarason.database.eloquent.Model<T extends Serializable, K extends Serializable>`|
-|2.3.6|com.alibaba:druid:1.2.5,spring-boot-dependencies:2.4.3|1.增加mysql中的`force index`与`ignore index`|||
-|2.3.5|com.alibaba:druid:1.2.5,spring-boot-dependencies:2.4.3|1.增加count/max/min/avg/sum对group的兼容, 2.增加from对子查询的支持|||
-
+修正版本号 c ：第三个数字，修复 BUG，向前兼容
 
 ## 版本升级指引
+
+### 2.5.0
+
+- 将`Builder`中部分方法, 参数类型由`String`变更为`Object`
+```java
+Builder<T, K> where(String column, String symbol, Object value);
+Builder<T, K> where(String column, Object value);
+Builder<T, K> whereIn(String column, Object... valueArray);
+Builder<T, K> whereNotIn(String column, Object... valueArray);
+Builder<T, K> whereBetween(String column, Object min, Object max);
+Builder<T, K> whereNotBetween(String column, Object min, Object max);
+
+Builder<T, K> having(String column, String symbol, Object value);
+Builder<T, K> having(String column, Object value);
+Builder<T, K> havingIn(String column, Object... valueArray);
+Builder<T, K> havingNotIn(String column, Object... valueArray);
+Builder<T, K> havingBetween(String column, Object min, Object max);
+Builder<T, K> havingNotBetween(String column, Object min, Object max);
+
+Builder<T, K> data(String column, Object value);
+Builder<T, K> data(Map<String, Object> map);
+```
+
+### 2.4.0
+- 在实体中增加对java8的LocalDate/LocalDateTime/LocalTime类型的支持.
+
+
+### 2.0.x->2.1.x
+
+新增加
+- 新提供关联关系相关注解`@HasOneOrMany()`,`@BelongsTo()`,`@BelongsToMany()`
+- 新提供关联关系相关执行`Record::with(String column, GenerateSqlPart builderClosure, RelationshipRecordWith recordClosure)` 与 `RecordList::with()` 与 `Builer::with()` 方法签名类似, 接受3个参数
+
+### 2.0.x->2.1.x
+
+新增加
+- 新提供关联关系相关注解`@HasOneOrMany()`,`@BelongsTo()`,`@BelongsToMany()`
+- 新提供关联关系相关执行`Record::with(String column, GenerateSqlPart builderClosure, RelationshipRecordWith recordClosure)` 与 `RecordList::with()` 与 `Builer::with()` 方法签名类似, 接受3个参数
+
+
 ### 1.0.x->2.0.x
 不兼容
 - `gaarason.database.eloquent.Model<T>` 升级为 `gaarason.database.eloquent.Model<T, K>`, 
@@ -45,10 +74,3 @@ Eloquent ORM for Java
 
 新增加
 - 新提供`K insertGetId()`/`K insertGetId(T entity)`/`K insertGetIdOrFail()`/`K insertGetIdOrFail(T entity)`/`List<K> insertGetIds(List<T> entityList)`
-
-### 2.0.x->2.1.x
-
-新增加
-- 新提供关联关系相关注解`@HasOneOrMany()`,`@BelongsTo()`,`@BelongsToMany()`
-- 新提供关联关系相关执行`Record::with(String column, GenerateSqlPart builderClosure, RelationshipRecordWith recordClosure)` 与 `RecordList::with()` 与 `Builer::with()` 方法签名类似, 接受3个参数 
-

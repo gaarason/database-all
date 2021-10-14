@@ -42,13 +42,13 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> where(String column, String symbol, String value) {
+    public Builder<T, K> where(String column, String symbol, Object value) {
         String sqlPart = column(column) + symbol + formatValue(value);
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> where(String column, String value) {
+    public Builder<T, K> where(String column, Object value) {
         return where(column, "=", value);
     }
 
@@ -59,7 +59,7 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> whereSubQuery(String column, String symbol, GenerateSqlPartFunctionalInterface closure) {
+    public Builder<T, K> whereSubQuery(String column, String symbol, GenerateSqlPartFunctionalInterface<T, K> closure) {
         String completeSql = generateSql(closure);
         String sqlPart = column(column) + symbol + completeSql;
         return whereRaw(sqlPart);
@@ -72,7 +72,7 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> whereIn(String column, String... valueArray) {
+    public Builder<T, K> whereIn(String column, Object... valueArray) {
         Set<Object> valueSet = new HashSet<>(Arrays.asList(valueArray));
         return whereIn(column, valueSet);
     }
@@ -84,7 +84,7 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> whereIn(String column, GenerateSqlPartFunctionalInterface closure) {
+    public Builder<T, K> whereIn(String column, GenerateSqlPartFunctionalInterface<T, K> closure) {
         String sqlPart = generateSql(closure);
         return whereInRaw(column, sqlPart);
     }
@@ -102,25 +102,25 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> whereNotIn(String column, GenerateSqlPartFunctionalInterface closure) {
+    public Builder<T, K> whereNotIn(String column, GenerateSqlPartFunctionalInterface<T, K> closure) {
         String sqlPart = generateSql(closure);
         return whereNotInRaw(column, sqlPart);
     }
 
     @Override
-    public Builder<T, K> whereNotIn(String column, String... valueArray) {
+    public Builder<T, K> whereNotIn(String column, Object... valueArray) {
         Set<Object> valueSet = new HashSet<>(Arrays.asList(valueArray));
         return whereNotIn(column, valueSet);
     }
 
     @Override
-    public Builder<T, K> whereBetween(String column, String min, String max) {
+    public Builder<T, K> whereBetween(String column, Object min, Object max) {
         String sqlPart = column(column) + "between" + formatValue(min) + "and" + formatValue(max);
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> whereNotBetween(String column, String min, String max) {
+    public Builder<T, K> whereNotBetween(String column, Object min, Object max) {
         String sqlPart =
             column(column) + "not between" + formatValue(min) + "and" + formatValue(max);
         return whereRaw(sqlPart);
@@ -145,7 +145,7 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> whereExists(GenerateSqlPartFunctionalInterface closure) {
+    public Builder<T, K> whereExists(GenerateSqlPartFunctionalInterface<T, K> closure) {
         String sql = generateSql(closure);
         return whereExistsRaw(sql);
     }
@@ -157,7 +157,7 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> whereNotExists(GenerateSqlPartFunctionalInterface closure) {
+    public Builder<T, K> whereNotExists(GenerateSqlPartFunctionalInterface<T, K> closure) {
         String sql = generateSql(closure);
         return whereNotExistsRaw(sql);
     }
@@ -174,14 +174,14 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> andWhere(GenerateSqlPartFunctionalInterface closure) {
+    public Builder<T, K> andWhere(GenerateSqlPartFunctionalInterface<T, K> closure) {
         String sqlPart = generateSqlPart(closure);
         grammar.pushWhere(sqlPart, "and");
         return this;
     }
 
     @Override
-    public Builder<T, K> orWhere(GenerateSqlPartFunctionalInterface closure) {
+    public Builder<T, K> orWhere(GenerateSqlPartFunctionalInterface<T, K> closure) {
         String sqlPart = generateSqlPart(closure);
         grammar.pushWhere(sqlPart, "or");
         return this;
@@ -194,13 +194,13 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> having(String column, String symbol, String value) {
+    public Builder<T, K> having(String column, String symbol, Object value) {
         String sqlPart = column(column) + symbol + formatValue(value);
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> having(String column, String value) {
+    public Builder<T, K> having(String column, Object value) {
         return having(column, "=", value);
     }
 
@@ -211,7 +211,7 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> havingIn(String column, String... valueArray) {
+    public Builder<T, K> havingIn(String column, Object... valueArray) {
         Set<Object> valueSet = new HashSet<>(Arrays.asList(valueArray));
         return havingIn(column, valueSet);
     }
@@ -223,7 +223,7 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> havingIn(String column, GenerateSqlPartFunctionalInterface closure) {
+    public Builder<T, K> havingIn(String column, GenerateSqlPartFunctionalInterface<T, K> closure) {
         String sqlPart = generateSql(closure);
         return havingInRaw(column, sqlPart);
     }
@@ -235,7 +235,7 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> havingNotIn(String column, String... valueArray) {
+    public Builder<T, K> havingNotIn(String column, Object... valueArray) {
         Set<Object> valueSet = new HashSet<>(Arrays.asList(valueArray));
         return havingNotIn(column, valueSet);
     }
@@ -247,19 +247,19 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> havingNotIn(String column, GenerateSqlPartFunctionalInterface closure) {
+    public Builder<T, K> havingNotIn(String column, GenerateSqlPartFunctionalInterface<T, K> closure) {
         String sqlPart = generateSql(closure);
         return havingNotInRaw(column, sqlPart);
     }
 
     @Override
-    public Builder<T, K> havingBetween(String column, String min, String max) {
+    public Builder<T, K> havingBetween(String column, Object min, Object max) {
         String sqlPart = column(column) + "between" + formatValue(min) + "and" + formatValue(max);
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> havingNotBetween(String column, String min, String max) {
+    public Builder<T, K> havingNotBetween(String column, Object min, Object max) {
         String sqlPart =
             column(column) + "not between" + formatValue(min) + "and" + formatValue(max);
         return havingRaw(sqlPart);
@@ -284,8 +284,8 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> havingExists(GenerateSqlPartFunctionalInterface Closure) {
-        String sql = generateSql(Closure);
+    public Builder<T, K> havingExists(GenerateSqlPartFunctionalInterface<T, K> closure) {
+        String sql = generateSql(closure);
         return havingExistsRaw(sql);
     }
 
@@ -296,8 +296,8 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> havingNotExists(GenerateSqlPartFunctionalInterface Closure) {
-        String sql = generateSql(Closure);
+    public Builder<T, K> havingNotExists(GenerateSqlPartFunctionalInterface<T, K> closure) {
+        String sql = generateSql(closure);
         return havingNotExistsRaw(sql);
     }
 
@@ -313,14 +313,14 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> andHaving(GenerateSqlPartFunctionalInterface closure) {
+    public Builder<T, K> andHaving(GenerateSqlPartFunctionalInterface<T, K> closure) {
         String sqlPart = generateSqlPart(closure);
         grammar.pushHaving(sqlPart, "and");
         return this;
     }
 
     @Override
-    public Builder<T, K> orHaving(GenerateSqlPartFunctionalInterface closure) {
+    public Builder<T, K> orHaving(GenerateSqlPartFunctionalInterface<T, K> closure) {
         String sqlPart = generateSqlPart(closure);
         grammar.pushHaving(sqlPart, "or");
         return this;
@@ -364,8 +364,13 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> selectFunction(String function, GenerateSqlPartFunctionalInterface closure,
-                                        @Nullable String alias) {
+    public Builder<T, K> selectFunction(String function, String parameter) {
+        return selectFunction(function, parameter, null);
+    }
+
+    @Override
+    public Builder<T, K> selectFunction(String function, GenerateSqlPartFunctionalInterface<T, K> closure,
+        @Nullable String alias) {
         String completeSql = generateSql(closure);
         String sqlPart = function + FormatUtils.bracket(completeSql) + (alias == null ? "" :
             " as " + FormatUtils.quotes(alias));
@@ -374,14 +379,22 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> orderBy(String column, OrderBy type) {
-        String sqlPart = column(column) + " " + type.getOperation();
-        grammar.pushOrderBy(sqlPart);
+    public Builder<T, K> selectFunction(String function, GenerateSqlPartFunctionalInterface<T, K> closure) {
+        return selectFunction(function, closure, null);
+
+    }
+
+    @Override
+    public Builder<T, K> orderBy(@Nullable String column, OrderBy type) {
+        if(null != column){
+            String sqlPart = column(column) + " " + type.getOperation();
+            grammar.pushOrderBy(sqlPart);
+        }
         return this;
     }
 
     @Override
-    public Builder<T, K> orderBy(String column) {
+    public Builder<T, K> orderBy(@Nullable String column) {
         return orderBy(column, OrderBy.ASC);
     }
 
@@ -427,7 +440,7 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
 
     @Override
     public Builder<T, K> value(List<String> valueList) {
-        if (valueList.size() == 0) {
+        if (valueList.isEmpty()) {
             grammar.pushValue("()");
             return this;
         }
@@ -456,14 +469,14 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> data(String column, String value) {
+    public Builder<T, K> data(String column, Object value) {
         String sqlPart = column(column) + '=' + formatData(value);
         return data(sqlPart);
     }
 
     @Override
-    public Builder<T, K> data(Map<String, String> map) {
-        for (Map.Entry<String, String> entry : map.entrySet()) {
+    public Builder<T, K> data(Map<String, Object> map) {
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
             data(entry.getKey(), entry.getValue());
         }
         return this;
@@ -494,14 +507,14 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
-    public Builder<T, K> union(GenerateSqlPartFunctionalInterface closure) {
+    public Builder<T, K> union(GenerateSqlPartFunctionalInterface<T, K> closure) {
         String sqlPart = generateSql(closure);
         grammar.pushUnion(sqlPart, "union");
         return this;
     }
 
     @Override
-    public Builder<T, K> unionAll(GenerateSqlPartFunctionalInterface closure) {
+    public Builder<T, K> unionAll(GenerateSqlPartFunctionalInterface<T, K> closure) {
         String sqlPart = generateSql(closure);
         grammar.pushUnion(sqlPart, "union all");
         return this;

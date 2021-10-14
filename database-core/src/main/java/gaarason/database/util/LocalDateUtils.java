@@ -5,6 +5,7 @@ import gaarason.database.exception.TimeConversionException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -17,6 +18,11 @@ import java.util.List;
  * @author xt
  */
 public class LocalDateUtils {
+
+    /**
+     * 解决 SimpleDateFormat 线程不安全的问题, 使用 SIMPLE_DATE_FORMAT.get() 获取对象.
+     */
+    public static final ThreadLocal<SimpleDateFormat> SIMPLE_DATE_FORMAT = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
 
     /**
      * 自定义常用时间格式化字符串

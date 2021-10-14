@@ -31,7 +31,7 @@ import java.util.Map;
  */
 public abstract class MiddleBuilder<T extends Serializable, K extends Serializable> extends BaseBuilder<T, K> {
 
-    public MiddleBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
+    protected MiddleBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
         super(gaarasonDataSource, model, entityClass);
     }
 
@@ -101,7 +101,7 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     }
 
     @Override
-    public Builder<T, K> from(String alias, GenerateSqlPartFunctionalInterface closure) {
+    public Builder<T, K> from(String alias, GenerateSqlPartFunctionalInterface<T, K> closure) {
         grammar.pushFrom(generateSql(closure) + alias);
         return this;
     }
@@ -117,8 +117,8 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
      * @param value 参数
      * @return 参数占位符?
      */
-    protected String formatValue(String value) {
-        return FormatUtils.value(value, grammar);
+    protected String formatValue(Object value) {
+        return FormatUtils.value(String.valueOf(value), grammar);
     }
 
     /**
@@ -126,8 +126,8 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
      * @param value 参数
      * @return 参数占位符?
      */
-    protected String formatData(String value) {
-        return FormatUtils.data(value, grammar);
+    protected String formatData(Object value) {
+        return FormatUtils.data(String.valueOf(value), grammar);
     }
 
     /**
@@ -288,7 +288,7 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     @Override
     public int update(T entity) throws SQLRuntimeException {
         // 获取entity所有有效字段对其值得映射
-        Map<String, String> stringStringMap = ModelShadowProvider.columnValueMap(entity, false);
+        Map<String, Object> stringStringMap = ModelShadowProvider.columnValueMap(entity, false);
 
         data(stringStringMap);
         // 执行

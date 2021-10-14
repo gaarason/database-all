@@ -61,13 +61,6 @@ public class MsSqlGrammar extends BaseGrammar {
         return sqlBuilder.toString();
     }
 
-    @Override
-    public List<String> getParameterList(SqlType sqlType) {
-        if (sqlType != SqlType.INSERT)
-            dataParameterList.addAll(whereParameterList);
-        return dataParameterList;
-    }
-
     /**
      * 开启标识列插入显式值
      * @param table 表名

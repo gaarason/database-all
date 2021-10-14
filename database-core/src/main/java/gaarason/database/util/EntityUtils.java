@@ -8,7 +8,6 @@ import gaarason.database.exception.TypeNotSupportedException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -147,16 +146,15 @@ public class EntityUtils {
 
     /**
      * 格式化值到字符串
-     * @param value 原值
+     * @param value 原值 (实体的属性)
      * @return 字符串
      */
     @Nullable
     public static String valueFormat(@Nullable Object value) {
         if (value instanceof Date) {
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            return formatter.format(value);
+            return LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(value);
         } else if (value instanceof Boolean) {
-            return (Boolean) value ? "1" : "0";
+            return (boolean) value ? "1" : "0";
         } else {
             return value == null ? null : value.toString();
         }

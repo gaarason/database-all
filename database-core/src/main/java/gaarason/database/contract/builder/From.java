@@ -26,7 +26,7 @@ public interface From<T extends Serializable, K extends Serializable> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> from(String alias, GenerateSqlPartFunctionalInterface closure);
+    Builder<T, K> from(String alias, GenerateSqlPartFunctionalInterface<T, K> closure);
 
     /**
      * 临时表查询

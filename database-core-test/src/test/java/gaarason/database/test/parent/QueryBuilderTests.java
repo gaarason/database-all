@@ -210,7 +210,7 @@ abstract public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 更新_通过MAP更新() {
-        Map<String, String> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         map.put("name", "gggg");
         map.put("age", "7");
 
@@ -712,6 +712,14 @@ abstract public class QueryBuilderTests extends BaseTests {
             .get()
             .toObjectList();
         Assert.assertEquals(entityList2.size(), 3);
+
+        List<StudentModel.Entity> entityList3 = studentModel.newQuery()
+            .whereIn("id", 4, 5, "6", 7)
+            .whereNotIn("id",
+                "10", 9, "7")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(entityList3.size(), 3);
     }
 
     @Test
@@ -744,7 +752,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(entityList1.size(), 2);
 
         List<StudentModel.Entity> entityList2 = studentModel.newQuery().where("id", "3").orWhere(
-            (builder) -> builder.whereBetween("id", "4", "10").where("age", ">", "11")
+            (builder) -> builder.whereBetween("id", 4, "10").where("age", ">", "11")
         ).get().toObjectList();
         Assert.assertEquals(entityList2.size(), 6);
     }

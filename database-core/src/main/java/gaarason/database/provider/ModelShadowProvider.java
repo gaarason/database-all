@@ -133,9 +133,9 @@ public final class ModelShadowProvider {
      * @param <T>        数据表实体类
      * @return 字段对值的映射
      */
-    public static <T extends Serializable> Map<String, String> columnValueMap(T entity, boolean insertType) {
+    public static <T extends Serializable> Map<String, Object> columnValueMap(T entity, boolean insertType) {
         // 结果集
-        Map<String, String> columnValueMap = new HashMap<>();
+        Map<String, Object> columnValueMap = new HashMap<>();
         // 属性信息集合
         Map<String, FieldInfo> columnFieldMap = getByEntityClass(entity.getClass()).getColumnFieldMap();
         for (Map.Entry<String, FieldInfo> entry : columnFieldMap.entrySet()) {

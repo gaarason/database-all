@@ -53,11 +53,28 @@ public interface Select<T extends Serializable, K extends Serializable> {
     Builder<T, K> selectFunction(String function, String parameter, @Nullable String alias);
 
     /**
+     * 查询字段
+     * @param function  数据库方法名
+     * @param parameter 数据库方法参数
+     * @return 查询构造器
+     */
+    Builder<T, K> selectFunction(String function, String parameter);
+
+    /**
+     * 调研数据库中的方法
      * @param function 数据库方法名
      * @param closure  返回代码片段
      * @param alias    字段别名
      * @return 查询构造器
      */
-    Builder<T, K> selectFunction(String function, GenerateSqlPartFunctionalInterface closure, @Nullable String alias);
+    Builder<T, K> selectFunction(String function, GenerateSqlPartFunctionalInterface<T, K> closure, @Nullable String alias);
+
+    /**
+     * 调研数据库中的方法
+     * @param function 数据库方法名
+     * @param closure  返回代码片段
+     * @return 查询构造器
+     */
+    Builder<T, K> selectFunction(String function, GenerateSqlPartFunctionalInterface<T, K> closure);
 
 }

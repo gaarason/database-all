@@ -533,7 +533,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * @return sql
      */
     private String generateSql(GenerateSqlPartFunctionalInterface<T, K> closure, boolean wholeSql) {
-        Builder<?, ?> subBuilder = closure.execute(getNewSelf());
+        Builder<T, K> subBuilder = closure.execute(getNewSelf());
         List<String> parameterList = subBuilder.getGrammar().getParameterList(SqlType.SUB_QUERY);
         for (String parameter : parameterList) {
             grammar.pushWhereParameter(parameter);

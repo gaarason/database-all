@@ -26,14 +26,14 @@ public interface Data<T extends Serializable, K extends Serializable> {
      * @param value  值
      * @return 查询构建器
      */
-    Builder<T, K> data(String column, String value);
+    Builder<T, K> data(String column, Object value);
 
     /**
      * 数据更新
      * @param map Map<String column, String value>
      * @return 查询构建器
      */
-    Builder<T, K> data(Map<String, String> map);
+    Builder<T, K> data(Map<String, Object> map);
 
     /**
      * 字段自增

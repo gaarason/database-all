@@ -28,7 +28,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
      * @param value  值
      * @return 查询构建器
      */
-    Builder<T, K> having(String column, String symbol, String value);
+    Builder<T, K> having(String column, String symbol, Object value);
 
     /**
      * 比较列与值相等
@@ -36,7 +36,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
      * @param value  值
      * @return 查询构建器
      */
-    Builder<T, K> having(String column, String value);
+    Builder<T, K> having(String column, Object value);
 
     /**
      * 列值在范围内
@@ -52,7 +52,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
      * @param valueArray 值所在的数组
      * @return 查询构建器
      */
-    Builder<T, K> havingIn(String column, String... valueArray);
+    Builder<T, K> havingIn(String column, Object... valueArray);
 
     /**
      * 列值在范围内(子查询)
@@ -68,7 +68,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> havingIn(String column, GenerateSqlPartFunctionalInterface closure);
+    Builder<T, K> havingIn(String column, GenerateSqlPartFunctionalInterface<T, K> closure);
 
     /**
      * 列值不在范围内
@@ -84,7 +84,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
      * @param valueArray 值所在的数组
      * @return 查询构建器
      */
-    Builder<T, K> havingNotIn(String column, String... valueArray);
+    Builder<T, K> havingNotIn(String column, Object... valueArray);
 
     /**
      * 列值不在范围内(子查询)
@@ -100,7 +100,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> havingNotIn(String column, GenerateSqlPartFunctionalInterface closure);
+    Builder<T, K> havingNotIn(String column, GenerateSqlPartFunctionalInterface<T, K> closure);
 
     /**
      * 列值在2值之间
@@ -109,7 +109,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
      * @param max    值2
      * @return 查询构建器
      */
-    Builder<T, K> havingBetween(String column, String min, String max);
+    Builder<T, K> havingBetween(String column, Object min, Object max);
 
     /**
      * 列值不在2值之间
@@ -118,7 +118,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
      * @param max    值2
      * @return 查询构建器
      */
-    Builder<T, K> havingNotBetween(String column, String min, String max);
+    Builder<T, K> havingNotBetween(String column, Object min, Object max);
 
     /**
      * 列值为null
@@ -143,10 +143,10 @@ public interface Having<T extends Serializable, K extends Serializable> {
 
     /**
      * exists一个闭包
-     * @param Closure 闭包
+     * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> havingExists(GenerateSqlPartFunctionalInterface Closure);
+    Builder<T, K> havingExists(GenerateSqlPartFunctionalInterface<T, K> closure);
 
     /**
      * not exists一个闭包
@@ -157,10 +157,10 @@ public interface Having<T extends Serializable, K extends Serializable> {
 
     /**
      * not exists一个完整sql
-     * @param Closure 完整sql
+     * @param closure 完整sql
      * @return 查询构建器
      */
-    Builder<T, K> havingNotExists(GenerateSqlPartFunctionalInterface Closure);
+    Builder<T, K> havingNotExists(GenerateSqlPartFunctionalInterface<T, K> closure);
 
     /**
      * 比较字段与字段
@@ -184,12 +184,12 @@ public interface Having<T extends Serializable, K extends Serializable> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> andHaving(GenerateSqlPartFunctionalInterface closure);
+    Builder<T, K> andHaving(GenerateSqlPartFunctionalInterface<T, K> closure);
 
     /**
      * 或
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> orHaving(GenerateSqlPartFunctionalInterface closure);
+    Builder<T, K> orHaving(GenerateSqlPartFunctionalInterface<T, K> closure);
 }

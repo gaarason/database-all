@@ -28,7 +28,7 @@ public interface Where<T extends Serializable, K extends Serializable> {
      * @param value  值
      * @return 查询构建器
      */
-    Builder<T, K> where(String column, String symbol, String value);
+    Builder<T, K> where(String column, String symbol, Object value);
 
     /**
      * 比较列与值相等
@@ -36,7 +36,7 @@ public interface Where<T extends Serializable, K extends Serializable> {
      * @param value  值
      * @return 查询构建器
      */
-    Builder<T, K> where(String column, String value);
+    Builder<T, K> where(String column, Object value);
 
     /**
      * 条件子查询
@@ -54,7 +54,7 @@ public interface Where<T extends Serializable, K extends Serializable> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> whereSubQuery(String column, String symbol, GenerateSqlPartFunctionalInterface closure);
+    Builder<T, K> whereSubQuery(String column, String symbol, GenerateSqlPartFunctionalInterface<T, K> closure);
 
     /**
      * 列值在范围内
@@ -70,7 +70,7 @@ public interface Where<T extends Serializable, K extends Serializable> {
      * @param valueArray 值所在的数组
      * @return 查询构建器
      */
-    Builder<T, K> whereIn(String column, String... valueArray);
+    Builder<T, K> whereIn(String column, Object... valueArray);
 
     /**
      * 列值在范围内(子查询)
@@ -86,7 +86,7 @@ public interface Where<T extends Serializable, K extends Serializable> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> whereIn(String column, GenerateSqlPartFunctionalInterface closure);
+    Builder<T, K> whereIn(String column, GenerateSqlPartFunctionalInterface<T, K> closure);
 
     /**
      * 列值不在范围内
@@ -110,7 +110,7 @@ public interface Where<T extends Serializable, K extends Serializable> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> whereNotIn(String column, GenerateSqlPartFunctionalInterface closure);
+    Builder<T, K> whereNotIn(String column, GenerateSqlPartFunctionalInterface<T, K> closure);
 
     /**
      * 列值在范围内
@@ -118,7 +118,7 @@ public interface Where<T extends Serializable, K extends Serializable> {
      * @param valueArray 值所在的数组
      * @return 查询构建器
      */
-    Builder<T, K> whereNotIn(String column, String... valueArray);
+    Builder<T, K> whereNotIn(String column, Object... valueArray);
 
     /**
      * 列值在2值之间
@@ -127,7 +127,7 @@ public interface Where<T extends Serializable, K extends Serializable> {
      * @param max    值2
      * @return 查询构建器
      */
-    Builder<T, K> whereBetween(String column, String min, String max);
+    Builder<T, K> whereBetween(String column, Object min, Object max);
 
     /**
      * 列值不在2值之间
@@ -136,7 +136,7 @@ public interface Where<T extends Serializable, K extends Serializable> {
      * @param max    值2
      * @return 查询构建器
      */
-    Builder<T, K> whereNotBetween(String column, String min, String max);
+    Builder<T, K> whereNotBetween(String column, Object min, Object max);
 
     /**
      * 列值为null
@@ -164,7 +164,7 @@ public interface Where<T extends Serializable, K extends Serializable> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> whereExists(GenerateSqlPartFunctionalInterface closure);
+    Builder<T, K> whereExists(GenerateSqlPartFunctionalInterface<T, K> closure);
 
     /**
      * not exists一个闭包
@@ -178,7 +178,7 @@ public interface Where<T extends Serializable, K extends Serializable> {
      * @param closure 完整sql
      * @return 查询构建器
      */
-    Builder<T, K> whereNotExists(GenerateSqlPartFunctionalInterface closure);
+    Builder<T, K> whereNotExists(GenerateSqlPartFunctionalInterface<T, K> closure);
 
     /**
      * 比较字段与字段
@@ -202,13 +202,13 @@ public interface Where<T extends Serializable, K extends Serializable> {
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> andWhere(GenerateSqlPartFunctionalInterface closure);
+    Builder<T, K> andWhere(GenerateSqlPartFunctionalInterface<T, K> closure);
 
     /**
      * 或
      * @param closure 闭包
      * @return 查询构建器
      */
-    Builder<T, K> orWhere(GenerateSqlPartFunctionalInterface closure);
+    Builder<T, K> orWhere(GenerateSqlPartFunctionalInterface<T, K> closure);
 
 }
