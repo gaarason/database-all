@@ -2,11 +2,18 @@ package gaarason.database.util;
 
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.exception.TypeCastException;
+import gaarason.database.exception.TypeNotSupportedException;
+import gaarason.database.provider.ModelShadowProvider;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.*;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Date;
 
 /**
  * 类型转化类
@@ -30,8 +37,10 @@ public class ConverterUtils {
      * 对象转Number
      * @param obj 对象
      * @return Number
+     * @throws TypeNotSupportedException 不支持的类型
+     * @throws NumberFormatException     非数字格式
      */
-    public static Number getAsNumber(final Object obj) {
+    public static Number getAsNumber(final Object obj) throws TypeNotSupportedException, NumberFormatException {
         if (obj instanceof Number) {
             return (Number) obj;
         } else if (obj instanceof Boolean) {
@@ -43,7 +52,7 @@ public class ConverterUtils {
                 throw new NumberFormatException("For input string: \"" + obj + "\"");
             }
         } else {
-            throw new UnsupportedOperationException();
+            throw new TypeNotSupportedException();
         }
     }
 
@@ -212,6 +221,31 @@ public class ConverterUtils {
         }
     }
 
+    /**
+     * 对象转Blob
+     * @param obj 对象
+     * @return Blob
+     * @throws TypeNotSupportedException 不支持的类型
+     */
+    public static Blob getAsBlob(final Object obj) throws TypeNotSupportedException {
+        if (obj instanceof Blob) {
+            return (Blob) obj;
+        }
+        throw new TypeNotSupportedException();
+    }
+
+    /**
+     * 对象转Clob
+     * @param obj 对象
+     * @return Clob
+     * @throws TypeNotSupportedException 不支持的类型
+     */
+    public static Clob getAsClob(final Object obj) throws TypeNotSupportedException {
+        if (obj instanceof Clob) {
+            return (Clob) obj;
+        }
+        throw new TypeNotSupportedException();
+    }
 
     /**
      * 对象转指定类型
@@ -219,71 +253,182 @@ public class ConverterUtils {
      * @param clz 类型
      * @return 对应类型的数据
      * @throws TypeCastException 类型转化失败
+     * @see gaarason.database.eloquent.appointment.FinalVariable ALLOW_FIELD_TYPES
      */
-    @SuppressWarnings("unchecked")
     public static <R> R cast(final Object obj, final Class<R> clz) throws TypeCastException {
-        R result = null;
+        Object result;
         if (Boolean.class.equals(clz) || boolean.class.equals(clz)) {
-            result = (R) getAsBoolean(obj);
+            result = getAsBoolean(obj);
         } else if (Byte.class.equals(clz) || byte.class.equals(clz)) {
-            result = (R) getAsByte(obj);
-        } else if (Short.class.equals(clz) || short.class.equals(clz)) {
-            result = (R) getAsShort(obj);
-        } else if (Integer.class.equals(clz) || int.class.equals(clz)) {
-            result = (R) getAsInteger(obj);
-        } else if (Long.class.equals(clz) || long.class.equals(clz)) {
-            result = (R) getAsLong(obj);
-        } else if (Float.class.equals(clz) || float.class.equals(clz)) {
-            result = (R) getAsFloat(obj);
-        } else if (Double.class.equals(clz) || double.class.equals(clz)) {
-            result = (R) getAsDouble(obj);
+            result = getAsByte(obj);
         } else if (Character.class.equals(clz) || char.class.equals(clz)) {
-            result = ObjectUtils.typeCast(getAsString(obj).toCharArray()[0]);
-        } else if (String.class.equals(clz)) {
-            result = (R) getAsString(obj);
+            result = getAsString(obj).toCharArray()[0];
+        } else if (Short.class.equals(clz) || short.class.equals(clz)) {
+            result = getAsShort(obj);
+        } else if (Integer.class.equals(clz) || int.class.equals(clz)) {
+            result = getAsInteger(obj);
+        } else if (Long.class.equals(clz) || long.class.equals(clz)) {
+            result = getAsLong(obj);
+        } else if (Float.class.equals(clz) || float.class.equals(clz)) {
+            result = getAsFloat(obj);
+        } else if (Double.class.equals(clz) || double.class.equals(clz)) {
+            result = getAsDouble(obj);
         } else if (BigInteger.class.isAssignableFrom(clz)) {
-            result = (R) getAsBigInteger(obj);
-        } else if (BigDecimal.class.isAssignableFrom(clz)) {
-            result = (R) getAsBigDecimal(obj);
+            result = getAsBigInteger(obj);
         } else if (Number.class.isAssignableFrom(clz)) {
-            result = (R) getAsNumber(obj);
+            result = getAsNumber(obj);
+        } else if (java.sql.Date.class.equals(clz)) {
+            result = java.sql.Date.valueOf(LocalDateUtils.str2LocalDate(getAsString(obj)));
+        } else if (Time.class.equals(clz)) {
+            result = Time.valueOf(LocalDateUtils.str2LocalTime(getAsString(obj)));
+        } else if (Timestamp.class.equals(clz)) {
+            result = Timestamp.valueOf(LocalDateUtils.str2LocalDateTime(getAsString(obj)));
+        } else if (Date.class.isAssignableFrom(clz)) {
+            result = LocalDateUtils.localDateTime2date(LocalDateUtils.str2LocalDateTime(getAsString(obj)));
+        } else if (LocalDate.class.equals(clz)) {
+            result = LocalDateUtils.str2LocalDate(getAsString(obj));
+        } else if (LocalTime.class.equals(clz)) {
+            result = LocalDateUtils.str2LocalTime(getAsString(obj));
+        } else if (LocalDateTime.class.equals(clz)) {
+            result = LocalDateUtils.str2LocalDateTime(getAsString(obj));
+        } else if (String.class.equals(clz)) {
+            result = getAsString(obj);
+        } else if (BigDecimal.class.equals(clz)) {
+            result = getAsBigDecimal(obj);
+        } else if (Blob.class.isAssignableFrom(clz)) {
+            result = getAsBlob(obj);
+        } else if (Clob.class.isAssignableFrom(clz)) {
+            result = getAsClob(obj);
         } else {
-            result = ObjectUtils.typeCast(clz);
+            result = obj;
         }
-        return result;
+        return ObjectUtils.typeCast(result);
     }
 
     /**
      * 获取指定类型的默认值
      * @param clz 类型
      * @return 默认值
+     * @throws TypeCastException 类型转换失败
+     * @see gaarason.database.eloquent.appointment.FinalVariable ALLOW_FIELD_TYPES
      */
     @Nullable
-    public static Object getDefaultValueByJavaType(Class<?> clz) {
+    public static <R> R getDefaultValueByJavaType(Class<R> clz) throws TypeCastException{
+        Object result;
         if (Boolean.class.equals(clz) || boolean.class.equals(clz)) {
-            return false;
+            result = false;
         } else if (Byte.class.equals(clz) || byte.class.equals(clz)) {
-            return Byte.valueOf("0");
-        } else if (Short.class.equals(clz) || short.class.equals(clz)) {
-            return Byte.valueOf("0");
-        } else if (Integer.class.equals(clz) || int.class.equals(clz)) {
-            return Integer.valueOf("0");
-        } else if (Long.class.equals(clz) || long.class.equals(clz)) {
-            return Long.valueOf("0");
-        } else if (Float.class.equals(clz) || float.class.equals(clz)) {
-            return Float.valueOf("0");
-        } else if (Double.class.equals(clz) || double.class.equals(clz)) {
-            return Double.valueOf("0");
+            result = Byte.valueOf("0");
         } else if (Character.class.equals(clz) || char.class.equals(clz)) {
-            return ' ';
-        } else if (BigInteger.class.equals(clz)) {
-            return BigInteger.ZERO;
+            result = ' ';
+        } else if (Short.class.equals(clz) || short.class.equals(clz)) {
+            result = Byte.valueOf("0");
+        } else if (Integer.class.equals(clz) || int.class.equals(clz)) {
+            result = Integer.valueOf("0");
+        } else if (Long.class.equals(clz) || long.class.equals(clz)) {
+            result = Long.valueOf("0");
+        } else if (Float.class.equals(clz) || float.class.equals(clz)) {
+            result = Float.valueOf("0");
+        } else if (Double.class.equals(clz) || double.class.equals(clz)) {
+            result = Double.valueOf("0");
+        } else if (BigInteger.class.isAssignableFrom(clz)) {
+            result = BigInteger.ZERO;
+        } else if (Number.class.isAssignableFrom(clz)) {
+            result = Long.valueOf("0");
+        } else if (java.sql.Date.class.equals(clz)) {
+            result = java.sql.Date.valueOf(LocalDateUtils.MIN_LOCAL_DATE_TIME.toLocalDate());
+        } else if (Time.class.equals(clz)) {
+            result = Time.valueOf(LocalDateUtils.MIN_LOCAL_DATE_TIME.toLocalTime());
+        } else if (Timestamp.class.equals(clz)) {
+            result = Timestamp.valueOf(LocalDateUtils.MIN_LOCAL_DATE_TIME);
+        } else if (Date.class.isAssignableFrom(clz)) {
+            result = LocalDateUtils.localDateTime2date(LocalDateUtils.MIN_LOCAL_DATE_TIME);
+        } else if (LocalDate.class.equals(clz)) {
+            result = LocalDateUtils.MIN_LOCAL_DATE_TIME.toLocalDate();
+        } else if (LocalTime.class.equals(clz)) {
+            result = LocalDateUtils.MIN_LOCAL_DATE_TIME.toLocalTime();
+        } else if (LocalDateTime.class.equals(clz)) {
+            result = LocalDateUtils.MIN_LOCAL_DATE_TIME;
         } else if (String.class.equals(clz)) {
-            return "";
+            result = "";
         } else if (BigDecimal.class.equals(clz)) {
-            return BigDecimal.valueOf(0L);
+            result = BigDecimal.valueOf(0L);
+        } else if (Blob.class.isAssignableFrom(clz)) {
+            return null;
+        } else if (Clob.class.isAssignableFrom(clz)) {
+            return null;
         } else {
             return null;
+        }
+        return ObjectUtils.typeCast(result);
+    }
+
+    /**
+     * 根据java类型，获取jdbc中的数据结果
+     * @param fieldInfo FieldInfo
+     * @param resultSet 结果集
+     * @param column    列名
+     * @return 值
+     * @throws SQLException 数据库异常
+     * @see gaarason.database.eloquent.appointment.FinalVariable ALLOW_FIELD_TYPES
+     */
+    @Nullable
+    public static Object getValueFromJdbcResultSet(@Nullable ModelShadowProvider.FieldInfo fieldInfo, ResultSet resultSet,
+        String column) throws SQLException {
+        // ModelShadowProvider 中没有指定的字段信息
+        if (fieldInfo == null) {
+            return resultSet.getObject(column);
+        }
+
+        Class<?> fieldType = fieldInfo.getJavaType();
+
+        if (Boolean.class.equals(fieldType) || boolean.class.equals(fieldType)) {
+            return resultSet.getBoolean(column);
+        } else if (Byte.class.equals(fieldType) || byte.class.equals(fieldType)) {
+            return resultSet.getByte(column);
+        } else if (Character.class.equals(fieldType) || char.class.equals(fieldType)) {
+            String tempStr = resultSet.getString(column);
+            return tempStr != null ? tempStr.toCharArray()[0] : null;
+        } else if (Short.class.equals(fieldType) || short.class.equals(fieldType)) {
+            return resultSet.getShort(column);
+        } else if (Integer.class.equals(fieldType) || int.class.equals(fieldType)) {
+            return resultSet.getInt(column);
+        } else if (Long.class.equals(fieldType) || long.class.equals(fieldType)) {
+            return resultSet.getLong(column);
+        } else if (Float.class.equals(fieldType) || float.class.equals(fieldType)) {
+            return resultSet.getFloat(column);
+        } else if (Double.class.equals(fieldType) || double.class.equals(fieldType)) {
+            return resultSet.getDouble(column);
+        } else if (BigInteger.class.isAssignableFrom(fieldType)) {
+            return new BigInteger(resultSet.getString(column));
+        } else if (Number.class.isAssignableFrom(fieldType)) {
+            return resultSet.getLong(column);
+        } else if (java.sql.Date.class.equals(fieldType)) {
+            return resultSet.getDate(column);
+        } else if (Time.class.equals(fieldType)) {
+            return resultSet.getTime(column);
+        } else if (Timestamp.class.equals(fieldType)) {
+            return resultSet.getTimestamp(column);
+        } else if (Date.class.isAssignableFrom(fieldType)) {
+            Timestamp timestamp = resultSet.getTimestamp(column);
+            return timestamp != null ? Date.from(timestamp.toInstant()) : null;
+        } else if (LocalDate.class.equals(fieldType)) {
+            return resultSet.getDate(column).toLocalDate();
+        } else if (LocalTime.class.equals(fieldType)) {
+            return resultSet.getTime(column).toLocalTime();
+        } else if (LocalDateTime.class.equals(fieldType)) {
+            return resultSet.getTimestamp(column).toLocalDateTime();
+        } else if (String.class.equals(fieldType)) {
+            return resultSet.getString(column);
+        } else if (BigDecimal.class.equals(fieldType)) {
+            return resultSet.getBigDecimal(column);
+        } else if (Blob.class.isAssignableFrom(fieldType)) {
+            return resultSet.getBlob(column);
+        } else if (Clob.class.isAssignableFrom(fieldType)) {
+            return resultSet.getClob(column);
+        } else {
+            // 未识别的类型
+            return resultSet.getObject(column, fieldType);
         }
     }
 }

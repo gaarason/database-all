@@ -29,18 +29,18 @@ public interface Attach {
     /**
      * 新增单个关系
      * @param targetRecord 目标record
-     * @param stringStringMap 当BelongsToMany时生效, 将数据插入中间表
+     * @param relationDataMap 当BelongsToMany时生效, 将数据插入中间表
      * @return 受影响的行数
      */
-    int attach(Record<?, ?> targetRecord, Map<String, String> stringStringMap);
+    int attach(Record<?, ?> targetRecord, Map<String, Object> relationDataMap);
 
     /**
      * 新增多个关系
      * @param targetRecords 目标records
-     * @param stringStringMap 当BelongsToMany时生效, 将数据插入中间表
+     * @param relationDataMap 当BelongsToMany时生效, 将数据插入中间表
      * @return 受影响的行数
      */
-    int attach(RecordList<?, ?> targetRecords, Map<String, String> stringStringMap);
+    int attach(RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap);
 
     /**
      * 新增单个关系
@@ -59,17 +59,17 @@ public interface Attach {
     /**
      * 新增单个关系
      * @param id 目标record的主键
-     * @param stringStringMap 当BelongsToMany时生效, 将数据插入中间表
+     * @param relationDataMap 当BelongsToMany时生效, 将数据插入中间表
      * @return 受影响的行数
      */
-    int attach(Object id, Map<String, String> stringStringMap);
+    int attach(Object id, Map<String, Object> relationDataMap);
 
     /**
      * 新增多个关系
      * @param ids 目标records的主键集合
-     * @param stringStringMap 当BelongsToMany时生效, 将数据插入中间表
+     * @param relationDataMap 当BelongsToMany时生效, 将数据插入中间表
      * @return 受影响的行数
      */
-    int attach(Collection<Object> ids, Map<String, String> stringStringMap);
+    int attach(Collection<Object> ids, Map<String, Object> relationDataMap);
 
 }

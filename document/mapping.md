@@ -71,7 +71,7 @@ public class Student implements Serializable {
 
 ## 数据库建议
 
-数据库字段不建议允许为`null`, 如果允许为null则在使用`ORM新增`等操作时,需要声明每一个字段,因为程序不能分辨`null`值的意义
+数据库字段建议不允许为`null`, 如果允许为null则在使用`ORM新增`等操作时,需要声明每一个字段,因为程序不能分辨`null`值的意义
 
 ## 注解
 

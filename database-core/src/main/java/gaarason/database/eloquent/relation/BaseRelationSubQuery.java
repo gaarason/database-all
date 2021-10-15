@@ -32,14 +32,12 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @param model                       模型对象
      * @return 集合
      */
-
-    // todo
     protected Collection<Object> compatibleCollection(Collection<Object> mayBeInstanceOfAbstractList,
         Model<? extends Serializable, ? extends Serializable> model) {
         final Class<?> javaType = model.getPrimaryKeyClass();
         HashSet<Object> tempHashSet = new HashSet<>();
         for (Object old : mayBeInstanceOfAbstractList) {
-            tempHashSet.add(ConverterUtils.cast(old, javaType));
+            tempHashSet.add(ObjectUtils.typeCast(old, javaType));
         }
         return tempHashSet;
     }

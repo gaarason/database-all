@@ -100,22 +100,18 @@ public class ObjectUtils {
     }
 
     /**
-     * 类型转换
+     * 逻辑类型转换
      * @param original 原始对象
-     * @param <T>      原始类型
-     * @param <N>      目标类型
+     * @param clz 目标类
+     * @param <T> 原始类型
+     * @param <N> 目标类型
      * @return 目标对象
+     * @throws TypeCastException 类型转化失败
      */
-    @SuppressWarnings("unchecked")
-    public static <T, N> N typeCast(T original, Class<?> type) {
-        try {
-
-
-            return (N) original;
-        } catch (Exception e) {
-            throw new TypeCastException(e.getMessage(), e);
-        }
+    public static <T, N> N typeCast(T original, final Class<N> clz) throws TypeCastException {
+        return ConverterUtils.cast(original, clz);
     }
+
 
     /**
      * 属性是否在类中存在(多层级)

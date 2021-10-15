@@ -248,7 +248,7 @@ abstract public class ORMTests extends BaseTests {
 
         Record<Student, Long> student2 = studentModel.findOrFail(4L);
 
-        HashMap<String, String> map = new HashMap<>();
+        HashMap<String, Object> map = new HashMap<>();
         map.put("note", note);
         teacherIntegerRecord.bind("studentsBelongsToMany").attach(student2, map);
         Long new2Count = relationshipStudentTeacherModel.newQuery().count("*");
@@ -288,7 +288,7 @@ abstract public class ORMTests extends BaseTests {
         Assert.assertEquals(student.size(), 5);
 
 
-        HashMap<String, String> map = new HashMap<>();
+        HashMap<String, Object> map = new HashMap<>();
         map.put("note", note);
         teacherIntegerRecord.bind("studentsBelongsToMany").attach(student, map);
 
@@ -365,7 +365,7 @@ abstract public class ORMTests extends BaseTests {
 
         Long oldCount = relationshipStudentTeacherModel.newQuery().count("*");
 
-        HashMap<String, String> map = new HashMap<>();
+        HashMap<String, Object> map = new HashMap<>();
         map.put("note", note);
         teacherIntegerRecord.bind("studentsBelongsToMany").attach(Arrays.asList(1L, 2L, 3L, 4L, 5L), map);
 
@@ -923,7 +923,7 @@ abstract public class ORMTests extends BaseTests {
 
         // 学生2的关系
         Record<Student, Long> student = studentModel.findOrFail(2L);
-        Map<String, String> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         map.put("note", note);
         int studentsBelongsToMany2 = teacherIntegerRecord.bind("studentsBelongsToMany").sync(student, map);
 
@@ -1000,7 +1000,7 @@ abstract public class ORMTests extends BaseTests {
         Long oldCount = relationshipStudentTeacherModel.newQuery().count("*");
 
         // 学生2的关系
-        Map<String, String> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         map.put("note", note);
         int studentsBelongsToMany2 = teacherIntegerRecord.bind("studentsBelongsToMany").sync(2L, map);
 
@@ -1209,7 +1209,7 @@ abstract public class ORMTests extends BaseTests {
 
         // 学生2的关系
         Record<Student, Long> student = studentModel.findOrFail(2L);
-        Map<String, String> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         map.put("note", note);
         int studentsBelongsToMany2 = teacherIntegerRecord.bind("studentsBelongsToMany").toggle(student, map);
 
@@ -1284,7 +1284,7 @@ abstract public class ORMTests extends BaseTests {
         Long oldCount = relationshipStudentTeacherModel.newQuery().count("*");
 
         // 学生2的关系
-        Map<String, String> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         map.put("note", note);
         // 切换2, 即是 解除2, 剩余1,3
         int studentsBelongsToMany2 = teacherIntegerRecord.bind("studentsBelongsToMany").toggle(2L, map);
@@ -1329,7 +1329,7 @@ abstract public class ORMTests extends BaseTests {
         Long oldCount = relationshipStudentTeacherModel.newQuery().count("*");
 
         // 学生2的关系
-        Map<String, String> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         map.put("note", note);
         // 切换2, 即是 解除2, 剩余1,3
         int studentsBelongsToMany2 = teacherIntegerRecord.bind("studentsBelongsToMany").toggle("2", map);

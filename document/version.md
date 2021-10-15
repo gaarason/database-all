@@ -19,6 +19,30 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 2.6.0
+
+- 在实体中增加对`java.sql.Date`/`java.sql.Time`/`java.sql.Timestamp`/`BigDecimal`/`Blob`/`Clob`类型的支持, 其中`Blob`/`Clob`仅支持查询
+
+- 将关联关系`Bind`中部分方法， 中间表数据参数类型由`Map<String, String>`变更到`Map<String, Object>`
+- 将关联关系`Bind`中部分方法， 手动指定目标表的主键， 参数类型由`String`、`Collection<String> ids`变更到`Object`、`Collection<Object> ids`
+
+```java
+int attach(Record<?, ?> targetRecord, Map<String, Object> relationDataMap);
+int attach(RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap);
+int attach(Object id, Map<String, Object> relationDataMap);
+int attach(Collection<Object> ids, Map<String, Object> relationDataMap);
+
+int sync(Record<?, ?> targetRecord, Map<String, Object> relationDataMap);
+int sync(RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap);
+int sync(Object id, Map<String, Object> relationDataMap);
+int sync(Collection<Object> ids, Map<String, Object> relationDataMap);
+
+int toggle(Record<?, ?> targetRecord, Map<String, Object> relationDataMap);
+int toggle(RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap);
+int toggle(Object id, Map<String, Object> relationDataMap);
+int toggle(Collection<Object> ids, Map<String, Object> relationDataMap);
+```
+
 ### 2.5.0
 
 - 将`Builder`中部分方法, 参数类型由`String`变更为`Object`

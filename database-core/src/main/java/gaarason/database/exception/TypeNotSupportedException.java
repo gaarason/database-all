@@ -8,6 +8,10 @@ import gaarason.database.exception.base.BaseException;
  */
 public class TypeNotSupportedException extends BaseException {
 
+    public TypeNotSupportedException() {
+        super();
+    }
+
     public TypeNotSupportedException(String message) {
         super(message);
     }

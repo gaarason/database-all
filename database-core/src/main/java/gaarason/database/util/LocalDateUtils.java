@@ -25,16 +25,16 @@ public class LocalDateUtils {
     public static final ThreadLocal<SimpleDateFormat> SIMPLE_DATE_FORMAT = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
 
     /**
+     * 时间戳最小日期时间
+     */
+    public static final LocalDateTime MIN_LOCAL_DATE_TIME = LocalDateTime.of(1970, 1, 1, 0, 0, 0, 0);
+
+    /**
      * 自定义常用时间格式化字符串
      */
     private static final List<String> DATE_TIME_FORMATTER_CUSTOMIZE_DATETIME_STR_LIST = Arrays.asList("yyyy-MM-dd HH:mm:ss.SSS",
-        "yyyy-MM-dd HH:mm:ss.SS",
-        "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "HH:mm:ss.SSS", "HH:mm:ss.SS", "HH:mm:ss.S", "HH:mm:ss");
-
-    /**
-     * 时间戳最小日期
-     */
-    private static final LocalDate MIN = LocalDate.of(1970, 1, 1);
+        "yyyy-MM-dd HH:mm:ss.SS", "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "HH:mm:ss.SSS", "HH:mm:ss.SS", "HH:mm:ss.S",
+        "HH:mm:ss");
 
     /**
      * 可用的 DateTimeFormatter 列表
@@ -152,7 +152,7 @@ public class LocalDateUtils {
      * @return Date
      */
     public static Date localTime2date(LocalTime localTime) {
-        LocalDateTime localDateTime = LocalDateTime.of(MIN, localTime);
+        LocalDateTime localDateTime = LocalDateTime.of(MIN_LOCAL_DATE_TIME.toLocalDate(), localTime);
         return localDateTime2date(localDateTime);
     }
 

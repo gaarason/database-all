@@ -8,6 +8,7 @@ import gaarason.database.eloquent.RecordBean;
 import gaarason.database.eloquent.RecordListBean;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.util.ConverterUtils;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -213,7 +214,7 @@ public class RecordFactory {
             column.setName(columnName);
 
             // *尽量* 使用同类型赋值
-            column.setValue(getValueFromJdbcResultSet(columnInfo.get(columnName), resultSet, columnName));
+            column.setValue(ConverterUtils.getValueFromJdbcResultSet(columnInfo.get(columnName), resultSet, columnName));
             column.setType(resultSetMetaData.getColumnType(i));
             column.setTypeName(resultSetMetaData.getColumnTypeName(i));
             column.setCount(resultSetMetaData.getColumnCount());
@@ -237,71 +238,6 @@ public class RecordFactory {
             map.put(column.getName(), column);
         }
         return map;
-    }
-
-    /**
-     * 根据java类型，获取jdbc中的数据结果
-     * @param fieldInfo FieldInfo
-     * @param resultSet 结果集
-     * @param column    列名
-     * @return 值
-     * @throws SQLException 数据库异常
-     * @see gaarason.database.eloquent.appointment.FinalVariable ALLOW_FIELD_TYPES
-     */
-    @Nullable
-    protected static Object getValueFromJdbcResultSet(@Nullable ModelShadowProvider.FieldInfo fieldInfo, ResultSet resultSet,
-        String column) throws SQLException {
-        if (fieldInfo == null) {
-            return resultSet.getObject(column);
-        }
-
-        Class<?> fieldType = fieldInfo.getJavaType();
-
-        if (Boolean.class.equals(fieldType) || boolean.class.equals(fieldType)) {
-            return resultSet.getBoolean(column);
-        } else if (Byte.class.equals(fieldType) || byte.class.equals(fieldType)) {
-            return resultSet.getByte(column);
-        } else if (Character.class.equals(fieldType) || char.class.equals(fieldType)) {
-            String tempStr = resultSet.getString(column);
-            return tempStr != null ? tempStr.toCharArray()[0] : null;
-        } else if (Short.class.equals(fieldType) || short.class.equals(fieldType)) {
-            return resultSet.getShort(column);
-        } else if (Integer.class.equals(fieldType) || int.class.equals(fieldType)) {
-            return resultSet.getInt(column);
-        } else if (Long.class.equals(fieldType) || long.class.equals(fieldType)) {
-            return resultSet.getLong(column);
-        } else if (Float.class.equals(fieldType) || float.class.equals(fieldType)) {
-            return resultSet.getFloat(column);
-        } else if (Double.class.equals(fieldType) || double.class.equals(fieldType)) {
-            return resultSet.getDouble(column);
-        } else if (BigInteger.class.equals(fieldType)) {
-            return new BigInteger(resultSet.getString(column));
-        } else if (java.sql.Date.class.equals(fieldType)) {
-            return resultSet.getDate(column);
-        } else if (Time.class.equals(fieldType)) {
-            return resultSet.getTime(column);
-        } else if (Timestamp.class.equals(fieldType)) {
-            return resultSet.getTimestamp(column);
-        } else if (Date.class.equals(fieldType)) {
-            Timestamp timestamp = resultSet.getTimestamp(column);
-            return timestamp != null ? Date.from(timestamp.toInstant()) : null;
-        } else if (LocalDate.class.equals(fieldType)) {
-            return resultSet.getDate(column).toLocalDate();
-        } else if (LocalTime.class.equals(fieldType)) {
-            return resultSet.getTime(column).toLocalTime();
-        } else if (LocalDateTime.class.equals(fieldType)) {
-            return resultSet.getTimestamp(column).toLocalDateTime();
-        } else if (String.class.equals(fieldType)) {
-            return resultSet.getString(column);
-        } else if (BigDecimal.class.equals(fieldType)) {
-            return resultSet.getBigDecimal(column);
-        } else if (Blob.class.equals(fieldType)) {
-            return resultSet.getBlob(column);
-        } else if (Clob.class.equals(fieldType)) {
-            return resultSet.getClob(column);
-        } else {
-            return resultSet.getObject(column, fieldType);
-        }
     }
 
     /**

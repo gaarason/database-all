@@ -61,7 +61,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public int attach(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
+    public int attach(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap) {
         if (targetRecords.isEmpty()) {
             return 0;
         }
@@ -74,7 +74,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public int attach(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, String> stringStringMap) {
+    public int attach(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, Object> relationDataMap) {
         if (targetPrimaryKeyValues.isEmpty()) {
             return 0;
         } else if (targetPrimaryKeyValues.size() > 1) {
@@ -142,17 +142,17 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public int sync(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        return attach(theRecord, targetRecords, stringStringMap);
+    public int sync(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap) {
+        return attach(theRecord, targetRecords, relationDataMap);
     }
 
     @Override
-    public int sync(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, String> stringStringMap) {
-        return attach(theRecord, targetPrimaryKeyValues, stringStringMap);
+    public int sync(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, Object> relationDataMap) {
+        return attach(theRecord, targetPrimaryKeyValues, relationDataMap);
     }
 
     @Override
-    public int toggle(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
+    public int toggle(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap) {
         if (targetRecords.isEmpty()){
             return 0;
         }
@@ -172,7 +172,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public int toggle(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, String> stringStringMap) {
+    public int toggle(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, Object> relationDataMap) {
         if (targetPrimaryKeyValues.isEmpty()) {
             return 0;
         } else if (targetPrimaryKeyValues.size() > 1) {

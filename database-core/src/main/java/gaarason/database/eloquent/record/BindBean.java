@@ -48,13 +48,13 @@ public class BindBean<T extends Serializable, K extends Serializable> implements
     }
 
     @Override
-    public int attach(Record<?, ?> targetRecord, Map<String, String> stringStringMap) {
-        return attach(RecordFactory.newRecordList(targetRecord), stringStringMap);
+    public int attach(Record<?, ?> targetRecord, Map<String, Object> relationDataMap) {
+        return attach(RecordFactory.newRecordList(targetRecord), relationDataMap);
     }
 
     @Override
-    public int attach(RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        return relationSubQuery.attach(tkRecord, targetRecords, stringStringMap);
+    public int attach(RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap) {
+        return relationSubQuery.attach(tkRecord, targetRecords, relationDataMap);
     }
 
     @Override
@@ -69,13 +69,13 @@ public class BindBean<T extends Serializable, K extends Serializable> implements
     }
 
     @Override
-    public int attach(Object id, Map<String, String> stringStringMap) {
-        return attach(Collections.singletonList(id), stringStringMap);
+    public int attach(Object id, Map<String, Object> relationDataMap) {
+        return attach(Collections.singletonList(id), relationDataMap);
     }
 
     @Override
-    public int attach(Collection<Object> ids, Map<String, String> stringStringMap) {
-        return relationSubQuery.attach(tkRecord, ids, stringStringMap);
+    public int attach(Collection<Object> ids, Map<String, Object> relationDataMap) {
+        return relationSubQuery.attach(tkRecord, ids, relationDataMap);
     }
 
     @Override
@@ -115,13 +115,13 @@ public class BindBean<T extends Serializable, K extends Serializable> implements
     }
 
     @Override
-    public int sync(Record<?, ?> targetRecord, Map<String, String> stringStringMap) {
-        return sync(RecordFactory.newRecordList(targetRecord), stringStringMap);
+    public int sync(Record<?, ?> targetRecord, Map<String, Object> relationDataMap) {
+        return sync(RecordFactory.newRecordList(targetRecord), relationDataMap);
     }
 
     @Override
-    public int sync(RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        return relationSubQuery.sync(tkRecord, targetRecords, stringStringMap);
+    public int sync(RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap) {
+        return relationSubQuery.sync(tkRecord, targetRecords, relationDataMap);
     }
 
     @Override
@@ -135,13 +135,13 @@ public class BindBean<T extends Serializable, K extends Serializable> implements
     }
 
     @Override
-    public int sync(Object id, Map<String, String> stringStringMap) {
-        return sync(Collections.singletonList(id), stringStringMap);
+    public int sync(Object id, Map<String, Object> relationDataMap) {
+        return sync(Collections.singletonList(id), relationDataMap);
     }
 
     @Override
-    public int sync(Collection<Object> ids, Map<String, String> stringStringMap) {
-        return relationSubQuery.sync(tkRecord, ids, stringStringMap);
+    public int sync(Collection<Object> ids, Map<String, Object> relationDataMap) {
+        return relationSubQuery.sync(tkRecord, ids, relationDataMap);
     }
 
     @Override
@@ -155,13 +155,13 @@ public class BindBean<T extends Serializable, K extends Serializable> implements
     }
 
     @Override
-    public int toggle(Record<?, ?> targetRecord, Map<String, String> stringStringMap) {
-        return toggle(RecordFactory.newRecordList(targetRecord), stringStringMap);
+    public int toggle(Record<?, ?> targetRecord, Map<String, Object> relationDataMap) {
+        return toggle(RecordFactory.newRecordList(targetRecord), relationDataMap);
     }
 
     @Override
-    public int toggle(RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        return relationSubQuery.toggle(tkRecord, targetRecords, stringStringMap);
+    public int toggle(RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap) {
+        return relationSubQuery.toggle(tkRecord, targetRecords, relationDataMap);
     }
 
     @Override
@@ -175,12 +175,12 @@ public class BindBean<T extends Serializable, K extends Serializable> implements
     }
 
     @Override
-    public int toggle(Object id, Map<String, String> stringStringMap) {
-        return toggle(Collections.singletonList(id), stringStringMap);
+    public int toggle(Object id, Map<String, Object> relationDataMap) {
+        return toggle(Collections.singletonList(id), relationDataMap);
     }
 
     @Override
-    public int toggle(Collection<Object> ids, Map<String, String> stringStringMap) {
-        return relationSubQuery.toggle(tkRecord, ids, stringStringMap);
+    public int toggle(Collection<Object> ids, Map<String, Object> relationDataMap) {
+        return relationSubQuery.toggle(tkRecord, ids, relationDataMap);
     }
 }

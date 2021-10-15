@@ -63,13 +63,12 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public int attach(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        return attach(theRecord, getTargetRecordPrimaryKeyIds(targetRecords), stringStringMap);
+    public int attach(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap) {
+        return attach(theRecord, getTargetRecordPrimaryKeyIds(targetRecords), relationDataMap);
     }
 
     @Override
-    public int attach(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues,
-        Map<String, String> stringStringMap) {
+    public int attach(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, Object> relationDataMap) {
         if (targetPrimaryKeyValues.isEmpty()) {
             return 0;
         }
@@ -122,12 +121,12 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public int sync(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        return sync(theRecord, getTargetRecordPrimaryKeyIds(targetRecords), stringStringMap);
+    public int sync(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap) {
+        return sync(theRecord, getTargetRecordPrimaryKeyIds(targetRecords), relationDataMap);
     }
 
     @Override
-    public int sync(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, String> stringStringMap) {
+    public int sync(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, Object> relationDataMap) {
         // 关联键值(当前表关系键(默认当前表主键))(子表外键)
         Object relationKeyValue = theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue();
 
@@ -149,12 +148,12 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public int toggle(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, String> stringStringMap) {
-        return toggle(theRecord, getTargetRecordPrimaryKeyIds(targetRecords), stringStringMap);
+    public int toggle(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap) {
+        return toggle(theRecord, getTargetRecordPrimaryKeyIds(targetRecords), relationDataMap);
     }
 
     @Override
-    public int toggle(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, String> stringStringMap) {
+    public int toggle(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, Object> relationDataMap) {
         if (targetPrimaryKeyValues.isEmpty()) {
             return 0;
         }

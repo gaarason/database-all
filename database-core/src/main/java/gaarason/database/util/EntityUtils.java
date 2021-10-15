@@ -48,7 +48,7 @@ public class EntityUtils {
      * @return 是否
      */
     public static boolean isBasicField(Field field) {
-        return field.getType().isPrimitive() || FinalVariable.ALLOW_FIELD_TYPES.contains(field.getType());
+        return FinalVariable.ALLOW_FIELD_TYPES.contains(field.getType());
     }
 
     /**
