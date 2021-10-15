@@ -26,7 +26,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     /**
      * 关系键的默认值, 仅在解除关系时使用
      */
-    private final String defaultLocalModelForeignKeyValue;
+    private final Object defaultLocalModelForeignKeyValue;
 
     public BelongsToQueryRelation(Field field) {
         belongsToTemplate = new BelongsToTemplate(field);
@@ -82,8 +82,11 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
                 "one, but now more than one.");
         }
 
+        // 集合兼容处理
+        final Collection<Object> compatibleTargetPrimaryKeyValues = compatibleCollection(targetPrimaryKeyValues, belongsToTemplate.parentModel);
+
         // 目标表(父表)model的主键
-        Object targetPrimaryKeyValue = targetPrimaryKeyValues.toArray()[0];
+        Object targetPrimaryKeyValue = compatibleTargetPrimaryKeyValues.toArray()[0];
 
         return theRecord.getModel().newQuery().transaction(() -> {
             // 目标表(父表)model的关联键值
@@ -116,6 +119,10 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
         if (targetPrimaryKeyValues.isEmpty()) {
             return 0;
         }
+
+        // 集合兼容处理
+        final Collection<Object> compatibleTargetPrimaryKeyValues = compatibleCollection(targetPrimaryKeyValues, belongsToTemplate.parentModel);
+
         // 执行更新, 自我更新需要手动刷新属性
         // 目标,必须是关联关系, 才解除
         // 解除可以多个
@@ -124,7 +131,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
             .whereIn(belongsToTemplate.localModelForeignKey,
                 (builder -> builder.select(belongsToTemplate.parentModelLocalKey)
                     .from(belongsToTemplate.parentModel.getTableName())
-                    .whereIn(belongsToTemplate.parentModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)))
+                    .whereIn(belongsToTemplate.parentModel.getPrimaryKeyColumnName(), compatibleTargetPrimaryKeyValues)))
             .data(belongsToTemplate.localModelForeignKey, defaultLocalModelForeignKeyValue).update();
         if (successNum > 0) {
             Map<String, Column> metadataMap = theRecord.getMetadataMap();
@@ -173,8 +180,11 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
                 "one, but now more than one.");
         }
 
+        // 集合兼容处理
+        final Collection<Object> compatibleTargetPrimaryKeyValues = compatibleCollection(targetPrimaryKeyValues, belongsToTemplate.parentModel);
+
         // 目标表(父表)model的主键
-        Object targetPrimaryKeyValue = targetPrimaryKeyValues.toArray()[0];
+        Object targetPrimaryKeyValue = compatibleTargetPrimaryKeyValues.toArray()[0];
 
         return belongsToTemplate.parentModel.newQuery().transaction(() -> {
 
@@ -186,7 +196,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
             // 关系已经存在, 切换即是解除
             if (theRecord.getMetadataMap().get(belongsToTemplate.localModelForeignKey).getValue().equals(parentModelLocalKeyValue)) {
-                return detach(theRecord, targetPrimaryKeyValues);
+                return detach(theRecord, compatibleTargetPrimaryKeyValues);
             }
             // 关系不存在, 切换即是增加
             else {

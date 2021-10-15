@@ -88,10 +88,29 @@ public class ObjectUtils {
      * @param <T>      原始类型
      * @param <N>      目标类型
      * @return 目标对象
+     * @throws TypeCastException 类型转化失败
      */
     @SuppressWarnings("unchecked")
-    public static <T, N> N typeCast(T original) {
+    public static <T, N> N typeCast(T original) throws TypeCastException {
         try {
+            return (N) original;
+        } catch (Exception e) {
+            throw new TypeCastException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 类型转换
+     * @param original 原始对象
+     * @param <T>      原始类型
+     * @param <N>      目标类型
+     * @return 目标对象
+     */
+    @SuppressWarnings("unchecked")
+    public static <T, N> N typeCast(T original, Class<?> type) {
+        try {
+
+
             return (N) original;
         } catch (Exception e) {
             throw new TypeCastException(e.getMessage(), e);

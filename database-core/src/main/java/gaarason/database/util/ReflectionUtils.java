@@ -8,11 +8,12 @@ import org.reflections8.Reflections;
  */
 public class ReflectionUtils {
 
-    private ReflectionUtils(){
-    }
-
     /**
      * 反射
      */
     public static final Reflections REFLECTIONS = new Reflections("");
+
+    private ReflectionUtils() {
+    }
+
 }

@@ -6,6 +6,7 @@ import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.eloquent.RecordListBean;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.Column;
+import gaarason.database.util.ConverterUtils;
 import gaarason.database.util.ObjectUtils;
 
 import java.io.Serializable;
@@ -26,13 +27,21 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
 
     /**
      * 集合兼容处理
-     * 用于解决AbstractList不实现removeAll的情况
+     * 1. 用于解决AbstractList不实现removeAll的情况; 2. 产生全新对象; 3. 将集合类数据的类型,转化成model的主键类型
      * @param mayBeInstanceOfAbstractList 原集合
-     * @return 集合(不保证引用关系)
+     * @param model                       模型对象
+     * @return 集合
      */
-    protected Collection<Object> compatibleCollection(Collection<Object> mayBeInstanceOfAbstractList) {
-        return mayBeInstanceOfAbstractList instanceof AbstractList ?
-            new HashSet<>(mayBeInstanceOfAbstractList) : mayBeInstanceOfAbstractList;
+
+    // todo
+    protected Collection<Object> compatibleCollection(Collection<Object> mayBeInstanceOfAbstractList,
+        Model<? extends Serializable, ? extends Serializable> model) {
+        final Class<?> javaType = model.getPrimaryKeyClass();
+        HashSet<Object> tempHashSet = new HashSet<>();
+        for (Object old : mayBeInstanceOfAbstractList) {
+            tempHashSet.add(ConverterUtils.cast(old, javaType));
+        }
+        return tempHashSet;
     }
 
     /**

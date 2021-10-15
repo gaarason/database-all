@@ -13,7 +13,6 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -258,22 +257,22 @@ public class RecordFactory {
 
         Class<?> fieldType = fieldInfo.getJavaType();
 
-        if (Boolean.class.equals(fieldType)) {
+        if (Boolean.class.equals(fieldType) || boolean.class.equals(fieldType)) {
             return resultSet.getBoolean(column);
-        } else if (Byte.class.equals(fieldType)) {
+        } else if (Byte.class.equals(fieldType) || byte.class.equals(fieldType)) {
             return resultSet.getByte(column);
-        } else if (Character.class.equals(fieldType)) {
+        } else if (Character.class.equals(fieldType) || char.class.equals(fieldType)) {
             String tempStr = resultSet.getString(column);
             return tempStr != null ? tempStr.toCharArray()[0] : null;
-        } else if (Short.class.equals(fieldType)) {
+        } else if (Short.class.equals(fieldType) || short.class.equals(fieldType)) {
             return resultSet.getShort(column);
-        } else if (Integer.class.equals(fieldType)) {
+        } else if (Integer.class.equals(fieldType) || int.class.equals(fieldType)) {
             return resultSet.getInt(column);
-        } else if (Long.class.equals(fieldType)) {
+        } else if (Long.class.equals(fieldType) || long.class.equals(fieldType)) {
             return resultSet.getLong(column);
-        } else if (Float.class.equals(fieldType)) {
+        } else if (Float.class.equals(fieldType) || float.class.equals(fieldType)) {
             return resultSet.getFloat(column);
-        } else if (Double.class.equals(fieldType)) {
+        } else if (Double.class.equals(fieldType) || double.class.equals(fieldType)) {
             return resultSet.getDouble(column);
         } else if (BigInteger.class.equals(fieldType)) {
             return new BigInteger(resultSet.getString(column));

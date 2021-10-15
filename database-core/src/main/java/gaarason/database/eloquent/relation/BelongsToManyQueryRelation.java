@@ -235,9 +235,9 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         // 事物
         return belongsToManyTemplate.relationModel.newQuery().transaction(() -> {
             // 目标表中的关系键值的集合, 即使中间表中指向目标表的外键的集合
-            Collection<Object> targetModelLocalKeyValues = targetModelLocalKeyValuesByPrimaryKeyValues(
-                targetPrimaryKeyValues);
+            Collection<Object> targetModelLocalKeyValues = targetModelLocalKeyValuesByPrimaryKeyValues(targetPrimaryKeyValues);
 
+            // 切换关系, 如果指定关系已存在，则解除，如果指定关系不存在，则增加
             return toggleWithTargetModelLocalKeyValues(theRecord, targetModelLocalKeyValues, stringStringMap);
         });
     }
@@ -256,7 +256,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         if (belongsToManyTemplate.targetModelLocalKey.equals(
             belongsToManyTemplate.targetModel.getPrimaryKeyColumnName())) {
             // 目标表的主键 处理下 AbstractList
-            targetModelLocalKeyValues = compatibleCollection(targetPrimaryKeyValues);
+            targetModelLocalKeyValues = compatibleCollection(targetPrimaryKeyValues, belongsToManyTemplate.targetModel);
 
         } else {
             // 目标表中的关系键的集合, 即使中间表中指向目标表的外键的集合
@@ -271,7 +271,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     /**
      * 更加关联关系
      * @param theRecord                 当前record
-     * @param targetModelLocalKeyValues 目标表关系键集合
+     * @param targetModelLocalKeyValues 目标表关系键集合 (已经经过兼容性处理了的)
      * @param stringStringMap           中间表新增是要附带的数据
      * @param checkAlreadyExist         是否多一次查询, 以验证关系是否已存在
      * @return 受影响的行数
@@ -333,7 +333,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     /**
      * 解除关联关系
      * @param theRecord                 当前record
-     * @param targetModelLocalKeyValues 目标表关系键集合
+     * @param targetModelLocalKeyValues 目标表关系键集合 (已经经过兼容性处理了的)
      * @return 受影响的行数
      */
     protected int detachWithTargetModelLocalKeyValues(Record<?, ?> theRecord, Collection<Object> targetModelLocalKeyValues) {
@@ -349,7 +349,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     /**
      * 同步到关联关系, 任何不在指定范围的对应记录将会移除
      * @param theRecord                 当前record
-     * @param targetModelLocalKeyValues 目标表关系键集合
+     * @param targetModelLocalKeyValues 目标表关系键集合 (已经经过兼容性处理了的)
      * @param stringStringMap           中间表新增是要附带的数据
      * @return 受影响的行数
      */
@@ -374,7 +374,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     /**
      * 切换关系, 如果指定关系已存在，则解除，如果指定关系不存在，则增加
      * @param theRecord                 当前record
-     * @param targetModelLocalKeyValues 目标表关系键集合
+     * @param targetModelLocalKeyValues 目标表关系键集合 (已经经过兼容性处理了的)
      * @param stringStringMap           中间表新增是要附带的数据
      * @return 受影响的行数
      */
@@ -400,8 +400,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
             .delete() : 0;
 
         // 需要增加的关系(不存在就增加) 中间表指向目标表的外键值的集合
-        // compatibleTargetModelLocalKeyValues 与 targetModelLocalKeyValues 可能是同一个对象(相同内存地址)
-        Collection<Object> compatibleTargetModelLocalKeyValues = compatibleCollection(targetModelLocalKeyValues);
+        Collection<Object> compatibleTargetModelLocalKeyValues = compatibleCollection(targetModelLocalKeyValues, belongsToManyTemplate.targetModel);
         compatibleTargetModelLocalKeyValues.removeAll(alreadyExistTargetModelLocalKeyValues);
 
         // 不存在的关系, 新增

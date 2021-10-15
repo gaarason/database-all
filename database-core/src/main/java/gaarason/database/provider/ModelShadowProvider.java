@@ -15,8 +15,10 @@ import gaarason.database.exception.IllegalAccessRuntimeException;
 import gaarason.database.exception.InvalidEntityException;
 import gaarason.database.exception.InvalidPrimaryKeyTypeException;
 import gaarason.database.exception.TypeNotSupportedException;
+import gaarason.database.util.ConverterUtils;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
+import gaarason.database.util.ReflectionUtils;
 import lombok.Data;
 import lombok.Getter;
 
@@ -24,6 +26,15 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -408,8 +419,8 @@ public final class ModelShadowProvider {
             fieldInfo.field = field;
             fieldInfo.name = field.getName();
             fieldInfo.javaType = field.getType();
-            // todo 应该优先使用数据库默认值, 当默认值不存在时, 再才使用如下方法
-            fieldInfo.defaultValue = Number.class.isAssignableFrom(fieldInfo.javaType) ? "0" : "";
+            // todo 应该优先使用数据库默认值 DatabaseShadowProvider , 当默认值不存在时, 再才使用如下方法
+            fieldInfo.defaultValue = ConverterUtils.getDefaultValueByJavaType(fieldInfo.javaType);
 
             // 数据库属性
             fieldInfo.column = field.isAnnotationPresent(Column.class) ? field.getAnnotation(Column.class) : null;
@@ -430,6 +441,7 @@ public final class ModelShadowProvider {
             modelInfo.columnFieldMap.put(fieldInfo.columnName, fieldInfo);
         }
     }
+
 
     /**
      * 处理主键@Primary信息
@@ -732,7 +744,7 @@ public final class ModelShadowProvider {
         /**
          * 默认值
          */
-        protected String defaultValue;
+        protected Object defaultValue;
 
         /**
          * column 注解
