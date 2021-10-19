@@ -58,7 +58,7 @@ public class Student implements Serializable {
     private Long teacherId;
 
     @Column(name = "is_deleted")
-    private Byte isDeleted;
+    private Boolean isDeleted;
  
     @Column(name = "created_at", insertable = false, updatable = false, comment = "新增时间")
     private Date createdAt;

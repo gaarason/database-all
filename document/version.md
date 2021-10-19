@@ -19,6 +19,11 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 2.7.0
+
+- 在模型(`Model`)中增加方法`findOrCreate(entity)`/`findOrCreate(conditionEntity, complementEntity)`/`updateOrCreate(conditionEntity, complementEntity)`
+- 在查询构造器(`Builder`)中增加方法`Builder<T, K> where(T entity)`/`Builder<T, K> where(Map<String, Object> map)`/`Builder<T, K> having(T entity)`/`Builder<T, K> having(Map<String, Object> map)`
+
 ### 2.6.0
 
 - 在实体中增加对`java.sql.Date`/`java.sql.Time`/`java.sql.Timestamp`/`BigDecimal`/`Blob`/`Clob`类型的支持, 其中`Blob`/`Clob`仅支持查询

@@ -11,6 +11,7 @@ import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.util.EntityUtils;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -158,13 +159,64 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
 
     @Override
     public Record<T, K> findOrFail(K id) throws EntityNotFoundException, SQLRuntimeException {
-        return newQuery().where(getPrimaryKeyColumnName(), String.valueOf(id)).firstOrFail();
+        return newQuery().where(getPrimaryKeyColumnName(), id).firstOrFail();
     }
 
     @Override
     @Nullable
     public Record<T, K> find(K id) {
-        return newQuery().where(getPrimaryKeyColumnName(), String.valueOf(id)).first();
+        return newQuery().where(getPrimaryKeyColumnName(), id).first();
+    }
+
+    @Override
+    public Record<T, K> findOrCreate(T entity) {
+        // 查询是否存在满足条件的一条记录
+        final Record<T, K> first = newQuery().where(entity).first();
+        if (first != null) {
+            return first;
+        }
+        // 新增此记录
+        final Record<T, K> tkRecord = this.newRecord();
+        tkRecord.getEntity(entity);
+        tkRecord.save();
+        return tkRecord;
+    }
+
+    @Override
+    public Record<T, K> findOrCreate(T conditionEntity, T complementEntity) {
+        // 查询是否存在满足条件的一条记录
+        final Record<T, K> first = newQuery().where(conditionEntity).first();
+        if (first != null) {
+            return first;
+        }
+        // 新增此记录
+        final Record<T, K> tkRecord = this.newRecord();
+        // 合并属性
+        final T entityMerge = EntityUtils.entityMerge(conditionEntity, complementEntity);
+        tkRecord.getEntity(entityMerge);
+        tkRecord.save();
+        return tkRecord;
+    }
+
+    @Override
+    public Record<T, K> updateOrCreate(T conditionEntity, T complementEntity) {
+        // 查询是否存在满足条件的一条记录
+        final Record<T, K> first = newQuery().where(conditionEntity).first();
+        // 合并属性
+        final T entityMerge = EntityUtils.entityMerge(conditionEntity, complementEntity);
+        if (first != null) {
+            // 更新
+            final T entity = first.getEntity();
+            EntityUtils.entityMergeReference(entity, complementEntity);
+            first.save();
+            return first;
+        } else {
+            // 新增
+            final Record<T, K> tkRecord = this.newRecord();
+            tkRecord.getEntity(entityMerge);
+            tkRecord.save();
+            return tkRecord;
+        }
     }
 
     @Override

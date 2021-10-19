@@ -5,6 +5,7 @@ import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * 条件
@@ -37,6 +38,20 @@ public interface Where<T extends Serializable, K extends Serializable> {
      * @return 查询构建器
      */
     Builder<T, K> where(String column, Object value);
+
+    /**
+     * 将对象的属性转化为, 列与值相等的查询条件
+     * @param entity 实体对象
+     * @return 查询构建器
+     */
+    Builder<T, K> where(T entity);
+
+    /**
+     * 列与值相等的查询条件
+     * @param map 条件map
+     * @return 查询构建器
+     */
+    Builder<T, K> where(Map<String, Object> map);
 
     /**
      * 条件子查询

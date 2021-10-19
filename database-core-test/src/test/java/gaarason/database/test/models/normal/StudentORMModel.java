@@ -43,7 +43,7 @@ public class StudentORMModel extends SingleModel<StudentORMModel.Entity, Integer
     }
 
     @Override
-    public void retrieved(Record<Entity, Integer> entityRecord) {
+    public void retrieved(Record<Entity, Integer> tkRecord) {
         System.out.println("已经从数据库中查询到数据");
     }
 
@@ -77,7 +77,7 @@ public class StudentORMModel extends SingleModel<StudentORMModel.Entity, Integer
         @Column(name = "updated_at", insertable = false, updatable = false)
         private Date updatedAt;
 
-        private boolean isDeleted;
+        private Boolean isDeleted;
 
     }
 }

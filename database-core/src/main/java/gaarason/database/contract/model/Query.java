@@ -83,4 +83,28 @@ public interface Query<T extends Serializable, K extends Serializable> {
     @Nullable
     Record<T, K> find(K id);
 
+    /**
+     * 单个查询, 当查询不到数据时使用ORM insert本条数据
+     * @param entity 实体对象
+     * @return 结果集
+     */
+    Record<T, K> findOrCreate(T entity);
+
+    /**
+     * 单个查询, 当查询不到数据时使用ORM insert本条数据
+     * @param conditionEntity 实体对象(用作查询条件)
+     * @param complementEntity 实体对象(用作插入时的补充)
+     * @return 结果集
+     */
+    Record<T, K> findOrCreate(T conditionEntity, T complementEntity);
+
+    /**
+     * 单个更新, 当查询不到数据时使用ORM insert本条数据
+     * (已存在则更新，否则创建新模型)
+     * @param conditionEntity 实体对象(用作查询条件)
+     * @param complementEntity 实体对象(用作插入时的补充)
+     * @return 结果集
+     */
+    Record<T, K> updateOrCreate(T conditionEntity, T complementEntity);
+
 }

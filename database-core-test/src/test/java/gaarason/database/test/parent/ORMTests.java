@@ -150,6 +150,107 @@ abstract public class ORMTests extends BaseTests {
     }
 
     @Test
+    public void ORM新增_findOrCreate() {
+        String name = "findOrCreate的name";
+        final StudentORMModel.Entity stu = new StudentORMModel.Entity();
+        stu.setName(name);
+
+        final Long oldCount = studentORMModel.newQuery().count();
+
+        // 不存在,所以会新增一条
+        final Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.findOrCreate(stu);
+
+        final Long newCount = studentORMModel.newQuery().count();
+
+        final StudentORMModel.Entity entity = theRecord.toObject();
+        Assert.assertEquals(entity.getName(), name);
+
+        Assert.assertEquals(oldCount + 1L, newCount.longValue());
+
+        //-------------
+        // 已经存在,所以仅会查询
+        final Record<StudentORMModel.Entity, Integer> theRecord2 = studentORMModel.findOrCreate(stu);
+
+        final Long newCount2 = studentORMModel.newQuery().count();
+
+        final StudentORMModel.Entity entity2 = theRecord2.toObject();
+        Assert.assertEquals(entity2.getName(), name);
+
+        Assert.assertEquals(newCount.longValue(), newCount2.longValue());
+    }
+
+    @Test
+    public void ORM新增_findOrCreate_2() {
+        String name = "findOrCreate的name";
+        Byte age = Byte.valueOf("3");
+        Byte age3 = Byte.valueOf("33");
+
+        final StudentORMModel.Entity stu1 = new StudentORMModel.Entity();
+        stu1.setName(name);
+        final StudentORMModel.Entity stu2 = new StudentORMModel.Entity();
+        stu2.setAge(age);
+        // 原有的记录数
+        final Long oldCount = studentORMModel.newQuery().count();
+        // 因为没有存在满足条件的记录, 所以新增
+        final Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.findOrCreate(stu1, stu2);
+        // 新的记录数
+        final Long newCount = studentORMModel.newQuery().count();
+        final StudentORMModel.Entity stuEntity1 = theRecord.toObject();
+        Assert.assertEquals(stuEntity1.getName(), name);
+        Assert.assertEquals(stuEntity1.getAge(), age);
+        Assert.assertEquals(oldCount + 1L, newCount.longValue());
+
+        // 因为已经存在满足条件的, 所以只是查询, 且"插入补充信息的对象属性"不会使用
+        final StudentORMModel.Entity stu3 = new StudentORMModel.Entity();
+        stu3.setAge(age3);
+        final Record<StudentORMModel.Entity, Integer> theRecord2 = studentORMModel.findOrCreate(stu1, stu2);
+        // 更加新的记录数
+        final Long newCount2 = studentORMModel.newQuery().count();
+        final StudentORMModel.Entity entity2 = theRecord2.toObject();
+
+        Assert.assertEquals(entity2.getName(), name);
+        Assert.assertEquals(entity2.getAge(), age);
+        Assert.assertNotEquals(entity2.getAge(), age3);
+        Assert.assertEquals(newCount2, newCount);
+    }
+
+    @Test
+    public void ORM新增_updateOrCreate() {
+        String name = "findOrCreate的name";
+        Byte age = Byte.valueOf("3");
+        Byte age3 = Byte.valueOf("33");
+        final StudentORMModel.Entity stu1 = new StudentORMModel.Entity();
+        stu1.setName(name);
+        final StudentORMModel.Entity stu2 = new StudentORMModel.Entity();
+        stu2.setAge(age);
+
+        // 原有的记录数
+        final Long oldCount = studentORMModel.newQuery().count();
+        // 因为没有记录满足, 所以新增
+        final Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.updateOrCreate(stu1, stu2);
+        final StudentORMModel.Entity entity = theRecord.toObject();
+        // 新的的记录数
+        final Long newCount = studentORMModel.newQuery().count();
+        Assert.assertEquals(oldCount + 1L, newCount.longValue());
+        // 新增后的数据就是 stu1 + stu2
+        Assert.assertEquals(entity.getName(), name);
+        Assert.assertEquals(entity.getAge(), age);
+
+        // --------------
+        final StudentORMModel.Entity stu3 = new StudentORMModel.Entity();
+        stu3.setAge(age3);
+        // 因为存在记录满足, 所以更新
+        final StudentORMModel.Entity entity3 = studentORMModel.updateOrCreate(stu1, stu3).toObject();
+        // 新的的记录数2
+        final Long newCount2 = studentORMModel.newQuery().count();
+        Assert.assertEquals(newCount, newCount2);
+        // 更新后的数据就是 stu1 + stu3
+        Assert.assertEquals(entity3.getName(), name);
+        Assert.assertEquals(entity3.getAge(), age3);
+
+    }
+
+    @Test
     public void ORM软删除与恢复() {
         Record<StudentORMModel.Entity, Integer> record = studentORMModel.findOrFail(6);
 
@@ -161,7 +262,7 @@ abstract public class ORMTests extends BaseTests {
 
         boolean restore = record.restore();
         Assert.assertTrue(restore);
-        Assert.assertFalse(record.toObject().isDeleted());
+        Assert.assertFalse(record.toObject().getIsDeleted());
 
         int size = studentORMModel.onlyTrashed().get().toObjectList().size();
         Assert.assertEquals(size, 0);

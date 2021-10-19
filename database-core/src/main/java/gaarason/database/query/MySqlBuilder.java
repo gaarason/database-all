@@ -54,6 +54,20 @@ public class MySqlBuilder<T extends Serializable, K extends Serializable> extend
     }
 
     @Override
+    public Builder<T, K> where(T entity) {
+        final Map<String, Object> columnValueMap = ModelShadowProvider.columnValueMap(entity, true);
+        return where(columnValueMap);
+    }
+
+    @Override
+    public Builder<T, K> where(Map<String, Object> map){
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            where(entry.getKey(), entry.getValue());
+        }
+        return this;
+    }
+
+    @Override
     public Builder<T, K> whereSubQuery(String column, String symbol, String completeSql) {
         String sqlPart = column(column) + symbol + FormatUtils.bracket(completeSql);
         return whereRaw(sqlPart);
@@ -203,6 +217,20 @@ public class MySqlBuilder<T extends Serializable, K extends Serializable> extend
     @Override
     public Builder<T, K> having(String column, Object value) {
         return having(column, "=", value);
+    }
+
+    @Override
+    public Builder<T, K> having(T entity) {
+        final Map<String, Object> columnValueMap = ModelShadowProvider.columnValueMap(entity, true);
+        return having(columnValueMap);
+    }
+
+    @Override
+    public Builder<T, K> having(Map<String, Object> map) {
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            having(entry.getKey(), entry.getValue());
+        }
+        return this;
     }
 
     @Override

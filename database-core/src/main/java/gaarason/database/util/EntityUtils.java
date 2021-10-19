@@ -4,6 +4,7 @@ import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.annotation.Column;
 import gaarason.database.eloquent.annotation.Table;
 import gaarason.database.eloquent.appointment.FinalVariable;
+import gaarason.database.exception.IllegalAccessRuntimeException;
 import gaarason.database.exception.TypeNotSupportedException;
 
 import java.lang.reflect.Field;
@@ -102,7 +103,6 @@ public class EntityUtils {
                 String columnName = EntityUtils.columnName(field);
                 gaarason.database.support.Column column = stringColumnMap.get(columnName);
                 if (column != null) {
-//                    Object value = EntityUtils.columnFill(field, column.getValue());
                     field.set(entity, column.getValue());
                 }
             }
@@ -112,39 +112,50 @@ public class EntityUtils {
         }
     }
 
-//    /**
-//     * 用数据库字段填充类属性
-//     * @param field 属性
-//     * @param value 值
-//     * @return 数据库字段值, 且对应实体entity的数据类型
-//     */
-//    @Nullable
-//    public static Object columnFill(Field field, @Nullable Object value) {
-//        if (value == null) {
-//            return null;
-//        }
-//        switch (field.getType().toString()) {
-//            case "class java.lang.Byte":
-//                return Byte.valueOf(value.toString());
-//            case "class java.lang.String":
-//                return value.toString();
-//            case "class java.lang.Integer":
-//                return Integer.valueOf(value.toString());
-//            case "class java.lang.Long":
-//            case "class java.math.BigInteger":
-//                return Long.valueOf(value.toString());
-//            case "class java.time.LocalDateTime":
-//                return value instanceof Date ? LocalDateUtils.date2LocalDateTime((Date) value) : value;
-//            case "class java.time.LocalDate":
-//                return value instanceof Date ? LocalDateUtils.date2LocalDate((Date) value) : value;
-//            case "class java.time.LocalTime":
-//                return value instanceof Date ? LocalDateUtils.date2LocalTime((Date) value) : value;
-//            default:
-//                return value;
-//        }
-//    }
+    /**
+     * 将 complementEntity 中的属性赋值到 baseEntity 上
+     * 1. 针对于单一非静态属性 2. complementEntity中所有的null属性都会跳过 (所以一定要使用包装类型来声明 entity)
+     * @param baseEntity       基本实体对象(不会呗修改)
+     * @param complementEntity 合并实体对象
+     * @param <T>              实体类型
+     * @return 合并后的对象
+     */
+    public static <T> T entityMerge(T baseEntity, T complementEntity) {
+        final T copyEntity = ObjectUtils.deepCopy(baseEntity);
+        try {
+            for (Field field : complementEntity.getClass().getDeclaredFields()) {
+                field.setAccessible(true);
+                final Object val = field.get(complementEntity);
+                if (val != null) {
+                    field.set(copyEntity, val);
+                }
+            }
+            return copyEntity;
+        } catch (Throwable e) {
+            throw new IllegalAccessRuntimeException(e);
+        }
+    }
 
-
+    /**
+     * 将 complementEntity 中的属性赋值到 baseEntity 上
+     * 1. 针对于单一非静态属性 2. complementEntity中所有的null属性都会跳过 (所以一定要使用包装类型来声明 entity)
+     * @param baseEntity       基本实体对象(会被直接修改)
+     * @param complementEntity 合并实体对象
+     * @param <T>              实体类型
+     */
+    public static <T> void entityMergeReference(T baseEntity, T complementEntity) {
+        try {
+            for (Field field : complementEntity.getClass().getDeclaredFields()) {
+                field.setAccessible(true);
+                final Object val = field.get(complementEntity);
+                if (val != null) {
+                    field.set(baseEntity, val);
+                }
+            }
+        } catch (Throwable e) {
+            throw new IllegalAccessRuntimeException(e);
+        }
+    }
 
     /**
      * 格式化值到字符串
@@ -162,7 +173,6 @@ public class EntityUtils {
             return value == null ? null : value.toString();
         }
     }
-
 
     /**
      * 返回 clazz 中的所有属性(public/protected/private)包含父类的

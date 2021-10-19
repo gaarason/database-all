@@ -107,6 +107,7 @@ public class SingleModel<T extends Serializable, K extends Serializable> extends
      * 事件会当一个新模型被首次保存的时候触发
      * @return 继续操作
      */
+    @Override
     public boolean creating(Record<T, K> record) {
         return true;
     }

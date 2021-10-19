@@ -5,6 +5,7 @@ import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * 查询后过滤
@@ -37,6 +38,20 @@ public interface Having<T extends Serializable, K extends Serializable> {
      * @return 查询构建器
      */
     Builder<T, K> having(String column, Object value);
+
+    /**
+     * 将对象的属性转化为, 列与值相等的查询条件
+     * @param entity 实体对象
+     * @return 查询构建器
+     */
+    Builder<T, K> having(T entity);
+
+    /**
+     * 列与值相等的查询条件
+     * @param map 条件map
+     * @return 查询构建器
+     */
+    Builder<T, K> having(Map<String, Object> map);
 
     /**
      * 列值在范围内

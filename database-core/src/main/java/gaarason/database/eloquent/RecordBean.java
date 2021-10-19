@@ -51,7 +51,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
     /**
      * 数据实体
      */
-    protected transient T entity;
+    protected T entity;
 
     /**
      * 是否已经绑定具体的数据
@@ -118,6 +118,11 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
     @Override
     public T getEntity() {
         return entity;
+    }
+
+    @Override
+    public T getEntity(T entity) {
+        return this.entity = entity;
     }
 
     @Override
@@ -443,9 +448,12 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
      * @param entity 实体
      */
     protected void primaryKeyAutoDeal(T entity) {
+        // 无主键信息, 不做处理
         if (!model.isPrimaryKeyDefinition()) {
             return;
         }
+
+        // 无model信息, 不做处理
         ModelShadowProvider.FieldInfo fieldInfo = model.getPrimaryKeyFieldInfo();
         if (ModelShadowProvider.fieldGet(fieldInfo, entity) == null) {
             K k = model.getPrimaryKeyIdGenerator().nextId();
@@ -506,7 +514,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
      * @return 结果集序列化
      */
     @Override
-    public String toString(){
+    public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(getClass().getName()).append('@').append(Integer.toHexString(hashCode()));
         stringBuilder.append('{');

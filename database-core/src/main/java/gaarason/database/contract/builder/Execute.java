@@ -31,6 +31,7 @@ public interface Execute<T extends Serializable, K extends Serializable> {
      * 单个查询
      * @param id 主键
      * @return 数剧记录|null
+     * @throws SQLRuntimeException 数据库异常
      */
     @Nullable
     Record<T, K> find(K id) throws SQLRuntimeException;

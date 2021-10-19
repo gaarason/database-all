@@ -44,6 +44,13 @@ public interface Record<T extends Serializable, K extends Serializable> extends 
     T getEntity();
 
     /**
+     * 数据实体(将外部实体的属性copy到自身)
+     * @param entity 实体对象
+     * @return 数据实体
+     */
+    T getEntity(T entity);
+
+    /**
      * 主键值
      * @return 主键值
      */
