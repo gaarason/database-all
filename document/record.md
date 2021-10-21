@@ -119,7 +119,7 @@ record.delete();
 - 当创建一个新的记录时, 仅会执行 insert 语句, 也就是说那些没有在实体中确认的字段, 且数据库存在默认值的字段, 返回的结果集不会包含. 如果需要完整的信息可以手动调用 refresh() 重新从数据库中获取
 
 ```java
-// 按照 entity 中的非null属性作为查询条件, 如果没有找到的话则通过给定属性创建一个新的记录.
+// 按照 entity 中的非null属性作为查询条件, 如果没有找到的话则通过给定属性创建一个新的记录. (实体定义时, 对于基本数据结构要使用包装类型)
 // select * from student where ... limit 1
 // 如果上面查询没有数据 则执行 insert into `student`(`...`) values("...")
 Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.findOrCreate(entity);
@@ -129,13 +129,13 @@ theRecord.refresh();
 
 ```
 
-- findOrCreate(conditionEntity, complementEntity) 方法先尝试通过给定 conditionEntity实体(列/值对)在数据库中查找记录，如果没有找到的话则通过给定 complementEntity 与 conditionEntity 实体(列/值对)创建一个新的记录 。
+- findOrCreate(conditionEntity, complementEntity) 方法先尝试通过给定 conditionEntity实体(列/值对)在数据库中查找记录，如果没有找到的话则通过给定 complementEntity 与 conditionEntity 实体(列/值对)的并集(complementEntity中的属性有更高的优先级)创建一个新的记录 。
 - 当创建一个新的记录时, 仅会执行 insert 语句, 也就是说那些没有在实体中确认的字段, 且数据库存在默认值的字段, 返回的结果集不会包含. 如果需要完整的信息可以手动调用 refresh() 重新从数据库中获取
 
 ```java
-// 按照 conditionEntity 中的非null属性作为查询条件
+// 按照 conditionEntity 中的非null属性作为查询条件. (实体定义时, 对于基本数据结构要使用包装类型)
+// select * from student where ... limit 1
 // 如果上面查询没有数据 则执行 insert into `student`(`...`) values("...")
-// 如果上面查询存在数据 则执行 update `student` set ...
 Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.findOrCreate(conditionEntity, complementEntity);
 
 // 刷新结果集属性 (select * from student where ... limit 1)
@@ -145,12 +145,12 @@ theRecord.refresh();
 
 #### updateOrCreate
 
-- updateOrCreate(T conditionEntity, T complementEntity) 方法先尝试通过给定 conditionEntity实体(列/值对)在数据库中查找记录，如果没有找到的话则通过给定 complementEntity 与 conditionEntity 实体(列/值对)创建一个新的记录 。如果找到的话则通过给定 complementEntity (列/值对) 对其进行更新 。
+- updateOrCreate(T conditionEntity, T complementEntity) 方法先尝试通过给定 conditionEntity实体(列/值对)在数据库中查找记录，如果没有找到的话则通过给定 complementEntity 与 conditionEntity 实体(列/值对)的并集(complementEntity中的属性有更高的优先级)创建一个新的记录 。如果找到的话则通过给定 complementEntity (列/值对) 对其进行更新 。
 
 ```java
-// 按照 conditionEntity 中的非null属性作为查询条件 select * from student where ... limit 1
+// 按照 conditionEntity 中的非null属性作为查询条件 select * from student where ... limit 1 (实体定义时, 对于基本数据结构要使用包装类型)
 // 如果上面查询没有数据 则执行 insert into `student`(...) values(...)
 // 如果上面查询存在数据 则执行 update `student` set ...
-final Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.updateOrCreate(stu1, stu2);
+Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.updateOrCreate(stu1, stu2);
 
 ```
