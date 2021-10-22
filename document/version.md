@@ -19,6 +19,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 2.8.0
+
+- 实体代码生成时对于数据库的时间日期等,使用LocalDateTime/LocalDate/LocalTime等java类型对应
+
 ### 2.7.0
 
 - 在模型(`Model`)中增加方法`findOrCreate(entity)`/`findOrCreate(conditionEntity, complementEntity)`/`updateOrCreate(conditionEntity, complementEntity)`

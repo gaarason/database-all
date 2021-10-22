@@ -7,7 +7,8 @@ import gaarason.database.spring.boot.starter.properties.GaarasonDatabaseProperti
 import gaarason.database.support.SnowFlakeIdGenerator;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
@@ -19,8 +20,9 @@ import javax.annotation.Resource;
  * 自动配置
  * @author xt
  */
-@Slf4j
 public class GaarasonInstanceConfiguration implements ApplicationListener<ContextRefreshedEvent> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GaarasonInstanceConfiguration.class);
 
     @Resource
     ApplicationContext applicationContext;
@@ -37,13 +39,13 @@ public class GaarasonInstanceConfiguration implements ApplicationListener<Contex
                 return ObjectUtils.typeCast(applicationContext.getBean(StringUtils.lowerFirstChar(modelClass.getSimpleName())));
             }
         });
-        log.info("Model instance provider has been registered success.");
+        LOGGER.info("Model instance provider has been registered success.");
 
-        int workerId = gaarasonDatabaseProperties.getSnowFlake().getWorkerId();
+        final int workerId = gaarasonDatabaseProperties.getSnowFlake().getWorkerId();
+        final int dataId = gaarasonDatabaseProperties.getSnowFlake().getDataId();
         ContainerProvider.register(IdGenerator.SnowFlakesID.class,
-            (clazz -> new SnowFlakeIdGenerator(workerId, 0)));
+            (clazz -> new SnowFlakeIdGenerator(workerId, dataId)));
 
-        log.info("SnowFlakesID[{}] instance has been registered success.", workerId);
-
+        LOGGER.info("SnowFlakesID[ workId: {}, dataId: {}] instance has been registered success.", workerId, dataId);
     }
 }

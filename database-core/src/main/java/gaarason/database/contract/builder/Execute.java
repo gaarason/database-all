@@ -47,7 +47,7 @@ public interface Execute<T extends Serializable, K extends Serializable> {
 
     /**
      * 获取第一条数据, 数据为空时返回null
-     * @return 数剧记录|null
+     * @return 数据记录|null
      * @throws SQLRuntimeException 数据库异常
      */
     @Nullable

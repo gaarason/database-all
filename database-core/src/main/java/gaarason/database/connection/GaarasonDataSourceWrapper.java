@@ -126,7 +126,7 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
     public void commit() {
         Connection connection = localThreadTransactionConnection.get();
         // 无已存在 savepoint, 直接提交
-        if (localThreadTransactionSavepointLinkedList.get().size() == 0) {
+        if (localThreadTransactionSavepointLinkedList.get().isEmpty()) {
             try {
                 connection.commit();
                 connection.setAutoCommit(true);
@@ -147,7 +147,7 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
     public void rollBack() {
         Connection connection = localThreadTransactionConnection.get();
         // 无已存在 savepoint, 直接回滚
-        if (localThreadTransactionSavepointLinkedList.get().size() == 0) {
+        if (localThreadTransactionSavepointLinkedList.get().isEmpty()) {
             try {
                 connection.rollback();
                 connection.setAutoCommit(true);
@@ -321,18 +321,20 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
 
     @Override
     public DatabaseType getDatabaseType() throws SQLRuntimeException {
-        if (databaseType == null) {
+        DatabaseType localDatabaseType = databaseType;
+        if (localDatabaseType == null) {
             synchronized (this) {
-                if (databaseType == null) {
+                localDatabaseType = databaseType;
+                if (localDatabaseType == null) {
                     try (Connection connection = getLocalConnection(true)) {
                         String databaseProductName = connection.getMetaData().getDatabaseProductName();
-                        databaseType = DatabaseType.forDatabaseProductName(databaseProductName.toLowerCase());
+                        databaseType = localDatabaseType = DatabaseType.forDatabaseProductName(databaseProductName.toLowerCase());
                     } catch (Throwable e) {
                         throw new SQLRuntimeException(e.getMessage(), e);
                     }
                 }
             }
         }
-        return databaseType;
+        return localDatabaseType;
     }
 }

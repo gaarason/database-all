@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;\n
 ${validator_import}
 import java.io.Serializable;\n
 import java.math.BigInteger;\n
-import java.util.Date;\n
+import java.time.*;
 \n
 @Data\n
 @EqualsAndHashCode(callSuper = true)\n

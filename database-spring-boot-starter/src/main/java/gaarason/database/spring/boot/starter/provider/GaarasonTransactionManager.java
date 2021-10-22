@@ -13,7 +13,7 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
  */
 public class GaarasonTransactionManager extends AbstractPlatformTransactionManager implements SavepointManager {
 
-    protected GaarasonDataSource gaarasonDataSource;
+    protected transient GaarasonDataSource gaarasonDataSource;
 
     public GaarasonTransactionManager(GaarasonDataSource gaarasonDataSource) {
         this.gaarasonDataSource = gaarasonDataSource;

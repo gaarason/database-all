@@ -7,9 +7,11 @@ import gaarason.database.util.StringUtils;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.regex.Matcher;
 
 /**
@@ -222,12 +224,18 @@ public class MysqlFieldGenerator extends BaseFieldGenerator {
             case "bigint":
                 fieldNumericAssignment(field, MysqlNumericRange.BIGINT_UNSIGNED, MysqlNumericRange.BIGINT);
                 break;
-            case "datetime":
             case "timestamp":
+            case "datetime":
             case "year":
+                field.setJavaClassTypeString(cutClassName(LocalDateTime.class));
+                field.setJavaClassification(JavaClassification.DATE);
+                break;
             case "date":
+                field.setJavaClassTypeString(cutClassName(LocalDate.class));
+                field.setJavaClassification(JavaClassification.DATE);
+                break;
             case "time":
-                field.setJavaClassTypeString(cutClassName(Date.class));
+                field.setJavaClassTypeString(cutClassName(LocalTime.class));
                 field.setJavaClassification(JavaClassification.DATE);
                 break;
             case "blob":

@@ -2,6 +2,7 @@ package gaarason.database.eloquent.appointment;
 
 /**
  * 聚合类型
+ * @author xt
  */
 public enum AggregatesType {
     /**

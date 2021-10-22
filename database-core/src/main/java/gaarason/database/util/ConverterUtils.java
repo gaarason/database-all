@@ -10,9 +10,7 @@ import java.math.BigInteger;
 import java.sql.*;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.Date;
 
 /**
@@ -281,6 +279,14 @@ public class ConverterUtils {
             result = java.sql.Date.valueOf(LocalDateUtils.str2LocalDate(getAsString(obj)));
         } else if (Time.class.equals(clz)) {
             result = Time.valueOf(LocalDateUtils.str2LocalTime(getAsString(obj)));
+        } else if (Year.class.equals(clz)) {
+            result = Year.from(LocalDateUtils.str2LocalDateTime(getAsString(obj)));
+        } else if (YearMonth.class.equals(clz)) {
+            result = YearMonth.from(LocalDateUtils.str2LocalDateTime(getAsString(obj)));
+        } else if (Month.class.equals(clz)) {
+            result = Month.from(LocalDateUtils.str2LocalDateTime(getAsString(obj)));
+        } else if (MonthDay.class.equals(clz)) {
+            result = MonthDay.from(LocalDateUtils.str2LocalDateTime(getAsString(obj)));
         } else if (Timestamp.class.equals(clz)) {
             result = Timestamp.valueOf(LocalDateUtils.str2LocalDateTime(getAsString(obj)));
         } else if (Date.class.isAssignableFrom(clz)) {
@@ -313,7 +319,7 @@ public class ConverterUtils {
      * @see gaarason.database.eloquent.appointment.FinalVariable ALLOW_FIELD_TYPES
      */
     @Nullable
-    public static <R> R getDefaultValueByJavaType(Class<R> clz) throws TypeCastException{
+    public static <R> R getDefaultValueByJavaType(Class<R> clz) throws TypeCastException {
         Object result;
         if (Boolean.class.equals(clz) || boolean.class.equals(clz)) {
             result = false;
@@ -339,6 +345,14 @@ public class ConverterUtils {
             result = java.sql.Date.valueOf(LocalDateUtils.MIN_LOCAL_DATE_TIME.toLocalDate());
         } else if (Time.class.equals(clz)) {
             result = Time.valueOf(LocalDateUtils.MIN_LOCAL_DATE_TIME.toLocalTime());
+        } else if (Year.class.equals(clz)) {
+            result = Year.from(LocalDateUtils.MIN_LOCAL_DATE_TIME.toLocalTime());
+        } else if (YearMonth.class.equals(clz)) {
+            result = YearMonth.from(LocalDateUtils.MIN_LOCAL_DATE_TIME.toLocalTime());
+        } else if (Month.class.equals(clz)) {
+            result = Month.from(LocalDateUtils.MIN_LOCAL_DATE_TIME.toLocalTime());
+        } else if (MonthDay.class.equals(clz)) {
+            result = MonthDay.from(LocalDateUtils.MIN_LOCAL_DATE_TIME.toLocalTime());
         } else if (Timestamp.class.equals(clz)) {
             result = Timestamp.valueOf(LocalDateUtils.MIN_LOCAL_DATE_TIME);
         } else if (Date.class.isAssignableFrom(clz)) {
@@ -407,6 +421,14 @@ public class ConverterUtils {
             return resultSet.getDate(column);
         } else if (Time.class.equals(fieldType)) {
             return resultSet.getTime(column);
+        } else if (Year.class.equals(fieldType)) {
+            return Year.from(resultSet.getTimestamp(column).toLocalDateTime());
+        } else if (YearMonth.class.equals(fieldType)) {
+            return YearMonth.from(resultSet.getTimestamp(column).toLocalDateTime());
+        } else if (Month.class.equals(fieldType)) {
+            return Month.from(resultSet.getTimestamp(column).toLocalDateTime());
+        } else if (MonthDay.class.equals(fieldType)) {
+            return MonthDay.from(resultSet.getTimestamp(column).toLocalDateTime());
         } else if (Timestamp.class.equals(fieldType)) {
             return resultSet.getTimestamp(column);
         } else if (Date.class.isAssignableFrom(fieldType)) {
