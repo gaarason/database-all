@@ -26,6 +26,12 @@ public interface Record<T extends Serializable, K extends Serializable> extends 
     Map<String, Column> getMetadataMap();
 
     /**
+     * 是否已经绑定具体的数据
+     * @return bool
+     */
+    boolean isHasBind();
+
+    /**
      * 数据模型
      * @return 数据模型
      */
@@ -44,11 +50,18 @@ public interface Record<T extends Serializable, K extends Serializable> extends 
     T getEntity();
 
     /**
-     * 数据实体(将外部实体的属性copy到自身)
+     * 数据实体(将外部实体的覆盖到自身, 会更改引用)
      * @param entity 实体对象
      * @return 数据实体
      */
     T getEntity(T entity);
+
+    /**
+     * 数据实体(将外部实体的属性合并到自身)
+     * @param entity 实体对象
+     * @return 数据实体
+     */
+    T fillEntity(T entity);
 
     /**
      * 主键值

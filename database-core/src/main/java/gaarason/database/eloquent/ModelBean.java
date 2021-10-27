@@ -12,6 +12,8 @@ import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.EntityUtils;
+import gaarason.database.util.ObjectUtils;
+import lombok.SneakyThrows;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -169,7 +171,7 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
     }
 
     @Override
-    public Record<T, K> findOrCreate(T entity) {
+    public Record<T, K> findOrNew(T entity) {
         // 查询是否存在满足条件的一条记录
         final Record<T, K> first = newQuery().where(entity).first();
         if (first != null) {
@@ -178,12 +180,53 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
         // 新增此记录
         final Record<T, K> tkRecord = this.newRecord();
         tkRecord.getEntity(entity);
-        tkRecord.save();
         return tkRecord;
     }
 
     @Override
-    public Record<T, K> findOrCreate(T conditionEntity, T complementEntity) {
+    @SneakyThrows
+    public Record<T, K> findByPrimaryKeyOrNew(T entity) {
+        // 获取 entity 中的主键的值
+        final Serializable primaryKeyValue = ModelShadowProvider.getPrimaryKeyValue(entity);
+        if (primaryKeyValue == null) {
+            throw new PrimaryKeyNotFoundException();
+        }
+
+        // 查询是否存在满足条件的一条记录
+        final Record<T, K> first = find(ObjectUtils.typeCast(primaryKeyValue));
+        if (first != null) {
+            return first;
+        }
+        // 新增此记录
+        final Record<T, K> tkRecord = this.newRecord();
+        tkRecord.getEntity(entity);
+        return tkRecord;
+    }
+
+    @Override
+    public Record<T, K> findOrCreate(T entity) {
+        final Record<T, K> theRecord = findOrNew(entity);
+        // 如果未持久化
+        if (!theRecord.isHasBind()) {
+            // 进行持久化
+            theRecord.save();
+        }
+        return theRecord;
+    }
+
+    @Override
+    public Record<T, K> findByPrimaryKeyOrCreate(T entity) {
+        final Record<T, K> theRecord = findByPrimaryKeyOrNew(entity);
+        // 如果未持久化
+        if (!theRecord.isHasBind()) {
+            // 进行持久化
+            theRecord.save();
+        }
+        return theRecord;
+    }
+
+    @Override
+    public Record<T, K> findOrNew(T conditionEntity, T complementEntity) {
         // 查询是否存在满足条件的一条记录
         final Record<T, K> first = newQuery().where(conditionEntity).first();
         if (first != null) {
@@ -194,26 +237,49 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
         // 合并属性
         final T entityMerge = EntityUtils.entityMerge(conditionEntity, complementEntity);
         tkRecord.getEntity(entityMerge);
-        tkRecord.save();
         return tkRecord;
+    }
+
+    @Override
+    public Record<T, K> findOrCreate(T conditionEntity, T complementEntity) {
+        final Record<T, K> theRecord = findOrNew(conditionEntity, complementEntity);
+        // 如果未持久化
+        if (!theRecord.isHasBind()) {
+            // 进行持久化
+            theRecord.save();
+        }
+        return theRecord;
+    }
+
+    @Override
+    public Record<T, K> updateByPrimaryKeyOrCreate(T entity) {
+        // 获取 entity 中的主键的值
+        final Serializable primaryKeyValue = ModelShadowProvider.getPrimaryKeyValue(entity);
+        if (primaryKeyValue == null) {
+            throw new PrimaryKeyNotFoundException();
+        }
+
+        final Record<T, K> first = find(ObjectUtils.typeCast(primaryKeyValue));
+        final Record<T, K> theRecord = first != null ? first : this.newRecord();
+        theRecord.fillEntity(entity);
+        theRecord.save();
+        return theRecord;
     }
 
     @Override
     public Record<T, K> updateOrCreate(T conditionEntity, T complementEntity) {
         // 查询是否存在满足条件的一条记录
         final Record<T, K> first = newQuery().where(conditionEntity).first();
-        // 合并属性
-        final T entityMerge = EntityUtils.entityMerge(conditionEntity, complementEntity);
         if (first != null) {
             // 更新
-            final T entity = first.getEntity();
-            EntityUtils.entityMergeReference(entity, complementEntity);
+            first.fillEntity(complementEntity);
             first.save();
             return first;
         } else {
             // 新增
             final Record<T, K> tkRecord = this.newRecord();
-            tkRecord.getEntity(entityMerge);
+            tkRecord.getEntity(conditionEntity);
+            tkRecord.fillEntity(complementEntity);
             tkRecord.save();
             return tkRecord;
         }

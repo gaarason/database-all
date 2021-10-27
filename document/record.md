@@ -17,7 +17,11 @@ Eloquent ORM for Java
             * [删除](#删除)
         * [拓展操作](#拓展操作)
             * [findOrCreate](#findOrCreate)
+            * [findOrNew](#findOrNew)
+            * [findByPrimaryKeyOrCreate](#findByPrimaryKeyOrCreate)
+            * [findByPrimaryKeyOrNew](#findByPrimaryKeyOrNew)
             * [updateOrCreate](#updateOrCreate)
+            * [updateByPrimaryKeyOrCreate](#updateByPrimaryKeyOrCreate)
     
 * [查询构造器](/document/query.md)
 * [关联关系](/document/relationship.md)
@@ -115,6 +119,8 @@ record.delete();
 
 #### findOrCreate
 
+##### findOrCreate(entity)
+
 - findOrCreate(entity) 方法先尝试通过给定实体(列/值对)在数据库中查找记录，如果没有找到的话则通过给定属性创建一个新的记录。
 - 当创建一个新的记录时, 仅会执行 insert 语句, 也就是说那些没有在实体中确认的字段, 且数据库存在默认值的字段, 返回的结果集不会包含. 如果需要完整的信息可以手动调用 refresh() 重新从数据库中获取
 
@@ -128,6 +134,8 @@ Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.findOrCreate
 theRecord.refresh();
 
 ```
+
+##### findOrCreate(conditionEntity, complementEntity)
 
 - findOrCreate(conditionEntity, complementEntity) 方法先尝试通过给定 conditionEntity实体(列/值对)在数据库中查找记录，如果没有找到的话则通过给定 complementEntity 与 conditionEntity 实体(列/值对)的并集(complementEntity中的属性有更高的优先级)创建一个新的记录 。
 - 当创建一个新的记录时, 仅会执行 insert 语句, 也就是说那些没有在实体中确认的字段, 且数据库存在默认值的字段, 返回的结果集不会包含. 如果需要完整的信息可以手动调用 refresh() 重新从数据库中获取
@@ -143,6 +151,80 @@ theRecord.refresh();
 
 ```
 
+#### findOrNew
+
+##### findOrNew(entity)
+
+- 和 findOrCreate(entity) 非常类似, 差别在于, 如果没有找到对应的记录的话则通过给定属性创建一个新的记录, 这个记录不会自动持久化到数据库中, 需要手动调用 save() 进行持久化
+
+```java
+// 按照 entity 中的非null属性作为查询条件, 如果没有找到的话则通过给定属性创建一个新的记录. (实体定义时, 对于基本数据结构要使用包装类型)
+// select * from student where ... limit 1
+// 如果上面查询没有数据 则构造数据结果集进行返回
+Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.findOrNew(entity);
+
+// 手动持久化 insert into `student`(`...`) values("...")
+theRecord.save();
+
+// 刷新结果集属性 (select * from student where ... limit 1)
+theRecord.refresh();
+
+```
+
+##### findOrNew(conditionEntity, complementEntity)
+
+- 和 findOrCreate(conditionEntity, complementEntity) 非常类似, 差别在于, 如果没有找到对应的记录的话则通过给定属性创建一个新的记录, 这个记录不会自动持久化到数据库中, 需要手动调用 save() 进行持久化
+
+```java
+// 按照 conditionEntity 中的非null属性作为查询条件. (实体定义时, 对于基本数据结构要使用包装类型)
+// select * from student where ... limit 1
+// 如果上面查询没有数据 则构造数据结果集进行返回
+Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.findOrNew(conditionEntity, complementEntity);
+
+// 手动持久化 insert into `student`(`...`) values("...")
+theRecord.save();
+
+// 刷新结果集属性 (select * from student where ... limit 1)
+theRecord.refresh();
+
+```
+
+#### findByPrimaryKeyOrCreate
+
+##### findByPrimaryKeyOrCreate(entity)
+
+- 和 findOrCreate(entity) 非常类似, 差别在于, 在进行查询操作时, 仅会使用主键进行查询
+
+```java
+// 使用 entity 中主键属性作为查询条件, 如果没有找到的话则通过给定属性创建一个新的记录.
+// select * from student where ... limit 1
+// 如果上面查询没有数据 则执行 insert into `student`(`...`) values("...")
+Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.findByPrimaryKeyOrCreate(entity);
+
+// 刷新结果集属性 (select * from student where ... limit 1)
+theRecord.refresh();
+
+```
+
+#### findByPrimaryKeyOrNew
+
+##### findByPrimaryKeyOrNew(entity)
+
+- 和 findByPrimaryKeyOrCreate(entity) 非常类似, 差别在于, 如果没有找到对应的记录的话则通过给定属性创建一个新的记录, 这个记录不会自动持久化到数据库中, 需要手动调用 save() 进行持久化
+```java
+// 使用 entity 中主键属性作为查询条件, 如果没有找到的话则通过给定属性创建一个新的记录.
+// select * from student where ... limit 1
+// 如果上面查询没有数据 则构造数据结果集进行返回
+Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.findByPrimaryKeyOrNew(entity);
+
+// 手动持久化 insert into `student`(`...`) values("...")
+theRecord.save();
+
+// 刷新结果集属性 (select * from student where ... limit 1)
+theRecord.refresh();
+
+```
+
 #### updateOrCreate
 
 - updateOrCreate(T conditionEntity, T complementEntity) 方法先尝试通过给定 conditionEntity实体(列/值对)在数据库中查找记录，如果没有找到的话则通过给定 complementEntity 与 conditionEntity 实体(列/值对)的并集(complementEntity中的属性有更高的优先级)创建一个新的记录 。如果找到的话则通过给定 complementEntity (列/值对) 对其进行更新 。
@@ -152,5 +234,16 @@ theRecord.refresh();
 // 如果上面查询没有数据 则执行 insert into `student`(...) values(...)
 // 如果上面查询存在数据 则执行 update `student` set ...
 Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.updateOrCreate(stu1, stu2);
+
+```
+#### updateByPrimaryKeyOrCreate
+
+- updateByPrimaryKeyOrCreate(entity) 方法先尝试使用 entity 中主键属性作为查询条件查找记录，如果没有找到的话则通过给定 entity 实体(列/值对)创建一个新的记录 。如果找到的话则通过给定 entity (列/值对) 对其进行更新 。
+
+```java
+// 按照 entity 中的书剑属性作为查询条件 select * from student where ... limit 1 
+// 如果上面查询没有数据 则执行 insert into `student`(...) values(...)
+// 如果上面查询存在数据 则执行 update `student` set ...
+Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.updateByPrimaryKeyOrCreate(stu);
 
 ```

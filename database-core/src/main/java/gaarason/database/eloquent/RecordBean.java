@@ -16,6 +16,7 @@ import gaarason.database.support.RelationGetSupport;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
+import lombok.Getter;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -106,6 +107,11 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
     }
 
     @Override
+    public boolean isHasBind(){
+        return hasBind;
+    }
+
+    @Override
     public Model<T, K> getModel() {
         return model;
     }
@@ -122,7 +128,15 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
 
     @Override
     public T getEntity(T entity) {
-        return this.entity = entity;
+        this.entity = entity;
+        return this.entity;
+    }
+
+    @Override
+    public T fillEntity(T entity) {
+        // 合并属性
+        EntityUtils.entityMergeReference(this.entity, entity);
+        return this.entity;
     }
 
     @Override

@@ -707,7 +707,7 @@ public final class ModelShadowProvider {
     public static class FieldInfo {
 
         /**
-         * Field
+         * Field (已经 设置属性是可访问)
          */
         protected Field field;
 
