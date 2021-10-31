@@ -81,13 +81,33 @@ student.setName("肖邦");
 record.save();
 ```
 #### 查询
+findOrFail
 ```java
 // 先获取 record , 参数类型为主键类型
 // 查找id=3的记录, 记录不存在则抛出`EntityNotFoundException`异常
 Record<Student, Long> record = studentModel.findOrFail(3);
 
 // 查找id=3的记录, 记录不存在则返回null
-Record<Student, Long> record = studentModel.newQuery().where("id","3").first();
+    Record<Student, Long> record = studentModel.newQuery().where("id","3").first();
+```
+
+findAll
+```java
+// select name,age from student
+RecordList<Student, Long> record = studentModel.findAll("name","age");
+```
+findMany
+
+```java
+// select * from student where id in (1,2,3)
+RecordList<Student, Long> record = studentModel.findMany(1,2,3);
+
+List<Object> ids = new ArrayList<>();
+ids.add(1);
+ids.add(2);
+ids.add(3);
+// select * from student where id in (1,2,3)
+RecordList<Student, Long> record = studentModel.findMany(ids);
 
 ```
 

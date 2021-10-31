@@ -56,7 +56,7 @@ public interface Query<T extends Serializable, K extends Serializable> {
      * @return 批量结果集
      * @throws SQLRuntimeException SQL异常
      */
-    RecordList<T, K> findMany(Collection<K> ids) throws SQLRuntimeException;
+    RecordList<T, K> findMany(Collection<Object> ids) throws SQLRuntimeException;
 
     /**
      * 查询主键列表中的全部
@@ -66,6 +66,14 @@ public interface Query<T extends Serializable, K extends Serializable> {
      */
     @SuppressWarnings({"unchecked", "varargs"})
     RecordList<T, K> findMany(K... ids) throws SQLRuntimeException;
+
+    /**
+     * 查询主键列表中的全部
+     * @param ids 主键集合
+     * @return 批量结果集
+     * @throws SQLRuntimeException SQL异常
+     */
+    RecordList<T, K> findMany(Object... ids) throws SQLRuntimeException;
 
     /**
      * 单个查询
@@ -80,9 +88,26 @@ public interface Query<T extends Serializable, K extends Serializable> {
      * 单个查询
      * @param id 主键
      * @return 结果集
+     * @throws EntityNotFoundException 未找到对象
+     * @throws SQLRuntimeException     数据库异常
+     */
+    Record<T, K> findOrFail(Object id) throws EntityNotFoundException, SQLRuntimeException;
+
+    /**
+     * 单个查询
+     * @param id 主键
+     * @return 结果集
      */
     @Nullable
     Record<T, K> find(K id);
+
+    /**
+     * 单个查询
+     * @param id 主键
+     * @return 结果集
+     */
+    @Nullable
+    Record<T, K> find(Object id);
 
     /**
      * 单个查询, 当查询不到数据时 构建结果集

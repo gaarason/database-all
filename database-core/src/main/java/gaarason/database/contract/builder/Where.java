@@ -2,6 +2,7 @@ package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.core.lang.Nullable;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -32,12 +33,29 @@ public interface Where<T extends Serializable, K extends Serializable> {
     Builder<T, K> where(String column, String symbol, Object value);
 
     /**
+     * 比较列与值(忽略值为null的情况)
+     * @param column 列名
+     * @param symbol 比较关系
+     * @param value  值
+     * @return 查询构建器
+     */
+    Builder<T, K> whereIgnoreNull(String column, String symbol, @Nullable Object value);
+
+    /**
      * 比较列与值相等
      * @param column 列名
      * @param value  值
      * @return 查询构建器
      */
-    Builder<T, K> where(String column, Object value);
+    Builder<T, K> where(String column, @Nullable Object value);
+
+    /**
+     * 比较列与值相等(忽略值为null的情况)
+     * @param column 列名
+     * @param value  值
+     * @return 查询构建器
+     */
+    Builder<T, K> whereIgnoreNull(String column, @Nullable Object value);
 
     /**
      * 将对象的属性转化为, 列与值相等的查询条件
@@ -52,6 +70,13 @@ public interface Where<T extends Serializable, K extends Serializable> {
      * @return 查询构建器
      */
     Builder<T, K> where(Map<String, Object> map);
+
+    /**
+     * 列与值相等的查询条件(忽略MAP中，值为null的情况)
+     * @param map 条件map
+     * @return 查询构建器
+     */
+    Builder<T, K> whereIgnoreNull(@Nullable Map<String, Object> map);
 
     /**
      * 条件子查询
@@ -80,12 +105,28 @@ public interface Where<T extends Serializable, K extends Serializable> {
     Builder<T, K> whereIn(String column, Collection<?> valueList);
 
     /**
+     * 列值在范围内(忽略值为空的情况)
+     * @param column    列名
+     * @param valueList 值所在的list
+     * @return 查询构建器
+     */
+    Builder<T, K> whereInIgnoreEmpty(String column, @Nullable Collection<?> valueList);
+
+    /**
      * 列值在范围内
      * @param column     列名
      * @param valueArray 值所在的数组
      * @return 查询构建器
      */
     Builder<T, K> whereIn(String column, Object... valueArray);
+
+    /**
+     * 列值在范围内(忽略值为空的情况)
+     * @param column     列名
+     * @param valueArray 值所在的数组
+     * @return 查询构建器
+     */
+    Builder<T, K> whereInIgnoreEmpty(String column, @Nullable Object... valueArray);
 
     /**
      * 列值在范围内(子查询)
@@ -112,6 +153,30 @@ public interface Where<T extends Serializable, K extends Serializable> {
     Builder<T, K> whereNotIn(String column, Collection<?> valueList);
 
     /**
+     * 列值在范围内(忽略值为空的情况)
+     * @param column    列名
+     * @param valueList 值所在的list
+     * @return 查询构建器
+     */
+    Builder<T, K> whereNotInIgnoreEmpty(String column, @Nullable Collection<?> valueList);
+
+    /**
+     * 列值在范围内
+     * @param column     列名
+     * @param valueArray 值所在的数组
+     * @return 查询构建器
+     */
+    Builder<T, K> whereNotIn(String column, Object... valueArray);
+
+    /**
+     * 列值在范围内(忽略值为空的情况)
+     * @param column     列名
+     * @param valueArray 值所在的数组
+     * @return 查询构建器
+     */
+    Builder<T, K> whereNotInIgnoreEmpty(String column, @Nullable Object... valueArray);
+
+    /**
      * 列值不在范围内(子查询)
      * @param column 列名
      * @param sql    完整sql eg:select id from student where age>10
@@ -126,14 +191,6 @@ public interface Where<T extends Serializable, K extends Serializable> {
      * @return 查询构建器
      */
     Builder<T, K> whereNotIn(String column, GenerateSqlPartFunctionalInterface<T, K> closure);
-
-    /**
-     * 列值在范围内
-     * @param column     列名
-     * @param valueArray 值所在的数组
-     * @return 查询构建器
-     */
-    Builder<T, K> whereNotIn(String column, Object... valueArray);
 
     /**
      * 列值在2值之间

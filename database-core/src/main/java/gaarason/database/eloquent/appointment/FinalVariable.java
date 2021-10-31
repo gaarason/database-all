@@ -49,6 +49,11 @@ public class FinalVariable {
         "SQL_DATA_TYPE", "SQL_DATETIME_SUB", "CHAR_OCTET_LENGTH", "ORDINAL_POSITION", "IS_NULLABLE", "SCOPE_CATALOG",
         "SCOPE_SCHEMA", "SCOPE_TABLE", "SOURCE_DATA_TYPE", "IS_AUTOINCREMENT", "IS_GENERATEDCOLUMN");
 
+    /**
+     * 数据库中的 null
+     */
+    public static final String SQL_NULL = "null";
+
     private FinalVariable() {
 
     }

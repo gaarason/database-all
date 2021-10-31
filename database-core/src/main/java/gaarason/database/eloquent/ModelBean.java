@@ -149,7 +149,7 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
     }
 
     @Override
-    public RecordList<T, K> findMany(Collection<K> ids) throws SQLRuntimeException {
+    public RecordList<T, K> findMany(Collection<Object> ids) throws SQLRuntimeException {
         return newQuery().whereIn(getPrimaryKeyColumnName(), ids).get();
     }
 
@@ -160,13 +160,29 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
     }
 
     @Override
+    public final RecordList<T, K> findMany(Object... ids) throws SQLRuntimeException {
+        return newQuery().whereIn(getPrimaryKeyColumnName(), new HashSet<>(Arrays.asList(ids))).get();
+    }
+
+    @Override
     public Record<T, K> findOrFail(K id) throws EntityNotFoundException, SQLRuntimeException {
+        return newQuery().where(getPrimaryKeyColumnName(), id).firstOrFail();
+    }
+
+    @Override
+    public Record<T, K> findOrFail(Object id) throws EntityNotFoundException, SQLRuntimeException {
         return newQuery().where(getPrimaryKeyColumnName(), id).firstOrFail();
     }
 
     @Override
     @Nullable
     public Record<T, K> find(K id) {
+        return newQuery().where(getPrimaryKeyColumnName(), id).first();
+    }
+
+    @Override
+    @Nullable
+    public Record<T, K> find(Object id) {
         return newQuery().where(getPrimaryKeyColumnName(), id).first();
     }
 

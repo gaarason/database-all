@@ -50,6 +50,8 @@ abstract public class ORMTests extends BaseTests {
         Assert.assertEquals(entity.getAge(), Byte.valueOf("16"));
         Assert.assertEquals(entity.getName(), "小腾");
 
+        Record<StudentORMModel.Entity, Integer> noRecordTest = studentORMModel.find("32");
+        Assert.assertNull(noRecordTest);
         Record<StudentORMModel.Entity, Integer> noRecord = studentORMModel.find(32);
         Assert.assertNull(noRecord);
 

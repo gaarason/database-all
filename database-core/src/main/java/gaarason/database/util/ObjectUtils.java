@@ -1,5 +1,6 @@
 package gaarason.database.util;
 
+import gaarason.database.core.lang.Nullable;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.TypeCastException;
 import gaarason.database.exception.TypeNotSupportedException;
@@ -8,12 +9,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * 对象工具类
@@ -146,5 +146,48 @@ public class ObjectUtils {
         } catch (Exception e) {
             throw new TypeNotSupportedException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * 判断是否为空
+     * @param array 数组
+     * @return bool
+     */
+    public static boolean isEmpty(@Nullable Object[] array) {
+        return array == null || array.length == 0;
+    }
+
+    /**
+     * 判断是否为空
+     * @param obj 所有类型
+     * @return bool
+     */
+    public static boolean isEmpty(@Nullable Object obj) {
+        if (obj == null) {
+            return true;
+        } else if (obj instanceof Optional) {
+            return !((Optional<?>)obj).isPresent();
+        } else if (obj instanceof CharSequence) {
+            return ((CharSequence)obj).length() == 0;
+        } else if (obj.getClass().isArray()) {
+            return Array.getLength(obj) == 0;
+        } else if (obj instanceof Collection) {
+            return ((Collection<?>)obj).isEmpty();
+        } else {
+            return obj instanceof Map && ((Map<?, ?>) obj).isEmpty();
+        }
+    }
+    /**
+     * 判断是否为null
+     * @param obj 所有类型
+     * @return bool
+     */
+    public static boolean isNull(@Nullable Object obj) {
+        if (obj == null) {
+            return true;
+        } else if (obj instanceof Optional) {
+            return !((Optional<?>)obj).isPresent();
+        }
+        return false;
     }
 }

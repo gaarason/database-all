@@ -170,7 +170,7 @@ public class EntityUtils {
         } else if (value instanceof Boolean) {
             return (boolean) value ? "1" : "0";
         } else {
-            return value == null ? null : value.toString();
+            return ConverterUtils.castNullable(value, String.class);
         }
     }
 

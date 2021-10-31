@@ -108,6 +108,11 @@ public class DatabaseUtilsTests {
         ArrayList<Long> listWithoutDuplicates = new ArrayList<>(hashSet);
         Assert.assertEquals("存在重复的id", ids.size(), listWithoutDuplicates.size());
         System.out.println("没有重复id");
+
+        System.out.println(Long.MAX_VALUE);
+        System.out.println(ModelShadowProvider.getID_GENERATORS().getSnowFlakesID().nextId());
+        System.out.println(ModelShadowProvider.getID_GENERATORS().getSnowFlakesID().nextId());
+        System.out.println(ModelShadowProvider.getID_GENERATORS().getSnowFlakesID().nextId());
     }
 
     @Test

@@ -19,10 +19,20 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 2.10.0
+
+- 整体改进，数据库字段值为null的兼容性，但依然建议数据库字段不使用null
+- 在模型(`Model`)中增加方法`findOrFail(Object id)`/`find(Object id)`/`findMany(Object... ids)`
+- 在模型(`Model`)中变更方法`findMany(Collection<K> ids)` -> `findMany(Collection<Object> ids)`
+- 在查询构造器(`Builder`)中增加方法`whereIgnoreNull(column, symbol, value)`/`whereIgnoreNull(column, value)`/`whereIgnoreNull(map)`/`whereInIgnoreEmpty(column, valueList)`/`whereInIgnoreEmpty(column, valueArray)`/`whereNotInIgnoreEmpty(column, valueList)`/`whereNotInIgnoreEmpty(column, valueArray)`
+- 在查询构造器(`Builder`)中增加方法`havingIgnoreNull(column, symbol, value)`/`havingIgnoreNull(column, value)`/`havingIgnoreNull(map)`/`havingInIgnoreEmpty(column, valueList)`/`havingInIgnoreEmpty(column, valueArray)`/`havingNotInIgnoreEmpty(column, valueList)`/`havingNotInIgnoreEmpty(column, valueArray)`
+- 在查询构造器(`Builder`)中增加方法`dataIgnoreNull(column, value)`/`dataIgnoreNull(map)`
+
+
 ### 2.9.0
 
 - 在模型(`Model`)中增加方法`findOrNew(entity)`/`findByPrimaryKeyOrNew(entity)`/`findByPrimaryKeyOrCreate(entity)`/`findOrNew(conditionEntity, complementEntity)`/`updateByPrimaryKeyOrCreate(entity)`
-- 在查询构造器(`Record`)中增加方法`fillEntity(entity)`
+- 在查询结果集(`Record`)中增加方法`fillEntity(entity)`
 
 ### 2.8.0
 

@@ -467,11 +467,14 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
             return;
         }
 
-        // 无model信息, 不做处理
         ModelShadowProvider.FieldInfo fieldInfo = model.getPrimaryKeyFieldInfo();
+        // 没有手动赋值主键时
         if (ModelShadowProvider.fieldGet(fieldInfo, entity) == null) {
+
+            // 当 IdGenerator 是 IdGenerator.Never.class 类型时，将其执行 nextId() 将返回 null,
             K k = model.getPrimaryKeyIdGenerator().nextId();
-            // 生成后赋值
+
+            // 生成后赋值 ModelShadowProvider.setPrimaryKeyValue 将忽略 null 的赋值
             ModelShadowProvider.setPrimaryKeyValue(entity, k);
         }
     }

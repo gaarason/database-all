@@ -44,6 +44,8 @@ public class MysqlQuickStartTests {
         RecordList<TestModel.Inner, Integer> many1 = testModel.findMany(1, 2, 3);
         Assert.assertEquals(many.size(), 3);
         Assert.assertEquals(many1.size(), 3);
+        RecordList<TestModel.Inner, Integer> many2 = testModel.findMany(1, "2", 3L);
+        Assert.assertEquals(many2.size(), 3);
     }
 
     /**

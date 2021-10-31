@@ -109,7 +109,7 @@ public class TestApplicationTests {
 
     @Test
     public void 简单插入_返回自增id() {
-        List<String> vList = new ArrayList<>();
+        List<Object> vList = new ArrayList<>();
         vList.add("aaaccc");
         Object id = generalModel.newQuery().from("student").select("name").value(vList).insertGetId();
         Assert.assertNotNull(id);

@@ -1,6 +1,7 @@
 package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
+import gaarason.database.core.lang.Nullable;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -26,7 +27,15 @@ public interface Data<T extends Serializable, K extends Serializable> {
      * @param value  值
      * @return 查询构建器
      */
-    Builder<T, K> data(String column, Object value);
+    Builder<T, K> data(String column, @Nullable Object value);
+
+    /**
+     * 数据更新(忽略值为null的情况)
+     * @param column 列名
+     * @param value  值
+     * @return 查询构建器
+     */
+    Builder<T, K> dataIgnoreNull(String column, @Nullable Object value);
 
     /**
      * 数据更新
@@ -34,6 +43,13 @@ public interface Data<T extends Serializable, K extends Serializable> {
      * @return 查询构建器
      */
     Builder<T, K> data(Map<String, Object> map);
+
+    /**
+     * 数据更新(忽略值为null的情况)
+     * @param map Map<String column, String value>
+     * @return 查询构建器
+     */
+    Builder<T, K> dataIgnoreNull(@Nullable Map<String, Object> map);
 
     /**
      * 字段自增

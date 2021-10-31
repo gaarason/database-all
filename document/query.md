@@ -444,14 +444,31 @@ Record<Student, Long> record = studentModel.newQuery().selectFunction("concat_ws
 
 ## where
 ### 字段与值的比较
-where
+#### where
 ```java
 Record<Student, Long> record = studentModel.newQuery().whereRaw("id<2").first();
 Record<Student, Long> record = studentModel.newQuery().where("id", ">", "2").first();
 Record<Student, Long> record = studentModel.newQuery().where("id", "!=", "2").first();
 Record<Student, Long> record = studentModel.newQuery().where("id", "2").first();
 Record<Student, Long> record = studentModel.newQuery().where("name", "like", "%明%").first();
+
+// select * from student where id is null limit 1
+Record<Student, Long> record = studentModel.newQuery().where("id", null).first();
 ```
+
+#### whereIgnoreNull
+会忽略为`null`的值
+```java
+// select * from student where id = 123 limit 1
+Record<Student, Long> record = studentModel.newQuery().whereIgnoreNull("id", 123).whereIgnoreNull("name", null).first();
+
+
+map.put("id", 123);
+map.put("name", null);
+// select * from student where id = 123 limit 1
+Record<Student, Long> record = studentModel.newQuery().whereIgnoreNull(map).first();
+```
+
 ### 字段之间的比较
 whereColumn
 ```java
@@ -466,8 +483,7 @@ RecordList<Student, Long>> records = studentModel.newQuery().whereBetween("id", 
 RecordList<Student, Long>> records = studentModel.newQuery().whereNotBetween("id", "3", "5").get();
 ```
 ### 字段(不)在范围内
-whereIn
-whereNotIn
+#### whereIn whereNotIn
 ```java
 List<Object> idList = new ArrayList<>();
 idList.add("4");
@@ -486,7 +502,24 @@ RecordList<Student, Long>> records = studentModel.newQuery().whereIn("id",
     )
 ).get()
 ```
-whereNotIn
+
+#### whereInIgnoreEmpty whereNotInIgnoreEmpty   
+
+和 whereIn whereNotIn 相比较，当参数为空时，会忽略。不会忽略列表中的`null`
+
+```java
+List<Object> idList = new ArrayList<>();
+// select * from student  limit 1
+RecordList<Student, Long>> records = studentModel.newQuery().whereInIgnoreEmpty("id", idList).get();
+
+// select * from student  limit 1
+RecordList<Student, Long>> records = studentModel.newQuery().whereNotInIgnoreEmpty("id", idList).get();
+
+List<Object> idListHasNull = new ArrayList<>();
+idListHasNull.add(null)
+// select * from student id in (null) limit 1
+RecordList<Student, Long>> records = studentModel.newQuery().whereNotInIgnoreEmpty("id", idListHasNull).get();
+```
 
 ### 字段(不)为null
 whereNull
@@ -620,14 +653,44 @@ RecordList<StudentModel.Entity, Integer> records3 = studentModel.newQuery().wher
 ```
 
 ## data
+#### data
 ```java
 Map<String, String> map = new HashMap<>();
 map.put("name", "gggg");
 map.put("age", "7");
+
+// update `student` set`name`="gggg",`age`="7" where `id`="3"
 int num = studentModel.newQuery().data(map).where("id", "3").update();
 
+// update `student` set`name`="小明",`age`="7" where `id`="3"
 int num = studentModel.newQuery().data("name","小明").data("age","7").where("id", "3").update();
+
+
+Map<String, String> mapHasNull = new HashMap<>();
+mapHasNull.put("name", "gggg");
+mapHasNull.put("age", null);
+
+// update `student` set`name`="gggg",`age`= null where `id`="3"
+int num = studentModel.newQuery().data(mapHasNull).where("id", "3").update();
+
+// update `student` set`name`="小明",`age`=null where `id`="3"
+int num = studentModel.newQuery().data("name","小明").data("age",null).where("id", "3").update();
 ```
+#### dataIgnoreNull
+会忽略为`null`的值
+
+```java
+Map<String, String> map = new HashMap<>();
+map.put("name", "gggg");
+map.put("age", null);
+
+// update `student` set`name`="gggg" where `id`="3"
+int num = studentModel.newQuery().dataIgnoreNull(map).where("id", "3").update();
+
+// update `student` set`age`="7" where `id`="3"
+int num = studentModel.newQuery().dataIgnoreNull("name",null).data("age","7").where("id", "3").update();
+```
+
 ## union
 ```java
 RecordList<Student, Long>> records = studentModel.newQuery()

@@ -2,6 +2,7 @@ package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.core.lang.Nullable;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -32,12 +33,29 @@ public interface Having<T extends Serializable, K extends Serializable> {
     Builder<T, K> having(String column, String symbol, Object value);
 
     /**
+     * 比较列与值(忽略值为null的情况)
+     * @param column 列名
+     * @param symbol 比较关系
+     * @param value  值
+     * @return 查询构建器
+     */
+    Builder<T, K> havingIgnoreNull(String column, String symbol, @Nullable Object value);
+
+    /**
      * 比较列与值相等
      * @param column 列名
      * @param value  值
      * @return 查询构建器
      */
-    Builder<T, K> having(String column, Object value);
+    Builder<T, K> having(String column, @Nullable Object value);
+
+    /**
+     * 比较列与值相等(忽略值为null的情况)
+     * @param column 列名
+     * @param value  值
+     * @return 查询构建器
+     */
+    Builder<T, K> havingIgnoreNull(String column, @Nullable Object value);
 
     /**
      * 将对象的属性转化为, 列与值相等的查询条件
@@ -54,6 +72,13 @@ public interface Having<T extends Serializable, K extends Serializable> {
     Builder<T, K> having(Map<String, Object> map);
 
     /**
+     * 列与值相等的查询条件(忽略MAP中，值为null的情况)
+     * @param map 条件map
+     * @return 查询构建器
+     */
+    Builder<T, K> havingIgnoreNull(@Nullable Map<String, Object> map);
+
+    /**
      * 列值在范围内
      * @param column    列名
      * @param valueList 值所在的list
@@ -62,12 +87,28 @@ public interface Having<T extends Serializable, K extends Serializable> {
     Builder<T, K> havingIn(String column, Collection<?> valueList);
 
     /**
+     * 列值在范围内(忽略值为空的情况)
+     * @param column    列名
+     * @param valueList 值所在的list
+     * @return 查询构建器
+     */
+    Builder<T, K> havingInIgnoreEmpty(String column, @Nullable Collection<?> valueList);
+
+    /**
      * 列值在范围内
      * @param column     列名
      * @param valueArray 值所在的数组
      * @return 查询构建器
      */
     Builder<T, K> havingIn(String column, Object... valueArray);
+
+    /**
+     * 列值在范围内(忽略值为空的情况)
+     * @param column     列名
+     * @param valueArray 值所在的数组
+     * @return 查询构建器
+     */
+    Builder<T, K> havingInIgnoreEmpty(String column, @Nullable Object... valueArray);
 
     /**
      * 列值在范围内(子查询)
@@ -94,12 +135,28 @@ public interface Having<T extends Serializable, K extends Serializable> {
     Builder<T, K> havingNotIn(String column, Collection<?> valueList);
 
     /**
+     * 列值不在范围内(忽略值为空的情况)
+     * @param column    列名
+     * @param valueList 值所在的list
+     * @return 查询构建器
+     */
+    Builder<T, K> havingNotInIgnoreEmpty(String column, @Nullable Collection<?> valueList);
+
+    /**
      * 列值在范围内
      * @param column     列名
      * @param valueArray 值所在的数组
      * @return 查询构建器
      */
     Builder<T, K> havingNotIn(String column, Object... valueArray);
+
+    /**
+     * 列值在范围内(忽略值为空的情况)
+     * @param column     列名
+     * @param valueArray 值所在的数组
+     * @return 查询构建器
+     */
+    Builder<T, K> havingNotInIgnoreEmpty(String column, @Nullable Object... valueArray);
 
     /**
      * 列值不在范围内(子查询)

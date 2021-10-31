@@ -1,6 +1,8 @@
 package gaarason.database.util;
 
 import gaarason.database.contract.query.Grammar;
+import gaarason.database.core.lang.Nullable;
+import gaarason.database.eloquent.appointment.FinalVariable;
 
 import java.util.Collection;
 import java.util.List;
@@ -50,9 +52,13 @@ public class FormatUtils {
      * @param something 字段 eg:小明
      * @return eg:?
      */
-    public static String value(String something, Grammar grammar) {
-        grammar.pushWhereParameter(something);
-        return " ? ";
+    public static String value(@Nullable String something, Grammar grammar) {
+        if (something == null) {
+            return FinalVariable.SQL_NULL;
+        } else {
+            grammar.pushWhereParameter(something);
+            return " ? ";
+        }
     }
 
     /**
@@ -60,9 +66,13 @@ public class FormatUtils {
      * @param something 字段 eg:小明
      * @return eg:?
      */
-    public static String data(String something, Grammar grammar) {
-        grammar.pushDataParameter(something);
-        return " ? ";
+    public static String data(@Nullable String something, Grammar grammar) {
+        if (something == null) {
+            return FinalVariable.SQL_NULL;
+        } else {
+            grammar.pushDataParameter(something);
+            return " ? ";
+        }
     }
 
     /**
@@ -73,7 +83,7 @@ public class FormatUtils {
     public static String value(Collection<?> somethingList, Grammar grammar) {
         StringBuilder stringBuilder = new StringBuilder();
         for (Object value : somethingList) {
-            stringBuilder.append(FormatUtils.value(String.valueOf(value), grammar)).append(',');
+            stringBuilder.append(FormatUtils.value(ConverterUtils.castNullable(value, String.class), grammar)).append(',');
         }
         return StringUtils.rtrim(stringBuilder.toString(), ",");
     }

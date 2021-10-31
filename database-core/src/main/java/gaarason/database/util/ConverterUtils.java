@@ -12,6 +12,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.*;
 import java.util.Date;
+import java.util.Optional;
 
 /**
  * 类型转化类
@@ -253,6 +254,26 @@ public class ConverterUtils {
      * @throws TypeCastException 类型转化失败
      * @see gaarason.database.eloquent.appointment.FinalVariable ALLOW_FIELD_TYPES
      */
+    @Nullable
+    public static <R> R castNullable(@Nullable final Object obj, final Class<R> clz) throws TypeCastException {
+        if (obj == null) {
+            return null;
+        } else if (obj instanceof Optional) {
+            Optional<?> optionalObj = (Optional<?>) obj;
+            return optionalObj.map(o -> cast(o, clz)).orElse(null);
+        } else {
+            return cast(obj, clz);
+        }
+    }
+
+    /**
+     * 对象转指定类型
+     * @param obj 对象
+     * @param clz 类型
+     * @return 对应类型的数据
+     * @throws TypeCastException 类型转化失败
+     * @see gaarason.database.eloquent.appointment.FinalVariable ALLOW_FIELD_TYPES
+     */
     public static <R> R cast(final Object obj, final Class<R> clz) throws TypeCastException {
         Object result;
         if (Boolean.class.equals(clz) || boolean.class.equals(clz)) {
@@ -422,24 +443,31 @@ public class ConverterUtils {
         } else if (Time.class.equals(fieldType)) {
             return resultSet.getTime(column);
         } else if (Year.class.equals(fieldType)) {
-            return Year.from(resultSet.getTimestamp(column).toLocalDateTime());
+            Timestamp timestamp = resultSet.getTimestamp(column);
+            return ObjectUtils.isNull(timestamp) ? null : Year.from(timestamp.toLocalDateTime());
         } else if (YearMonth.class.equals(fieldType)) {
-            return YearMonth.from(resultSet.getTimestamp(column).toLocalDateTime());
+            Timestamp timestamp = resultSet.getTimestamp(column);
+            return ObjectUtils.isNull(timestamp) ? null : YearMonth.from(timestamp.toLocalDateTime());
         } else if (Month.class.equals(fieldType)) {
-            return Month.from(resultSet.getTimestamp(column).toLocalDateTime());
+            Timestamp timestamp = resultSet.getTimestamp(column);
+            return ObjectUtils.isNull(timestamp) ? null : Month.from(timestamp.toLocalDateTime());
         } else if (MonthDay.class.equals(fieldType)) {
-            return MonthDay.from(resultSet.getTimestamp(column).toLocalDateTime());
+            Timestamp timestamp = resultSet.getTimestamp(column);
+            return ObjectUtils.isNull(timestamp) ? null : MonthDay.from(timestamp.toLocalDateTime());
         } else if (Timestamp.class.equals(fieldType)) {
             return resultSet.getTimestamp(column);
         } else if (Date.class.isAssignableFrom(fieldType)) {
             Timestamp timestamp = resultSet.getTimestamp(column);
-            return timestamp != null ? Date.from(timestamp.toInstant()) : null;
+            return ObjectUtils.isNull(timestamp) ? null : Date.from(timestamp.toInstant());
         } else if (LocalDate.class.equals(fieldType)) {
-            return resultSet.getDate(column).toLocalDate();
+            java.sql.Date date = resultSet.getDate(column);
+            return ObjectUtils.isNull(date) ? null : date.toLocalDate();
         } else if (LocalTime.class.equals(fieldType)) {
-            return resultSet.getTime(column).toLocalTime();
+            Time time = resultSet.getTime(column);
+            return ObjectUtils.isNull(time) ? null : time.toLocalTime();
         } else if (LocalDateTime.class.equals(fieldType)) {
-            return resultSet.getTimestamp(column).toLocalDateTime();
+            Timestamp timestamp = resultSet.getTimestamp(column);
+            return ObjectUtils.isNull(timestamp) ? null : timestamp.toLocalDateTime();
         } else if (String.class.equals(fieldType)) {
             return resultSet.getString(column);
         } else if (BigDecimal.class.equals(fieldType)) {

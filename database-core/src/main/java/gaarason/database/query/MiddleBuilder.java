@@ -6,12 +6,14 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.appointment.AggregatesType;
 import gaarason.database.eloquent.appointment.SqlType;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.InsertNotSuccessException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.util.ConverterUtils;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
@@ -110,33 +112,6 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     public Builder<T, K> from(String alias, String sql) {
         grammar.pushFrom(FormatUtils.bracket(sql) + alias);
         return this;
-    }
-
-    /**
-     * 格式化参数类型,到绑定参数
-     * @param value 参数
-     * @return 参数占位符?
-     */
-    protected String formatValue(Object value) {
-        return FormatUtils.value(String.valueOf(value), grammar);
-    }
-
-    /**
-     * 格式化参数类型,到绑定参数
-     * @param value 参数
-     * @return 参数占位符?
-     */
-    protected String formatData(Object value) {
-        return FormatUtils.data(String.valueOf(value), grammar);
-    }
-
-    /**
-     * 格式化参数类型,到绑定参数
-     * @param valueList 参数
-     * @return 参数占位符?
-     */
-    protected String formatValue(Collection<?> valueList) {
-        return FormatUtils.value(valueList, grammar);
     }
 
     @Override
@@ -261,6 +236,21 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
         return insertGetIds();
     }
 
+    @Override
+    public int update() throws SQLRuntimeException {
+        return updateSql(SqlType.UPDATE);
+    }
+
+    @Override
+    public int update(T entity) throws SQLRuntimeException {
+        // 获取entity所有有效字段对其值得映射
+        Map<String, Object> stringStringMap = ModelShadowProvider.columnValueMap(entity, false);
+
+        data(stringStringMap);
+        // 执行
+        return update();
+    }
+
     /**
      * 批量插入数据, entityList处理
      * @param entityList 数据实体对象列表
@@ -280,19 +270,31 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
         valueList(valueListList);
     }
 
-    @Override
-    public int update() throws SQLRuntimeException {
-        return updateSql(SqlType.UPDATE);
+    /**
+     * 格式化参数类型,到绑定参数
+     * @param value 参数
+     * @return 参数占位符?
+     */
+    protected String formatValue(@Nullable Object value) {
+        return FormatUtils.value(ConverterUtils.castNullable(value, String.class), grammar);
     }
 
-    @Override
-    public int update(T entity) throws SQLRuntimeException {
-        // 获取entity所有有效字段对其值得映射
-        Map<String, Object> stringStringMap = ModelShadowProvider.columnValueMap(entity, false);
+    /**
+     * 格式化参数类型,到绑定参数
+     * @param value 参数
+     * @return 参数占位符?
+     */
+    protected String formatData(@Nullable Object value) {
+        return FormatUtils.data(ConverterUtils.castNullable(value, String.class), grammar);
+    }
 
-        data(stringStringMap);
-        // 执行
-        return update();
+    /**
+     * 格式化参数类型,到绑定参数
+     * @param valueList 参数
+     * @return 参数占位符?
+     */
+    protected String formatValue(Collection<?> valueList) {
+        return FormatUtils.value(valueList, grammar);
     }
 
     /**
@@ -300,7 +302,5 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
      * @param something 字段 eg: sum(order.amount) AS sum_price
      * @return eg: sum(`order`.`amount`) AS `sum_price`
      */
-    protected static String column(String something) {
-        return FormatUtils.backQuote(something, "`");
-    }
+    protected abstract String column(String something);
 }

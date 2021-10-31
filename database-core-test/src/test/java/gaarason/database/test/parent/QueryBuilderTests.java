@@ -177,7 +177,7 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
-    public void 更新_普通更新() {
+    public void 更新_普通更新_data() {
         int update = studentModel.newQuery().data("name", "xxcc").where("id", "3").update();
         Assert.assertEquals(update, 1);
 
@@ -196,6 +196,17 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
+    public void 更新_普通更新_dataIgnoreNull() {
+        int update = studentModel.newQuery().dataIgnoreNull("name", null).dataIgnoreNull("age", 55).where("id", "3").update();
+        Assert.assertEquals(update, 1);
+
+        StudentModel.Entity entity = studentModel.findOrFail(3).toObject();
+        Assert.assertEquals(entity.getId().intValue(), 3);
+        Assert.assertEquals(entity.getAge().intValue(), 55);
+        Assert.assertNotNull(entity.getName());
+    }
+
+    @Test
     public void 更新_字段自增自减() {
         int update = studentModel.newQuery().dataDecrement("age", 2).whereRaw("id=4").update();
         Assert.assertEquals(update, 1);
@@ -209,6 +220,24 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(entity2.getId().intValue(), 4);
         Assert.assertEquals(entity2.getAge(), Byte.valueOf("13"));
 
+    }
+
+    @Test
+    public void 更新_通过MAP更新_dataIgnoreNull() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", "gggg");
+        map.put("age", null);
+
+        int update = studentModel.newQuery().dataIgnoreNull(map).where("id", "3").update();
+        Assert.assertEquals(update, 1);
+        StudentModel.Entity entity = studentModel.newQuery().where("id", "3").firstOrFail().toObject();
+        Assert.assertEquals(entity.getId().intValue(), 3);
+        Assert.assertEquals(entity.getName(), "gggg");
+        Assert.assertNotNull(entity.getAge());
+
+        Assert.assertThrows(ConfirmOperationException.class, () -> {
+            studentModel.newQuery().data("name", "ee").update();
+        });
     }
 
     @Test
@@ -701,6 +730,29 @@ abstract public class QueryBuilderTests extends BaseTests {
 
         List<StudentModel.Entity> entityList2 = studentModel.newQuery().whereIn("id", idList).whereNotIn("id",
             idList2).get().toObjectList();
+        Assert.assertEquals(entityList2.size(), 3);
+    }
+
+    @Test
+    public void 条件_whereInIgnoreEmpty() {
+        List<Object> idList = new ArrayList<>();
+        idList.add("4");
+        idList.add("5");
+        idList.add("6");
+        idList.add("7");
+        List<StudentModel.Entity> entityList1 = studentModel.newQuery()
+            .whereIn("id", idList).whereInIgnoreEmpty("id", new ArrayList<>())
+            .get()
+            .toObjectList();
+        Assert.assertEquals(entityList1.size(), 4);
+
+        List<Object> idList2 = new ArrayList<>();
+        idList2.add("10");
+        idList2.add("9");
+        idList2.add("7");
+
+        List<StudentModel.Entity> entityList2 = studentModel.newQuery().whereIn("id", idList).whereNotIn("id",
+            idList2).whereNotInIgnoreEmpty("id", new ArrayList<>()).get().toObjectList();
         Assert.assertEquals(entityList2.size(), 3);
     }
 
