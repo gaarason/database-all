@@ -268,6 +268,14 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
     }
 
     @Override
+    public Record<T, K> create(T entity) {
+        final Record<T, K> theRecord = newRecord();
+        theRecord.getEntity(entity);
+        theRecord.save();
+        return theRecord;
+    }
+
+    @Override
     public Record<T, K> updateByPrimaryKeyOrCreate(T entity) {
         // 获取 entity 中的主键的值
         final Serializable primaryKeyValue = ModelShadowProvider.getPrimaryKeyValue(entity);

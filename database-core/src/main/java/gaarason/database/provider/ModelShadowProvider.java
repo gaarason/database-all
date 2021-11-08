@@ -11,14 +11,10 @@ import gaarason.database.eloquent.appointment.FinalVariable;
 import gaarason.database.eloquent.relation.BelongsToManyQueryRelation;
 import gaarason.database.eloquent.relation.BelongsToQueryRelation;
 import gaarason.database.eloquent.relation.HasOneOrManyQueryRelation;
-import gaarason.database.exception.IllegalAccessRuntimeException;
-import gaarason.database.exception.InvalidEntityException;
-import gaarason.database.exception.InvalidPrimaryKeyTypeException;
-import gaarason.database.exception.TypeNotSupportedException;
+import gaarason.database.exception.*;
 import gaarason.database.util.ConverterUtils;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
-import gaarason.database.util.ReflectionUtils;
 import lombok.Data;
 import lombok.Getter;
 
@@ -26,15 +22,6 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -117,7 +104,7 @@ public final class ModelShadowProvider {
         if (null == result1) {
             ModelInfo<?, ?> result2 = MODEL_PROXY_INDEX_MAP.get(modelClass);
             if (null == result2) {
-                throw new InvalidEntityException("Model class[" + modelClass + "] have no information in the Shadow.");
+                throw new ModelInvalidException(modelClass);
             }
             return ObjectUtils.typeCast(result2);
         }
@@ -132,9 +119,27 @@ public final class ModelShadowProvider {
     public static <T extends Serializable> ModelInfo<T, Serializable> getByEntityClass(Class<T> clazz) {
         ModelInfo<? extends Serializable, ? extends Serializable> result = ENTITY_INDEX_MAP.get(clazz);
         if (null == result) {
-            throw new InvalidEntityException("Entity class[" + clazz + "] have no information in the Shadow.");
+            throw new EntityInvalidException(clazz);
         }
         return ObjectUtils.typeCast(result);
+    }
+
+    /**
+     * 查询entity 中的指定字段信息
+     * @param clazz     实体类(可查找泛型)
+     * @param fieldName 实体中的属性
+     * @param <T>       实体类型
+     * @return 字段信息
+     * @throws EntityAttributeInvalidException 无效的字段
+     */
+    public static <T extends Serializable> ModelShadowProvider.FieldInfo getFieldInfoByEntityClass(Class<T> clazz,
+        String fieldName) throws EntityAttributeInvalidException, EntityInvalidException {
+        final ModelInfo<T, Serializable> modelInfo = getByEntityClass(clazz);
+        final FieldInfo fieldInfo = modelInfo.getJavaFieldMap().get("fieldName");
+        if (ObjectUtils.isEmpty(fieldInfo)) {
+            throw new EntityAttributeInvalidException(fieldName, clazz);
+        }
+        return fieldInfo;
     }
 
     /**
@@ -225,7 +230,6 @@ public final class ModelShadowProvider {
         if (column != null) {
             try {
                 // 属性赋值
-//                Object value = EntityUtils.columnFill(fieldInfo.field, column.getValue());
                 Object value = column.getValue();
                 fieldInfo.field.set(entity, value);
                 // 主键值记录
@@ -251,7 +255,7 @@ public final class ModelShadowProvider {
         // 属性信息集合
         FieldInfo primaryKeyFieldInfo = getByEntityClass(entity.getClass()).getPrimaryKeyFieldInfo();
         if (null != primaryKeyFieldInfo) {
-            fieldSet(primaryKeyFieldInfo.field, entity, id);
+            fieldSet(primaryKeyFieldInfo, entity, id);
         }
     }
 
@@ -293,15 +297,29 @@ public final class ModelShadowProvider {
 
     /**
      * 设置属性的值
-     * @param field 属性
-     * @param obj   对象
-     * @param value 值
+     * @param fieldInfo 属性信息
+     * @param obj       对象
+     * @param value     值
      */
-    private static void fieldSet(Field field, Object obj, @Nullable Object value) {
+    public static void fieldSet(FieldInfo fieldInfo, Object obj, @Nullable Object value) {
         try {
-            field.set(obj, value);
+            fieldInfo.getField().set(obj, value);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessRuntimeException(e);
+        }
+    }
+
+    /**
+     * 简单实例化
+     * @param clazz 类
+     * @param <U>   类型
+     * @return 对象
+     */
+    public static <U> U newInstance(Class<U> clazz) {
+        try {
+            return clazz.newInstance();
+        } catch (IllegalAccessException | InstantiationException e) {
+            throw new EntityNewInstanceException(e);
         }
     }
 

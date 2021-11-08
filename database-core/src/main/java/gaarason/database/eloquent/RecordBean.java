@@ -8,6 +8,7 @@ import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.record.BindBean;
+import gaarason.database.exception.EntityAttributeInvalidException;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.RelationNotFoundException;
 import gaarason.database.provider.ModelShadowProvider;
@@ -16,7 +17,6 @@ import gaarason.database.support.RelationGetSupport;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
-import lombok.Getter;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -107,7 +107,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
     }
 
     @Override
-    public boolean isHasBind(){
+    public boolean isHasBind() {
         return hasBind;
     }
 
@@ -405,6 +405,80 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
         return this;
     }
 
+    @Override
+    public boolean isDirty() {
+        return !ObjectUtils.isEmpty(getDirtyMap());
+    }
+
+    @Override
+    public T getDirty() {
+        final Class<T> entityClazz = ModelShadowProvider.get(model).getEntityClass();
+        // 获取 map
+        final Map<String, Object> dirtyMap = getDirtyMap();
+        // 将map赋值到实体对象
+        return EntityUtils.entityAssignmentBySimpleMap(dirtyMap, entityClazz);
+    }
+
+    @Override
+    public Map<String, Object> getDirtyMap() {
+        final ModelShadowProvider.ModelInfo<T, K> modelInfo = ModelShadowProvider.get(model);
+
+        Map<String, Object> theMap = new HashMap<>(16);
+        // 新增与修改的有效字段区别处理
+        final Map<String, ModelShadowProvider.FieldInfo> fieldInfoMap = isHasBind() ? modelInfo.getJavaFieldUpdateMap() : modelInfo.getJavaFieldInsertMap();
+        // 逐个比较, 注意null的处理
+        for (Map.Entry<String, ModelShadowProvider.FieldInfo> entry : fieldInfoMap.entrySet()) {
+            final String columnName = entry.getValue().getColumnName();
+            final Column column = metadataMap.get(columnName);
+            // 元数据中的值
+            final Object valueInMetadataMap = ObjectUtils.isEmpty(column) ? null : column.getValue();
+            // entity中的值
+            final Object valueInEntity = ModelShadowProvider.fieldGet(entry.getValue(), entity);
+
+            // 如果不相等,则加入返回对象对象
+            if (!ObjectUtils.nullSafeEquals(valueInMetadataMap, valueInEntity)) {
+                theMap.put(columnName, valueInEntity);
+            }
+        }
+        return theMap;
+    }
+
+    @Override
+    public boolean isDirty(String fieldName) {
+        final ModelShadowProvider.FieldInfo fieldInfo = ModelShadowProvider.getFieldInfoByEntityClass(model.getEntityClass(), fieldName);
+        // 获取所有变更属性组成的map
+        final Map<String, Object> dirtyMap = getDirtyMap();
+        return dirtyMap.containsKey(fieldInfo.getColumnName());
+    }
+
+    @Override
+    public boolean isClean() {
+        return !isDirty();
+    }
+
+    @Override
+    public boolean isClean(String fieldName) {
+        return !isDirty(fieldName);
+    }
+
+    @Override
+    public T getOriginal() {
+        return toObjectWithoutRelationship();
+    }
+
+    @Override
+    @Nullable
+    public Object getOriginal(String fieldName) throws EntityAttributeInvalidException {
+        final ModelShadowProvider.FieldInfo fieldInfo = ModelShadowProvider.get(model).getJavaFieldMap().get(fieldName);
+        // 无效的参数,则抛出异常
+        if (ObjectUtils.isEmpty(fieldInfo)) {
+            throw new EntityAttributeInvalidException(fieldName, model.getEntityClass());
+        }
+        // 从元数据中获取字段值
+        final Column column = metadataMap.get(fieldInfo.getColumnName());
+        return ObjectUtils.isEmpty(column) ? null : column.getValue();
+    }
+
     /**
      * 新增
      * 事件使用 creating created
@@ -488,6 +562,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
         // 更新元数据
         selfUpdateMetadataMap(entity, insertType);
         // 更新相关对象
+        // 这步操作可以剔除无效的字段
         this.entity = toObjectWithoutRelationship();
     }
 
@@ -514,14 +589,14 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
 
             // 数据库列名
             String columnName = fieldInfo.getColumnName();
-            if (insertType) {
+            final Column theColumn = metadataMap.computeIfAbsent(columnName, k -> {
                 Column column = new Column();
                 column.setValue(value);
+                column.setColumnName(columnName);
                 column.setName(columnName);
-                metadataMap.put(columnName, column);
-            } else {
-                metadataMap.get(columnName).setValue(value);
-            }
+                return column;
+            });
+            theColumn.setValue(value);
         }
         hasBind = true;
     }

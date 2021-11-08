@@ -271,8 +271,8 @@ public class MysqlFieldGenerator extends BaseFieldGenerator {
         Matcher matcher = tinyintPattern.matcher(columnType);
         // 特殊 tinyint(1) 表示 bool值
         if (matcher.find()) {
-            Integer length = Integer.valueOf(matcher.group(1));
-            if (length.equals(1)) {
+            Integer tinyintLength = Integer.valueOf(matcher.group(1));
+            if (tinyintLength.equals(1)) {
                 field.setJavaClassTypeString(cutClassName(Boolean.class));
                 field.setJavaClassification(JavaClassification.BOOLEAN);
                 return;

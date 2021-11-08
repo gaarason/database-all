@@ -449,7 +449,6 @@ abstract public class ORMTests extends BaseTests {
         // 更新后的数据就是 stu1 + stu3
         Assert.assertEquals(entity3.getName(), name);
         Assert.assertEquals(entity3.getAge(), age3);
-
     }
 
     @Test

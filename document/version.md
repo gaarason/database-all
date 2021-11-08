@@ -19,6 +19,11 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 2.11.0
+
+- 在模型(`Model`)中增加方法`create(entity)`
+- 在查询结果集(`Record`)中增加方法`isDirty()`/`getDirty()`/`getDirtyMap()`/`isDirty(fieldName)`/`isClean()`/`isClean(fieldName)`/`getOriginal()`/`getOriginal(fieldName)`
+
 ### 2.10.0
 
 - 整体改进，数据库字段值为null的兼容性，但依然建议数据库字段不使用null

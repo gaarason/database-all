@@ -32,6 +32,7 @@ public interface Friendly<T, K> {
 
     /**
      * 元数据转实体对象
+     * @param cacheRelationRecordList 已存在的关联关系结果集列表
      * @return 实体对象
      */
     T toObject(Map<String, RecordList<?, ?>> cacheRelationRecordList);

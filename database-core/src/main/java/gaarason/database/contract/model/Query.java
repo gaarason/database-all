@@ -157,6 +157,13 @@ public interface Query<T extends Serializable, K extends Serializable> {
     Record<T, K> findOrCreate(T conditionEntity, T complementEntity);
 
     /**
+     * ORM insert本条数据
+     * @param entity 实体对象
+     * @return 结果集
+     */
+    Record<T, K> create(T entity);
+
+    /**
      * 使用主键进行单个更新, 当查询不到数据时使用ORM insert本条数据
      * (已存在则更新，否则创建新模型)
      * @param entity 实体对象

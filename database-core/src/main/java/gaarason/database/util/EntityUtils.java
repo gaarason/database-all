@@ -91,7 +91,7 @@ public class EntityUtils {
      * @param stringColumnMap 源数据
      * @param entityClass     目标实体类
      * @param <T>             目标实体类
-     * @return 对象列表
+     * @return 对象
      * @throws TypeNotSupportedException 实体不支持
      */
     public static <T> T entityAssignment(Map<String, gaarason.database.support.Column> stringColumnMap,
@@ -105,6 +105,28 @@ public class EntityUtils {
                 if (column != null) {
                     field.set(entity, column.getValue());
                 }
+            }
+            return entity;
+        } catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
+            throw new TypeNotSupportedException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * stringObjectMap 赋值给 任意 entity
+     * @param stringObjectMap 源数据 map<列名, 值>
+     * @param entityClass     目标实体类
+     * @param <T>             目标实体类
+     * @return 对象
+     * @throws TypeNotSupportedException 实体不支持
+     */
+    public static <T> T entityAssignmentBySimpleMap(Map<String, Object> stringObjectMap, Class<T> entityClass) throws TypeNotSupportedException {
+        try {
+            T entity = entityClass.newInstance();
+            for (Field field : entityClass.getDeclaredFields()) {
+                field.setAccessible(true);
+                String columnName = EntityUtils.columnName(field);
+                field.set(entity, stringObjectMap.get(columnName));
             }
             return entity;
         } catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {

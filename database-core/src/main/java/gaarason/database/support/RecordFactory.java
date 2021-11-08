@@ -200,8 +200,7 @@ public class RecordFactory {
      * @throws SQLException 数据库异常
      */
     protected static <T extends Serializable> Map<String, Column> JDBCResultToMap(Map<String, Column> map, Class<T> entityClass,
-        ResultSetMetaData resultSetMetaData,
-        ResultSet resultSet) throws SQLException {
+        ResultSetMetaData resultSetMetaData, ResultSet resultSet) throws SQLException {
 
         // 字段信息大全
         Map<String, ModelShadowProvider.FieldInfo> columnInfo = ModelShadowProvider.getByEntityClass(entityClass).getColumnFieldMap();
