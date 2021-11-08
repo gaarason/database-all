@@ -42,7 +42,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
      * 本表元数据
      * <数据库字段名 -> 字段信息>
      */
-    protected transient Map<String, Column> metadataMap;
+    protected final transient Map<String, Column> metadataMap = new HashMap<>(16);
 
     /**
      * 原Sql
@@ -175,7 +175,8 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
      * @param stringColumnMap 元数据
      */
     protected void init(Map<String, Column> stringColumnMap) {
-        this.metadataMap = stringColumnMap;
+        metadataMap.clear();
+        metadataMap.putAll(stringColumnMap);
         entity = toObjectWithoutRelationship();
         if (!stringColumnMap.isEmpty()) {
             hasBind = true;
@@ -332,7 +333,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
             .delete() > 0;
         // 成功删除后后,刷新自身属性
         if (success) {
-            this.metadataMap = new HashMap<>();
+            this.metadataMap.clear();
             entity = toObjectWithoutRelationship();
             hasBind = false;
             // 通知
@@ -607,13 +608,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
      */
     @Override
     public String toString() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(getClass().getName()).append('@').append(Integer.toHexString(hashCode()));
-        stringBuilder.append('{');
-        for (Map.Entry<String, Column> entry : getMetadataMap().entrySet()) {
-            stringBuilder.append(entry.getKey()).append("=\"").append(entry.getValue().getValue()).append("\", ");
-        }
-        return StringUtils.rtrim(StringUtils.rtrim(stringBuilder.toString(), " "), ",") + "}";
+        return toMap().toString();
     }
 
 }

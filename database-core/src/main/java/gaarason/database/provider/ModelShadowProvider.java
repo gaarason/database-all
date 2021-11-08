@@ -135,7 +135,7 @@ public final class ModelShadowProvider {
     public static <T extends Serializable> ModelShadowProvider.FieldInfo getFieldInfoByEntityClass(Class<T> clazz,
         String fieldName) throws EntityAttributeInvalidException, EntityInvalidException {
         final ModelInfo<T, Serializable> modelInfo = getByEntityClass(clazz);
-        final FieldInfo fieldInfo = modelInfo.getJavaFieldMap().get("fieldName");
+        final FieldInfo fieldInfo = modelInfo.getJavaFieldMap().get(fieldName);
         if (ObjectUtils.isEmpty(fieldInfo)) {
             throw new EntityAttributeInvalidException(fieldName, clazz);
         }

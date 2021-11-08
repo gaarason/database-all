@@ -49,7 +49,7 @@ public interface FriendlyList<T extends Serializable, K extends Serializable> {
     /**
      * 过滤成list
      * @param filterRecordAttributeFunctionalInterface 结果集过滤
-     * @param <V> 指定的响应类型
+     * @param <V>                                      指定的响应类型
      * @return 单个字段列表
      */
     <V> List<V> toList(FilterRecordAttributeFunctionalInterface<T, K, V> filterRecordAttributeFunctionalInterface);

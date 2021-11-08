@@ -5,6 +5,8 @@ import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.FilterRecordAttributeFunctionalInterface;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
+import gaarason.database.core.lang.Nullable;
+import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.Column;
 import gaarason.database.support.RelationGetSupport;
 import gaarason.database.util.EntityUtils;
@@ -108,7 +110,7 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
 
     @Override
     public Map<String, List<Object>> toListMap() {
-        Map<String, List<Object>> map = new HashMap<>();
+        Map<String, List<Object>> map = new HashMap<>(16);
         for (Record<T, K> theRecord : this) {
             for (String column : theRecord.getMetadataMap().keySet()) {
                 List<Object> list = map.computeIfAbsent(column, (key) -> new ArrayList<>());
@@ -179,5 +181,14 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
     @Override
     public String toString() {
         return toMapList().toString();
+    }
+
+    @Override
+    @Nullable
+    public Object getValueByFieldName(Record<T, K> theRecord, String fieldName) {
+        final ModelShadowProvider.FieldInfo fieldInfo = ModelShadowProvider.getFieldInfoByEntityClass(
+            theRecord.getModel().getEntityClass(), fieldName);
+        final Column column = theRecord.getMetadataMap().get(fieldInfo.getColumnName());
+        return column != null ? column.getValue() : null;
     }
 }
