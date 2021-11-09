@@ -1,11 +1,13 @@
 package gaarason.database.contract.record;
 
 import gaarason.database.core.lang.Nullable;
+import gaarason.database.exception.NoSuchAlgorithmException;
 import gaarason.database.util.ConverterUtils;
 import gaarason.database.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -75,6 +77,48 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
+     * 返回集合中给定键的最小值
+     * @param fieldName 属性名
+     * @return 最小值
+     */
+    default BigDecimal min(String fieldName) {
+        BigDecimal minValue = null;
+        for (E e : this) {
+            Object valueObj = getValueByFieldName(e, fieldName);
+            BigDecimal value = ObjectUtils.isEmpty(valueObj) ? BigDecimal.ZERO : ConverterUtils.castNullable(valueObj, BigDecimal.class);
+            minValue = minValue == null ? value : minValue.min(value);
+        }
+        return minValue == null ? BigDecimal.ZERO : minValue;
+    }
+
+    /**
+     * 返回集合中给定键的众数
+     * @param fieldName 属性名
+     * @return 众数列表
+     */
+    default List<Object> mode(String fieldName) {
+        Map<Object, Integer> theMap = new HashMap<>(16);
+        List<Object> res = new ArrayList<>();
+        int maxCount = 0;
+        for (E e : this) {
+            Object valueObj = getValueByFieldName(e, fieldName);
+            Integer count = theMap.computeIfAbsent(e, k -> 0);
+            count++;
+            theMap.put(valueObj, count);
+
+            // 新的众数产生了
+            if (count == maxCount) {
+                res.add(e);
+            } else if (count > maxCount) {
+                maxCount = count;
+                res.clear();
+                res.add(e);
+            }
+        }
+        return res;
+    }
+
+    /**
      * 返回集合中给定键的中位数
      * @param fieldName 属性名
      * @return 中位数
@@ -83,31 +127,25 @@ public interface CollectionOperation<E> extends List<E> {
         if (isEmpty()) {
             return BigDecimal.ZERO;
         }
-
-        int count = 0;
-        PriorityQueue<BigDecimal> minHeap = new PriorityQueue<>(size() / 2, BigDecimal::compareTo);
-        PriorityQueue<BigDecimal> maxHeap = new PriorityQueue<>(size() / 2, Comparator.reverseOrder());
+        int count = size() / 2 + 1;
+        // 因为元素个数是确定的, 所以一个堆就足够了
+        PriorityQueue<BigDecimal> minHeap = new PriorityQueue<>(count + 1, BigDecimal::compareTo);
 
         for (E e : this) {
             Object valueObj = getValueByFieldName(e, fieldName);
             BigDecimal value = ObjectUtils.isEmpty(valueObj) ? BigDecimal.ZERO : ConverterUtils.castNullable(valueObj, BigDecimal.class);
-            if (count % 2 == 0) {
-                minHeap.add(value);
-                BigDecimal theMin = minHeap.poll();
-                maxHeap.add(theMin);
-            } else {
-                maxHeap.add(value);
-                BigDecimal theMax = maxHeap.poll();
-                minHeap.add(theMax);
+
+            minHeap.add(value);
+            if (minHeap.size() > count) {
+                minHeap.poll();
             }
-            count++;
         }
-        // 绝不可能为null, 第一个元素必进maxHeap
-        assert maxHeap.peek() != null;
+        // 绝不可能为null, 第一个元素必进heap
+        assert minHeap.peek() != null;
         if (count % 2 == 0) {
-            return maxHeap.peek().add(minHeap.peek()).divide(new BigDecimal("2"), 8, RoundingMode.HALF_UP);
+            return minHeap.poll().add(minHeap.poll()).divide(new BigDecimal("2"), 8, RoundingMode.HALF_UP);
         } else {
-            return maxHeap.peek();
+            return minHeap.poll();
         }
     }
 
@@ -128,18 +166,6 @@ public interface CollectionOperation<E> extends List<E> {
             innerList.add(e);
         }
         return outsideList;
-    }
-
-    /**
-     * 判断集合是否包含一个给定值
-     * @param value 给定值
-     * @return bool
-     */
-    default boolean contains(Object value) {
-        for (E e : this) {
-            return ObjectUtils.nullSafeEquals(e, value);
-        }
-        return false;
     }
 
     /**
@@ -389,7 +415,7 @@ public interface CollectionOperation<E> extends List<E> {
      */
     @Nullable
     default E last() {
-        return first((index, e) -> true);
+        return last((index, e) -> true);
     }
 
     /**
@@ -428,6 +454,133 @@ public interface CollectionOperation<E> extends List<E> {
             outsideMap.put(key, value);
         }
         return outsideMap;
+    }
+
+    /**
+     * 为给定属性获取所有集合值
+     * @param fieldName 属性名
+     * @return 值的集合
+     */
+    default List<Object> pluck(String fieldName) {
+        List<Object> res = new ArrayList<>();
+        for (E e : this) {
+            res.add(getValueByFieldName(e, fieldName));
+        }
+        return res;
+    }
+
+    /**
+     * 为给定属性获取所有集合值, 并使用给定的属性进行索引, 如果存在重复索引，最后一个匹配的元素将会插入集合
+     * @param fieldNameForValue 属性名
+     * @param fieldNameForKey   属性名
+     * @return 值的集合
+     */
+    default Map<Object, Object> pluck(String fieldNameForValue, String fieldNameForKey) {
+        Map<Object, Object> res = new HashMap<>();
+        for (E e : this) {
+            res.put(getValueByFieldName(e, fieldNameForKey), getValueByFieldName(e, fieldNameForValue));
+        }
+        return res;
+    }
+
+    /**
+     * 移除并返回集合中第一个的数据
+     * @return 数据项
+     */
+    default E shift(){
+        return remove(0);
+    }
+
+    /**
+     * 移除并返回集合中最后面的数据
+     * @return 数据项
+     */
+    default E pop() {
+        return this.remove(size() - 1);
+    }
+
+    /**
+     * 添加数据项到集合开头, 其他元素后移
+     * @param element 元素
+     */
+    default void prepend(E element) {
+        add(0, element);
+    }
+
+    /**
+     * 添加数据项到集合结尾
+     * @param element 元素
+     */
+    default void push(E element) {
+        add(element);
+    }
+
+    /**
+     * 在集合中设置给定键和值, 原值将被替换
+     * @param index   索引
+     * @param element 元素
+     */
+    default void put(int index, E element) {
+        set(index, element);
+    }
+
+    /**
+     * 通过索引从集合中移除并返回数据项, 其后的元素前移
+     * @param index 索引
+     * @return 元素
+     */
+    default E pull(int index) {
+        return remove(index);
+    }
+
+    /**
+     * 从集合中返回随机元素
+     * @return 元素
+     */
+    default E random() {
+        int randomIndex = new Random().nextInt(size() - 1);
+        return get(randomIndex);
+    }
+
+    /**
+     * 从集合中返回指定个数的随机元素
+     * @param count 元素个数
+     * @return 随机元素列表
+     * @throws NoSuchAlgorithmException 随机算法错误
+     */
+    default List<E> random(int count) throws NoSuchAlgorithmException {
+        try {
+            Map<Integer, E> res = new HashMap<>(count);
+            final Random random = SecureRandom.getInstanceStrong();
+            for (int i = 0; i < count; i++) {
+                int index = random.nextInt(size() - 1);
+                // 已经存在则跳过
+                if (res.containsKey(index)) {
+                    i--;
+                    continue;
+                }
+                res.put(index, get(index));
+            }
+            return new ArrayList<>(res.values());
+        } catch (Throwable e) {
+            throw new NoSuchAlgorithmException(e);
+        }
+    }
+
+    /**
+     * 将集合数据项的顺序颠倒
+     * @return 倒序后的集合
+     */
+    default List<E> reverse(){
+        List<E> list = new ArrayList<>();
+        for (int i = size()-1 ; i > 0; i--){
+            list.add(get(i));
+        }
+        return list;
+    }
+
+    default List<E> sortBy(ReturnTwo<Integer, E, Comparable<?>> closure){
+        
     }
 
 
