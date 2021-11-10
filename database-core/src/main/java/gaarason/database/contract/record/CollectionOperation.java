@@ -113,22 +113,23 @@ public interface CollectionOperation<E> extends List<E> {
      * @return 众数列表
      */
     default List<Object> mode(String fieldName) {
-        Map<Object, Integer> theMap = new HashMap<>(16);
+        // 计数
+        Map<String, Integer> countMap = new HashMap<>(16);
         List<Object> res = new ArrayList<>();
         int maxCount = 0;
         for (E e : this) {
             Object valueObj = getValueByFieldName(e, fieldName);
-            Integer count = theMap.computeIfAbsent(e, k -> 0);
+            Integer count = countMap.computeIfAbsent(ConverterUtils.castNullable(valueObj, String.class), k -> 0);
             count++;
-            theMap.put(valueObj, count);
+            countMap.put(ConverterUtils.castNullable(valueObj, String.class), count);
 
             // 新的众数产生了
             if (count == maxCount) {
-                res.add(e);
+                res.add(valueObj);
             } else if (count > maxCount) {
                 maxCount = count;
                 res.clear();
-                res.add(e);
+                res.add(valueObj);
             }
         }
         return res;
@@ -181,6 +182,9 @@ public interface CollectionOperation<E> extends List<E> {
             }
             innerList.add(e);
         }
+        if (!innerList.isEmpty()) {
+            outsideList.add(innerList);
+        }
         return outsideList;
     }
 
@@ -192,7 +196,9 @@ public interface CollectionOperation<E> extends List<E> {
      */
     default boolean contains(String fieldName, Object value) {
         for (E e : this) {
-            return ObjectUtils.nullSafeEquals(getValueByFieldName(e, fieldName), value);
+            if (ObjectUtils.nullSafeEquals(getValueByFieldName(e, fieldName), value)) {
+                return true;
+            }
         }
         return false;
     }
@@ -222,31 +228,26 @@ public interface CollectionOperation<E> extends List<E> {
 
     /**
      * 计算每个元素的出现次数
+     * @param closure 闭包
      * @return Map<E, 次数>
      */
-    default Map<E, Integer> countBy() {
-        Map<E, Integer> theMap = new HashMap<>(16);
+    default <W> Map<W, Integer> countBy(ReturnTwo<Integer, E, W> closure) {
+        Map<W, Integer> resMap = new HashMap<>(16);
+        int index = 0;
         for (E e : this) {
-            Integer count = theMap.computeIfAbsent(e, k -> 0);
-            theMap.put(e, ++count);
+            W key = closure.get(index++, e);
+            Integer count = resMap.computeIfAbsent(key, k -> 0);
+            resMap.put(key, ++count);
         }
-        return theMap;
+        return resMap;
     }
 
     /**
      * 计算每个元素的出现次数
-     * @param closure 闭包
      * @return Map<E, 次数>
      */
-    default Map<E, Integer> countBy(DecideOne<E> closure) {
-        Map<E, Integer> theMap = new HashMap<>(16);
-        for (E e : this) {
-            if (closure.judge(e)) {
-                Integer count = theMap.computeIfAbsent(e, k -> 0);
-                theMap.put(e, ++count);
-            }
-        }
-        return theMap;
+    default Map<Object, Integer> countBy(String fieldName) {
+        return countBy((index, e) -> getValueByFieldName(e, fieldName));
     }
 
     /**
@@ -711,7 +712,7 @@ public interface CollectionOperation<E> extends List<E> {
         int index = 0;
         for (E e : this) {
             final Object key = closure.get(index++, e);
-            if(uniqueSet.contains(key)){
+            if (uniqueSet.contains(key)) {
                 continue;
             }
             uniqueSet.add(key);
