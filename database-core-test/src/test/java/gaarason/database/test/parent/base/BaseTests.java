@@ -39,11 +39,11 @@ abstract public class BaseTests {
 
     protected static String readToString(String fileName) throws IOException {
         String encoding = "UTF-8";
-        File   file     = new File(fileName);
+        File file = new File(fileName);
         file.setReadable(true);
-        Long            fileLength  = file.length();
-        byte[]          fileContent = new byte[fileLength.intValue()];
-        FileInputStream in          = new FileInputStream(file);
+        Long fileLength = file.length();
+        byte[] fileContent = new byte[fileLength.intValue()];
+        FileInputStream in = new FileInputStream(file);
         in.read(fileContent);
         in.close();
         return new String(fileContent, encoding);
@@ -60,6 +60,11 @@ abstract public class BaseTests {
         List<DataSource> dataSourceList = getDataSourceList();
         initDataSourceList(dataSourceList);
         log.debug("数据库重新初始化完成");
+        otherAfter();
+    }
+
+    protected void otherAfter() {
+
     }
 
     // 初始化数据库连接列表
@@ -68,15 +73,15 @@ abstract public class BaseTests {
         String sqlTemp = "";
         for (DataSource dataSource : dataSourceList) {
 
-            try(Connection connection = dataSource.getConnection()){
+            try (Connection connection = dataSource.getConnection()) {
                 for (String sql : split) {
                     sqlTemp = sql;
 //                    System.out.println(sql);
                     PreparedStatement preparedStatement = connection.prepareStatement(sql);
-                    int               i                 = preparedStatement.executeUpdate();
+                    int i = preparedStatement.executeUpdate();
 //                    System.out.println(i);
                 }
-            }catch (Throwable e){
+            } catch (Throwable e) {
                 DatabaseType databaseType = DatabaseType.forDatabaseProductName(dataSource.getConnection().getMetaData().getDatabaseProductName());
                 throw new SQLRuntimeException(sqlTemp, new ArrayList<>(), e.getMessage(), databaseType.getValueSymbol(), e);
             }

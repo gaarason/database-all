@@ -44,7 +44,7 @@ public interface CollectionOperation<E> extends List<E> {
         for (E e : this) {
             bigDecimal = bigDecimal.add(ObjectUtils.isEmpty(e) ? BigDecimal.ZERO : ConverterUtils.castNullable(e, BigDecimal.class));
         }
-        return bigDecimal.divide(new BigDecimal(size()), 8, RoundingMode.HALF_UP);
+        return bigDecimal.divide(new BigDecimal(size()), RoundingMode.HALF_UP);
     }
 
     /**
@@ -58,7 +58,22 @@ public interface CollectionOperation<E> extends List<E> {
             Object value = getValueByFieldName(e, fieldName);
             bigDecimal = bigDecimal.add(ObjectUtils.isEmpty(value) ? BigDecimal.ZERO : ConverterUtils.castNullable(value, BigDecimal.class));
         }
-        return bigDecimal.divide(new BigDecimal(size()), 8, RoundingMode.HALF_UP);
+        return bigDecimal.divide(new BigDecimal(size()), RoundingMode.HALF_UP);
+    }
+
+    /**
+     * 返回集合中所有数据项的和
+     * @param fieldName 属性名
+     * @return 最大值
+     */
+    default BigDecimal sum(String fieldName) {
+        BigDecimal sum = null;
+        for (E e : this) {
+            Object valueObj = getValueByFieldName(e, fieldName);
+            BigDecimal value = ObjectUtils.isEmpty(valueObj) ? BigDecimal.ZERO : ConverterUtils.castNullable(valueObj, BigDecimal.class);
+            sum = sum == null ? value : sum.add(value);
+        }
+        return sum == null ? BigDecimal.ZERO : sum;
     }
 
     /**
@@ -70,7 +85,8 @@ public interface CollectionOperation<E> extends List<E> {
         BigDecimal maxValue = null;
         for (E e : this) {
             Object valueObj = getValueByFieldName(e, fieldName);
-            BigDecimal value = ObjectUtils.isEmpty(valueObj) ? BigDecimal.ZERO : ConverterUtils.castNullable(valueObj, BigDecimal.class);
+            BigDecimal value = ObjectUtils.isEmpty(valueObj) ? BigDecimal.ZERO :
+                ConverterUtils.castNullable(valueObj, BigDecimal.class);
             maxValue = maxValue == null ? value : maxValue.max(value);
         }
         return maxValue == null ? BigDecimal.ZERO : maxValue;
@@ -143,7 +159,7 @@ public interface CollectionOperation<E> extends List<E> {
         // 绝不可能为null, 第一个元素必进heap
         assert minHeap.peek() != null;
         if (count % 2 == 0) {
-            return minHeap.poll().add(minHeap.poll()).divide(new BigDecimal("2"), 8, RoundingMode.HALF_UP);
+            return minHeap.poll().add(minHeap.poll()).divide(new BigDecimal("2"), RoundingMode.HALF_UP);
         } else {
             return minHeap.poll();
         }
@@ -487,7 +503,7 @@ public interface CollectionOperation<E> extends List<E> {
      * 移除并返回集合中第一个的数据
      * @return 数据项
      */
-    default E shift(){
+    default E shift() {
         return remove(0);
     }
 
@@ -571,16 +587,146 @@ public interface CollectionOperation<E> extends List<E> {
      * 将集合数据项的顺序颠倒
      * @return 倒序后的集合
      */
-    default List<E> reverse(){
+    default List<E> reverse() {
         List<E> list = new ArrayList<>();
-        for (int i = size()-1 ; i > 0; i--){
+        for (int i = size() - 1; i > 0; i--) {
             list.add(get(i));
         }
         return list;
     }
 
-    default List<E> sortBy(ReturnTwo<Integer, E, Comparable<?>> closure){
-        
+    /**
+     * 通过给定键对集合进行排序
+     * @param closure 闭包
+     * @param ase     正序
+     * @return 新的集合
+     */
+    default List<E> sortBy(ReturnTwo<Integer, E, BigDecimal> closure, boolean ase) {
+        PriorityQueue<BigDecimal> heap = new PriorityQueue<>(size(), (o1, o2) -> ase ? o1.compareTo(o2) : o2.compareTo(o1));
+        List<E> list = new ArrayList<>(size());
+        Map<BigDecimal, List<E>> map = new HashMap<>();
+        int index = 0;
+        for (E e : this) {
+            final BigDecimal comparable = closure.get(index++, e);
+            heap.add(comparable);
+
+            final List<E> innerList = map.computeIfAbsent(comparable, k -> new ArrayList<>());
+            innerList.add(e);
+        }
+        while (!heap.isEmpty()) {
+            list.addAll(map.get(heap.poll()));
+        }
+        return list;
+    }
+
+    /**
+     * 通过给定回调对集合进行正序排序
+     * @param closure 闭包
+     * @return 新的集合
+     */
+    default List<E> sortBy(ReturnTwo<Integer, E, BigDecimal> closure) {
+        return sortBy(closure, true);
+    }
+
+    /**
+     * 通过指定属性到的值对集合进行正序排序
+     * @param fieldName 属性名
+     * @return 新的集合
+     */
+    default List<E> sortBy(String fieldName) {
+        return sortBy((index, e) -> {
+            final BigDecimal decimal = ConverterUtils.castNullable(getValueByFieldName(e, fieldName), BigDecimal.class);
+            return decimal == null ? BigDecimal.ZERO : decimal;
+        }, true);
+    }
+
+    /**
+     * 通过指定属性到的值对集合进行倒序排序
+     * @param fieldName 属性名
+     * @return 新的集合
+     */
+    default List<E> sortByDesc(String fieldName) {
+        return sortBy((index, e) -> {
+            final BigDecimal decimal = ConverterUtils.castNullable(getValueByFieldName(e, fieldName), BigDecimal.class);
+            return decimal == null ? BigDecimal.ZERO : decimal;
+        }, false);
+    }
+
+    /**
+     * 通过给定回调对集合进行倒序排序
+     * @param closure 闭包
+     * @return 新的集合
+     */
+    default List<E> sortByDesc(ReturnTwo<Integer, E, BigDecimal> closure) {
+        return sortBy(closure, false);
+    }
+
+    /**
+     * 从给定位置开始移除并返回数据项切片
+     * @param offset 平移量
+     * @return 新的集合
+     */
+    default List<E> splice(int offset) {
+        return splice(offset, size());
+    }
+
+    /**
+     * 从给定位置开始移除并返回数据项切片
+     * @param offset 平移量
+     * @param taken  数据大小
+     * @return 新的集合
+     */
+    default List<E> splice(int offset, int taken) {
+        List<E> list = new ArrayList<>();
+        int count = 0;
+        for (int i = offset; i < size(); i++) {
+            if (taken <= count++) {
+                break;
+            }
+            list.add(get(i));
+        }
+        return list;
+    }
+
+    /**
+     * 使用指定数目的数据项返回一个新的集合
+     * @param count 指定数目
+     * @return 新的集合
+     */
+    default List<E> take(int count) {
+        if (count < 0) {
+            return splice(size() + count, -count);
+        }
+        return splice(0, count);
+    }
+
+    /**
+     * 指定自己的回调用于判断数据项唯一性
+     * @param closure 闭包
+     * @return 去重后的集合
+     */
+    default List<E> unique(ReturnTwo<Integer, E, Object> closure) {
+        List<E> list = new ArrayList<>();
+        Set<Object> uniqueSet = new HashSet<>();
+        int index = 0;
+        for (E e : this) {
+            final Object key = closure.get(index++, e);
+            if(uniqueSet.contains(key)){
+                continue;
+            }
+            uniqueSet.add(key);
+            list.add(e);
+        }
+        return list;
+    }
+
+    /**
+     * 使用属性判断数据项唯一性
+     * @param fieldName 属性名
+     * @return 去重后的集合
+     */
+    default List<E> unique(String fieldName) {
+        return unique((index, e) -> getValueByFieldName(e, fieldName));
     }
 
 

@@ -27,8 +27,8 @@ public class FinalVariable {
      */
     public static final List<Class<?>> ALLOW_FIELD_TYPES = Arrays.asList(Boolean.class, boolean.class, Byte.class, byte.class, Character.class,
         char.class, Short.class, short.class, Integer.class, int.class, Long.class, long.class, Float.class, float.class, Double.class, double.class,
-        BigInteger.class, Number.class, java.sql.Date.class, Time.class, Year.class, YearMonth.class, Month.class, MonthDay.class, Timestamp.class,
-        Date.class, LocalDate.class, LocalTime.class, LocalDateTime.class, String.class, BigDecimal.class, Blob.class, Clob.class);
+        BigInteger.class, BigDecimal.class, Number.class, java.sql.Date.class, Time.class, Year.class, YearMonth.class, Month.class, MonthDay.class,
+        Timestamp.class, Date.class, LocalDate.class, LocalTime.class, LocalDateTime.class, String.class, Blob.class, Clob.class);
 
     /**
      * 关联关系声明注解

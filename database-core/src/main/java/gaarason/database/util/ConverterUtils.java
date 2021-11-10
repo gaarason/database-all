@@ -294,6 +294,8 @@ public class ConverterUtils {
             result = getAsDouble(obj);
         } else if (BigInteger.class.isAssignableFrom(clz)) {
             result = getAsBigInteger(obj);
+        } else if (BigDecimal.class.equals(clz)) {
+            result = getAsBigDecimal(obj);
         } else if (Number.class.isAssignableFrom(clz)) {
             result = getAsNumber(obj);
         } else if (java.sql.Date.class.equals(clz)) {
@@ -320,8 +322,6 @@ public class ConverterUtils {
             result = LocalDateUtils.str2LocalDateTime(getAsString(obj));
         } else if (String.class.equals(clz)) {
             result = getAsString(obj);
-        } else if (BigDecimal.class.equals(clz)) {
-            result = getAsBigDecimal(obj);
         } else if (Blob.class.isAssignableFrom(clz)) {
             result = getAsBlob(obj);
         } else if (Clob.class.isAssignableFrom(clz)) {
@@ -360,6 +360,8 @@ public class ConverterUtils {
             result = Double.valueOf("0");
         } else if (BigInteger.class.isAssignableFrom(clz)) {
             result = BigInteger.ZERO;
+        } else if (BigDecimal.class.equals(clz)) {
+            result = BigDecimal.valueOf(0L);
         } else if (Number.class.isAssignableFrom(clz)) {
             result = Long.valueOf("0");
         } else if (java.sql.Date.class.equals(clz)) {
@@ -386,8 +388,6 @@ public class ConverterUtils {
             result = LocalDateUtils.MIN_LOCAL_DATE_TIME;
         } else if (String.class.equals(clz)) {
             result = "";
-        } else if (BigDecimal.class.equals(clz)) {
-            result = BigDecimal.valueOf(0L);
         } else if (Blob.class.isAssignableFrom(clz)) {
             return null;
         } else if (Clob.class.isAssignableFrom(clz)) {
@@ -436,6 +436,8 @@ public class ConverterUtils {
             return resultSet.getDouble(column);
         } else if (BigInteger.class.isAssignableFrom(fieldType)) {
             return new BigInteger(resultSet.getString(column));
+        } else if (BigDecimal.class.equals(fieldType)) {
+            return resultSet.getBigDecimal(column);
         } else if (Number.class.isAssignableFrom(fieldType)) {
             return resultSet.getLong(column);
         } else if (java.sql.Date.class.equals(fieldType)) {
@@ -470,8 +472,6 @@ public class ConverterUtils {
             return ObjectUtils.isNull(timestamp) ? null : timestamp.toLocalDateTime();
         } else if (String.class.equals(fieldType)) {
             return resultSet.getString(column);
-        } else if (BigDecimal.class.equals(fieldType)) {
-            return resultSet.getBigDecimal(column);
         } else if (Blob.class.isAssignableFrom(fieldType)) {
             return resultSet.getBlob(column);
         } else if (Clob.class.isAssignableFrom(fieldType)) {
