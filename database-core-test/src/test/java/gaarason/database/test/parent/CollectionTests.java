@@ -121,8 +121,8 @@ abstract public class CollectionTests extends BaseTests {
         Assert.assertEquals(1, ageMap.get(Byte.valueOf("15")).intValue());
 
         Map<Byte, Integer> sexMap = records.countBy((index, e) -> e.getEntity().getSex());
-        Assert.assertEquals(2, ageMap.size());
-        Assert.assertEquals(6, ageMap.get(Byte.valueOf("1")).intValue());
-        Assert.assertEquals(4, ageMap.get(Byte.valueOf("2")).intValue());
+        Assert.assertEquals(2, sexMap.size());
+        Assert.assertEquals(6, sexMap.get(Byte.valueOf("1")).intValue());
+        Assert.assertEquals(4, sexMap.get(Byte.valueOf("2")).intValue());
     }
 }
