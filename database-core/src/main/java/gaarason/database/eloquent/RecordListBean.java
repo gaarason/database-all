@@ -5,11 +5,14 @@ import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.FilterRecordAttributeFunctionalInterface;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
+import gaarason.database.contract.record.CollectionOperation;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.Column;
+import gaarason.database.support.RecordFactory;
 import gaarason.database.support.RelationGetSupport;
 import gaarason.database.util.EntityUtils;
+import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
 
 import java.io.Serializable;
@@ -22,11 +25,6 @@ import java.util.*;
  * @author xt
  */
 public class RecordListBean<T extends Serializable, K extends Serializable> extends ArrayList<Record<T, K>> implements RecordList<T, K> {
-
-    /**
-     * 元数据
-     */
-    protected final ArrayList<Map<String, Column>> originalMetadataMapList = new ArrayList<>();
 
     /**
      * 原始sql
@@ -49,7 +47,11 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
 
     @Override
     public List<Map<String, Column>> getOriginalMetadataMapList() {
-        return originalMetadataMapList;
+        List<Map<String, Column>> metadataMapList = new ArrayList<>();
+        for (Record<T, K> tkRecord : this) {
+            metadataMapList.add(tkRecord.getMetadataMap());
+        }
+        return metadataMapList;
     }
 
     @Override
@@ -91,7 +93,12 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
 
     @Override
     public <V> List<V> toObjectList(Class<V> clazz) {
-        return EntityUtils.entityAssignment(this.originalMetadataMapList, clazz);
+        List<V> entityList = new ArrayList<>();
+        for (Record<T, K> tkRecord : this) {
+            final V v = EntityUtils.entityAssignment(tkRecord.getMetadataMap(), clazz);
+            entityList.add(v);
+        }
+        return entityList;
     }
 
 
@@ -185,10 +192,11 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
 
     @Override
     @Nullable
-    public Object getValueByFieldName(Record<T, K> theRecord, String fieldName) {
+    public <W> W getValueByFieldName(Record<T, K> theRecord, String fieldName) {
         final ModelShadowProvider.FieldInfo fieldInfo = ModelShadowProvider.getFieldInfoByEntityClass(
             theRecord.getModel().getEntityClass(), fieldName);
         final Column column = theRecord.getMetadataMap().get(fieldInfo.getColumnName());
-        return column != null ? column.getValue() : null;
+        return column != null ? ObjectUtils.typeCast(column.getValue()) : null;
     }
+
 }

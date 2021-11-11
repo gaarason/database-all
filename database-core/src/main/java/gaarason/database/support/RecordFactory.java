@@ -75,7 +75,6 @@ public class RecordFactory {
             // 拆分的数据源
             Map<String, Column> stringColumnMap = JDBCResultToMap(entityClass, resultSetMetaData, resultSet);
             recordList.add(new RecordBean<>(entityClass, model, stringColumnMap, sql));
-            recordList.getOriginalMetadataMapList().add(stringColumnMap);
         }
         return recordList;
     }
@@ -90,13 +89,10 @@ public class RecordFactory {
      * @return 批量结果集(RecordList全新, Record为引用地址)
      */
     public static <T extends Serializable, K extends Serializable> RecordList<T, K> newRecordList(List<Record<T, K>> records) {
-        String sql = records.size() > 0 ? records.get(0).getOriginalSql() : "";
+        String sql = !records.isEmpty() ? records.get(0).getOriginalSql() : "";
         RecordList<T, K> recordList = new RecordListBean<>(sql);
-        for (Record<T, K> tkRecord : records) {
-            // 此处不应使用, deepCopyRecord
-            recordList.add(tkRecord);
-            recordList.getOriginalMetadataMapList().add(copy(tkRecord.getMetadataMap()));
-        }
+        // 此处不应使用, deepCopyRecord
+        recordList.addAll(records);
         return recordList;
     }
 
@@ -157,7 +153,6 @@ public class RecordFactory {
             recordList.add(new RecordBean<>(entityClass, model, metadataMap, originalSql));
         }
         // 使用引用
-        recordList.getOriginalMetadataMapList().addAll(copy(originalRecordList.getOriginalMetadataMapList()));
         recordList.setCacheMap(copy(originalRecordList.getCacheMap()));
         return recordList;
     }

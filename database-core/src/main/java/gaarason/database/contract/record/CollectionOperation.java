@@ -25,7 +25,7 @@ public interface CollectionOperation<E> extends List<E> {
      * @return 值
      */
     @Nullable
-    Object getValueByFieldName(E element, String fieldName);
+    <W> W getValueByFieldName(E element, String fieldName);
 
     /**
      * 返回集合表示的底层数数据
@@ -112,13 +112,13 @@ public interface CollectionOperation<E> extends List<E> {
      * @param fieldName 属性名
      * @return 众数列表
      */
-    default List<Object> mode(String fieldName) {
+    default <W> List<W> mode(String fieldName) {
         // 计数
         Map<String, Integer> countMap = new HashMap<>(16);
-        List<Object> res = new ArrayList<>();
+        List<W> res = new ArrayList<>();
         int maxCount = 0;
         for (E e : this) {
-            Object valueObj = getValueByFieldName(e, fieldName);
+            W valueObj = getValueByFieldName(e, fieldName);
             Integer count = countMap.computeIfAbsent(ConverterUtils.castNullable(valueObj, String.class), k -> 0);
             count++;
             countMap.put(ConverterUtils.castNullable(valueObj, String.class), count);
@@ -246,7 +246,7 @@ public interface CollectionOperation<E> extends List<E> {
      * 计算每个元素的出现次数
      * @return Map<E, 次数>
      */
-    default Map<Object, Integer> countBy(String fieldName) {
+    default <W> Map<W, Integer> countBy(String fieldName) {
         return countBy((index, e) -> getValueByFieldName(e, fieldName));
     }
 
@@ -345,15 +345,8 @@ public interface CollectionOperation<E> extends List<E> {
      * @param closure 闭包
      * @return Map<Object, List < E>>
      */
-    default Map<Object, List<E>> groupBy(ReturnTwo<Integer, E, Object> closure) {
-        int index = 0;
-        Map<Object, List<E>> outsideMap = new HashMap<>();
-        for (E e : this) {
-            Object res = closure.get(index++, e);
-            List<E> innerList = outsideMap.computeIfAbsent(res, k -> new ArrayList<>());
-            innerList.add(e);
-        }
-        return outsideMap;
+    default <W> Map<W, List<E>> groupBy(ReturnTwo<Integer, E, W> closure) {
+        return mapToGroups(closure, (index, e) -> e);
     }
 
     /**
@@ -361,17 +354,8 @@ public interface CollectionOperation<E> extends List<E> {
      * @param fieldName 属性名
      * @return Map<Object, List < E>>
      */
-    default Map<Object, List<E>> groupBy(String fieldName) {
+    default <W> Map<W, List<E>> groupBy(String fieldName) {
         return groupBy((index, e) -> getValueByFieldName(e, fieldName));
-    }
-
-    /**
-     * 连接集合中的数据项
-     * @param delimiter 分隔符
-     * @return 连接后的字符串
-     */
-    default String implode(CharSequence delimiter) {
-        return this.stream().map(e -> ConverterUtils.castNullable(e, String.class)).collect(Collectors.joining(delimiter));
     }
 
     /**
@@ -381,7 +365,17 @@ public interface CollectionOperation<E> extends List<E> {
      * @return 连接后的字符串
      */
     default String implode(String fieldName, CharSequence delimiter) {
-        return this.stream().map(e -> ConverterUtils.castNullable(getValueByFieldName(e, fieldName), String.class)).collect(
+        return implode(e -> getValueByFieldName(e, fieldName), delimiter);
+    }
+
+    /**
+     * 连接集合中的数据项
+     * @param closure   闭包
+     * @param delimiter 分隔符
+     * @return 连接后的字符串
+     */
+    default String implode(ReturnOne<E, String> closure, CharSequence delimiter) {
+        return this.stream().map(e -> ConverterUtils.castNullable(closure.get(e), String.class)).collect(
             Collectors.joining(delimiter));
     }
 
@@ -391,7 +385,7 @@ public interface CollectionOperation<E> extends List<E> {
      * @param fieldName 属性名
      * @return 全新的集合
      */
-    default Map<Object, E> keyBy(String fieldName) {
+    default <W> Map<W, E> keyBy(String fieldName) {
         return keyBy((index, e) -> getValueByFieldName(e, fieldName));
     }
 
@@ -400,9 +394,9 @@ public interface CollectionOperation<E> extends List<E> {
      * @param closure 闭包
      * @return 全新的集合
      */
-    default Map<Object, E> keyBy(ReturnTwo<Integer, E, Object> closure) {
+    default <W> Map<W, E> keyBy(ReturnTwo<Integer, E, W> closure) {
         int index = 0;
-        Map<Object, E> theMap = new HashMap<>(16);
+        Map<W, E> theMap = new HashMap<>(16);
         for (E e : this) {
             theMap.put(closure.get(index++, e), e);
         }
@@ -432,7 +426,7 @@ public interface CollectionOperation<E> extends List<E> {
      */
     @Nullable
     default E last() {
-        return last((index, e) -> true);
+        return get(size() - 1);
     }
 
     /**
@@ -441,15 +435,15 @@ public interface CollectionOperation<E> extends List<E> {
      * @param closureValue 闭包生成value
      * @return 新的集合
      */
-    default Map<Object, List<Object>> mapToGroups(ReturnTwo<Integer, E, Object> closureKey, ReturnTwo<Integer, E, Object> closureValue) {
+    default <W,Y> Map<W, List<Y>> mapToGroups(ReturnTwo<Integer, E, W> closureKey, ReturnTwo<Integer, E, Y> closureValue) {
         int index = 0;
-        Map<Object, List<Object>> outsideMap = new HashMap<>(16);
+        Map<W, List<Y>> outsideMap = new HashMap<>(16);
 
         for (E e : this) {
-            Object key = closureKey.get(index, e);
-            Object value = closureValue.get(index++, e);
+            W key = closureKey.get(index, e);
+            Y value = closureValue.get(index++, e);
 
-            List<Object> innerList = outsideMap.computeIfAbsent(key, k -> new ArrayList<>());
+            List<Y> innerList = outsideMap.computeIfAbsent(key, k -> new ArrayList<>());
             innerList.add(value);
         }
         return outsideMap;
@@ -461,13 +455,13 @@ public interface CollectionOperation<E> extends List<E> {
      * @param closureValue 闭包生成value
      * @return 新的集合
      */
-    default Map<Object, Object> mapWithKeys(ReturnTwo<Integer, E, Object> closureKey, ReturnTwo<Integer, E, Object> closureValue) {
+    default <W,Y> Map<W, Y> mapWithKeys(ReturnTwo<Integer, E, W> closureKey, ReturnTwo<Integer, E, Y> closureValue) {
         int index = 0;
-        Map<Object, Object> outsideMap = new HashMap<>(16);
+        Map<W, Y> outsideMap = new HashMap<>(16);
 
         for (E e : this) {
-            Object key = closureKey.get(index, e);
-            Object value = closureValue.get(index++, e);
+            W key = closureKey.get(index, e);
+            Y value = closureValue.get(index++, e);
             outsideMap.put(key, value);
         }
         return outsideMap;
@@ -478,8 +472,8 @@ public interface CollectionOperation<E> extends List<E> {
      * @param fieldName 属性名
      * @return 值的集合
      */
-    default List<Object> pluck(String fieldName) {
-        List<Object> res = new ArrayList<>();
+    default <W> List<W> pluck(String fieldName) {
+        List<W> res = new ArrayList<>();
         for (E e : this) {
             res.add(getValueByFieldName(e, fieldName));
         }
@@ -492,8 +486,8 @@ public interface CollectionOperation<E> extends List<E> {
      * @param fieldNameForKey   属性名
      * @return 值的集合
      */
-    default Map<Object, Object> pluck(String fieldNameForValue, String fieldNameForKey) {
-        Map<Object, Object> res = new HashMap<>();
+    default <W,Y> Map<W, Y> pluck(String fieldNameForValue, String fieldNameForKey) {
+        Map<W, Y> res = new HashMap<>();
         for (E e : this) {
             res.put(getValueByFieldName(e, fieldNameForKey), getValueByFieldName(e, fieldNameForValue));
         }
@@ -503,16 +497,18 @@ public interface CollectionOperation<E> extends List<E> {
     /**
      * 移除并返回集合中第一个的数据
      * @return 数据项
+     * @throws IndexOutOfBoundsException 数据为空
      */
-    default E shift() {
+    default E shift() throws IndexOutOfBoundsException {
         return remove(0);
     }
 
     /**
      * 移除并返回集合中最后面的数据
      * @return 数据项
+     * @throws IndexOutOfBoundsException 数据为空
      */
-    default E pop() {
+    default E pop() throws IndexOutOfBoundsException {
         return this.remove(size() - 1);
     }
 
@@ -741,6 +737,13 @@ public interface CollectionOperation<E> extends List<E> {
     interface DecideTwo<A, B> {
 
         boolean judge(A a, B b);
+    }
+
+    @FunctionalInterface
+    interface ReturnOne<A, C> {
+
+        @Nullable
+        C get(A a);
     }
 
     @FunctionalInterface

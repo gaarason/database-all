@@ -76,8 +76,7 @@ public class EntityUtils {
      * @throws TypeNotSupportedException 实体不支持
      */
     public static <T> List<T> entityAssignment(List<Map<String, gaarason.database.support.Column>> stringColumnMapList,
-        Class<T> entityClass)
-        throws TypeNotSupportedException {
+        Class<T> entityClass) throws TypeNotSupportedException {
         List<T> entityList = new ArrayList<>();
         for (Map<String, gaarason.database.support.Column> stringColumnMap : stringColumnMapList) {
             T entity = entityAssignment(stringColumnMap, entityClass);

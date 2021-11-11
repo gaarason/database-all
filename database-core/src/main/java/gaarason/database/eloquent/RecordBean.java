@@ -175,8 +175,11 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
      * @param stringColumnMap 元数据
      */
     protected void init(Map<String, Column> stringColumnMap) {
-        metadataMap.clear();
-        metadataMap.putAll(stringColumnMap);
+        // 如果不是统同一个(引用相同)对象, 则手动赋值下
+        if(metadataMap != stringColumnMap){
+            metadataMap.clear();
+            metadataMap.putAll(stringColumnMap);
+        }
         entity = toObjectWithoutRelationship();
         if (!stringColumnMap.isEmpty()) {
             hasBind = true;
