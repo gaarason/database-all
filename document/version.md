@@ -23,6 +23,9 @@ Eloquent ORM for Java
 
 - 在模型(`Model`)中增加方法`create(entity)`
 - 在查询结果集(`Record`)中增加方法`isDirty()`/`getDirty()`/`getDirtyMap()`/`isDirty(fieldName)`/`isClean()`/`isClean(fieldName)`/`getOriginal()`/`getOriginal(fieldName)`
+- 在查询结果集(`RecordList`)中增加方法`avg(fieldName)`/`sum(fieldName)`/`max(fieldName)`/`min(fieldName)`/`mode(fieldName)`/`median(fieldName)`/`chunk(closure, newSize)`/`chunk(newSize)`/`chunkToMap(newSize)`/`contains(fieldName, value)`/`contains(closure)`/`count()`/`countBy(closure)`/`countBy(fieldName)`/`every(closure)`/`filter(closure)`/`filter()`/`filter(fieldName)`/`reject(closure)`/`first(closure)`/`first()`/`groupBy(closure)`/`groupBy(fieldName)`
+- 在查询结果集(`RecordList`)中增加方法`implode(fieldName, delimiter)`/`implode(closure, delimiter)`/`keyBy(fieldName)`/`keyBy(closure)`/`last(closure)`/`last()`/`mapToGroups(closureKey, closureValue)`/`mapWithKeys(closureKey, closureValue)`/`pluck(fieldName)`/`pluck(fieldNameForValue, fieldNameForKey)`/`shift()`/`pop()`/`prepend(element)`/`push(element)`/`put(index, element)`/`pull(index)`/`random()`/`random(count)`/`reverse()`/`sortBy(closure, ase)`/`sortBy(closure)`/`sortBy(fieldName)`
+- 在查询结果集(`RecordList`)中增加方法`sortByDesc(fieldName)`/`sortByDesc(closure) `/`splice(offset)`/`splice(offset, taken)`/`take(count)`/`unique(closure)`/`unique(fieldName)`
 
 ### 2.10.0
 
