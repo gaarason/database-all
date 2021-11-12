@@ -539,7 +539,7 @@ public interface CollectionOperation<E> extends List<E> {
      * @return 元素
      */
     @Nullable
-    default E shift() throws IndexOutOfBoundsException {
+    default E shift() {
         return isEmpty() ? null : remove(0);
     }
 
@@ -548,7 +548,7 @@ public interface CollectionOperation<E> extends List<E> {
      * @return 元素
      */
     @Nullable
-    default E pop() throws IndexOutOfBoundsException {
+    default E pop() {
         return isEmpty() ? null : this.remove(size() - 1);
     }
 
@@ -642,7 +642,7 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 通过给定键对集合进行排序
+     * 通过给定回调对集合进行排序
      * @param closure 闭包
      * @param ase     正序
      * @return 新的集合
@@ -660,7 +660,15 @@ public interface CollectionOperation<E> extends List<E> {
             innerList.add(e);
         }
         while (!heap.isEmpty()) {
-            list.addAll(map.get(heap.poll()));
+            BigDecimal key = heap.poll();
+            if(map.containsKey(key)){
+                List<E> eList = map.remove(key);
+                if (ObjectUtils.isEmpty(eList)) {
+                    break;
+                }
+                list.addAll(eList);
+            }
+
         }
         return list;
     }
@@ -675,7 +683,7 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 通过指定属性到的值对集合进行正序排序
+     * 通过元素中的指定属性的值，对集合进行正序排序
      * @param fieldName 属性名
      * @return 新的集合
      */
@@ -683,19 +691,19 @@ public interface CollectionOperation<E> extends List<E> {
         return sortBy((index, e) -> {
             final BigDecimal decimal = ConverterUtils.castNullable(elementGetValueByFieldName(e, fieldName), BigDecimal.class);
             return decimal == null ? BigDecimal.ZERO : decimal;
-        }, true);
+        });
     }
 
     /**
-     * 通过指定属性到的值对集合进行倒序排序
+     * 通过元素中的指定属性的值，对集合进行倒序排序
      * @param fieldName 属性名
      * @return 新的集合
      */
     default List<E> sortByDesc(String fieldName) {
-        return sortBy((index, e) -> {
+        return sortByDesc((index, e) -> {
             final BigDecimal decimal = ConverterUtils.castNullable(elementGetValueByFieldName(e, fieldName), BigDecimal.class);
             return decimal == null ? BigDecimal.ZERO : decimal;
-        }, false);
+        });
     }
 
     /**
@@ -709,33 +717,46 @@ public interface CollectionOperation<E> extends List<E> {
 
     /**
      * 从给定位置开始移除并返回元素切片
-     * @param offset 平移量
+     * 影响自身
+     * @param offset 偏移量
      * @return 新的集合
      */
     default List<E> splice(int offset) {
-        return splice(offset, size());
+        return splice(offset, size() - offset);
     }
 
     /**
      * 从给定位置开始移除并返回元素切片
-     * @param offset 平移量
+     * 影响自身
+     * @param offset 偏移量
      * @param taken  数据大小
      * @return 新的集合
      */
     default List<E> splice(int offset, int taken) {
-        List<E> list = new ArrayList<>();
+        int size = Math.min(size() - offset, taken);
+        List<E> list = new ArrayList<>(size);
         int count = 0;
-        for (int i = offset; i < size(); i++) {
-            if (taken <= count++) {
+        Iterator<E> iterator = iterator();
+        int index = 0;
+        while (iterator.hasNext()){
+            E element = iterator.next();
+            // 未达到开始条件
+            if (index++ < offset) {
+                continue;
+            }
+            // 已完成
+            if (size <= count++) {
                 break;
             }
-            list.add(get(i));
+            list.add(element);
+            iterator.remove();
         }
         return list;
     }
 
     /**
      * 使用指定数目的元素返回一个新的集合
+     * 影响自身
      * @param count 指定数目
      * @return 新的集合
      */
@@ -747,7 +768,7 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 指定自己的回调用于判断元素唯一性
+     * 使用回调来剔除重复的元素，不影响自身
      * @param closure 闭包
      * @return 去重后的集合
      */
@@ -767,7 +788,7 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 使用属性判断元素唯一性
+     * 使用元素中的指定属性来剔除重复的元素，不影响自身
      * @param fieldName 属性名
      * @return 去重后的集合
      */

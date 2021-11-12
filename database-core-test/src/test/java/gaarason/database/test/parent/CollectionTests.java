@@ -441,4 +441,72 @@ abstract public class CollectionTests extends BaseTests {
         }
     }
 
+    @Test
+    public void sortBy(){
+        List<Record<StudentModel.Entity, Integer>> sortByAge = records.sortBy("age");
+        Assert.assertEquals(10, sortByAge.size());
+        Assert.assertEquals(6, sortByAge.get(0).toObject().getAge().intValue());
+        Assert.assertEquals(11, sortByAge.get(1).toObject().getAge().intValue());
+        Assert.assertEquals(11, sortByAge.get(2).toObject().getAge().intValue());
+        Assert.assertEquals(11, sortByAge.get(3).toObject().getAge().intValue());
+        Assert.assertEquals(15, sortByAge.get(4).toObject().getAge().intValue());
+        Assert.assertEquals(16, sortByAge.get(5).toObject().getAge().intValue());
+        Assert.assertEquals(16, sortByAge.get(6).toObject().getAge().intValue());
+
+        List<Record<StudentModel.Entity, Integer>> sortByDescAge = records.sortByDesc("age");
+        Assert.assertEquals(10, sortByDescAge.size());
+        Assert.assertEquals(17, sortByDescAge.get(0).toObject().getAge().intValue());
+        Assert.assertEquals(17, sortByDescAge.get(1).toObject().getAge().intValue());
+        Assert.assertEquals(17, sortByDescAge.get(2).toObject().getAge().intValue());
+        Assert.assertEquals(16, sortByDescAge.get(3).toObject().getAge().intValue());
+        Assert.assertEquals(16, sortByDescAge.get(4).toObject().getAge().intValue());
+        Assert.assertEquals(15, sortByDescAge.get(5).toObject().getAge().intValue());
+        Assert.assertEquals(11, sortByDescAge.get(6).toObject().getAge().intValue());
+    }
+
+    @Test
+    public void splice(){
+        List<Record<StudentModel.Entity, Integer>> records1 = records.splice(8);
+        Assert.assertEquals(2, records1.size());
+        Assert.assertEquals(9, records1.get(0).toObject().getId().intValue());
+        Assert.assertEquals(10, records1.get(1).toObject().getId().intValue());
+
+        List<Record<StudentModel.Entity, Integer>> records2 = records.splice(1, 3);
+        Assert.assertEquals(3, records2.size());
+        Assert.assertEquals(2, records2.get(0).toObject().getId().intValue());
+        Assert.assertEquals(3, records2.get(1).toObject().getId().intValue());
+        Assert.assertEquals(4, records2.get(2).toObject().getId().intValue());
+    }
+
+    @Test
+    public void take(){
+        List<Record<StudentModel.Entity, Integer>> records1 = records.take(8);
+        Assert.assertEquals(8, records1.size());
+        Assert.assertEquals(1, records1.get(0).toObject().getId().intValue());
+        Assert.assertEquals(2, records1.get(1).toObject().getId().intValue());
+        Assert.assertEquals(3, records1.get(2).toObject().getId().intValue());
+        Assert.assertEquals(4, records1.get(3).toObject().getId().intValue());
+        Assert.assertEquals(5, records1.get(4).toObject().getId().intValue());
+        Assert.assertEquals(6, records1.get(5).toObject().getId().intValue());
+        Assert.assertEquals(7, records1.get(6).toObject().getId().intValue());
+        Assert.assertEquals(8, records1.get(7).toObject().getId().intValue());
+    }
+
+    @Test
+    public void take_2(){
+        List<Record<StudentModel.Entity, Integer>> records2 = records.take(-3);
+        Assert.assertEquals(3, records2.size());
+        Assert.assertEquals(8, records2.get(0).toObject().getId().intValue());
+        Assert.assertEquals(9, records2.get(1).toObject().getId().intValue());
+        Assert.assertEquals(10, records2.get(2).toObject().getId().intValue());
+    }
+
+    @Test
+    public void unique(){
+        List<Record<StudentModel.Entity, Integer>> records2 = records.unique("sex");
+        Assert.assertEquals(2, records2.size());
+        Assert.assertEquals(1, records2.get(0).toObject().getId().intValue());
+        Assert.assertEquals(3, records2.get(1).toObject().getId().intValue());
+    }
+
 }
