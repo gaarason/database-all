@@ -58,7 +58,7 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 返回所有元素指定属性值的平均值
+     * 返回集合中的所有元素的指定属性的值的平均值
      * @param fieldName 属性名
      * @return 平均值
      */
@@ -72,9 +72,9 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 返回集合中所有元素的指定属性值的总数
+     * 返回集合中所有元素的指定属性值的总和
      * @param fieldName 属性名
-     * @return 总数
+     * @return 总和
      */
     default BigDecimal sum(String fieldName) {
         BigDecimal sum = null;
@@ -536,6 +536,7 @@ public interface CollectionOperation<E> extends List<E> {
 
     /**
      * 移除并返回集合中的第一个元素, 集合为空时返回null
+     * 改变自身
      * @return 元素
      */
     @Nullable
@@ -545,6 +546,7 @@ public interface CollectionOperation<E> extends List<E> {
 
     /**
      * 移除并返回集合中最后的元素, 集合为空时返回null
+     * 改变自身
      * @return 元素
      */
     @Nullable
@@ -554,6 +556,7 @@ public interface CollectionOperation<E> extends List<E> {
 
     /**
      * 添加元素到集合开头, 其他元素后移
+     * 改变自身
      * @param element 元素
      */
     default void prepend(E element) {
@@ -562,6 +565,7 @@ public interface CollectionOperation<E> extends List<E> {
 
     /**
      * 添加元素到集合结尾
+     * 改变自身
      * @param element 元素
      */
     default void push(E element) {
@@ -570,6 +574,7 @@ public interface CollectionOperation<E> extends List<E> {
 
     /**
      * 在集合中设置给定键和值, 原值将被替换
+     * 改变自身
      * @param index   索引
      * @param element 元素
      * @throws IndexOutOfBoundsException 数组越界
@@ -580,6 +585,7 @@ public interface CollectionOperation<E> extends List<E> {
 
     /**
      * 通过索引从集合中移除并返回元素, 其后的元素前移
+     * 改变自身
      * @param index 索引
      * @return 元素
      * @throws IndexOutOfBoundsException 数组越界
@@ -726,7 +732,7 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 从给定位置开始移除并返回元素切片
+     * 从给定位置开始移除指定数据大小并返回元素切片
      * 影响自身
      * @param offset 偏移量
      * @param taken  数据大小

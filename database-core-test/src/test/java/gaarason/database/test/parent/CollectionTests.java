@@ -111,6 +111,7 @@ abstract public class CollectionTests extends BaseTests {
         Assert.assertFalse(records.contains("name", "sssssssssss"));
         Assert.assertTrue(records.contains("name", "小卡卡"));
 
+        // 存在主键值为10的元素
         boolean contains = records.contains((index, e) -> Objects.equals(e.getOriginalPrimaryKeyValue(), 10));
         Assert.assertTrue(contains);
     }
@@ -122,6 +123,7 @@ abstract public class CollectionTests extends BaseTests {
 
     @Test
     public void countBy() {
+        // 每个年龄多少人
         Map<Byte, Integer> ageMap = ObjectUtils.typeCast(records.countBy("age"));
         Assert.assertEquals(5, ageMap.size());
         Assert.assertEquals(2, ageMap.get(Byte.valueOf("16")).intValue());
@@ -130,6 +132,7 @@ abstract public class CollectionTests extends BaseTests {
         Assert.assertNotEquals(3, ageMap.get(Byte.valueOf("15")).intValue());
         Assert.assertEquals(1, ageMap.get(Byte.valueOf("15")).intValue());
 
+        // 每个性别多少人
         Map<Byte, Integer> sexMap = records.countBy((index, e) -> e.getEntity().getSex());
         Assert.assertEquals(2, sexMap.size());
         Assert.assertEquals(6, sexMap.get(Byte.valueOf("1")).intValue());
@@ -141,6 +144,7 @@ abstract public class CollectionTests extends BaseTests {
         final boolean a = records.every((index, e) -> e.getMetadataMap().get("age").getValue() != null);
         Assert.assertTrue(a);
 
+        // 每个人的年龄都比1大吗
         final boolean b = records.every(
             (index, e) -> ConverterUtils.cast(e.getMetadataMap().get("age").getValue(), Byte.class) > Byte.parseByte("1"));
         Assert.assertTrue(b);
@@ -188,6 +192,7 @@ abstract public class CollectionTests extends BaseTests {
         assert first != null;
         Assert.assertEquals(1, first.toObject().getId().intValue());
 
+        // 返回第一个id大于4的元素
         final Record<StudentModel.Entity, Integer> record = records.first((index, e) -> e.toObject().getId() > 4);
         assert record != null;
         Assert.assertEquals(5, record.toObject().getId().intValue());
@@ -195,6 +200,7 @@ abstract public class CollectionTests extends BaseTests {
 
     @Test
     public void groupBy() {
+        // 按性别分组
         final Map<Byte, List<Record<StudentModel.Entity, Integer>>> sexMap = records.groupBy("sex");
         Assert.assertEquals(2, sexMap.size());
         final List<Record<StudentModel.Entity, Integer>> records1 = sexMap.get(Byte.valueOf("1"));
@@ -211,6 +217,7 @@ abstract public class CollectionTests extends BaseTests {
 
     @Test
     public void groupBy_closure() {
+        // 按照年龄取模的值进行分组
         final Map<Integer, List<Record<StudentModel.Entity, Integer>>> sexMap = records.groupBy((index, e) -> e.toObject().getAge() % 3);
         Assert.assertEquals(3, sexMap.size());
 
@@ -270,6 +277,7 @@ abstract public class CollectionTests extends BaseTests {
     public void last() {
         Assert.assertEquals(records.last(), records.get(9));
 
+        // 返回最后一个teacherID=2的元素
         final Record<StudentModel.Entity, Integer> last = records.last((index, e) -> e.toObject().getTeacherId().equals(2));
         assert last != null;
         Assert.assertEquals(8, last.toObject().getId().intValue());
@@ -353,10 +361,11 @@ abstract public class CollectionTests extends BaseTests {
 
     @Test
     public void prepend(){
-        final Record<StudentModel.Entity, Integer> record1 = records.pop();
-        Assert.assertEquals(10, record1.toObject().getId().intValue());
+        final Record<StudentModel.Entity, Integer> element = records.pop();
+        Assert.assertEquals(10, element.toObject().getId().intValue());
 
-        records.prepend(record1);
+        // 等价 add(0, element)
+        records.prepend(element);
         Assert.assertEquals(10, records.size());
         Assert.assertEquals(10, records.get(0).toObject().getId().intValue());
         Assert.assertEquals(1, records.get(1).toObject().getId().intValue());
@@ -364,11 +373,12 @@ abstract public class CollectionTests extends BaseTests {
 
     @Test
     public void push(){
-        final Record<StudentModel.Entity, Integer> record = records.get(0);
-        records.push(record);
+        final Record<StudentModel.Entity, Integer> element = records.get(0);
+        // 等价 add(element)
+        records.push(element);
         Assert.assertEquals(11, records.size());
         final Record<StudentModel.Entity, Integer> record1 = records.get(10);
-        Assert.assertSame(record, record1);
+        Assert.assertSame(element, record1);
     }
 
     @Test
@@ -443,6 +453,7 @@ abstract public class CollectionTests extends BaseTests {
 
     @Test
     public void sortBy(){
+        // 按年龄小到大排序
         List<Record<StudentModel.Entity, Integer>> sortByAge = records.sortBy("age");
         Assert.assertEquals(10, sortByAge.size());
         Assert.assertEquals(6, sortByAge.get(0).toObject().getAge().intValue());
@@ -503,6 +514,7 @@ abstract public class CollectionTests extends BaseTests {
 
     @Test
     public void unique(){
+        // 不同性别的各返回一人
         List<Record<StudentModel.Entity, Integer>> records2 = records.unique("sex");
         Assert.assertEquals(2, records2.size());
         Assert.assertEquals(1, records2.get(0).toObject().getId().intValue());
