@@ -1,6 +1,7 @@
 package gaarason.database.util;
 
 import gaarason.database.core.lang.Nullable;
+import gaarason.database.exception.AbnormalParameterException;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.TypeCastException;
 import gaarason.database.exception.TypeNotSupportedException;
@@ -14,12 +15,18 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * 对象工具类
  * @author xt
  */
 public class ObjectUtils {
+
+    /**
+     * 线程安全随机对象
+     */
+    private static final ThreadLocalRandom random = ThreadLocalRandom.current();
 
     private ObjectUtils() {
     }
@@ -102,9 +109,9 @@ public class ObjectUtils {
     /**
      * 逻辑类型转换
      * @param original 原始对象
-     * @param clz 目标类
-     * @param <T> 原始类型
-     * @param <N> 目标类型
+     * @param clz      目标类
+     * @param <T>      原始类型
+     * @param <N>      目标类型
      * @return 目标对象
      * @throws TypeCastException 类型转化失败
      */
@@ -166,17 +173,18 @@ public class ObjectUtils {
         if (obj == null) {
             return true;
         } else if (obj instanceof Optional) {
-            return !((Optional<?>)obj).isPresent();
+            return !((Optional<?>) obj).isPresent();
         } else if (obj instanceof CharSequence) {
-            return ((CharSequence)obj).length() == 0;
+            return ((CharSequence) obj).length() == 0;
         } else if (obj.getClass().isArray()) {
             return Array.getLength(obj) == 0;
         } else if (obj instanceof Collection) {
-            return ((Collection<?>)obj).isEmpty();
+            return ((Collection<?>) obj).isEmpty();
         } else {
             return obj instanceof Map && ((Map<?, ?>) obj).isEmpty();
         }
     }
+
     /**
      * 判断是否为null
      * @param obj 所有类型
@@ -186,7 +194,7 @@ public class ObjectUtils {
         if (obj == null) {
             return true;
         } else if (obj instanceof Optional) {
-            return !((Optional<?>)obj).isPresent();
+            return !((Optional<?>) obj).isPresent();
         }
         return false;
     }
@@ -257,4 +265,44 @@ public class ObjectUtils {
         }
         return false;
     }
+
+    /**
+     * 返回count个不重复的 0到bound 之间的随机数
+     * @param bound 随机数上限(不包含) 说明:当bound=2时,随机数只会出现 0,1
+     * @param count 返回随机数的数量
+     * @return 不重复的随机数
+     */
+    public static Set<Integer> random(int bound, int count) {
+        // 获取半数以上的随机数, 则反向获取
+        if (bound / 2 < count) {
+            Set<Integer> res = new HashSet<>(count);
+            final Set<Integer> integers = randomReal(bound, bound - count);
+            for (int i = 0; i < bound; i++) {
+                if (!integers.contains(i)) {
+                    res.add(i);
+                }
+            }
+            return res;
+        } else {
+            return randomReal(bound, count);
+        }
+    }
+
+    /**
+     * 返回count个不重复的 0到bound 之间的随机数
+     * @param bound 随机数上限(不包含) 说明:当bound=2时,随机数只会出现 0,1
+     * @param count 返回随机数的数量
+     * @return 不重复的随机数
+     */
+    protected static Set<Integer> randomReal(int bound, int count) {
+        if (bound < count) {
+            throw new AbnormalParameterException();
+        }
+        Set<Integer> res = new HashSet<>(count);
+        while (res.size() < count) {
+            res.add(random.nextInt(bound));
+        }
+        return res;
+    }
+
 }

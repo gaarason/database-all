@@ -8,6 +8,10 @@ import gaarason.database.exception.base.BaseException;
  */
 public class AbnormalParameterException extends BaseException {
 
+    public AbnormalParameterException() {
+        super();
+    }
+
     public AbnormalParameterException(String message) {
         super(message);
     }

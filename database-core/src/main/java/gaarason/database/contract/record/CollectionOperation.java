@@ -1,42 +1,52 @@
 package gaarason.database.contract.record;
 
 import gaarason.database.core.lang.Nullable;
+import gaarason.database.exception.AbnormalParameterException;
 import gaarason.database.exception.NoSuchAlgorithmException;
+import gaarason.database.exception.OperationNotSupportedException;
 import gaarason.database.util.ConverterUtils;
 import gaarason.database.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * 集合操作类
+ * @param <E> 元素类型
  * @author xt
  * @since 2021/11/8 7:04 下午
  */
 public interface CollectionOperation<E> extends List<E> {
 
     /**
-     * 根据属性名获取值
-     * @param element   对象
+     * 根据元素中的属性名获取值
+     * @param element   元素
      * @param fieldName 属性名
      * @return 值
      */
     @Nullable
-    <W> W getValueByFieldName(E element, String fieldName);
+    <W> W elementGetValueByFieldName(E element, String fieldName);
 
     /**
-     * 返回集合表示的底层数数据
-     * @return 列表
+     * 元素转简单map
+     * @param element 元素
+     * @return map
+     * @throws OperationNotSupportedException 元素不支持转map的操作
+     */
+    Map<String, Object> elementToMap(E element) throws OperationNotSupportedException;
+
+    /**
+     * 返回集合表示的底层元素列表
+     * @return 元素列表
      */
     default List<E> all() {
         return new ArrayList<>(this);
     }
 
     /**
-     * 方法返回所有集合项的平均值
+     * 返回所有集合中元素的平均值
      * @return 平均值
      */
     default BigDecimal avg() {
@@ -48,28 +58,28 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 方法返回所有集合指定项的平均值
+     * 返回所有元素指定属性值的平均值
      * @param fieldName 属性名
      * @return 平均值
      */
     default BigDecimal avg(String fieldName) {
         BigDecimal bigDecimal = BigDecimal.ZERO;
         for (E e : this) {
-            Object value = getValueByFieldName(e, fieldName);
+            Object value = elementGetValueByFieldName(e, fieldName);
             bigDecimal = bigDecimal.add(ObjectUtils.isEmpty(value) ? BigDecimal.ZERO : ConverterUtils.castNullable(value, BigDecimal.class));
         }
         return bigDecimal.divide(new BigDecimal(size()), RoundingMode.HALF_UP);
     }
 
     /**
-     * 返回集合中所有数据项的和
+     * 返回集合中所有元素的指定属性值的总数
      * @param fieldName 属性名
-     * @return 最大值
+     * @return 总数
      */
     default BigDecimal sum(String fieldName) {
         BigDecimal sum = null;
         for (E e : this) {
-            Object valueObj = getValueByFieldName(e, fieldName);
+            Object valueObj = elementGetValueByFieldName(e, fieldName);
             BigDecimal value = ObjectUtils.isEmpty(valueObj) ? BigDecimal.ZERO : ConverterUtils.castNullable(valueObj, BigDecimal.class);
             sum = sum == null ? value : sum.add(value);
         }
@@ -77,14 +87,14 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 返回集合中给定键的最大值
+     * 返回集合中所有元素的指定属性值的最大值
      * @param fieldName 属性名
      * @return 最大值
      */
     default BigDecimal max(String fieldName) {
         BigDecimal maxValue = null;
         for (E e : this) {
-            Object valueObj = getValueByFieldName(e, fieldName);
+            Object valueObj = elementGetValueByFieldName(e, fieldName);
             BigDecimal value = ObjectUtils.isEmpty(valueObj) ? BigDecimal.ZERO :
                 ConverterUtils.castNullable(valueObj, BigDecimal.class);
             maxValue = maxValue == null ? value : maxValue.max(value);
@@ -93,14 +103,14 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 返回集合中给定键的最小值
+     * 返回集合所有元素的指定属性的值的最小值
      * @param fieldName 属性名
      * @return 最小值
      */
     default BigDecimal min(String fieldName) {
         BigDecimal minValue = null;
         for (E e : this) {
-            Object valueObj = getValueByFieldName(e, fieldName);
+            Object valueObj = elementGetValueByFieldName(e, fieldName);
             BigDecimal value = ObjectUtils.isEmpty(valueObj) ? BigDecimal.ZERO : ConverterUtils.castNullable(valueObj, BigDecimal.class);
             minValue = minValue == null ? value : minValue.min(value);
         }
@@ -108,7 +118,7 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 返回集合中给定键的众数
+     * 返回集合所有元素的指定属性的值的众数
      * @param fieldName 属性名
      * @return 众数列表
      */
@@ -118,7 +128,7 @@ public interface CollectionOperation<E> extends List<E> {
         List<W> res = new ArrayList<>();
         int maxCount = 0;
         for (E e : this) {
-            W valueObj = getValueByFieldName(e, fieldName);
+            W valueObj = elementGetValueByFieldName(e, fieldName);
             Integer count = countMap.computeIfAbsent(ConverterUtils.castNullable(valueObj, String.class), k -> 0);
             count++;
             countMap.put(ConverterUtils.castNullable(valueObj, String.class), count);
@@ -136,7 +146,7 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 返回集合中给定键的中位数
+     * 返回集合所有元素的指定属性的值的中位数
      * @param fieldName 属性名
      * @return 中位数
      */
@@ -149,7 +159,7 @@ public interface CollectionOperation<E> extends List<E> {
         PriorityQueue<BigDecimal> minHeap = new PriorityQueue<>(count + 1, BigDecimal::compareTo);
 
         for (E e : this) {
-            Object valueObj = getValueByFieldName(e, fieldName);
+            Object valueObj = elementGetValueByFieldName(e, fieldName);
             BigDecimal value = ObjectUtils.isEmpty(valueObj) ? BigDecimal.ZERO : ConverterUtils.castNullable(valueObj, BigDecimal.class);
 
             minHeap.add(value);
@@ -166,21 +176,23 @@ public interface CollectionOperation<E> extends List<E> {
         }
     }
 
-
     /**
-     * 方法将一个集合分割成多个小尺寸的小集合
-     * @param newSize 小集合的尺寸
+     * 将一个集合中的匀速分割成多个小尺寸的小集合, 小集合中类型是自定义的
+     * @param closure 闭包
+     * @param newSize 每个小集合的尺寸
+     * @param <W>     小集合中的类型
      * @return 包含多个小集合的集合
      */
-    default List<List<E>> chunk(int newSize) {
-        List<List<E>> outsideList = new ArrayList<>(size() / newSize);
-        ArrayList<E> innerList = new ArrayList<>(newSize);
+    default <W> List<List<W>> chunk(ReturnTwo<Integer, E, W> closure, int newSize) {
+        List<List<W>> outsideList = new ArrayList<>(size() / newSize);
+        ArrayList<W> innerList = new ArrayList<>(newSize);
+        int index = 0;
         for (E e : this) {
             if (innerList.size() == newSize) {
                 outsideList.add(innerList);
                 innerList = new ArrayList<>(newSize);
             }
-            innerList.add(e);
+            innerList.add(closure.get(index++, e));
         }
         if (!innerList.isEmpty()) {
             outsideList.add(innerList);
@@ -189,14 +201,32 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 判断集合是否包含一个给定值
+     * 将一个集合中的元素分割成多个小尺寸的小集合
+     * @param newSize 每个小集合的尺寸
+     * @return 包含多个小集合的集合
+     */
+    default List<List<E>> chunk(int newSize) {
+        return chunk((index, e) -> e, newSize);
+    }
+
+    /**
+     * 将一个集合分割成多个小尺寸的小集合, 小集合中类型是Map<String, Object>
+     * @param newSize 每个小集合的尺寸
+     * @return 包含多个小集合的集合
+     */
+    default List<List<Map<String, Object>>> chunkToMap(int newSize) {
+        return chunk((index, e) -> elementToMap(e), newSize);
+    }
+
+    /**
+     * 判断集合是否存在任何一个元素的属性的值等于给定值
      * @param fieldName 属性名
      * @param value     给定值
      * @return bool
      */
     default boolean contains(String fieldName, Object value) {
         for (E e : this) {
-            if (ObjectUtils.nullSafeEquals(getValueByFieldName(e, fieldName), value)) {
+            if (ObjectUtils.nullSafeEquals(elementGetValueByFieldName(e, fieldName), value)) {
                 return true;
             }
         }
@@ -204,7 +234,7 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 判断集合是否包含一个给定值
+     * 判断集合是否存在任何一个元素满足条件
      * @param closure 闭包
      * @return bool
      */
@@ -219,7 +249,7 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 返回集合中所有项的总数
+     * 返回集合中所有元素的总数
      * @return 总数
      */
     default int count() {
@@ -227,9 +257,9 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 计算每个元素的出现次数
+     * 计算集合中每个元素的自定义维度的出现次数
      * @param closure 闭包
-     * @return Map<E, 次数>
+     * @return Map<自定义维度的类型, 次数>
      */
     default <W> Map<W, Integer> countBy(ReturnTwo<Integer, E, W> closure) {
         Map<W, Integer> resMap = new HashMap<>(16);
@@ -243,15 +273,16 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 计算每个元素的出现次数
-     * @return Map<E, 次数>
+     * 计算集合中每个元素的指定属性的值的出现次数
+     * @param fieldName 属性名
+     * @return Map<属性的类型, 次数>
      */
     default <W> Map<W, Integer> countBy(String fieldName) {
-        return countBy((index, e) -> getValueByFieldName(e, fieldName));
+        return countBy((index, e) -> elementGetValueByFieldName(e, fieldName));
     }
 
     /**
-     * 集合的所有元素能够通过给定的真理测试
+     * 是否集合的所有元素能够通过给定的真理测试
      * 如果集合为空，every 方法将返回 true
      * @param closure 闭包
      * @return bool
@@ -267,10 +298,10 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 通过给定回调过滤集合，只有通过给定真理测试的数据项才会保留下来
+     * 通过给定回调过滤集合，只有通过给定真理测试的元素才会保留下来
      * 改变自身
      * @param closure 闭包
-     * @return 移除的数量个数
+     * @return 移除的元素个数
      */
     default int filter(DecideTwo<Integer, E> closure) {
         int count = 0;
@@ -287,7 +318,7 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 所有isEmpty的都会被移除
+     * 集合中的所有元素为空的都会被移除
      * 改变自身
      * @return 移除的数量个数
      */
@@ -296,7 +327,16 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 通过给定回调过滤集合，满足条件的数据会被移除
+     * 集合中的所有元素的指定属性的值为空的都会被移除
+     * 改变自身
+     * @return 移除的数量个数
+     */
+    default int filter(String fieldName) {
+        return filter((index, e) -> !ObjectUtils.isEmpty(ConverterUtils.castNullable(elementGetValueByFieldName(e, fieldName), Object.class)));
+    }
+
+    /**
+     * 通过给定回调过滤集合，只有通过给定真理测试的元素才会被移除
      * 改变自身
      * @param closure 闭包
      * @return 移除的数量个数
@@ -316,9 +356,9 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 通过给定回调过滤集合，返回满足条件的第一条
+     * 通过给定回调过滤集合，返回满足条件的第一个元素
      * @param closure 闭包
-     * @return 第一条数据
+     * @return 第一个元素
      */
     @Nullable
     default E first(DecideTwo<Integer, E> closure) {
@@ -332,8 +372,8 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 返回第一条
-     * @return 第一条数据
+     * 返回第一个元素
+     * @return 第一个元素
      */
     @Nullable
     default E first() {
@@ -341,7 +381,7 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 通过给回调分组集合数据项
+     * 通过给定回调对集合中的元素进行分组
      * @param closure 闭包
      * @return Map<Object, List < E>>
      */
@@ -350,26 +390,26 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 通过给定键分组集合数据项
+     * 对集合中的元素按照通过给定属性的值进行分组
      * @param fieldName 属性名
      * @return Map<Object, List < E>>
      */
     default <W> Map<W, List<E>> groupBy(String fieldName) {
-        return groupBy((index, e) -> getValueByFieldName(e, fieldName));
+        return groupBy((index, e) -> elementGetValueByFieldName(e, fieldName));
     }
 
     /**
-     * 连接集合中的数据项
+     * 将集合中的每一个元素的属性的值, 使用分隔符连接成一个字符串
      * @param fieldName 属性名
      * @param delimiter 分隔符
      * @return 连接后的字符串
      */
     default String implode(String fieldName, CharSequence delimiter) {
-        return implode(e -> getValueByFieldName(e, fieldName), delimiter);
+        return implode(e -> elementGetValueByFieldName(e, fieldName), delimiter);
     }
 
     /**
-     * 连接集合中的数据项
+     * 连接集合中的元素
      * @param closure   闭包
      * @param delimiter 分隔符
      * @return 连接后的字符串
@@ -381,16 +421,16 @@ public interface CollectionOperation<E> extends List<E> {
 
 
     /**
-     * 方法将指定属性名的值作为集合的键，如果多个数据项拥有同一个键，只有最后一个会出现在新集合里面
+     * 方法将指定属性名的值作为集合的键，如果多个元素拥有同一个键，只有最后一个会出现在新集合里面
      * @param fieldName 属性名
      * @return 全新的集合
      */
     default <W> Map<W, E> keyBy(String fieldName) {
-        return keyBy((index, e) -> getValueByFieldName(e, fieldName));
+        return keyBy((index, e) -> elementGetValueByFieldName(e, fieldName));
     }
 
     /**
-     * 方法将指定回调的结果作为集合的键，如果多个数据项拥有同一个键，只有最后一个会出现在新集合里面
+     * 方法将指定回调的结果作为集合的键，如果多个元素拥有同一个键，只有最后一个会出现在新集合里面
      * @param closure 闭包
      * @return 全新的集合
      */
@@ -404,9 +444,9 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 通过给定回调过滤集合，返回满足条件的最后条
+     * 通过给定回调过滤集合，返回满足条件的最后个元素
      * @param closure 闭包
-     * @return 最后条数据
+     * @return 最后个元素
      */
     @Nullable
     default E last(DecideTwo<Integer, E> closure) {
@@ -421,8 +461,8 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 返回最后条
-     * @return 最后条数据
+     * 返回最后个元素
+     * @return 最后个元素
      */
     @Nullable
     default E last() {
@@ -430,12 +470,12 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 通过给定回调对集合项进行分组
+     * 通过给定回调对集合中的元素进行分组
      * @param closureKey   闭包生成key
      * @param closureValue 闭包生成value
      * @return 新的集合
      */
-    default <W,Y> Map<W, List<Y>> mapToGroups(ReturnTwo<Integer, E, W> closureKey, ReturnTwo<Integer, E, Y> closureValue) {
+    default <W, Y> Map<W, List<Y>> mapToGroups(ReturnTwo<Integer, E, W> closureKey, ReturnTwo<Integer, E, Y> closureValue) {
         int index = 0;
         Map<W, List<Y>> outsideMap = new HashMap<>(16);
 
@@ -450,12 +490,12 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 通过给定回调对集合项进行索引
+     * 通过给定回调对集合元素进行索引
      * @param closureKey   闭包生成key
      * @param closureValue 闭包生成value
      * @return 新的集合
      */
-    default <W,Y> Map<W, Y> mapWithKeys(ReturnTwo<Integer, E, W> closureKey, ReturnTwo<Integer, E, Y> closureValue) {
+    default <W, Y> Map<W, Y> mapWithKeys(ReturnTwo<Integer, E, W> closureKey, ReturnTwo<Integer, E, Y> closureValue) {
         int index = 0;
         Map<W, Y> outsideMap = new HashMap<>(16);
 
@@ -468,52 +508,52 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 为给定属性获取所有集合值
+     * 将集合中的每个元素的指定属性的值, 组合成新的列表
      * @param fieldName 属性名
-     * @return 值的集合
+     * @return 新的列表
      */
     default <W> List<W> pluck(String fieldName) {
         List<W> res = new ArrayList<>();
         for (E e : this) {
-            res.add(getValueByFieldName(e, fieldName));
+            res.add(elementGetValueByFieldName(e, fieldName));
         }
         return res;
     }
 
     /**
-     * 为给定属性获取所有集合值, 并使用给定的属性进行索引, 如果存在重复索引，最后一个匹配的元素将会插入集合
+     * 将集合中的每个元素的指定属性value的值, 使用给定的属性key的值进行索引, 如果存在重复索引，最后一个匹配的元素将会插入集合
      * @param fieldNameForValue 属性名
      * @param fieldNameForKey   属性名
      * @return 值的集合
      */
-    default <W,Y> Map<W, Y> pluck(String fieldNameForValue, String fieldNameForKey) {
+    default <W, Y> Map<W, Y> pluck(String fieldNameForValue, String fieldNameForKey) {
         Map<W, Y> res = new HashMap<>();
         for (E e : this) {
-            res.put(getValueByFieldName(e, fieldNameForKey), getValueByFieldName(e, fieldNameForValue));
+            res.put(elementGetValueByFieldName(e, fieldNameForKey), elementGetValueByFieldName(e, fieldNameForValue));
         }
         return res;
     }
 
     /**
-     * 移除并返回集合中第一个的数据
-     * @return 数据项
-     * @throws IndexOutOfBoundsException 数据为空
+     * 移除并返回集合中的第一个元素, 集合为空时返回null
+     * @return 元素
      */
+    @Nullable
     default E shift() throws IndexOutOfBoundsException {
-        return remove(0);
+        return isEmpty() ? null : remove(0);
     }
 
     /**
-     * 移除并返回集合中最后面的数据
-     * @return 数据项
-     * @throws IndexOutOfBoundsException 数据为空
+     * 移除并返回集合中最后的元素, 集合为空时返回null
+     * @return 元素
      */
+    @Nullable
     default E pop() throws IndexOutOfBoundsException {
-        return this.remove(size() - 1);
+        return isEmpty() ? null : this.remove(size() - 1);
     }
 
     /**
-     * 添加数据项到集合开头, 其他元素后移
+     * 添加元素到集合开头, 其他元素后移
      * @param element 元素
      */
     default void prepend(E element) {
@@ -521,7 +561,7 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 添加数据项到集合结尾
+     * 添加元素到集合结尾
      * @param element 元素
      */
     default void push(E element) {
@@ -532,27 +572,35 @@ public interface CollectionOperation<E> extends List<E> {
      * 在集合中设置给定键和值, 原值将被替换
      * @param index   索引
      * @param element 元素
+     * @throws IndexOutOfBoundsException 数组越界
      */
-    default void put(int index, E element) {
+    default void put(int index, E element) throws IndexOutOfBoundsException {
         set(index, element);
     }
 
     /**
-     * 通过索引从集合中移除并返回数据项, 其后的元素前移
+     * 通过索引从集合中移除并返回元素, 其后的元素前移
      * @param index 索引
      * @return 元素
+     * @throws IndexOutOfBoundsException 数组越界
      */
     default E pull(int index) {
         return remove(index);
     }
 
     /**
-     * 从集合中返回随机元素
+     * 从集合中返回随机元素, 集合为空时返回null
      * @return 元素
      */
+    @Nullable
     default E random() {
-        int randomIndex = new Random().nextInt(size() - 1);
-        return get(randomIndex);
+        if (isEmpty()) {
+            return null;
+        } else if (size() == 1) {
+            return get(0);
+        } else {
+            return random(1).get(0);
+        }
     }
 
     /**
@@ -562,31 +610,32 @@ public interface CollectionOperation<E> extends List<E> {
      * @throws NoSuchAlgorithmException 随机算法错误
      */
     default List<E> random(int count) throws NoSuchAlgorithmException {
-        try {
-            Map<Integer, E> res = new HashMap<>(count);
-            final Random random = SecureRandom.getInstanceStrong();
-            for (int i = 0; i < count; i++) {
-                int index = random.nextInt(size() - 1);
-                // 已经存在则跳过
-                if (res.containsKey(index)) {
-                    i--;
-                    continue;
-                }
-                res.put(index, get(index));
-            }
-            return new ArrayList<>(res.values());
-        } catch (Throwable e) {
-            throw new NoSuchAlgorithmException(e);
+        if (count > size()) {
+            throw new AbnormalParameterException(
+                "The parameter count [" + count + "] of the random method should not be less than size [" + size() + "]");
         }
+        if (isEmpty()) {
+            return new ArrayList<>();
+        }
+        if (size() == 1) {
+            return Collections.singletonList(get(0));
+        }
+        final List<E> list = new ArrayList<>(count);
+        final Set<Integer> randomSet = ObjectUtils.random(size(), count);
+        for (Integer index : randomSet) {
+            list.add(get(index));
+        }
+        return list;
+
     }
 
     /**
-     * 将集合数据项的顺序颠倒
+     * 将集合中元素的顺序颠倒, 不影响原集合
      * @return 倒序后的集合
      */
     default List<E> reverse() {
         List<E> list = new ArrayList<>();
-        for (int i = size() - 1; i > 0; i--) {
+        for (int i = size() - 1; i >= 0; i--) {
             list.add(get(i));
         }
         return list;
@@ -632,7 +681,7 @@ public interface CollectionOperation<E> extends List<E> {
      */
     default List<E> sortBy(String fieldName) {
         return sortBy((index, e) -> {
-            final BigDecimal decimal = ConverterUtils.castNullable(getValueByFieldName(e, fieldName), BigDecimal.class);
+            final BigDecimal decimal = ConverterUtils.castNullable(elementGetValueByFieldName(e, fieldName), BigDecimal.class);
             return decimal == null ? BigDecimal.ZERO : decimal;
         }, true);
     }
@@ -644,7 +693,7 @@ public interface CollectionOperation<E> extends List<E> {
      */
     default List<E> sortByDesc(String fieldName) {
         return sortBy((index, e) -> {
-            final BigDecimal decimal = ConverterUtils.castNullable(getValueByFieldName(e, fieldName), BigDecimal.class);
+            final BigDecimal decimal = ConverterUtils.castNullable(elementGetValueByFieldName(e, fieldName), BigDecimal.class);
             return decimal == null ? BigDecimal.ZERO : decimal;
         }, false);
     }
@@ -659,7 +708,7 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 从给定位置开始移除并返回数据项切片
+     * 从给定位置开始移除并返回元素切片
      * @param offset 平移量
      * @return 新的集合
      */
@@ -668,7 +717,7 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 从给定位置开始移除并返回数据项切片
+     * 从给定位置开始移除并返回元素切片
      * @param offset 平移量
      * @param taken  数据大小
      * @return 新的集合
@@ -686,7 +735,7 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 使用指定数目的数据项返回一个新的集合
+     * 使用指定数目的元素返回一个新的集合
      * @param count 指定数目
      * @return 新的集合
      */
@@ -698,7 +747,7 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 指定自己的回调用于判断数据项唯一性
+     * 指定自己的回调用于判断元素唯一性
      * @param closure 闭包
      * @return 去重后的集合
      */
@@ -718,12 +767,12 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 使用属性判断数据项唯一性
+     * 使用属性判断元素唯一性
      * @param fieldName 属性名
      * @return 去重后的集合
      */
     default List<E> unique(String fieldName) {
-        return unique((index, e) -> getValueByFieldName(e, fieldName));
+        return unique((index, e) -> elementGetValueByFieldName(e, fieldName));
     }
 
 

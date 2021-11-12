@@ -15,10 +15,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.reflections8.Reflections;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
@@ -156,7 +153,29 @@ public class DatabaseUtilsTests {
     }
 
     @Test
-    public void testDBShadowProvider() {
+    public void random() {
+        final Set<Integer> random1 = ObjectUtils.random(10000, 1000);
+        Assert.assertEquals(1000, random1.size());
+        System.out.println(random1);
+
+        final Set<Integer> random2 = ObjectUtils.random(10000, 9000);
+        Assert.assertEquals(9000, random2.size());
+
+        final Set<Integer> random3 = ObjectUtils.random(1, 1);
+        Assert.assertEquals(1, random3.size());
+
+        final Set<Integer> random4 = ObjectUtils.random(0, 0);
+        Assert.assertEquals(0, random4.size());
+
+        final Set<Integer> random5 = ObjectUtils.random(10000, 10000);
+        Assert.assertEquals(10000, random5.size());
+        System.out.println(random5);
+
+        Set<Integer> e = new HashSet<>();
+        e.add(2);
+        e.add(1);
+        e.add(0);
+        System.out.println(e);
 
     }
 

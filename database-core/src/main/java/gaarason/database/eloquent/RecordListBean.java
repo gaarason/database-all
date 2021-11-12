@@ -5,11 +5,10 @@ import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.FilterRecordAttributeFunctionalInterface;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
-import gaarason.database.contract.record.CollectionOperation;
 import gaarason.database.core.lang.Nullable;
+import gaarason.database.exception.OperationNotSupportedException;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.Column;
-import gaarason.database.support.RecordFactory;
 import gaarason.database.support.RelationGetSupport;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
@@ -136,7 +135,7 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
         List<V> list = new ArrayList<>();
         for (Record<T, K> theRecord : this) {
             V result = filterRecordAttributeFunctionalInterface.execute(theRecord);
-            if (null == result){
+            if (null == result) {
                 continue;
             }
             list.add(result);
@@ -167,7 +166,7 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
 
     @Override
     public RecordListBean<T, K> with(String column, GenerateSqlPartFunctionalInterface builderClosure,
-                                     RelationshipRecordWithFunctionalInterface recordClosure) {
+        RelationshipRecordWithFunctionalInterface recordClosure) {
         String[] columnArr = column.split("\\.");
         // 快捷类型
         if (columnArr.length > 1) {
@@ -192,11 +191,16 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
 
     @Override
     @Nullable
-    public <W> W getValueByFieldName(Record<T, K> theRecord, String fieldName) {
+    public <W> W elementGetValueByFieldName(Record<T, K> theRecord, String fieldName) {
         final ModelShadowProvider.FieldInfo fieldInfo = ModelShadowProvider.getFieldInfoByEntityClass(
             theRecord.getModel().getEntityClass(), fieldName);
         final Column column = theRecord.getMetadataMap().get(fieldInfo.getColumnName());
         return column != null ? ObjectUtils.typeCast(column.getValue()) : null;
+    }
+
+    @Override
+    public Map<String, Object> elementToMap(Record<T, K> theRecord) throws OperationNotSupportedException {
+        return theRecord.toMap();
     }
 
 }

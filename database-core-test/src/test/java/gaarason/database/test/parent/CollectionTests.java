@@ -3,6 +3,7 @@ package gaarason.database.test.parent;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.exception.AbnormalParameterException;
 import gaarason.database.test.models.normal.StudentModel;
 import gaarason.database.test.parent.base.BaseTests;
 import gaarason.database.util.ConverterUtils;
@@ -15,9 +16,7 @@ import org.junit.runners.MethodSorters;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
@@ -98,6 +97,16 @@ abstract public class CollectionTests extends BaseTests {
     }
 
     @Test
+    public void chunkToMap() {
+        Assert.assertEquals(10, records.size());
+        final List<List<Map<String, Object>>> lists = records.chunkToMap(4);
+        Assert.assertEquals(3, lists.size());
+        Assert.assertEquals(4, lists.get(0).size());
+        Assert.assertEquals(4, lists.get(1).size());
+        Assert.assertEquals(2, lists.get(2).size());
+    }
+
+    @Test
     public void contains() {
         Assert.assertFalse(records.contains("name", "sssssssssss"));
         Assert.assertTrue(records.contains("name", "小卡卡"));
@@ -150,6 +159,19 @@ abstract public class CollectionTests extends BaseTests {
         final int filter2 = records.filter((index, e) -> (Byte.valueOf("1")).equals(e.getMetadataMap().get("sex").getValue()));
         Assert.assertEquals(4, filter2);
         Assert.assertEquals(6, records.size());
+    }
+
+    @Test
+    public void filter_2() {
+        final Record<StudentModel.Entity, Integer> integerRecord = records.get(9);
+        integerRecord.getMetadataMap().get("teacher_id").setValue(null);
+
+        final int num = records.filter("teacherId");
+        Assert.assertEquals(1, num);
+        Assert.assertEquals(9, records.size());
+        for (Record<StudentModel.Entity, Integer> record : records) {
+            Assert.assertFalse(ObjectUtils.isEmpty(record.toObject().getTeacherId()));
+        }
     }
 
     @Test
@@ -338,7 +360,85 @@ abstract public class CollectionTests extends BaseTests {
         Assert.assertEquals(10, records.size());
         Assert.assertEquals(10, records.get(0).toObject().getId().intValue());
         Assert.assertEquals(1, records.get(1).toObject().getId().intValue());
-
-
     }
+
+    @Test
+    public void push(){
+        final Record<StudentModel.Entity, Integer> record = records.get(0);
+        records.push(record);
+        Assert.assertEquals(11, records.size());
+        final Record<StudentModel.Entity, Integer> record1 = records.get(10);
+        Assert.assertSame(record, record1);
+    }
+
+    @Test
+    public void put(){
+        final Record<StudentModel.Entity, Integer> record = records.get(0);
+        Assert.assertEquals(10, records.size());
+        Assert.assertThrows(IndexOutOfBoundsException.class, () ->{
+            records.put(10, record);
+        });
+        Assert.assertEquals(10, records.size());
+
+        records.put(6, record);
+        Assert.assertEquals(10, records.size());
+
+        Assert.assertSame(record, records.get(6));
+    }
+
+    @Test
+    public void pull(){
+        final Record<StudentModel.Entity, Integer> record1 = records.pull(6);
+        Assert.assertEquals(9, records.size());
+        Assert.assertEquals(7, record1.toObject().getId().intValue());
+
+        final Record<StudentModel.Entity, Integer> record2 = records.pull(6);
+        Assert.assertEquals(8, records.size());
+        Assert.assertEquals(8, record2.toObject().getId().intValue());
+    }
+
+    @Test
+    public void random(){
+        final Record<StudentModel.Entity, Integer> random1 = records.random();
+        Assert.assertNotNull(random1);
+
+        final List<Record<StudentModel.Entity, Integer>> records1 = CollectionTests.records.random(10);
+        Assert.assertEquals(10, records1.size());
+
+        Set<Integer> unSet = new HashSet<>();
+        for (Record<StudentModel.Entity, Integer> entityIntegerRecord : records1) {
+            unSet.add(entityIntegerRecord.toObject().getId());
+        }
+        Assert.assertEquals(10, unSet.size());
+
+        //---------------
+        records.clear();
+        records.add(random1);
+
+        final Record<StudentModel.Entity, Integer> random2 = records.random();
+        Assert.assertSame(random1, random2);
+
+        final List<Record<StudentModel.Entity, Integer>> records2 = records.random(1);
+        Assert.assertEquals(1, records2.size());
+
+        //---------------
+        records.clear();
+        final Record<StudentModel.Entity, Integer> random3 = records.random();
+        Assert.assertNull(random3);
+
+        Assert.assertThrows(AbnormalParameterException.class, () ->{
+            records.random(1);
+        });
+    }
+
+    @Test
+    public void reverse(){
+        final List<Record<StudentModel.Entity, Integer>> recordList = records.reverse();
+        Assert.assertEquals(10, recordList.size());
+        for (int i = 0; i < 10; i++){
+            final Integer id = recordList.get(i).toObject().getId();
+            Assert.assertEquals(10 - i, id.intValue());
+        }
+    }
+
 }
