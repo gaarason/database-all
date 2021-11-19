@@ -203,7 +203,7 @@ public final class ModelShadowProvider {
      */
     public static <T extends Serializable> Set<String> columnNameSet(T entity, boolean insertType) {
         final List<String> columnNameList = columnNameList(entity, insertType);
-        return new HashSet<>(columnNameList);
+        return new LinkedHashSet<>(columnNameList);
     }
 
     /**
