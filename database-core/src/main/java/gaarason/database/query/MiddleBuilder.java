@@ -20,10 +20,7 @@ import gaarason.database.util.StringUtils;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 中间查询构造器
@@ -159,11 +156,11 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     @Override
     public int insert(T entity) throws SQLRuntimeException {
         // 获取entity所有有效sql字段
-        List<String> columnNameList = ModelShadowProvider.columnNameList(entity, true);
+        Set<String> columnNameSet = ModelShadowProvider.columnNameSet(entity, true);
         // 获取entity所有有效字段的值
-        List<Object> valueList = ModelShadowProvider.valueList(entity, columnNameList);
+        List<Object> valueList = ModelShadowProvider.valueList(entity, columnNameSet);
         // 字段加入grammar
-        select(columnNameList);
+        select(columnNameSet);
         // 字段的值加入grammar
         value(valueList);
         // 执行
@@ -188,11 +185,11 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     @Override
     public K insertGetId(T entity) throws SQLRuntimeException {
         // 获取entity所有有效sql字段
-        List<String> columnNameList = ModelShadowProvider.columnNameList(entity, true);
+        Set<String> columnNameSet = ModelShadowProvider.columnNameSet(entity, true);
         // 获取entity所有有效字段的值
-        List<Object> valueList = ModelShadowProvider.valueList(entity, columnNameList);
+        List<Object> valueList = ModelShadowProvider.valueList(entity, columnNameSet);
         // 字段加入grammar
-        select(columnNameList);
+        select(columnNameSet);
         // 字段的值加入grammar
         value(valueList);
         // 执行, 并获取主键id
@@ -257,15 +254,15 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
      */
     protected void beforeBatchInsert(List<T> entityList) {
         // 获取entity所有有效字段
-        List<String> columnNameList = ModelShadowProvider.columnNameList(entityList.get(0), true);
+        Set<String> columnNameSet = ModelShadowProvider.columnNameSet(entityList.get(0), true);
         List<List<Object>> valueListList = new ArrayList<>();
         for (T entity : entityList) {
             // 获取entity所有有效字段的值
-            List<Object> valueList = ModelShadowProvider.valueList(entity, columnNameList);
+            List<Object> valueList = ModelShadowProvider.valueList(entity, columnNameSet);
             valueListList.add(valueList);
         }
         // 字段加入grammar
-        select(columnNameList);
+        select(columnNameSet);
         // 字段的值加入grammar
         valueList(valueListList);
     }

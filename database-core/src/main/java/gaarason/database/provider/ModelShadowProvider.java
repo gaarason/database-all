@@ -194,13 +194,26 @@ public final class ModelShadowProvider {
     }
 
     /**
+     * 通过entity解析对应的字段组成的set
+     * 忽略不符合规则的字段
+     * @param entity     数据表实体对象
+     * @param <T>        数据表实体类
+     * @param insertType 新增?
+     * @return 列名组成的set
+     */
+    public static <T extends Serializable> Set<String> columnNameSet(T entity, boolean insertType) {
+        final List<String> columnNameList = columnNameList(entity, insertType);
+        return new HashSet<>(columnNameList);
+    }
+
+    /**
      * 通过entity解析对应的字段的值组成的list, 忽略不符合规则的字段
-     * @param entity         数据表实体对象
-     * @param <T>            数据表实体类
-     * @param columnNameList 有效的属性名
+     * @param entity      数据表实体对象
+     * @param <T>         数据表实体类
+     * @param columnNames 有效的属性名
      * @return 字段的值组成的list
      */
-    public static <T extends Serializable> List<Object> valueList(T entity, List<String> columnNameList) {
+    public static <T extends Serializable> List<Object> valueList(T entity, Collection<String> columnNames) {
         // 结果集
         List<Object> valueList = new ArrayList<>();
         // 属性信息集合
@@ -209,7 +222,7 @@ public final class ModelShadowProvider {
             // 属性信息
             FieldInfo fieldInfo = entry.getValue();
             // 加入需要的数据
-            if (columnNameList.contains(entry.getKey())) {
+            if (columnNames.contains(entry.getKey())) {
                 valueList.add(EntityUtils.valueFormat(fieldGet(fieldInfo, entity)));
             }
         }
@@ -284,7 +297,7 @@ public final class ModelShadowProvider {
      * @param fieldInfo 属性信息
      * @param obj       对象
      * @return 值
-     * @throws IllegalAccessRuntimeException 反射赋值异常
+     * @throws IllegalAccessRuntimeException 反射取值异常
      */
     @Nullable
     public static Object fieldGet(FieldInfo fieldInfo, Object obj) {
@@ -300,6 +313,7 @@ public final class ModelShadowProvider {
      * @param fieldInfo 属性信息
      * @param obj       对象
      * @param value     值
+     * @throws IllegalAccessRuntimeException 反射赋值异常
      */
     public static void fieldSet(FieldInfo fieldInfo, Object obj, @Nullable Object value) {
         try {
