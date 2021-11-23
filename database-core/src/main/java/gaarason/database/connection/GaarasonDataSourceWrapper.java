@@ -1,6 +1,7 @@
 package gaarason.database.connection;
 
 import gaarason.database.contract.connection.GaarasonDataSource;
+import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.appointment.DatabaseType;
 import gaarason.database.exception.AbnormalParameterException;
 import gaarason.database.exception.ConnectionCloseException;
@@ -62,7 +63,8 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
     /**
      * 数据库类型
      */
-    protected volatile DatabaseType databaseType;
+    @Nullable
+    protected DatabaseType databaseType;
 
     /**
      * 构造

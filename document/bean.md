@@ -7,7 +7,7 @@ Eloquent ORM for Java
             * [单库连接](#单库连接)
             * [读写分离](#读写分离)
         * [多连接](#多连接)
-        * [使用ProxyDataSource](#使用ProxyDataSource)
+        * [使用GaarasonDataSource](#使用GaarasonDataSource)
     * [非spring boot](#非spring)
 * [数据映射](/document/mapping.md)
 * [数据模型](/document/model.md)
@@ -313,137 +313,10 @@ database.slave1.useGlobalDataSourceStat=${useGlobalDataSourceStat}
 
 ### 多连接
 
-多个数据库连接, 即声明多个可用bean, 兼容读写分离bean声明, 可以动态切换数据库使用的连接
+- 多个数据库连接, 即声明多个可用bean, 兼容读写分离bean声明, 用于动态切换数据库使用的连接
+- 建议自定义类, 继承`GaarasonDataSourceWrapper`(即实现`GaarasonDataSource`接口), 并重写`protected DataSource getRealDataSource(boolean isWriteOrTransaction)`
 
 
-```java
-package com.demo.common.data.spring;
-
-import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
-import gaarason.database.contract.connection.GaarasonDataSource;
-import gaarason.database.connection.GaarasonDataSourceBuilder;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.*;
-
-import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.List;
-
-@Configuration
-public class BeanConfiguration {
-
-    // 单个 华东区域
-    @Bean
-    @ConfigurationProperties(prefix = "database.huadong.master")
-    public DataSource dataSourceMasterHUADONG() {
-        return DruidDataSourceBuilder.create().build();
-    }
-
-    // 将被使用的bean HUADONG
-    @Bean
-    public GaarasonDataSource proxyDataSourceHUADONG() {
-        List<DataSource> dataSources = new ArrayList<>();
-        dataSources.add(dataSourceMasterHUADONG());
-        return GaarasonDataSourceBuilder.create().build(dataSources);
-    }
-
-    // 事物管理器
-    @Bean
-    @ConditionalOnMissingBean
-    public GaarasonTransactionManager gaarasonTransactionManagerHUADONG() {
-        log.info("-------------------- gaarasonTransactionManager for HUADONG init ------------------");
-        return new GaarasonTransactionManager(proxyDataSourceHUADONG());
-    }
-   
-    //////////////// 另一个连接 ///////////////
-    
-    // 单个, 华南区域
-    @Bean
-    @ConfigurationProperties(prefix = "database.huanan.master")
-    public DataSource dataSourceMasterHUANAN() {
-        return DruidDataSourceBuilder.create().build();
-    }
-
-    // 将被使用的bean HUANAN
-    @Bean
-    public GaarasonDataSource proxyDataSourceHUANAN() {
-        List<DataSource> dataSources = new ArrayList<>();
-        dataSources.add(dataSourceMasterHUANANList());
-        return GaarasonDataSourceBuilder.create().build(dataSources);
-    }
-
-    // 事物管理器
-    @Bean
-    @ConditionalOnMissingBean
-    public GaarasonTransactionManager gaarasonTransactionManagerHUANAN() {
-        log.info("-------------------- gaarasonTransactionManager for HUANAN init ------------------");
-        return new GaarasonTransactionManager(proxyDataSourceHUANAN());
-    }
-
-}
-```
-application.properties 省略
-
-
-## 使用ProxyDataSource
-
-上面生成的`ProxyDataSource`进行使用
-
-```java
-package gaarason.database.models;
-
-import gaarason.database.connection.GaarasonDataSourceWrapper;
-import gaarason.database.contract.connection.GaarasonDataSource;
-import gaarason.database.eloquent.annotation.Column;
-import gaarason.database.eloquent.Model;
-import gaarason.database.eloquent.annotation.Primary;
-import gaarason.database.eloquent.annotation.Table;
-import lombok.Data;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
-import java.util.Date;
-
-@Component
-public class StudentSingle2Model extends Model<StudentSingle2Model.Entity, Integer> {
-
-    @Data
-    @Table(name = "student")
-    public static class Entity {
-        @Primary
-        private Integer id;
-
-        @Column(length = 20)
-        private String name;
-
-        private Byte age;
-
-        private Byte sex;
-
-        @Column(name = "teacher_id")
-        private Integer teacherId;
-
-        @Column(name = "created_at")
-        private Date createdAt;
-    }
-
-    // 声明依赖的 ProxyDataSource 不需要则不用声明依赖
-    @Resource(name = "proxyDataSourceHUADONG")
-    protected GaarasonDataSource proxyDataSourceHUADONG;
-    
-    // 声明依赖的 ProxyDataSource 不需要则不用声明依赖
-    @Resource(name = "proxyDataSourceHUANAN")
-    protected GaarasonDataSource proxyDataSourceHUANAN;
-
-    @Override
-    public GaarasonDataSource getGaarasonDataSource(){
-        // 返回指定连接
-        // todo
-        return proxyDataSourceHUADONG;
-    }
-}
-
-```
 ## 非spring
 ```java
 
