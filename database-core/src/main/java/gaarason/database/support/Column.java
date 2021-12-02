@@ -2,14 +2,12 @@ package gaarason.database.support;
 
 import lombok.Data;
 
-import java.io.Serializable;
-
 /**
  * jdbc字段值对象
  * @author xt
  */
 @Data
-public class Column implements Serializable {
+public class Column {
 
     private static final long serialVersionUID = 1L;
 
@@ -19,7 +17,8 @@ public class Column implements Serializable {
     private String name;
 
     /**
-     * 字段值
+     * 字段值, 大多数情况下是可序列化的类型
+     * 但是也可能是 Blob 以及 Clob 等
      */
     private Object value;
 

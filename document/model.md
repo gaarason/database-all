@@ -1,7 +1,7 @@
 # database
 Eloquent ORM for Java
 ## 目录
-* [注册bean](/document/bean.md)
+* [注册配置](/document/bean.md)
 * [数据映射](/document/mapping.md)
 * [数据模型](/document/model.md)
     * [总览](#总览)

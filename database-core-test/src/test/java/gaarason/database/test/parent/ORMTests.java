@@ -38,9 +38,9 @@ abstract public class ORMTests extends BaseTests {
 
     protected static RelationshipStudentTeacherModel relationshipStudentTeacherModel = new RelationshipStudentTeacherModel();
 
-    protected List<DataSource> getDataSourceList() {
-        GaarasonDataSource gaarasonDataSourceWrapper = studentORMModel.getGaarasonDataSource();
-        return gaarasonDataSourceWrapper.getMasterDataSourceList();
+    @Override
+    protected GaarasonDataSource getGaarasonDataSource(){
+        return studentORMModel.getGaarasonDataSource();
     }
 
     @Test

@@ -1,11 +1,13 @@
 package gaarason.database.util;
 
+import gaarason.database.config.ConversionConfig;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.annotation.Column;
 import gaarason.database.eloquent.annotation.Table;
 import gaarason.database.eloquent.appointment.FinalVariable;
 import gaarason.database.exception.IllegalAccessRuntimeException;
 import gaarason.database.exception.TypeNotSupportedException;
+import gaarason.database.provider.ContainerProvider;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -191,7 +193,7 @@ public class EntityUtils {
         } else if (value instanceof Boolean) {
             return (boolean) value ? "1" : "0";
         } else {
-            return ConverterUtils.castNullable(value, String.class);
+            return ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class);
         }
     }
 

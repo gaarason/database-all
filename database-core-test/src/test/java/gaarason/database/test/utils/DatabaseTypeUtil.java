@@ -1,6 +1,6 @@
 package gaarason.database.test.utils;
 
-import gaarason.database.eloquent.appointment.DatabaseType;
+import gaarason.database.DatabaseType;
 
 /**
  * 数据库类型
@@ -18,11 +18,9 @@ public class DatabaseTypeUtil {
         return databaseType;
     }
 
-
     public static void setDatabaseTypeToMysql() {
         databaseType = DatabaseType.MYSQL;
     }
-
 
     public static void setDatabaseTypeToMssql() {
         databaseType = DatabaseType.MSSQL;

@@ -5,6 +5,7 @@ import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.contract.support.ReflectionScan;
+import gaarason.database.config.ConversionConfig;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.annotation.*;
 import gaarason.database.eloquent.appointment.FinalVariable;
@@ -12,7 +13,6 @@ import gaarason.database.eloquent.relation.BelongsToManyQueryRelation;
 import gaarason.database.eloquent.relation.BelongsToQueryRelation;
 import gaarason.database.eloquent.relation.HasOneOrManyQueryRelation;
 import gaarason.database.exception.*;
-import gaarason.database.util.ConverterUtils;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
 import lombok.Data;
@@ -452,7 +452,7 @@ public final class ModelShadowProvider {
             fieldInfo.name = field.getName();
             fieldInfo.javaType = field.getType();
             // todo 应该优先使用数据库默认值 DatabaseShadowProvider , 当默认值不存在时, 再才使用如下方法
-            fieldInfo.defaultValue = ConverterUtils.getDefaultValueByJavaType(fieldInfo.javaType);
+            fieldInfo.defaultValue = ContainerProvider.getBean(ConversionConfig.class).getDefaultValueByJavaType(fieldInfo.javaType);
 
             // 数据库属性
             fieldInfo.column = field.isAnnotationPresent(Column.class) ? field.getAnnotation(Column.class) : null;

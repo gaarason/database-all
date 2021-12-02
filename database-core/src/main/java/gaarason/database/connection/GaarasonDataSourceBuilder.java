@@ -11,8 +11,8 @@ import java.util.List;
  */
 public class GaarasonDataSourceBuilder {
 
-    public static GaarasonDataSourceBuilder create() {
-        return new GaarasonDataSourceBuilder();
+    public GaarasonDataSource build(DataSource masterDataSource) {
+        return new GaarasonDataSourceWrapper(masterDataSource);
     }
 
     public GaarasonDataSource build(List<DataSource> masterDataSourceList) {
@@ -22,5 +22,6 @@ public class GaarasonDataSourceBuilder {
     public GaarasonDataSource build(List<DataSource> masterDataSourceList, List<DataSource> slaveDataSourceList) {
         return new GaarasonDataSourceWrapper(masterDataSourceList, slaveDataSourceList);
     }
+
 
 }

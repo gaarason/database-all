@@ -1,7 +1,7 @@
 # database
 Eloquent ORM for Java
 ## 目录
-* [注册bean](/document/bean.md)
+* [注册配置](/document/bean.md)
 * [数据映射](/document/mapping.md)
 * [数据模型](/document/model.md)
 * [查询结果集](/document/record.md)
@@ -18,6 +18,10 @@ Eloquent ORM for Java
 修正版本号 c ：第三个数字，修复 BUG，向前兼容
 
 ## 版本升级指引
+
+### 2.12.0
+
+- 增强对于`ContainerProvider`的使用.
 
 ### 2.11.0
 

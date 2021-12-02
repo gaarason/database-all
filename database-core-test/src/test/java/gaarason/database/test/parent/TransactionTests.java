@@ -30,9 +30,9 @@ abstract public class TransactionTests extends BaseTests {
 
     protected static Student3Model student3Model = new Student3Model();
 
-    protected List<DataSource> getDataSourceList() {
-        GaarasonDataSource gaarasonDataSourceWrapper = studentModel.getGaarasonDataSource();
-        return gaarasonDataSourceWrapper.getMasterDataSourceList();
+    @Override
+    protected GaarasonDataSource getGaarasonDataSource(){
+        return studentModel.getGaarasonDataSource();
     }
 
     @Test

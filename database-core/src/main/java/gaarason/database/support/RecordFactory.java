@@ -3,21 +3,15 @@ package gaarason.database.support;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.core.lang.Nullable;
+import gaarason.database.config.ConversionConfig;
 import gaarason.database.eloquent.RecordBean;
 import gaarason.database.eloquent.RecordListBean;
 import gaarason.database.exception.EntityNotFoundException;
+import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.ModelShadowProvider;
-import gaarason.database.util.ConverterUtils;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.*;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -208,7 +202,7 @@ public class RecordFactory {
             column.setName(columnName);
 
             // *尽量* 使用同类型赋值
-            column.setValue(ConverterUtils.getValueFromJdbcResultSet(columnInfo.get(columnName), resultSet, columnName));
+            column.setValue(ContainerProvider.getBean(ConversionConfig.class).getValueFromJdbcResultSet(columnInfo.get(columnName), resultSet, columnName));
             column.setType(resultSetMetaData.getColumnType(i));
             column.setTypeName(resultSetMetaData.getColumnTypeName(i));
             column.setCount(resultSetMetaData.getColumnCount());

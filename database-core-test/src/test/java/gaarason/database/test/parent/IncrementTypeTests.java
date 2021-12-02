@@ -21,9 +21,8 @@ abstract public class IncrementTypeTests extends BaseTests {
 
     protected static PeopleModel peopleModel = new PeopleModel();
 
-    protected List<DataSource> getDataSourceList() {
-        GaarasonDataSource gaarasonDataSourceWrapper = peopleModel.getGaarasonDataSource();
-        return gaarasonDataSourceWrapper.getMasterDataSourceList();
+    protected GaarasonDataSource getGaarasonDataSource(){
+        return peopleModel.getGaarasonDataSource();
     }
 
     @Test

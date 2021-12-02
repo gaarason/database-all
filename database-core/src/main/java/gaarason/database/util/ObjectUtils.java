@@ -1,10 +1,12 @@
 package gaarason.database.util;
 
+import gaarason.database.config.ConversionConfig;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.exception.AbnormalParameterException;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.TypeCastException;
 import gaarason.database.exception.TypeNotSupportedException;
+import gaarason.database.provider.ContainerProvider;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -116,9 +118,8 @@ public class ObjectUtils {
      * @throws TypeCastException 类型转化失败
      */
     public static <T, N> N typeCast(T original, final Class<N> clz) throws TypeCastException {
-        return ConverterUtils.cast(original, clz);
+        return ContainerProvider.getBean(ConversionConfig.class).cast(original, clz);
     }
-
 
     /**
      * 属性是否在类中存在(多层级)

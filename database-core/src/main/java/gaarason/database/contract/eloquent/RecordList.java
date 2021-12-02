@@ -13,7 +13,7 @@ import java.util.*;
  * @author xt
  */
 public interface RecordList<T extends Serializable, K extends Serializable> extends FriendlyList<T, K>, RelationshipList<T, K>, List<Record<T, K>>,
-    CollectionOperation<Record<T, K>>, RandomAccess, Cloneable, Serializable {
+    CollectionOperation<Record<T, K>>, RandomAccess, Cloneable {
 
     /**
      * 元数据

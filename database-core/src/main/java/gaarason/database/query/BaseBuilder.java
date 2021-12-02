@@ -49,17 +49,12 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      */
     Grammar grammar;
 
-    protected BaseBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
+    protected BaseBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
         this.gaarasonDataSource = gaarasonDataSource;
         this.model = model;
-        this.entityClass = entityClass;
-        grammar = grammarFactory();
+        this.entityClass = model.getEntityClass();
+        this.grammar = grammar;
     }
-
-    /**
-     * @return 数据库语句组装对象
-     */
-    abstract Grammar grammarFactory();
 
     @Override
     public Grammar getGrammar() {
@@ -398,7 +393,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
         } catch (EntityNotFoundException e) {
             throw new EntityNotFoundException(String.format(sql.replace(" ? ", "\"%s\""), parameters.toArray()));
         } catch (Throwable e) {
-            throw new SQLRuntimeException(sql, parameters, e.getMessage(), gaarasonDataSource.getDatabaseType().getValueSymbol(), e);
+            throw new SQLRuntimeException(sql, parameters, e.getMessage(), gaarasonDataSource.getQueryBuilder().getValueSymbol(), e);
         } finally {
             // 关闭连接
             gaarasonDataSource.localConnectionClose(connection);

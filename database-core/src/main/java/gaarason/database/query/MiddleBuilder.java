@@ -6,14 +6,16 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.query.Grammar;
+import gaarason.database.config.ConversionConfig;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.appointment.AggregatesType;
 import gaarason.database.eloquent.appointment.SqlType;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.InsertNotSuccessException;
 import gaarason.database.exception.SQLRuntimeException;
+import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.ModelShadowProvider;
-import gaarason.database.util.ConverterUtils;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
@@ -30,8 +32,8 @@ import java.util.*;
  */
 public abstract class MiddleBuilder<T extends Serializable, K extends Serializable> extends BaseBuilder<T, K> {
 
-    protected MiddleBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
-        super(gaarasonDataSource, model, entityClass);
+    protected MiddleBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
+        super(gaarasonDataSource, model, grammar);
     }
 
     @Override
@@ -273,7 +275,7 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
      * @return 参数占位符?
      */
     protected String formatValue(@Nullable Object value) {
-        return FormatUtils.value(ConverterUtils.castNullable(value, String.class), grammar);
+        return FormatUtils.value(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class), grammar);
     }
 
     /**
@@ -282,7 +284,7 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
      * @return 参数占位符?
      */
     protected String formatData(@Nullable Object value) {
-        return FormatUtils.data(ConverterUtils.castNullable(value, String.class), grammar);
+        return FormatUtils.data(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class), grammar);
     }
 
     /**

@@ -2,10 +2,11 @@ package gaarason.database.spring.boot.starter.configurations;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
-import gaarason.database.connection.GaarasonDataSourceBuilder;
 import gaarason.database.contract.connection.GaarasonDataSource;
+import gaarason.database.config.GaarasonDataSourceConfig;
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.generator.GeneralGenerator;
+import gaarason.database.provider.ContainerProvider;
 import gaarason.database.spring.boot.starter.properties.GaarasonDatabaseProperties;
 import gaarason.database.spring.boot.starter.provider.GaarasonTransactionManager;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +44,7 @@ public class GaarasonDataSourceConfiguration {
     @ConditionalOnMissingBean
     public GaarasonDataSource gaarasonDataSource() {
         log.info("-------------------- gaarasonDataSource init --------------------------");
-        return GaarasonDataSourceBuilder.create().build(Collections.singletonList(dataSourceDruidConfig()));
+        return ContainerProvider.getBean(GaarasonDataSourceConfig.class).build(Collections.singletonList(dataSourceDruidConfig()));
     }
 
     @Bean

@@ -112,7 +112,7 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
      */
     protected Builder<T, K> theBuilder() {
         GaarasonDataSource gaarasonDataSource = getGaarasonDataSource();
-        return apply(gaarasonDataSource.getDatabaseType().getBuilderByDatabaseType(gaarasonDataSource, this, getEntityClass()));
+        return apply(gaarasonDataSource.getQueryBuilder().newBuilder(gaarasonDataSource, this));
     }
 
     @Override

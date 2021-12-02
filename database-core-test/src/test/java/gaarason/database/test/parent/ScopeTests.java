@@ -19,10 +19,9 @@ import java.util.List;
 abstract public class ScopeTests extends BaseTests {
 
     protected static StudentSoftDeleteModel studentModel = new StudentSoftDeleteModel();
-
-    protected List<DataSource> getDataSourceList() {
-        GaarasonDataSource gaarasonDataSourceWrapper = studentModel.getGaarasonDataSource();
-        return gaarasonDataSourceWrapper.getMasterDataSourceList();
+    @Override
+    protected GaarasonDataSource getGaarasonDataSource(){
+        return studentModel.getGaarasonDataSource();
     }
 
     @Test

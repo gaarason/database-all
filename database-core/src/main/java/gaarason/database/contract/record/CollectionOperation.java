@@ -1,10 +1,11 @@
 package gaarason.database.contract.record;
 
+import gaarason.database.config.ConversionConfig;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.exception.AbnormalParameterException;
 import gaarason.database.exception.NoSuchAlgorithmException;
 import gaarason.database.exception.OperationNotSupportedException;
-import gaarason.database.util.ConverterUtils;
+import gaarason.database.provider.ContainerProvider;
 import gaarason.database.util.ObjectUtils;
 
 import java.math.BigDecimal;
@@ -38,6 +39,14 @@ public interface CollectionOperation<E> extends List<E> {
     Map<String, Object> elementToMap(E element) throws OperationNotSupportedException;
 
     /**
+     * 类型转化 Worker
+     * @return ConversionWorker
+     */
+    default ConversionConfig getConversionWorkerFromContainer() {
+        return ContainerProvider.getBean(ConversionConfig.class);
+    }
+
+    /**
      * 返回集合表示的底层元素列表
      * @return 元素列表
      */
@@ -52,7 +61,8 @@ public interface CollectionOperation<E> extends List<E> {
     default BigDecimal avg() {
         BigDecimal bigDecimal = BigDecimal.ZERO;
         for (E e : this) {
-            bigDecimal = bigDecimal.add(ObjectUtils.isEmpty(e) ? BigDecimal.ZERO : ConverterUtils.castNullable(e, BigDecimal.class));
+            bigDecimal = bigDecimal.add(
+                ObjectUtils.isEmpty(e) ? BigDecimal.ZERO : getConversionWorkerFromContainer().castNullable(e, BigDecimal.class));
         }
         return bigDecimal.divide(new BigDecimal(size()), RoundingMode.HALF_UP);
     }
@@ -66,7 +76,8 @@ public interface CollectionOperation<E> extends List<E> {
         BigDecimal bigDecimal = BigDecimal.ZERO;
         for (E e : this) {
             Object value = elementGetValueByFieldName(e, fieldName);
-            bigDecimal = bigDecimal.add(ObjectUtils.isEmpty(value) ? BigDecimal.ZERO : ConverterUtils.castNullable(value, BigDecimal.class));
+            bigDecimal = bigDecimal.add(
+                ObjectUtils.isEmpty(value) ? BigDecimal.ZERO : getConversionWorkerFromContainer().castNullable(value, BigDecimal.class));
         }
         return bigDecimal.divide(new BigDecimal(size()), RoundingMode.HALF_UP);
     }
@@ -80,7 +91,8 @@ public interface CollectionOperation<E> extends List<E> {
         BigDecimal sum = null;
         for (E e : this) {
             Object valueObj = elementGetValueByFieldName(e, fieldName);
-            BigDecimal value = ObjectUtils.isEmpty(valueObj) ? BigDecimal.ZERO : ConverterUtils.castNullable(valueObj, BigDecimal.class);
+            BigDecimal value = ObjectUtils.isEmpty(valueObj) ? BigDecimal.ZERO : getConversionWorkerFromContainer().castNullable(valueObj,
+                BigDecimal.class);
             sum = sum == null ? value : sum.add(value);
         }
         return sum == null ? BigDecimal.ZERO : sum;
@@ -96,7 +108,7 @@ public interface CollectionOperation<E> extends List<E> {
         for (E e : this) {
             Object valueObj = elementGetValueByFieldName(e, fieldName);
             BigDecimal value = ObjectUtils.isEmpty(valueObj) ? BigDecimal.ZERO :
-                ConverterUtils.castNullable(valueObj, BigDecimal.class);
+                getConversionWorkerFromContainer().castNullable(valueObj, BigDecimal.class);
             maxValue = maxValue == null ? value : maxValue.max(value);
         }
         return maxValue == null ? BigDecimal.ZERO : maxValue;
@@ -111,7 +123,8 @@ public interface CollectionOperation<E> extends List<E> {
         BigDecimal minValue = null;
         for (E e : this) {
             Object valueObj = elementGetValueByFieldName(e, fieldName);
-            BigDecimal value = ObjectUtils.isEmpty(valueObj) ? BigDecimal.ZERO : ConverterUtils.castNullable(valueObj, BigDecimal.class);
+            BigDecimal value = ObjectUtils.isEmpty(valueObj) ? BigDecimal.ZERO : getConversionWorkerFromContainer().castNullable(valueObj,
+                BigDecimal.class);
             minValue = minValue == null ? value : minValue.min(value);
         }
         return minValue == null ? BigDecimal.ZERO : minValue;
@@ -129,9 +142,9 @@ public interface CollectionOperation<E> extends List<E> {
         int maxCount = 0;
         for (E e : this) {
             W valueObj = elementGetValueByFieldName(e, fieldName);
-            Integer count = countMap.computeIfAbsent(ConverterUtils.castNullable(valueObj, String.class), k -> 0);
+            Integer count = countMap.computeIfAbsent(getConversionWorkerFromContainer().castNullable(valueObj, String.class), k -> 0);
             count++;
-            countMap.put(ConverterUtils.castNullable(valueObj, String.class), count);
+            countMap.put(getConversionWorkerFromContainer().castNullable(valueObj, String.class), count);
 
             // 新的众数产生了
             if (count == maxCount) {
@@ -160,7 +173,8 @@ public interface CollectionOperation<E> extends List<E> {
 
         for (E e : this) {
             Object valueObj = elementGetValueByFieldName(e, fieldName);
-            BigDecimal value = ObjectUtils.isEmpty(valueObj) ? BigDecimal.ZERO : ConverterUtils.castNullable(valueObj, BigDecimal.class);
+            BigDecimal value = ObjectUtils.isEmpty(valueObj) ? BigDecimal.ZERO : getConversionWorkerFromContainer().castNullable(valueObj,
+                BigDecimal.class);
 
             minHeap.add(value);
             if (minHeap.size() > count) {
@@ -332,7 +346,8 @@ public interface CollectionOperation<E> extends List<E> {
      * @return 移除的数量个数
      */
     default int filter(String fieldName) {
-        return filter((index, e) -> !ObjectUtils.isEmpty(ConverterUtils.castNullable(elementGetValueByFieldName(e, fieldName), Object.class)));
+        return filter((index, e) -> !ObjectUtils.isEmpty(
+            getConversionWorkerFromContainer().castNullable(elementGetValueByFieldName(e, fieldName), Object.class)));
     }
 
     /**
@@ -415,7 +430,7 @@ public interface CollectionOperation<E> extends List<E> {
      * @return 连接后的字符串
      */
     default String implode(ReturnOne<E, String> closure, CharSequence delimiter) {
-        return this.stream().map(e -> ConverterUtils.castNullable(closure.get(e), String.class)).collect(
+        return this.stream().map(e -> getConversionWorkerFromContainer().castNullable(closure.get(e), String.class)).collect(
             Collectors.joining(delimiter));
     }
 
@@ -667,7 +682,7 @@ public interface CollectionOperation<E> extends List<E> {
         }
         while (!heap.isEmpty()) {
             BigDecimal key = heap.poll();
-            if(map.containsKey(key)){
+            if (map.containsKey(key)) {
                 List<E> eList = map.remove(key);
                 if (ObjectUtils.isEmpty(eList)) {
                     break;
@@ -695,7 +710,7 @@ public interface CollectionOperation<E> extends List<E> {
      */
     default List<E> sortBy(String fieldName) {
         return sortBy((index, e) -> {
-            final BigDecimal decimal = ConverterUtils.castNullable(elementGetValueByFieldName(e, fieldName), BigDecimal.class);
+            final BigDecimal decimal = getConversionWorkerFromContainer().castNullable(elementGetValueByFieldName(e, fieldName), BigDecimal.class);
             return decimal == null ? BigDecimal.ZERO : decimal;
         });
     }
@@ -707,7 +722,7 @@ public interface CollectionOperation<E> extends List<E> {
      */
     default List<E> sortByDesc(String fieldName) {
         return sortByDesc((index, e) -> {
-            final BigDecimal decimal = ConverterUtils.castNullable(elementGetValueByFieldName(e, fieldName), BigDecimal.class);
+            final BigDecimal decimal = getConversionWorkerFromContainer().castNullable(elementGetValueByFieldName(e, fieldName), BigDecimal.class);
             return decimal == null ? BigDecimal.ZERO : decimal;
         });
     }
@@ -744,7 +759,7 @@ public interface CollectionOperation<E> extends List<E> {
         int count = 0;
         Iterator<E> iterator = iterator();
         int index = 0;
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             E element = iterator.next();
             // 未达到开始条件
             if (index++ < offset) {

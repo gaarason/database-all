@@ -18,15 +18,9 @@ import java.io.Serializable;
  */
 public class MsSqlBuilder<T extends Serializable, K extends Serializable> extends CommonBuilder<T, K> {
 
-    public MsSqlBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
-        super(gaarasonDataSource, model, entityClass);
+    public MsSqlBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model,  Grammar grammar) {
+        super(gaarasonDataSource, model, grammar);
     }
-
-    @Override
-    Grammar grammarFactory() {
-        return new MsSqlGrammar(ModelShadowProvider.getByEntityClass(entityClass).getTableName());
-    }
-
 
     @Override
     public Builder<T, K> limit(int offset, int take) {

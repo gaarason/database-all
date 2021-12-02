@@ -1,6 +1,6 @@
 package gaarason.database.test.parent.base;
 
-import gaarason.database.eloquent.appointment.DatabaseType;
+import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.exception.SQLRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.*;
@@ -14,7 +14,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 
 @FixMethodOrder(MethodSorters.JVM)
 @Slf4j
@@ -22,7 +21,8 @@ abstract public class BaseTests {
 
     protected static String initSql = "";
 
-    abstract protected List<DataSource> getDataSourceList();
+    abstract protected GaarasonDataSource getGaarasonDataSource();
+//    abstract protected List<DataSource> getDataSourceList();
 
 //    abstract protected void setDatabaseType();
 //
@@ -57,8 +57,7 @@ abstract public class BaseTests {
     @Before
     public void before() throws SQLException {
         log.debug("数据库重新初始化开始");
-        List<DataSource> dataSourceList = getDataSourceList();
-        initDataSourceList(dataSourceList);
+        initDataSourceList(getGaarasonDataSource());
         log.debug("数据库重新初始化完成");
         otherAfter();
     }
@@ -68,10 +67,10 @@ abstract public class BaseTests {
     }
 
     // 初始化数据库连接列表
-    protected void initDataSourceList(List<DataSource> dataSourceList) throws SQLException {
+    protected void initDataSourceList(GaarasonDataSource gaarasonDataSource) throws SQLException {
         String[] split = initSql.split(";\n");
         String sqlTemp = "";
-        for (DataSource dataSource : dataSourceList) {
+        for (DataSource dataSource : gaarasonDataSource.getMasterDataSourceList()) {
 
             try (Connection connection = dataSource.getConnection()) {
                 for (String sql : split) {
@@ -82,11 +81,8 @@ abstract public class BaseTests {
 //                    System.out.println(i);
                 }
             } catch (Throwable e) {
-                DatabaseType databaseType = DatabaseType.forDatabaseProductName(dataSource.getConnection().getMetaData().getDatabaseProductName());
-                throw new SQLRuntimeException(sqlTemp, new ArrayList<>(), e.getMessage(), databaseType.getValueSymbol(), e);
+                throw new SQLRuntimeException(sqlTemp, new ArrayList<>(), e.getMessage(), gaarasonDataSource.getQueryBuilder().getValueSymbol(), e);
             }
-
-
         }
     }
 

@@ -33,7 +33,7 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
     /**
      * 临时缓存
      */
-    protected HashMap<Object, Set<Object>> cacheMap = new HashMap<>();
+    protected transient HashMap<Object, Set<Object>> cacheMap = new HashMap<>();
 
     public RecordListBean() {
 
@@ -43,6 +43,15 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
         this.originalSql = originalSql;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o) && (o instanceof RecordList) && originalSql.equals(((RecordList<?, ?>) o).getOriginalSql());
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() + originalSql.hashCode();
+    }
 
     @Override
     public List<Map<String, Column>> getOriginalMetadataMapList() {

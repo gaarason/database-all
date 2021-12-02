@@ -1,15 +1,21 @@
 package gaarason.database.provider;
 
+import gaarason.database.config.ConversionConfig;
+import gaarason.database.config.GaarasonDataSourceConfig;
+import gaarason.database.config.QueryBuilderTypeConfig;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.InstanceCreatorFunctionalInterface;
 import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.contract.support.ReflectionScan;
+import gaarason.database.config.QueryBuilderConfig;
 import gaarason.database.exception.InvalidConfigException;
 import gaarason.database.exception.ModelNewInstanceException;
 import gaarason.database.support.SnowFlakeIdGenerator;
 import gaarason.database.util.ObjectUtils;
 import org.reflections8.Reflections;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,9 +56,29 @@ public final class ContainerProvider {
                 return ObjectUtils.typeCast(reflections.getSubTypesOf(Model.class));
             }
         });
+
+        // 数据源
+        register(GaarasonDataSourceConfig.class, clazz -> new GaarasonDataSourceConfig() {
+        });
+        // 类型转化
+        register(ConversionConfig.class, clazz -> new ConversionConfig() {
+        });
+        // 数据库类型
+        register(QueryBuilderTypeConfig.class, clazz -> () -> {
+            List<Class<? extends QueryBuilderConfig>> list = new ArrayList<>();
+            list.add(QueryBuilderConfig.Mysql.class);
+            list.add(QueryBuilderConfig.Mssql.class);
+            return list;
+        });
+        // 查询构造器 Mysql
+        register(QueryBuilderConfig.Mysql.class, clazz -> new QueryBuilderConfig.Mysql() {
+        });
+        // 查询构造器 Mssql
+        register(QueryBuilderConfig.Mssql.class, clazz -> new QueryBuilderConfig.Mssql() {
+        });
     }
 
-    private ContainerProvider(){
+    private ContainerProvider() {
 
     }
 

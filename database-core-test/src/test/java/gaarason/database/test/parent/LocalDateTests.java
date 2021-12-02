@@ -25,9 +25,8 @@ abstract public class LocalDateTests extends BaseTests {
 
     protected static DatetimeTestModel datetimeTestModel = new DatetimeTestModel();
 
-    protected List<DataSource> getDataSourceList() {
-        GaarasonDataSource gaarasonDataSourceWrapper = datetimeTestModel.getGaarasonDataSource();
-        return gaarasonDataSourceWrapper.getMasterDataSourceList();
+    protected GaarasonDataSource getGaarasonDataSource(){
+        return datetimeTestModel.getGaarasonDataSource();
     }
 
     @Test

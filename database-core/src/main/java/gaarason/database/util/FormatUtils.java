@@ -1,8 +1,10 @@
 package gaarason.database.util;
 
 import gaarason.database.contract.query.Grammar;
+import gaarason.database.config.ConversionConfig;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.appointment.FinalVariable;
+import gaarason.database.provider.ContainerProvider;
 
 import java.util.Collection;
 import java.util.List;
@@ -83,7 +85,7 @@ public class FormatUtils {
     public static String value(Collection<?> somethingList, Grammar grammar) {
         StringBuilder stringBuilder = new StringBuilder();
         for (Object value : somethingList) {
-            stringBuilder.append(FormatUtils.value(ConverterUtils.castNullable(value, String.class), grammar)).append(',');
+            stringBuilder.append(FormatUtils.value(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class), grammar)).append(',');
         }
         return StringUtils.rtrim(stringBuilder.toString(), ",");
     }

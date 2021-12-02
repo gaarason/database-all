@@ -22,9 +22,8 @@ abstract public class NullTests extends BaseTests {
 
     protected static NullTestModel nullTestModel = new NullTestModel();
 
-    protected List<DataSource> getDataSourceList() {
-        GaarasonDataSource gaarasonDataSourceWrapper = nullTestModel.getGaarasonDataSource();
-        return gaarasonDataSourceWrapper.getMasterDataSourceList();
+    protected GaarasonDataSource getGaarasonDataSource(){
+        return nullTestModel.getGaarasonDataSource();
     }
 
     @Test

@@ -38,10 +38,9 @@ abstract public class RelationTests extends BaseTests {
     public int hashCode() {
         return super.hashCode();
     }
-
-    protected List<DataSource> getDataSourceList() {
-        GaarasonDataSource gaarasonDataSourceWrapper = studentModel.getGaarasonDataSource();
-        return gaarasonDataSourceWrapper.getMasterDataSourceList();
+    @Override
+    protected GaarasonDataSource getGaarasonDataSource(){
+        return studentModel.getGaarasonDataSource();
     }
 
     @Test

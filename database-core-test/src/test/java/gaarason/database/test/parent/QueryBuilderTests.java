@@ -32,9 +32,9 @@ abstract public class QueryBuilderTests extends BaseTests {
 
     private static final StudentModel studentModel = new StudentModel();
 
-    protected List<DataSource> getDataSourceList() {
-        GaarasonDataSource gaarasonDataSourceWrapper = studentModel.getGaarasonDataSource();
-        return gaarasonDataSourceWrapper.getMasterDataSourceList();
+    @Override
+    protected GaarasonDataSource getGaarasonDataSource(){
+        return studentModel.getGaarasonDataSource();
     }
 
     @Test

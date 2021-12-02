@@ -1,12 +1,12 @@
 package gaarason.database.connection;
 
+import gaarason.database.config.QueryBuilderConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
+import gaarason.database.config.QueryBuilderTypeConfig;
 import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.appointment.DatabaseType;
-import gaarason.database.exception.AbnormalParameterException;
-import gaarason.database.exception.ConnectionCloseException;
-import gaarason.database.exception.InternalConcurrentException;
-import gaarason.database.exception.SQLRuntimeException;
+import gaarason.database.exception.*;
+import gaarason.database.provider.ContainerProvider;
+import gaarason.database.util.ObjectUtils;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -16,10 +16,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Savepoint;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -64,7 +61,7 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
      * 数据库类型
      */
     @Nullable
-    protected DatabaseType databaseType;
+    protected QueryBuilderConfig queryBuilder;
 
     /**
      * 构造
@@ -174,7 +171,7 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
     @Override
     public void localConnectionClose(Connection connection) throws SQLRuntimeException {
         try {
-            if (!isLocalThreadInTransaction()){
+            if (!isLocalThreadInTransaction()) {
                 connection.close();
             }
         } catch (SQLException e) {
@@ -322,21 +319,38 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
     }
 
     @Override
-    public DatabaseType getDatabaseType() throws SQLRuntimeException {
-        DatabaseType localDatabaseType = databaseType;
-        if (localDatabaseType == null) {
+    public QueryBuilderConfig getQueryBuilder() throws SQLRuntimeException {
+        QueryBuilderConfig localQueryBuilder = queryBuilder;
+        if (localQueryBuilder == null) {
             synchronized (this) {
-                localDatabaseType = databaseType;
-                if (localDatabaseType == null) {
-                    try (Connection connection = getLocalConnection(true)) {
-                        String databaseProductName = connection.getMetaData().getDatabaseProductName();
-                        databaseType = localDatabaseType = DatabaseType.forDatabaseProductName(databaseProductName.toLowerCase());
-                    } catch (Throwable e) {
-                        throw new SQLRuntimeException(e.getMessage(), e);
-                    }
+                localQueryBuilder = queryBuilder;
+                if (localQueryBuilder == null) {
+                    queryBuilder = localQueryBuilder = getQueryBuilder(this);
                 }
             }
         }
-        return localDatabaseType;
+        return localQueryBuilder;
+    }
+
+    /**
+     * 通过数据源, 获取当前的数据库类型
+     * @param dataSource 数据源
+     * @return 数据库类型
+     */
+    protected QueryBuilderConfig getQueryBuilder(GaarasonDataSource dataSource) {
+        List<Class<? extends QueryBuilderConfig>> list = ContainerProvider.getBean(QueryBuilderTypeConfig.class).getAllDatabaseTypes();
+        String databaseProductName;
+        try (Connection connection = dataSource.getLocalConnection(true)) {
+            databaseProductName = connection.getMetaData().getDatabaseProductName().toLowerCase(Locale.ROOT);
+            for (Class<? extends QueryBuilderConfig> clazz : list) {
+                final QueryBuilderConfig queryBuilder = ContainerProvider.getBean(clazz);
+                if (!ObjectUtils.isEmpty(queryBuilder) && queryBuilder.support(databaseProductName)) {
+                    return queryBuilder;
+                }
+            }
+        } catch (Throwable e) {
+            throw new SQLRuntimeException(e.getMessage(), e);
+        }
+        throw new TypeNotSupportedException("Database product name [" + databaseProductName + "] not supported yet.");
     }
 }

@@ -26,9 +26,8 @@ abstract public class CollectionTests extends BaseTests {
 
     protected static RecordList<StudentModel.Entity, Integer> records;
 
-    protected List<DataSource> getDataSourceList() {
-        GaarasonDataSource gaarasonDataSourceWrapper = studentModel.getGaarasonDataSource();
-        return gaarasonDataSourceWrapper.getMasterDataSourceList();
+    protected GaarasonDataSource getGaarasonDataSource(){
+        return studentModel.getGaarasonDataSource();
     }
 
     @Override

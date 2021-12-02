@@ -4,6 +4,7 @@ import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.query.Grammar;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.appointment.JoinType;
 import gaarason.database.eloquent.appointment.OrderBy;
@@ -23,8 +24,8 @@ import java.util.*;
  */
 public abstract class CommonBuilder<T extends Serializable, K extends Serializable> extends MiddleBuilder<T, K> {
 
-    protected CommonBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
-        super(gaarasonDataSource, model, entityClass);
+    protected CommonBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
+        super(gaarasonDataSource, model, grammar);
     }
 
     @Override

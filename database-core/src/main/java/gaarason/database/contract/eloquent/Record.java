@@ -16,7 +16,7 @@ import java.util.Map;
  * 结果集
  * @author xt
  */
-public interface Record<T extends Serializable, K extends Serializable> extends Friendly<T, K>, Operation<T, K>, Relationship<T, K>, Serializable {
+public interface Record<T extends Serializable, K extends Serializable> extends Friendly<T, K>, Operation<T, K>, Relationship<T, K> {
 
     /**
      * 本表元数据

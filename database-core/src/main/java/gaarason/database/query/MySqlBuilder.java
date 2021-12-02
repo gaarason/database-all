@@ -18,13 +18,8 @@ import java.io.Serializable;
  */
 public class MySqlBuilder<T extends Serializable, K extends Serializable> extends CommonBuilder<T, K> {
 
-    public MySqlBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
-        super(gaarasonDataSource, model, entityClass);
-    }
-
-    @Override
-    Grammar grammarFactory() {
-        return new MySqlGrammar(ModelShadowProvider.getByEntityClass(entityClass).getTableName());
+    public MySqlBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
+        super(gaarasonDataSource, model, grammar);
     }
 
     @Override

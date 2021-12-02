@@ -1,7 +1,7 @@
 # database
 Eloquent ORM for Java
 ## 目录
-* [注册bean](/document/bean.md)
+* [注册配置](/document/bean.md)
     * [spring boot](#spring)
         * [单连接](#单连接)
             * [单库连接](#单库连接)
@@ -9,6 +9,9 @@ Eloquent ORM for Java
         * [多连接](#多连接)
         * [使用GaarasonDataSource](#使用GaarasonDataSource)
     * [非spring boot](#非spring)
+    * [拓展配置](#拓展配置)
+        * [新增支持的数据库](#新增支持的数据库)
+        * [自定义查询构造器方法](#自定义查询构造器方法)
 * [数据映射](/document/mapping.md)
 * [数据模型](/document/model.md)
 * [查询结果集](/document/record.md)
@@ -68,7 +71,7 @@ public class GaarasonDataSourceConfiguration {
     @ConditionalOnMissingBean
     public GaarasonDataSource gaarasonDataSource() {
         log.info("-------------------- gaarasonDataSource init --------------------------");
-        return GaarasonDataSourceBuilder.create().build(Collections.singletonList(dataSourceDruidConfig()));
+        return ContainerProvider.getBean(GaarasonDataSourceConfig.class).build(Collections.singletonList(dataSourceDruidConfig()));
     }
 
     @Bean
@@ -182,7 +185,7 @@ public class BeanConfiguration {
         List<DataSource> readDataSourceList = new ArrayList<>();
         readDataSourceList.add(dataSourceSlave0());
         readDataSourceList.add(dataSourceSlave1());
-        return GaarasonDataSourceBuilder.create().build(dataSourceList, readDataSourceList);
+        return ContainerProvider.getBean(GaarasonDataSourceConfig.class).build(dataSourceList, readDataSourceList);
     }
 
     @Bean
@@ -414,4 +417,63 @@ public class TestModel extends Model<TestModel.Inner, Integer> {
     }
 }
 
+```
+
+## 拓展配置
+
+### 新增支持的数据库
+1. 定义新的数据库查询构造器, 实现 `QueryBuilderConfig` 接口 (可以参考`QueryBuilderConfig.Mysql`实现)
+```java
+public class H2 implements QueryBuilderConfig {
+    // 实现接口中的全部方法
+}
+```
+2. 注册到容器 (需要在进行任何数据库操作之前, 完成注册)
+```java
+// 当前支持的数据库类型
+ContainerProvider.register(QueryBuilderTypeConfig.class, clazz -> () -> {
+    List<Class<? extends QueryBuilderConfig>> list = new ArrayList<>();
+    list.add(QueryBuilderConfig.Mysql.class);
+    list.add(QueryBuilderConfig.Mssql.class);
+    list.add(H2.class);
+    return list;
+});
+// 查询构造器 H2
+ContainerProvider.register(H2.class, clazz -> new H2());
+```
+
+### 自定义查询构造器方法
+- 对于`model`中使用`newQuery()`返回的`Builder`对象,进行修改.
+- 举例修改 `MySqlBuilder` 中的 `limit(int)` 方法.
+1. 定义新的查询构造器, 继承当前实现 `MySqlBuilder` , 并按需更改;
+```java
+public class MySqlBuilderV2 extends MySqlBuilder {
+    // 对任意方法进行修改
+    @Override
+    public Builder<T, K> limit(int take) {
+        // 进行修改
+        String sqlPart = String.valueOf(take);
+        grammar.pushLimit(sqlPart);
+        return this;
+    }
+}
+
+```
+2. 定义新的数据库查询构造器, 实现当前实现 `QueryBuilderConfig.Mysql` 接口, 并使用上面定义的新的查询构造器;
+```java
+public class MysqlV2 implements QueryBuilderConfig.Mysql {
+    // 实现接口
+    @Override
+    public <T extends Serializable, K extends Serializable> Builder<T, K> newBuilder(GaarasonDataSource gaarasonDataSource,
+        Model<T, K> model) {
+        
+        // 重写此处即可
+        return new MySqlBuilderV2<>(gaarasonDataSource, model, newGrammar(model.getEntityClass()));
+    }
+}
+```
+3. 注册到容器 (需要在进行任何数据库操作之前, 完成注册)
+```java
+// 注册并覆盖 QueryBuilderConfig.Mysql
+ContainerProvider.register(QueryBuilderConfig.Mysql.class, clazz -> new MysqlV2());
 ```
