@@ -64,15 +64,6 @@ public interface Query<T extends Serializable, K extends Serializable> {
      * @return 批量结果集
      * @throws SQLRuntimeException SQL异常
      */
-    @SuppressWarnings({"unchecked", "varargs"})
-    RecordList<T, K> findMany(K... ids) throws SQLRuntimeException;
-
-    /**
-     * 查询主键列表中的全部
-     * @param ids 主键集合
-     * @return 批量结果集
-     * @throws SQLRuntimeException SQL异常
-     */
     RecordList<T, K> findMany(Object... ids) throws SQLRuntimeException;
 
     /**

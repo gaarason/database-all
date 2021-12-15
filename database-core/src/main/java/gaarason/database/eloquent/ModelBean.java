@@ -153,14 +153,8 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
         return newQuery().whereIn(getPrimaryKeyColumnName(), ids).get();
     }
 
-    @SafeVarargs
     @Override
-    public final RecordList<T, K> findMany(K... ids) throws SQLRuntimeException {
-        return newQuery().whereIn(getPrimaryKeyColumnName(), new HashSet<>(Arrays.asList(ids))).get();
-    }
-
-    @Override
-    public final RecordList<T, K> findMany(Object... ids) throws SQLRuntimeException {
+    public RecordList<T, K> findMany(Object... ids) throws SQLRuntimeException {
         return newQuery().whereIn(getPrimaryKeyColumnName(), new HashSet<>(Arrays.asList(ids))).get();
     }
 

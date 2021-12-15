@@ -12,7 +12,7 @@ import gaarason.database.exception.InvalidConfigException;
 import gaarason.database.exception.ModelNewInstanceException;
 import gaarason.database.support.SnowFlakeIdGenerator;
 import gaarason.database.util.ObjectUtils;
-import org.reflections8.Reflections;
+import org.reflections.Reflections;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +49,7 @@ public final class ContainerProvider {
         register(IdGenerator.Custom.class, clazz -> () -> null);
         // 包扫描
         register(ReflectionScan.class, clazz -> new ReflectionScan() {
-            public final Reflections reflections = new Reflections("", "gaarason.database");
+            public final Reflections reflections = new Reflections();
 
             @Override
             public Set<Class<? extends Model<?, ?>>> scanModels() {

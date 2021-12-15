@@ -9,7 +9,7 @@ public interface TeacherQuery<T, K> {
 
 //    @Transactional(rollbackFor = Throwable.class)
 
-    @Transactional(transactionManager = "", propagation = Propagation.NESTED)
+    @Transactional(propagation = Propagation.NESTED)
     Student updateName();
 
     @Transactional(propagation = Propagation.NESTED)

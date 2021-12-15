@@ -13,7 +13,7 @@ import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.reflections8.Reflections;
+import org.reflections.Reflections;
 
 import java.util.*;
 
@@ -142,7 +142,9 @@ public class DatabaseUtilsTests {
 
     @Test
     public void test() {
-        Reflections reflections = new Reflections("lombok", "gaarason.database", "");
+
+        Reflections reflections = new Reflections();
+//        Reflections reflections = new Reflections("lombok", "gaarason.database", "*");
         Set<Class<? extends Model>> subTypesOf = reflections.getSubTypesOf(Model.class);
         System.out.println(subTypesOf);
 

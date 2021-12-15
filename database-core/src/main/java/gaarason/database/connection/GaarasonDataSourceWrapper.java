@@ -340,7 +340,8 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
     protected QueryBuilderConfig getQueryBuilder(GaarasonDataSource dataSource) {
         List<Class<? extends QueryBuilderConfig>> list = ContainerProvider.getBean(QueryBuilderTypeConfig.class).getAllDatabaseTypes();
         String databaseProductName;
-        try (Connection connection = dataSource.getLocalConnection(true)) {
+        Connection connection = dataSource.getLocalConnection(true);
+        try {
             databaseProductName = connection.getMetaData().getDatabaseProductName().toLowerCase(Locale.ROOT);
             for (Class<? extends QueryBuilderConfig> clazz : list) {
                 final QueryBuilderConfig queryBuilder = ContainerProvider.getBean(clazz);
@@ -350,6 +351,8 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
             }
         } catch (Throwable e) {
             throw new SQLRuntimeException(e.getMessage(), e);
+        }finally {
+            dataSource.localConnectionClose(connection);
         }
         throw new TypeNotSupportedException("Database product name [" + databaseProductName + "] not supported yet.");
     }

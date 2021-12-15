@@ -19,6 +19,11 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 2.13.0
+
+- 在模型(`Model`)中, 移除 `findMany(K... ids)`
+- 升级包扫描依赖
+
 ### 2.12.0
 
 - 增强对于`ContainerProvider`的使用.
