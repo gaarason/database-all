@@ -102,7 +102,7 @@ public interface Execute<T extends Serializable, K extends Serializable> {
 
     /**
      * 插入数据
-     * @return 数据库自增id|null
+     * @return 数据库自增id|null(失败)
      * @throws SQLRuntimeException 数据库异常
      */
     @Nullable

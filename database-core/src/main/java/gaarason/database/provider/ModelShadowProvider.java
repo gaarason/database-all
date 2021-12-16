@@ -1,11 +1,11 @@
 package gaarason.database.provider;
 
+import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.contract.support.ReflectionScan;
-import gaarason.database.config.ConversionConfig;
 import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.annotation.*;
 import gaarason.database.eloquent.appointment.FinalVariable;
@@ -16,7 +16,6 @@ import gaarason.database.exception.*;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
 import lombok.Data;
-import lombok.Getter;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -48,22 +47,7 @@ public final class ModelShadowProvider {
      */
     private static final Map<Class<? extends Serializable>, ModelInfo<? extends Serializable, ? extends Serializable>> ENTITY_INDEX_MAP = new ConcurrentHashMap<>();
 
-    /**
-     * id生成器
-     */
-    @Getter
-    private static final IdGenerators ID_GENERATORS;
-
     static {
-        // 静态初始化
-        ID_GENERATORS = new IdGenerators(
-            ContainerProvider.getBean(IdGenerator.SnowFlakesID.class),
-            ContainerProvider.getBean(IdGenerator.UUID32.class),
-            ContainerProvider.getBean(IdGenerator.UUID36.class),
-            ContainerProvider.getBean(IdGenerator.Never.class),
-            ContainerProvider.getBean(IdGenerator.Custom.class)
-        );
-
         // 一轮初始化模型的基本信息(主键类型/实体类型/模型类型/表名等等), 并构建索引(实体索引/模型索引), 不存在依赖递归等复杂情况
         // 并过滤不需要的model, 比如抽象类等
         initModelInformation();
@@ -503,36 +487,33 @@ public final class ModelShadowProvider {
                 "The primary key type [" + fieldInfo.field.getType() + "] of the entity does not match with the " +
                     "generic [" + modelInfo.primaryKeyClass + "]");
         }
-        // 主键生成器选择
-        switch (primary.idGenerator()) {
-            case SNOW_FLAKES_ID:
-                modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ID_GENERATORS.snowFlakesID);
-                break;
-            case UUID_36:
-                modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ID_GENERATORS.uuid36);
-                break;
-            case UUID_32:
-                modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ID_GENERATORS.uuid32);
-                break;
-            case NEVER:
-                modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ID_GENERATORS.never);
-                break;
-            case CUSTOM:
-                modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ID_GENERATORS.custom);
-                break;
-            default:
-                // auto
-                if (fieldInfo.javaType == Long.class) {
-                    modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ID_GENERATORS.snowFlakesID);
-                } else if (fieldInfo.javaType == String.class && fieldInfo.column != null) {
+
+        // 主键auto生成器选择
+        if (primary.idGenerator().isAssignableFrom(IdGenerator.Auto.class)) {
+            if (fieldInfo.javaType == Long.class) {
+                modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ContainerProvider.getBean(IdGenerator.SnowFlakesID.class));
+            } else if (fieldInfo.javaType == String.class) {
+                if (fieldInfo.column != null) {
                     if (fieldInfo.column.length() >= 36) {
-                        modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ID_GENERATORS.uuid36);
+                        modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ContainerProvider.getBean(IdGenerator.UUID36.class));
                     } else if (fieldInfo.column.length() >= 32) {
-                        modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ID_GENERATORS.uuid32);
+                        modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ContainerProvider.getBean(IdGenerator.UUID32.class));
                     }
                 } else {
-                    modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ID_GENERATORS.never);
+                    modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ContainerProvider.getBean(IdGenerator.UUID32.class));
                 }
+            } else {
+                modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ContainerProvider.getBean(IdGenerator.Never.class));
+            }
+        } else {
+
+            try{
+                final IdGenerator generator = ContainerProvider.getBean(primary.idGenerator());
+            }catch (InvalidConfigException e){
+
+            }
+
+            modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ContainerProvider.getBean(primary.idGenerator()));
         }
     }
 
@@ -823,35 +804,6 @@ public final class ModelShadowProvider {
          * 关联关系注解
          */
         protected RelationSubQuery relationSubQuery;
-    }
-
-    @Data
-    public static class IdGenerators {
-
-        /**
-         * 雪花id生成器
-         */
-        protected final IdGenerator.SnowFlakesID snowFlakesID;
-
-        /**
-         * uuid32位生成器
-         */
-        protected final IdGenerator.UUID32 uuid32;
-
-        /**
-         * uuid36位生成器
-         */
-        protected final IdGenerator.UUID36 uuid36;
-
-        /**
-         * 无生成
-         */
-        protected final IdGenerator.Never never;
-
-        /**
-         * 无生成
-         */
-        protected final IdGenerator.Custom custom;
     }
 
 }

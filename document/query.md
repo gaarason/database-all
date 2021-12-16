@@ -13,7 +13,6 @@ Eloquent ORM for Java
     * [获取](#获取)
         * [分块处理](#分块处理)
     * [插入](#插入)
-        * [自增id](#自增id)
     * [更新](#更新)
     * [删除](#删除)
         * [默认删除](#默认删除)
@@ -191,23 +190,6 @@ valueList.add("11");
 valueList.add("1");
 
 int num = studentModel.newQuery().select(columnNameList).value(valueList).insert();
-```
-
-### 自增id
-当数据库主键为`bigint unsigned`时, 可以使用雪花id生成器, 兼容10ms以内时间回拨, 单个进程每秒500w个id   
-- spring boot
-    - 设置工作id gaarason.database.snow-flake.worker-id=2
-
-```java
-// 内部用法不建议使用, 因为api可能更改
-long id = ModelShadowProvider.getIdGenerators().getSnowFlakesID().nextId();
-
-// 建议使用定义时 @Primary() 强行指定
-// 注意, 有且只有使用 ORM 新增时,且主键没有赋值时, 生效
-// 且 默认的 IdGeneratorType.AUTO 更加智能
-@Primary(idGenerator = IdGeneratorType.SNOW_FLAKES_ID)
-private Long id;
-
 ```
 
 ## 更新

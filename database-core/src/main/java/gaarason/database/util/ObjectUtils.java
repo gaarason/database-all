@@ -28,7 +28,7 @@ public class ObjectUtils {
     /**
      * 线程安全随机对象
      */
-    private static final ThreadLocalRandom random = ThreadLocalRandom.current();
+    private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
 
     private ObjectUtils() {
     }
@@ -301,7 +301,7 @@ public class ObjectUtils {
         }
         Set<Integer> res = new HashSet<>(count);
         while (res.size() < count) {
-            res.add(random.nextInt(bound));
+            res.add(RANDOM.nextInt(bound));
         }
         return res;
     }

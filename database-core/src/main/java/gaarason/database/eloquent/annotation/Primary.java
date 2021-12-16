@@ -1,6 +1,6 @@
 package gaarason.database.eloquent.annotation;
 
-import gaarason.database.eloquent.appointment.IdGeneratorType;
+import gaarason.database.contract.support.IdGenerator;
 
 import java.lang.annotation.*;
 
@@ -13,6 +13,7 @@ import java.lang.annotation.*;
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Primary {
+
     /**
      * 自增主键
      * @return 自增主键
@@ -23,5 +24,5 @@ public @interface Primary {
      * id生成策略
      * @return id生成策略
      */
-    IdGeneratorType idGenerator() default IdGeneratorType.AUTO;
+    Class<? extends IdGenerator> idGenerator() default IdGenerator.Auto.class;
 }

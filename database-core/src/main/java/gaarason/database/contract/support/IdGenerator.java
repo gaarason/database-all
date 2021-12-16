@@ -36,13 +36,6 @@ public interface IdGenerator<K extends Serializable> {
     }
 
     /**
-     * 自定义
-     */
-    interface Custom extends IdGenerator<Serializable> {
-
-    }
-
-    /**
      * 自动判断,
      */
     interface Auto extends IdGenerator<Serializable> {

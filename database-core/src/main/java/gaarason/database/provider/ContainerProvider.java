@@ -2,16 +2,18 @@ package gaarason.database.provider;
 
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.config.GaarasonDataSourceConfig;
+import gaarason.database.config.QueryBuilderConfig;
 import gaarason.database.config.QueryBuilderTypeConfig;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.InstanceCreatorFunctionalInterface;
 import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.contract.support.ReflectionScan;
-import gaarason.database.config.QueryBuilderConfig;
 import gaarason.database.exception.InvalidConfigException;
 import gaarason.database.exception.ModelNewInstanceException;
+import gaarason.database.exception.ObjectNewInstanceException;
 import gaarason.database.support.SnowFlakeIdGenerator;
 import gaarason.database.util.ObjectUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
 
 import java.util.ArrayList;
@@ -24,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 容器化对象实例
  * @author xt
  */
+@Slf4j
 public final class ContainerProvider {
 
     /**
@@ -45,8 +48,6 @@ public final class ContainerProvider {
         register(IdGenerator.UUID32.class, clazz -> () -> UUID.randomUUID().toString().replace("-", ""));
         // ID生成 Never
         register(IdGenerator.Never.class, clazz -> () -> null);
-        // ID生成 自定义
-        register(IdGenerator.Custom.class, clazz -> () -> null);
         // 包扫描
         register(ReflectionScan.class, clazz -> new ReflectionScan() {
             public final Reflections reflections = new Reflections();
@@ -94,7 +95,6 @@ public final class ContainerProvider {
         INSTANCE_CREATOR_MAP.put(interfaceClass, closure);
     }
 
-
     /**
      * 返回一个对象, 必然单例
      * @return 对象
@@ -103,9 +103,11 @@ public final class ContainerProvider {
         if (INSTANCE_MAP.get(interfaceClass) == null) {
             synchronized (interfaceClass) {
                 if (INSTANCE_MAP.get(interfaceClass) == null) {
+                    // 优先 使用注册的方式
                     InstanceCreatorFunctionalInterface<?> instanceCreatorFunctionalInterface = INSTANCE_CREATOR_MAP.get(interfaceClass);
                     if (null == instanceCreatorFunctionalInterface) {
-                        throw new InvalidConfigException("The interface[" + interfaceClass + "] has not been registered before get bean.");
+                        // 保底 使用默认的方式
+                        instanceCreatorFunctionalInterface = defaultNewInstance(interfaceClass);
                     }
                     try {
                         Object bean = instanceCreatorFunctionalInterface.execute(ObjectUtils.typeCast(interfaceClass));
@@ -118,4 +120,21 @@ public final class ContainerProvider {
         }
         return ObjectUtils.typeCast(INSTANCE_MAP.get(interfaceClass));
     }
+
+    /**
+     * 缺省实例化方式
+     * @param clazz 类
+     * @param <T>   类型
+     */
+    private static <T> InstanceCreatorFunctionalInterface<T> defaultNewInstance(Class<T> clazz) {
+        return c -> {
+            try {
+                log.info("Instantiate unregistered objects[{}] by default.", clazz);
+                return clazz.newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new ObjectNewInstanceException(clazz, e.getMessage(), e);
+            }
+        };
+    }
+
 }

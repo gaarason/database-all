@@ -1,6 +1,8 @@
 package gaarason.database.test;
 
 import gaarason.database.contract.eloquent.Model;
+import gaarason.database.contract.support.IdGenerator;
+import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.test.models.relation.pojo.Teacher;
 import gaarason.database.test.utils.MultiThreadUtil;
@@ -92,7 +94,7 @@ public class DatabaseUtilsTests {
         int b = 30000;
 
         MultiThreadUtil.run(a, b, () -> {
-            long id = ModelShadowProvider.getID_GENERATORS().getSnowFlakesID().nextId();
+            long id = ContainerProvider.getBean(IdGenerator.SnowFlakesID.class).nextId();
             synchronized (ids) {
                 ids.add(id);
             }
@@ -107,9 +109,10 @@ public class DatabaseUtilsTests {
         System.out.println("没有重复id");
 
         System.out.println(Long.MAX_VALUE);
-        System.out.println(ModelShadowProvider.getID_GENERATORS().getSnowFlakesID().nextId());
-        System.out.println(ModelShadowProvider.getID_GENERATORS().getSnowFlakesID().nextId());
-        System.out.println(ModelShadowProvider.getID_GENERATORS().getSnowFlakesID().nextId());
+        System.out.println(ContainerProvider.getBean(IdGenerator.SnowFlakesID.class).nextId());
+        System.out.println(ContainerProvider.getBean(IdGenerator.SnowFlakesID.class).nextId());
+        System.out.println(ContainerProvider.getBean(IdGenerator.SnowFlakesID.class).nextId());
+        System.out.println(ContainerProvider.getBean(IdGenerator.SnowFlakesID.class).nextId());
     }
 
     @Test
