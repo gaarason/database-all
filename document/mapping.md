@@ -8,6 +8,8 @@ Eloquent ORM for Java
     * [注解](#注解)
         * [Table](#Table)
         * [Primary](#Primary)
+            * [自动主键](#自动主键)
+            * [自定义主键](#自定义主键)
         * [Column](#Column)
         * [BelongsTo](#BelongsTo)
         * [BelongsToMany](#BelongsToMany)
@@ -82,7 +84,46 @@ public class Student implements Serializable {
 
 ### Primary
 
-- `gaarason.database.eloquent.annotation.Primary` 用于确定当前数据表的主键
+##### 自动主键
+
+当数据库主键为`bigint unsigned`时, 可以使用雪花id生成器, 兼容10ms以内时间回拨, 单个进程每秒500w个id
+- spring boot
+    - 设置工作id gaarason.database.snow-flake.worker-id=2
+
+```java
+// 内部用法不建议使用, 因为api可能更改
+long id = ContainerProvider.getBean(IdGenerator.SnowFlakesID.class).nextId();
+
+// 建议使用定义时 @Primary() 强行指定
+// 注意, 有且只有使用 ORM 新增时,且主键没有赋值时, 生效
+// 且 默认的 IdGenerator.Auto.class 更加智能
+@Primary(idGenerator = IdGenerator.SnowFlakesID.class)
+private Long id;
+```
+##### 自定义主键
+定义主键生成  
+**注意, 有且只有使用 ORM 新增时,且主键没有赋值时, 生效**
+```java
+public static class CustomPrimaryKey implements IdGenerator<Integer> {
+    private final static AtomicInteger id = new AtomicInteger(200);
+
+    @Override
+    public Integer nextId() {
+        return id.getAndIncrement();
+    }
+}
+```
+指定使用
+```java
+@Primary(idGenerator = CustomPrimaryKey.class)
+private Integer id;
+```
+数据插入
+```java
+final Record<PrimaryKeyTestModel.Entity, Integer> record0 = primaryKeyTestModel.newRecord();
+record0.save();
+Assert.assertEquals(200, record0.getEntity().getId().intValue());
+```
 
 ### Column
 

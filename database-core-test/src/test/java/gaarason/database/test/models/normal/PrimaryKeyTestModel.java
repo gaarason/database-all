@@ -4,7 +4,6 @@ import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.eloquent.annotation.Column;
 import gaarason.database.eloquent.annotation.Primary;
 import gaarason.database.eloquent.annotation.Table;
-import gaarason.database.provider.ContainerProvider;
 import gaarason.database.test.models.normal.base.SingleModel;
 import lombok.Data;
 
