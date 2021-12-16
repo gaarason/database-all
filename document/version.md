@@ -21,8 +21,8 @@ Eloquent ORM for Java
 
 ### 2.14.0
 
-- 在模型(`Model`)中, 移除 `findMany(K... ids)`
-- 升级包扫描依赖
+- 在实体(`Entity`)中, 优化 @Primary 注解中指定主键生成器的策略, 更方便的自定义主键生成
+- 优化`SpringBoot`中的自动配置类
 
 ### 2.13.0
 
