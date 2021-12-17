@@ -297,6 +297,18 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     }
 
     /**
+     * 返回数据库方法的拼接字符
+     * @param functionName 方法名
+     * @param parameter 参数字符串
+     * @param alias 别名
+     * @return 拼接后的字符
+     */
+    protected String function(String functionName, String parameter, @Nullable String alias){
+        return functionName + FormatUtils.bracket(parameter) + (alias == null ? "" :
+            " as " + FormatUtils.quotes(alias));
+    }
+
+    /**
      * 给字段加上引号
      * @param something 字段 eg: sum(order.amount) AS sum_price
      * @return eg: sum(`order`.`amount`) AS `sum_price`

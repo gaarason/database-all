@@ -459,6 +459,7 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
         return this;
     }
 
+    // todo
     @Override
     public Builder<T, K> selectFunction(String function, String parameter, @Nullable String alias) {
         String sqlPart = function + FormatUtils.bracket(parameter) + (alias == null ? "" :

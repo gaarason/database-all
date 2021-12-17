@@ -59,7 +59,7 @@ public interface QueryBuilderConfig {
          */
         @Override
         default String getValueSymbol() {
-            return "\"";
+            return "'";
         }
 
         /**

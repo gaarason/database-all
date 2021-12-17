@@ -506,13 +506,6 @@ public final class ModelShadowProvider {
                 modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ContainerProvider.getBean(IdGenerator.Never.class));
             }
         } else {
-
-            try{
-                final IdGenerator generator = ContainerProvider.getBean(primary.idGenerator());
-            }catch (InvalidConfigException e){
-
-            }
-
             modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ContainerProvider.getBean(primary.idGenerator()));
         }
     }

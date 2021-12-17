@@ -11,8 +11,6 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import javax.sql.DataSource;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +20,7 @@ abstract public class NullTests extends BaseTests {
 
     protected static NullTestModel nullTestModel = new NullTestModel();
 
-    protected GaarasonDataSource getGaarasonDataSource(){
+    protected GaarasonDataSource getGaarasonDataSource() {
         return nullTestModel.getGaarasonDataSource();
     }
 
