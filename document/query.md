@@ -786,12 +786,19 @@ studentModel.newQuery().transaction(()->{
 ```
 ## 分页
 ### 快速分页
+不包含总数的分页
 ```java
 Paginate<Student> paginate = studentModel.newQuery().orderBy("id").simplePaginate(1, 3);
+
+
+Paginate<Map<String, Object>> paginateMap = studentModel.newQuery().orderBy("id").simplePaginateMapStyle(1, 3);
 ```
 ### 总数分页
+包含总数的分页
 ```java
 Paginate<Student> paginate = studentModel.newQuery().orderBy("id").paginate(1, 4);
+
+Paginate<Map<String, Object>> paginate = studentModel.newQuery().orderBy("id").paginateMapStyle(1, 4);
 ```
 ## 功能
 

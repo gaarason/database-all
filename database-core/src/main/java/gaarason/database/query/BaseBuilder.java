@@ -155,10 +155,25 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * @throws CloneNotSupportedRuntimeException 克隆异常
      */
     @Override
-    public Paginate<T> paginate(int currentPage, int perPage)
-        throws SQLRuntimeException, CloneNotSupportedRuntimeException {
+    public Paginate<T> paginate(int currentPage, int perPage) throws SQLRuntimeException, CloneNotSupportedRuntimeException {
         Long count = clone().count("*");
         List<T> list = limit((currentPage - 1) * perPage, perPage).get().toObjectList();
+        return new Paginate<>(list, currentPage, perPage, count.intValue());
+    }
+
+    /**
+     * 带总数的分页
+     * @param currentPage 当前页
+     * @param perPage     每页数量
+     * @return 分页对象
+     * @throws SQLRuntimeException               数据库异常
+     * @throws CloneNotSupportedRuntimeException 克隆异常
+     */
+    @Override
+    public Paginate<Map<String, Object>> paginateMapStyle(int currentPage,
+        int perPage) throws SQLRuntimeException, CloneNotSupportedRuntimeException {
+        Long count = clone().count("*");
+        List<Map<String, Object>> list = limit((currentPage - 1) * perPage, perPage).get().toMapList();
         return new Paginate<>(list, currentPage, perPage, count.intValue());
     }
 
@@ -172,6 +187,19 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
     @Override
     public Paginate<T> simplePaginate(int currentPage, int perPage) throws SQLRuntimeException {
         List<T> list = limit((currentPage - 1) * perPage, perPage).get().toObjectList();
+        return new Paginate<>(list, currentPage, perPage);
+    }
+
+    /**
+     * 不带总数的分页
+     * @param currentPage 当前页
+     * @param perPage     每页数量
+     * @return 分页对象
+     * @throws SQLRuntimeException 数据库异常
+     */
+    @Override
+    public Paginate<Map<String, Object>> simplePaginateMapStyle(int currentPage, int perPage) throws SQLRuntimeException {
+        List<Map<String, Object>> list = limit((currentPage - 1) * perPage, perPage).get().toMapList();
         return new Paginate<>(list, currentPage, perPage);
     }
 
@@ -381,8 +409,8 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * @return 响应
      * @throws SQLRuntimeException 数据库异常
      */
-    protected <U> U doSomethingInConnection(ExecSqlWithinConnectionFunctionalInterface<U> closure, String sql,
-        Collection<String> parameters, boolean isWrite) throws SQLRuntimeException {
+    protected <U> U doSomethingInConnection(ExecSqlWithinConnectionFunctionalInterface<U> closure, String sql, Collection<String> parameters,
+        boolean isWrite) throws SQLRuntimeException {
         // 获取连接
         Connection connection = gaarasonDataSource.getLocalConnection(isWrite);
         try {
@@ -418,8 +446,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
         } else if (String.class.equals(primaryKeyClass) || Object.class.equals(primaryKeyClass) || Serializable.class.equals(primaryKeyClass)) {
             return ObjectUtils.typeCast(generatedKeys.getString(1));
         }
-        throw new PrimaryKeyTypeNotSupportException("Primary key type [" + primaryKeyClass + "] not support get " +
-            "generated keys yet.");
+        throw new PrimaryKeyTypeNotSupportException("Primary key type [" + primaryKeyClass + "] not support get " + "generated keys yet.");
     }
 
     /**
@@ -436,8 +463,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
         Record<T, K> theRecord = queryOrFail(sql, parameterList);
         for (Map.Entry<String, Object[]> stringEntry : columnMap.entrySet()) {
             Object[] value = stringEntry.getValue();
-            theRecord.with(stringEntry.getKey(), (GenerateSqlPartFunctionalInterface) value[0],
-                (RelationshipRecordWithFunctionalInterface) value[1]);
+            theRecord.with(stringEntry.getKey(), (GenerateSqlPartFunctionalInterface) value[0], (RelationshipRecordWithFunctionalInterface) value[1]);
         }
         return theRecord;
     }
@@ -489,8 +515,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      */
     int updateSql(SqlType sqlType) throws SQLRuntimeException {
         if (sqlType != SqlType.INSERT && !grammar.hasWhere()) {
-            throw new ConfirmOperationException("You made a risky operation without where conditions, use where(1) " +
-                "for sure");
+            throw new ConfirmOperationException("You made a risky operation without where conditions, use where(1) " + "for sure");
         }
         // sql组装执行
         String sql = grammar.generateSql(sqlType);
@@ -506,8 +531,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * @return 预执行对象
      * @throws SQLException sql错误
      */
-    private PreparedStatement executeSql(Connection connection, String sql, Collection<String> parameterList)
-        throws SQLException {
+    private PreparedStatement executeSql(Connection connection, String sql, Collection<String> parameterList) throws SQLException {
         // 日志记录
         model.log(sql, parameterList);
         // 预执行 ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY

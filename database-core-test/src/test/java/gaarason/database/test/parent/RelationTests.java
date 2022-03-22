@@ -17,7 +17,6 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -38,8 +37,9 @@ abstract public class RelationTests extends BaseTests {
     public int hashCode() {
         return super.hashCode();
     }
+
     @Override
-    protected GaarasonDataSource getGaarasonDataSource(){
+    protected GaarasonDataSource getGaarasonDataSource() {
         return studentModel.getGaarasonDataSource();
     }
 
@@ -1248,8 +1248,6 @@ abstract public class RelationTests extends BaseTests {
 
         Student student = paginate.getItemList().get(0);
         通用断言(student);
-
-
     }
 
     private void 通用断言(Student student) {

@@ -19,6 +19,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 2.16.0
+
+- 在查询构造器(`Builder`)中增加执行方法`simplePaginateMapStyle(currentPage, perPage)`/`paginateMapStyle(currentPage, perPage)`
+
 ### 2.15.0
 
 - 在查询构造器(`Builder`)中增加执行方法`insertMapStyle(entityMap)`/`insertMapStyle(entityMapList)`/`insertGetIdMapStyle(entityMap)`/`insertGetIdOrFailMapStyle(entityMap)`/`insertGetIdsMapStyle(entityMapList)`/`updateMapStyle(entityMap)`
