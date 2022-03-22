@@ -11,6 +11,7 @@ import gaarason.database.exception.SQLRuntimeException;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 执行
@@ -83,7 +84,6 @@ public interface Execute<T extends Serializable, K extends Serializable> {
      */
     int insert() throws SQLRuntimeException;
 
-
     /**
      * 插入数据
      * @param entity 数据实体对象
@@ -93,12 +93,28 @@ public interface Execute<T extends Serializable, K extends Serializable> {
     int insert(T entity) throws SQLRuntimeException;
 
     /**
+     * 插入数据
+     * @param entityMap 数据实体map
+     * @return 受影响的行数
+     * @throws SQLRuntimeException 数据库异常
+     */
+    int insertMapStyle(Map<String, Object> entityMap) throws SQLRuntimeException;
+
+    /**
      * 批量插入数据
      * @param entityList 数据实体对象列表
      * @return 受影响的行数
      * @throws SQLRuntimeException 数据库异常
      */
     int insert(List<T> entityList) throws SQLRuntimeException;
+
+    /**
+     * 批量插入数据
+     * @param entityMapList 数据实体map列表
+     * @return 受影响的行数
+     * @throws SQLRuntimeException 数据库异常
+     */
+    int insertMapStyle(List<Map<String, Object>> entityMapList) throws SQLRuntimeException;
 
     /**
      * 插入数据
@@ -118,6 +134,15 @@ public interface Execute<T extends Serializable, K extends Serializable> {
     K insertGetId(T entity) throws SQLRuntimeException;
 
     /**
+     * 插入数据
+     * @param entityMap 数据实体map
+     * @return 数据库自增id|null
+     * @throws SQLRuntimeException 数据库异常
+     */
+    @Nullable
+    K insertGetIdMapStyle(Map<String, Object> entityMap) throws SQLRuntimeException;
+
+    /**
      * 插入数据(会将数据库自增id更新到entity)
      * @return 数据库自增id
      * @throws SQLRuntimeException       数据库异常
@@ -135,6 +160,15 @@ public interface Execute<T extends Serializable, K extends Serializable> {
     K insertGetIdOrFail(T entity) throws SQLRuntimeException, InsertNotSuccessException;
 
     /**
+     * 插入数据
+     * @param entityMap 数据实体map
+     * @return 数据库自增id
+     * @throws SQLRuntimeException       数据库异常
+     * @throws InsertNotSuccessException 新增失败
+     */
+    K insertGetIdOrFailMapStyle(Map<String, Object> entityMap) throws SQLRuntimeException, InsertNotSuccessException;
+
+    /**
      * 批量插入数据
      * @return 数据库自增id列表
      * @throws SQLRuntimeException 数据库异常
@@ -150,6 +184,14 @@ public interface Execute<T extends Serializable, K extends Serializable> {
     List<K> insertGetIds(List<T> entityList) throws SQLRuntimeException;
 
     /**
+     * 批量插入数据
+     * @param entityMapList 数据实体map列表
+     * @return 数据库自增id列表
+     * @throws SQLRuntimeException 数据库异常
+     */
+    List<K> insertGetIdsMapStyle(List<Map<String, Object>> entityMapList) throws SQLRuntimeException;
+
+    /**
      * 更新数据
      * @return 受影响的行数
      * @throws SQLRuntimeException 数据库异常
@@ -163,6 +205,14 @@ public interface Execute<T extends Serializable, K extends Serializable> {
      * @throws SQLRuntimeException 数据库异常
      */
     int update(T entity) throws SQLRuntimeException;
+
+    /**
+     * 更新数据
+     * @param entityMap 数据实体map
+     * @return 受影响的行数
+     * @throws SQLRuntimeException 数据库异常
+     */
+    int updateMapStyle(Map<String, Object> entityMap) throws SQLRuntimeException;
 
     /**
      * 删除数据(根据模型确定是否使用软删除)

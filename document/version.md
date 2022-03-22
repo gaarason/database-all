@@ -19,6 +19,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 2.15.0
+
+- 在查询构造器(`Builder`)中增加执行方法`insertMapStyle(entityMap)`/`insertMapStyle(entityMapList)`/`insertGetIdMapStyle(entityMap)`/`insertGetIdOrFailMapStyle(entityMap)`/`insertGetIdsMapStyle(entityMapList)`/`updateMapStyle(entityMap)`
+
 ### 2.14.0
 
 - 在实体(`Entity`)中, 优化 @Primary 注解中指定主键生成器的策略, 更方便的自定义主键生成

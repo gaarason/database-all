@@ -6,6 +6,7 @@ import gaarason.database.provider.DatabaseShadowProvider;
 import gaarason.database.support.DBColumn;
 import gaarason.database.test.models.normal.PeopleModel;
 import gaarason.database.test.parent.base.BaseTests;
+import gaarason.database.util.LocalDateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -54,6 +55,23 @@ abstract public class IncrementTypeTests extends BaseTests {
         Long newId = peopleModel.newQuery().insertGetIdOrFail(entity);
         Assert.assertEquals(20L, newId.longValue());
         System.out.println("新对象 " + entity);
+
+        Record<PeopleModel.Entity, Long> entityLongRecord = peopleModel.find(20L);
+        System.out.println(entityLongRecord);
+    }
+
+    @Test
+    public void 新增_返回自增id_mapStyle() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", "姓名");
+        map.put("age", 13);
+        map.put("sex", 1);
+        map.put("teacher_id", 0);
+        map.put("created_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
+        map.put("updated_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
+
+        Long newId = peopleModel.newQuery().insertGetIdOrFailMapStyle(map);
+        Assert.assertEquals(20L, newId.longValue());
 
         Record<PeopleModel.Entity, Long> entityLongRecord = peopleModel.find(20L);
         System.out.println(entityLongRecord);
@@ -116,6 +134,26 @@ abstract public class IncrementTypeTests extends BaseTests {
         }
         int insert = peopleModel.newQuery().insert(entityList);
         List<Long> longs = peopleModel.newQuery().insertGetIds(entityList);
+        Assert.assertEquals(9901, insert);
+        Assert.assertEquals(9901, longs.size());
+        System.out.println(longs);
+    }
+
+    @Test
+    public void 批量新增_返回自增ids_mapStyle() {
+        List<Map<String, Object>> entityList = new ArrayList<>();
+        for (int i = 99; i < 10000; i++) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("name", "姓名");
+            map.put("age", 13);
+            map.put("sex", 1);
+            map.put("teacher_id", 0);
+            map.put("created_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
+            map.put("updated_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
+            entityList.add(map);
+        }
+        int insert = peopleModel.newQuery().insertMapStyle(entityList);
+        List<Long> longs = peopleModel.newQuery().insertGetIdsMapStyle(entityList);
         Assert.assertEquals(9901, insert);
         Assert.assertEquals(9901, longs.size());
         System.out.println(longs);

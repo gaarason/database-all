@@ -17,6 +17,7 @@ import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.FormatUtils;
+import gaarason.database.util.MapUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
 
@@ -170,9 +171,31 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     }
 
     @Override
+    public int insertMapStyle(Map<String, Object> entityMap) throws SQLRuntimeException {
+        // 获取map所有有效sql字段
+        Set<String> columnNameSet = new LinkedHashSet<>(entityMap.keySet());
+        // 获取map所有有效字段的值
+        List<Object> valueList = MapUtils.mapValueToList(entityMap);
+        // 字段加入grammar
+        select(columnNameSet);
+        // 字段的值加入grammar
+        value(valueList);
+        // 执行
+        return insert();
+    }
+
+    @Override
     public int insert(List<T> entityList) throws SQLRuntimeException {
         // entityList处理
         beforeBatchInsert(entityList);
+        // 执行
+        return insert();
+    }
+
+    @Override
+    public int insertMapStyle(List<Map<String, Object>> entityMapList) throws SQLRuntimeException {
+        // entityList处理
+        beforeBatchInsertMapStyle(entityMapList);
         // 执行
         return insert();
     }
@@ -203,6 +226,20 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     }
 
     @Override
+    public K insertGetIdMapStyle(Map<String, Object> entityMap) throws SQLRuntimeException {
+        // 获取map所有有效sql字段
+        Set<String> columnNameSet = new LinkedHashSet<>(entityMap.keySet());
+        // 获取map所有有效字段的值
+        List<Object> valueList = MapUtils.mapValueToList(entityMap);
+        // 字段加入grammar
+        select(columnNameSet);
+        // 字段的值加入grammar
+        value(valueList);
+        // 执行, 并获取主键id，返回主键
+        return insertGetId();
+    }
+
+    @Override
     public K insertGetIdOrFail() throws SQLRuntimeException, InsertNotSuccessException {
         K id = insertGetId();
         if (id == null) {
@@ -214,6 +251,15 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     @Override
     public K insertGetIdOrFail(T entity) throws SQLRuntimeException, InsertNotSuccessException {
         K id = insertGetId(entity);
+        if (id == null) {
+            throw new InsertNotSuccessException();
+        }
+        return id;
+    }
+
+    @Override
+    public K insertGetIdOrFailMapStyle(Map<String, Object> entityMap) throws SQLRuntimeException, InsertNotSuccessException {
+        K id = insertGetIdMapStyle(entityMap);
         if (id == null) {
             throw new InsertNotSuccessException();
         }
@@ -236,6 +282,13 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     }
 
     @Override
+    public List<K> insertGetIdsMapStyle(List<Map<String, Object>> entityMapList) throws SQLRuntimeException {
+        // entityList处理
+        beforeBatchInsertMapStyle(entityMapList);
+        return insertGetIds();
+    }
+
+    @Override
     public int update() throws SQLRuntimeException {
         return updateSql(SqlType.UPDATE);
     }
@@ -246,6 +299,13 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
         Map<String, Object> stringStringMap = ModelShadowProvider.columnValueMap(entity, false);
 
         data(stringStringMap);
+        // 执行
+        return update();
+    }
+
+    @Override
+    public int updateMapStyle(Map<String, Object> entityMap) throws SQLRuntimeException {
+        data(entityMap);
         // 执行
         return update();
     }
@@ -261,6 +321,24 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
         for (T entity : entityList) {
             // 获取entity所有有效字段的值
             List<Object> valueList = ModelShadowProvider.valueList(entity, columnNameSet);
+            valueListList.add(valueList);
+        }
+        // 字段加入grammar
+        select(columnNameSet);
+        // 字段的值加入grammar
+        valueList(valueListList);
+    }
+
+    /**
+     * 批量插入数据, entityMapList处理
+     * @param entityMapList 数据实体map列表
+     */
+    protected void beforeBatchInsertMapStyle(List<Map<String, Object>> entityMapList) {
+        // 获取entity所有有效字段
+        Set<String> columnNameSet = new LinkedHashSet<>(entityMapList.get(0).keySet());
+        List<List<Object>> valueListList = new ArrayList<>();
+        for (Map<String, Object> map : entityMapList) {
+            List<Object> valueList = MapUtils.mapValueToList(map);
             valueListList.add(valueList);
         }
         // 字段加入grammar

@@ -141,7 +141,7 @@ studentModel.where("age","<","9").dealChunk(2000, records -> {
 ```java
 
 // 推荐
-// 实体赋值插入
+// a. 实体赋值插入
 Student student = new Student();
 // student.setId(99); 数据库主键自增的话,可以省略
 student.setName("姓名");
@@ -159,7 +159,7 @@ Long id = studentModel.newQuery().insertGetIdOrFail(entity);
 
 
 // 推荐
-// 多个实体操作
+// b. 多个实体操作
 List<Student> studentList = new ArrayList<>();
 for (int i = 99; i < 1000; i++) {
     Student student = new Student();
@@ -179,7 +179,7 @@ int num = studentModel.newQuery().insert(entityList);
 // 返回自增主键列表
 List<Long> ids = studentModel.newQuery().insertGetIds(entity);
 
-// 构造语句插入
+// c. 构造语句插入
  List<String> columnNameList = new ArrayList<>();
 columnNameList.add("name");
 columnNameList.add("age");
@@ -190,6 +190,32 @@ valueList.add("11");
 valueList.add("1");
 
 int num = studentModel.newQuery().select(columnNameList).value(valueList).insert();
+
+// d. map赋值插入
+Map<String, Object> map = new HashMap<>();
+map.put("id", 99);
+map.put("name", "姓名");
+map.put("age", 13);
+map.put("sex", 1);
+map.put("teacher_id", 0);
+map.put("created_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
+map.put("updated_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
+
+int insert = studentModel.newQuery().insertMapStyle(map);
+
+// e.多个map操作
+List<Map<String, Object>> entityList = new ArrayList<>();
+for (int i = 99; i < 10000; i++) {
+    Map<String, Object> map = new HashMap<>();
+    map.put("name", "姓名");
+    map.put("age", 13);
+    map.put("sex", 1);
+    map.put("teacher_id", i * 3);
+    map.put("created_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date()));
+    map.put("updated_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date()));
+    entityList.add(map);
+}
+int insert = studentModel.newQuery().insertMapStyle(entityList);
 ```
 
 ## 更新
@@ -203,6 +229,16 @@ int num = studentModel.newQuery().data("name", "vvv").where("id", ">", "3").upda
 studentModel.newQuery().data("name", "xxcc").update();
 
 studentModel.newQuery().data("name", "xxcc").whereRaw(1).update();
+
+// 使用map
+Map<String, Object> map = new HashMap<>();
+map.put("name", "gggg");
+map.put("age", "7");
+
+int update = studentModel.newQuery().data(map).where("id", "3").update();
+
+int update = studentModel.newQuery().where("id", "3").updateMapStyle(map);
+
 ```
 
 ## 删除

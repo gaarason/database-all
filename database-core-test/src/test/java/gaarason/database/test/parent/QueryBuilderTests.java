@@ -99,11 +99,35 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertNotEquals(formatter.format(entity.getUpdatedAt()), formatter.format(entityFirst.getUpdatedAt()));
     }
 
+    @Test
+    public void 新增_单条记录_mapStyle() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", 99);
+        map.put("name", "姓名");
+        map.put("age", 13);
+        map.put("sex", 1);
+        map.put("teacher_id", 0);
+        map.put("created_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
+        map.put("updated_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
+        int insert = studentModel.newQuery().insertMapStyle(map);
+        Assert.assertEquals(insert, 1);
+
+        StudentModel.Entity entityFirst = studentModel.newQuery().where("id", "99").firstOrFail().toObject();
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Assert.assertNotNull(entityFirst);
+        Assert.assertEquals(map.get("id"), entityFirst.getId());
+        Assert.assertEquals(map.get("age"), entityFirst.getAge().intValue());
+        Assert.assertEquals(map.get("name"), entityFirst.getName());
+        Assert.assertEquals(map.get("teacher_id"), entityFirst.getTeacherId());
+        // 这两个字段在entity中标记为不可更新
+        // mapStyle 可不管这些，自然是直接插入啦
+        Assert.assertEquals(map.get("created_at"), formatter.format(entityFirst.getCreatedAt()));
+        Assert.assertEquals(map.get("updated_at"), formatter.format(entityFirst.getUpdatedAt()));
+    }
 
     @Test
     public void 新增_单条记录_并获取数据库自增id() {
         StudentModel.Entity entity = new StudentModel.Entity();
-//        entity.setId(99);
         entity.setName("姓名");
         entity.setAge(Byte.valueOf("13"));
         entity.setSex(Byte.valueOf("1"));
@@ -126,6 +150,32 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
+    public void 新增_单条记录_并获取数据库自增id_mapStyle() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", "姓名");
+        map.put("age", 13);
+        map.put("sex", 1);
+        map.put("teacher_id", 0);
+        map.put("created_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
+        map.put("updated_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
+        Object insert = studentModel.newQuery().insertGetIdMapStyle(map);
+        Assert.assertEquals(insert, 20);
+
+        StudentModel.Entity entityFirst = studentModel.newQuery().where("id", "20").firstOrFail().toObject();
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Assert.assertNotNull(entityFirst);
+
+        Assert.assertEquals(20, entityFirst.getId().intValue());
+        Assert.assertEquals(map.get("age"), entityFirst.getAge().intValue());
+        Assert.assertEquals(map.get("name"), entityFirst.getName());
+        Assert.assertEquals(map.get("teacher_id"), entityFirst.getTeacherId());
+        // 这两个字段在entity中标记为不可更新
+        // mapStyle 可不管这些，自然是直接插入啦
+        Assert.assertEquals(map.get("created_at"), formatter.format(entityFirst.getCreatedAt()));
+        Assert.assertEquals(map.get("updated_at"), formatter.format(entityFirst.getUpdatedAt()));
+    }
+
+    @Test
     public void 新增_使用list单次新增多条记录() {
         List<StudentModel.Entity> entityList = new ArrayList<>();
         for (int i = 99; i < 10000; i++) {
@@ -139,6 +189,29 @@ abstract public class QueryBuilderTests extends BaseTests {
             entityList.add(entity);
         }
         int insert = studentModel.newQuery().insert(entityList);
+        Assert.assertEquals(insert, 9901);
+
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
+            .whereBetween("id", "300", "350")
+            .orderBy("id", OrderBy.DESC)
+            .get();
+        Assert.assertEquals(records.size(), 51);
+    }
+
+    @Test
+    public void 新增_使用list单次新增多条记录_mapStyle() {
+        List<Map<String, Object>> entityList = new ArrayList<>();
+        for (int i = 99; i < 10000; i++) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("name", "姓名");
+            map.put("age", 13);
+            map.put("sex", 1);
+            map.put("teacher_id", i * 3);
+            map.put("created_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date()));
+            map.put("updated_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date()));
+            entityList.add(map);
+        }
+        int insert = studentModel.newQuery().insertMapStyle(entityList);
         Assert.assertEquals(insert, 9901);
 
         RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
@@ -247,6 +320,24 @@ abstract public class QueryBuilderTests extends BaseTests {
         map.put("age", "7");
 
         int update = studentModel.newQuery().data(map).where("id", "3").update();
+        Assert.assertEquals(update, 1);
+        StudentModel.Entity entity = studentModel.newQuery().where("id", "3").firstOrFail().toObject();
+        Assert.assertEquals(entity.getId().intValue(), 3);
+        Assert.assertEquals(entity.getName(), "gggg");
+        Assert.assertEquals(entity.getAge(), Byte.valueOf("7"));
+
+        Assert.assertThrows(ConfirmOperationException.class, () -> {
+            studentModel.newQuery().data("name", "ee").update();
+        });
+    }
+
+    @Test
+    public void 更新_通过MAP更新_2() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", "gggg");
+        map.put("age", "7");
+
+        int update = studentModel.newQuery().where("id", "3").updateMapStyle(map);
         Assert.assertEquals(update, 1);
         StudentModel.Entity entity = studentModel.newQuery().where("id", "3").firstOrFail().toObject();
         Assert.assertEquals(entity.getId().intValue(), 3);
