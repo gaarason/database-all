@@ -19,6 +19,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 2.16.1
+
+- 分页对象(`Paginate`)中增加`Serializable`接口
+
 ### 2.16.0
 
 - 在查询构造器(`Builder`)中增加执行方法`simplePaginateMapStyle(currentPage, perPage)`/`paginateMapStyle(currentPage, perPage)`

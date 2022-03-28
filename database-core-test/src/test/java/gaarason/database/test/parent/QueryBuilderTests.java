@@ -1568,6 +1568,19 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertNotNull(paginate4.getTotal());
         Assert.assertEquals(paginate4.getLastPage().intValue(), 3);
         Assert.assertEquals(paginate4.getTotal().intValue(), 10);
+
+        // 空数据时
+        studentModel.newQuery().whereRaw("1").delete();
+        Paginate<StudentModel.Entity> paginate5 = studentModel.newQuery()
+            .orderBy("id")
+            .where("sex", "1")
+            .orWhere((builder -> builder.where("sex", "2")))
+            .paginate(4, 4);
+        Assert.assertEquals(paginate5.getCurrentPage(), 4);
+        Assert.assertNull(paginate5.getFrom());
+        Assert.assertNull(paginate5.getTo());
+        Assert.assertNotNull(paginate5.getTotal());
+        Assert.assertEquals(paginate5.getTotal().intValue(), 0);
     }
 
     @Test

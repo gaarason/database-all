@@ -3,6 +3,7 @@ package gaarason.database.eloquent;
 import gaarason.database.core.lang.Nullable;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -11,7 +12,9 @@ import java.util.List;
  * @author xt
  */
 @Data
-public class Paginate<T> {
+public class Paginate<T> implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /**
      * 当前页的页码
