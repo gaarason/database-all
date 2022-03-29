@@ -14,6 +14,8 @@ public class Student2Model extends SingleModel<Student2Model.Entity, Integer> {
     @Data
     @Table(name = "student")
     public static class Entity implements Serializable {
+
+        private static final long serialVersionUID = 1L;
         @Primary
         private Integer id;
 

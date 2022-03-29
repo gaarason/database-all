@@ -23,6 +23,8 @@ public class DatetimeTestModel extends SingleModel<DatetimeTestModel.Entity, Int
     @Table(name = "datetime_test")
     public static class Entity implements Serializable {
 
+        private static final long serialVersionUID = 1L;
+
         @Primary
         private Integer id;
 

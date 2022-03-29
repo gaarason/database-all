@@ -137,7 +137,7 @@ public class EntityUtils {
 
     /**
      * 将 complementEntity 中的属性赋值到 baseEntity 上
-     * 1. 针对于单一非静态属性 2. complementEntity中所有的null属性都会跳过 (所以一定要使用包装类型来声明 entity)
+     * 1. 针对于非静态属性 2. complementEntity中所有的null属性都会跳过 (所以一定要使用包装类型来声明 entity)
      * @param baseEntity       基本实体对象(不会呗修改)
      * @param complementEntity 合并实体对象
      * @param <T>              实体类型
@@ -145,30 +145,25 @@ public class EntityUtils {
      */
     public static <T> T entityMerge(T baseEntity, T complementEntity) {
         final T copyEntity = ObjectUtils.deepCopy(baseEntity);
-        try {
-            for (Field field : complementEntity.getClass().getDeclaredFields()) {
-                field.setAccessible(true);
-                final Object val = field.get(complementEntity);
-                if (val != null) {
-                    field.set(copyEntity, val);
-                }
-            }
-            return copyEntity;
-        } catch (Throwable e) {
-            throw new IllegalAccessRuntimeException(e);
-        }
+        entityMergeReference(copyEntity, complementEntity);
+        return copyEntity;
     }
 
     /**
      * 将 complementEntity 中的属性赋值到 baseEntity 上
-     * 1. 针对于单一非静态属性 2. complementEntity中所有的null属性都会跳过 (所以一定要使用包装类型来声明 entity)
+     * 1. 针对于非静态属性 2. complementEntity中所有的null属性都会跳过 (所以一定要使用包装类型来声明 entity)
      * @param baseEntity       基本实体对象(会被直接修改)
      * @param complementEntity 合并实体对象
      * @param <T>              实体类型
      */
     public static <T> void entityMergeReference(T baseEntity, T complementEntity) {
         try {
-            for (Field field : complementEntity.getClass().getDeclaredFields()) {
+            List<Field> fields = getDeclaredFieldsContainParent(complementEntity.getClass());
+            for (Field field : fields) {
+                // 跳过(静态属性)
+                if (EntityUtils.isStaticField(field)) {
+                    continue;
+                }
                 field.setAccessible(true);
                 final Object val = field.get(complementEntity);
                 if (val != null) {
@@ -198,9 +193,9 @@ public class EntityUtils {
     }
 
     /**
-     * 返回 clazz 中的所有属性(public/protected/private)包含父类的
+     * 返回 clazz 中的所有属性(public/protected/private/default),含static, 含父类, 不含接口的
      * @param clazz 类型
-     * @return 所有字段
+     * @return 所有字段列表(子类的更加靠前)
      */
     public static List<Field> getDeclaredFieldsContainParent(Class<?> clazz) {
         List<Field> fields = new ArrayList<>(Arrays.asList(clazz.getDeclaredFields()));
@@ -213,6 +208,7 @@ public class EntityUtils {
 
     /**
      * 返回 clazz 中的指定属性(public/protected/private)
+     * 依次向上, 找到为止
      * @param clazz 类型
      * @param name  属性名称
      * @return 属性对应的 Field

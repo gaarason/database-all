@@ -27,6 +27,8 @@ public class JsonTestModel extends SingleModel<JsonTestModel.Entity, Integer> {
     @Table(name = "null_test")
     public static class Entity implements Serializable {
 
+        private static final long serialVersionUID = 1L;
+
         @Primary()
         private Integer id;
 

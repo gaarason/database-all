@@ -1379,7 +1379,7 @@ abstract public class QueryBuilderTests extends BaseTests {
     @Test
     public void 分页_快速分页() {
         Paginate<StudentModel.Entity> paginate =
-            studentModel.newQuery().orderBy(StudentModel.id).simplePaginate(1, 3);
+            studentModel.newQuery().orderBy("id").simplePaginate(1, 3);
         System.out.println(paginate);
         Assert.assertEquals(paginate.getCurrentPage(), 1);
         Assert.assertNotNull(paginate.getFrom());
@@ -1450,7 +1450,7 @@ abstract public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 分页_快速分页_mapStyle() {
-        Paginate<Map<String, Object>> paginate = studentModel.newQuery().orderBy(StudentModel.id).simplePaginateMapStyle(1, 3);
+        Paginate<Map<String, Object>> paginate = studentModel.newQuery().orderBy("id").simplePaginateMapStyle(1, 3);
         System.out.println(paginate);
         Assert.assertEquals(paginate.getCurrentPage(), 1);
         Assert.assertNotNull(paginate.getFrom());

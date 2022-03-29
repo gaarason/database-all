@@ -19,6 +19,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 2.16.2
+
+- 修复查询结果集(`Record`)中使用`fillEntity(entity)`等方法时,由于实体`entity`存在复杂继承时引发的错误
+
 ### 2.16.1
 
 - 分页对象(`Paginate`)中增加`Serializable`接口

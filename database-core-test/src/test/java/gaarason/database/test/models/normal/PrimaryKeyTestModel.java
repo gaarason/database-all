@@ -25,6 +25,8 @@ public class PrimaryKeyTestModel extends SingleModel<PrimaryKeyTestModel.Entity,
     @Table(name = "null_test")
     public static class Entity implements Serializable {
 
+        private static final long serialVersionUID = 1L;
+
         @Primary(idGenerator = CustomPrimaryKey.class)
         private Integer id;
 
