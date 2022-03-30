@@ -47,6 +47,11 @@ public final class ModelShadowProvider {
      */
     private static final Map<Class<? extends Serializable>, ModelInfo<? extends Serializable, ? extends Serializable>> ENTITY_INDEX_MAP = new ConcurrentHashMap<>();
 
+    /**
+     * table name 作为索引
+     */
+    private static final Map<String, ModelInfo<? extends Serializable, ? extends Serializable>> TABLE_NAME_INDEX_MAP = new ConcurrentHashMap<>();
+
     static {
         // 一轮初始化模型的基本信息(主键类型/实体类型/模型类型/表名等等), 并构建索引(实体索引/模型索引), 不存在依赖递归等复杂情况
         // 并过滤不需要的model, 比如抽象类等
@@ -84,9 +89,9 @@ public final class ModelShadowProvider {
      * @return 格式化后的Model信息
      */
     public static <T extends Serializable, K extends Serializable> ModelInfo<T, K> getByModelClass(Class<? extends Model<T, K>> modelClass) {
-        ModelInfo<?, ?> result1 = MODEL_INDEX_MAP.get(modelClass);
+        ModelInfo<?, ?> result1 = MODEL_PROXY_INDEX_MAP.get(modelClass);
         if (null == result1) {
-            ModelInfo<?, ?> result2 = MODEL_PROXY_INDEX_MAP.get(modelClass);
+            ModelInfo<?, ?> result2 = MODEL_INDEX_MAP.get(modelClass);
             if (null == result2) {
                 throw new ModelInvalidException(modelClass);
             }
@@ -104,6 +109,19 @@ public final class ModelShadowProvider {
         ModelInfo<? extends Serializable, ? extends Serializable> result = ENTITY_INDEX_MAP.get(clazz);
         if (null == result) {
             throw new EntityInvalidException(clazz);
+        }
+        return ObjectUtils.typeCast(result);
+    }
+
+    /**
+     * 查询Model信息
+     * @param tableName 数据表名
+     * @return 格式化后的Model信息
+     */
+    public static <T extends Serializable> ModelInfo<T, Serializable> getByTableName(String tableName) {
+        ModelInfo<? extends Serializable, ? extends Serializable> result = TABLE_NAME_INDEX_MAP.get(tableName);
+        if (null == result) {
+            throw new TableInvalidException(tableName);
         }
         return ObjectUtils.typeCast(result);
     }
@@ -373,6 +391,8 @@ public final class ModelShadowProvider {
         ENTITY_INDEX_MAP.put(modelInfo.entityClass, modelInfo);
         // 建立模型类索引 (建立后, 可支持通过model查询)
         MODEL_INDEX_MAP.put(modelClass, modelInfo);
+        // 建立表名索引 (建立后, 可支持通过tableName查询)
+        TABLE_NAME_INDEX_MAP.put(modelInfo.tableName, modelInfo);
     }
 
     /**

@@ -19,6 +19,11 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 2.17.0
+
+- `ModelShadowProvider`中增加`getByTableName(tableName)`
+- `EntityUtils`中增加`entityAssignmentBySimpleMap(stringObjectMapList, entityClass)`
+
 ### 2.16.2
 
 - 修复查询结果集(`Record`)中使用`fillEntity(entity)`等方法时,由于实体`entity`存在复杂继承时引发的错误

@@ -99,7 +99,12 @@ public class EntityUtils {
         Class<T> entityClass) throws TypeNotSupportedException {
         try {
             T entity = entityClass.newInstance();
-            for (Field field : entityClass.getDeclaredFields()) {
+            List<Field> fields = getDeclaredFieldsContainParent(entityClass);
+            for (Field field : fields) {
+                // 跳过(静态属性)
+                if (EntityUtils.isStaticField(field)) {
+                    continue;
+                }
                 field.setAccessible(true);
                 String columnName = EntityUtils.columnName(field);
                 gaarason.database.support.Column column = stringColumnMap.get(columnName);
@@ -115,6 +120,25 @@ public class EntityUtils {
 
     /**
      * stringObjectMap 赋值给 任意 entity
+     * @param stringObjectMapList 源数据 List<map<列名, 值>>
+     * @param entityClass         目标实体类
+     * @param <T>                 目标实体类
+     * @return 对象
+     * @throws TypeNotSupportedException 实体不支持
+     */
+    public static <T> List<T> entityAssignmentBySimpleMap(List<Map<String, Object>> stringObjectMapList,
+        Class<T> entityClass) throws TypeNotSupportedException {
+
+        List<T> entityList = new ArrayList<>();
+        for (Map<String, Object> stringObjectMap : stringObjectMapList) {
+            T entity = entityAssignmentBySimpleMap(stringObjectMap, entityClass);
+            entityList.add(entity);
+        }
+        return entityList;
+    }
+
+    /**
+     * stringObjectMap 赋值给 任意 entity
      * @param stringObjectMap 源数据 map<列名, 值>
      * @param entityClass     目标实体类
      * @param <T>             目标实体类
@@ -124,7 +148,12 @@ public class EntityUtils {
     public static <T> T entityAssignmentBySimpleMap(Map<String, Object> stringObjectMap, Class<T> entityClass) throws TypeNotSupportedException {
         try {
             T entity = entityClass.newInstance();
-            for (Field field : entityClass.getDeclaredFields()) {
+            List<Field> fields = getDeclaredFieldsContainParent(entityClass);
+            for (Field field : fields) {
+                // 跳过(静态属性)
+                if (EntityUtils.isStaticField(field)) {
+                    continue;
+                }
                 field.setAccessible(true);
                 String columnName = EntityUtils.columnName(field);
                 field.set(entity, stringObjectMap.get(columnName));

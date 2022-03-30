@@ -2,6 +2,7 @@ package gaarason.database.test.parent;
 
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
+import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.test.models.normal.DatetimeTestModel;
 import gaarason.database.test.parent.base.BaseTests;
 import gaarason.database.util.LocalDateUtils;
@@ -12,12 +13,14 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import javax.sql.DataSource;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
@@ -77,4 +80,11 @@ abstract public class LocalDateTests extends BaseTests {
         Assert.assertEquals(stu.getTimestampColumn().getTime(), LocalDateUtils.localDateTime2date(localDateTime).getTime());
     }
 
+    @Test
+    public void t(){
+        ModelShadowProvider.ModelInfo<Serializable, Serializable> datetimeTest = ModelShadowProvider.getByTableName("datetime_test");
+        Set<String> strings = datetimeTest.getColumnFieldMap().keySet();
+        Assert.assertTrue(strings.contains("time_column"));
+        Assert.assertTrue(strings.contains("date_column"));
+    }
 }
