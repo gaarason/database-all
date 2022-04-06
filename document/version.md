@@ -19,6 +19,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 2.18.0
+
+- 在查询构造器(`Builder`)中增加`join`系列执行方法`joinRaw(sqlPart)`/`join(joinType, table, joinConditions)`/`join(joinType, tempTable, alias, joinConditions)`
+
 ### 2.17.0
 
 - `ModelShadowProvider`中增加`getByTableName(tableName)`

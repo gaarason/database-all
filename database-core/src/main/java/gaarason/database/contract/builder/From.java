@@ -15,6 +15,13 @@ public interface From<T extends Serializable, K extends Serializable> {
 
     /**
      * 更改查询的表名
+     * @param sqlPart sql片段
+     * @return 查询构建器
+     */
+    Builder<T, K> fromRaw(String sqlPart);
+
+    /**
+     * 更改查询的表名
      * @param table 表名
      * @return 查询构建器
      */

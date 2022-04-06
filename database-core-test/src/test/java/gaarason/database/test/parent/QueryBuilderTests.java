@@ -5,6 +5,7 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.eloquent.Paginate;
+import gaarason.database.eloquent.appointment.JoinType;
 import gaarason.database.eloquent.appointment.OrderBy;
 import gaarason.database.exception.AggregatesNotSupportedGroupException;
 import gaarason.database.exception.ConfirmOperationException;
@@ -1241,12 +1242,83 @@ abstract public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void join() {
+        // select `student`.*,`t`.`age` as `age2` from `student` inner join `student` as `t` on (`student`.`id`=`t`.`age`)
         RecordList<StudentModel.Entity, Integer> student_as_t = studentModel.newQuery()
             .select("student.*", "t.age as age2")
             .join("student as t", "student.id", "=", "t.age")
             .get();
-        System.out.println(student_as_t.toMapList());
+        List<Map<String, Object>> maps = student_as_t.toMapList();
+        Assert.assertEquals(maps.size(), 1);
+        Assert.assertEquals(maps.get(0).get("id"), 6);
+        Assert.assertEquals(maps.get(0).get("age2"), 6);
     }
+
+    @Test
+    public void join_manyJoin() {
+        // select `student`.*,`t`.`age` as `age2` from `student` inner join `student` as `t` on (`student`.`id`=`t`.`age`)
+        RecordList<StudentModel.Entity, Integer> student_as_t = studentModel.newQuery()
+            .select("student.*", "t1.age as age1", "t2.age as age2")
+            .join("student as t1", "student.id", "=", "t1.age")
+            .join("student as t2", "student.id", "=", "t2.age")
+            .get();
+        List<Map<String, Object>> maps = student_as_t.toMapList();
+        Assert.assertEquals(maps.size(), 1);
+        Assert.assertEquals(maps.get(0).get("id"), 6);
+        Assert.assertEquals(maps.get(0).get("age2"), 6);
+    }
+
+    @Test
+    public void join_left() {
+        // select `o`.* from `student` as `o` left join `student` as `s` on (`o`.`id`=`s`.`id`) order by `id` asc
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().select("o.*")
+            .from("student as o")
+            .join(JoinType.LEFT, "student as s", builder -> builder.whereColumn("o.id", "=", "s.id"))
+            .orderBy("id").get();
+        List<Map<String, Object>> maps = records.toMapList();
+        Assert.assertEquals(maps.size(), 10);
+    }
+
+    @Test
+    public void join_where() {
+        // select `o`.* from `student` as `o` right join student as s on (`o`.`id`=`s`.`id` and `s`.`id`!="3" and `s`.`id`not in("4","5")) order by o.`id` asc
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().select("o.*")
+            .from("student as o")
+            .join(JoinType.RIGHT, "student as s", builder -> builder.whereColumn("o.id", "=", "s.id")
+                .where("s.id", "!=", "3").whereNotIn("s.id", "4","5"))
+            .orderBy("o.id").get();
+        List<Map<String, Object>> maps = records.toMapList();
+        Assert.assertEquals(maps.size(), 10);
+        Assert.assertNull(maps.get(0).get("id"));
+        Assert.assertNull(maps.get(1).get("id"));
+        Assert.assertNull(maps.get(2).get("id"));
+        Assert.assertEquals(maps.get(3).get("id"), 1);
+        Assert.assertEquals(maps.get(4).get("id"), 2);
+        Assert.assertEquals(maps.get(5).get("id"), 6);
+        Assert.assertEquals(maps.get(6).get("id"), 7);
+        Assert.assertEquals(maps.get(7).get("id"), 8);
+        Assert.assertEquals(maps.get(8).get("id"), 9);
+        Assert.assertEquals(maps.get(9).get("id"), 10);
+    }
+
+
+    @Test
+    public void join_subQuery() {
+        // 找出age最大的男生女生的信息
+        // select `student`.* from `student` inner join (select `sex`,max(age) as 'max_age' from `student` group by `sex`)t on (`student`.`sex`=`t`.`sex` and `student`.`age`=`t`.`max_age`);
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().select("student.*").join(JoinType.INNER,
+            builder -> builder.select("sex").selectFunction("max", "age", "max_age").group("sex"),
+            "t", builder -> builder.whereColumn("student.sex", "t.sex").whereColumn("student.age", "t.max_age")).orderBy("id").get();
+        List<StudentModel.Entity> entities = records.toObjectList();
+        Assert.assertEquals(entities.size() , 6);
+        Assert.assertEquals(entities.get(0).getId().intValue() , 2);
+        Assert.assertEquals(entities.get(1).getId().intValue() , 4);
+        Assert.assertEquals(entities.get(2).getId().intValue() , 5);
+        Assert.assertEquals(entities.get(3).getId().intValue() , 7);
+        Assert.assertEquals(entities.get(4).getId().intValue() , 8);
+        Assert.assertEquals(entities.get(5).getId().intValue() , 9);
+    }
+
+
 
     @Test
     public void 排序() {

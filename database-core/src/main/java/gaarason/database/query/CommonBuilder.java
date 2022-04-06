@@ -629,18 +629,35 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     }
 
     @Override
+    public Builder<T, K> joinRaw(String sqlPart) {
+        grammar.pushJoin(sqlPart);
+        return this;
+    }
+
+    @Override
     public Builder<T, K> join(String table, String column1, String symbol, String column2) {
-        return join(JoinType.INNER, table, column1, symbol, column2);
+        return join(JoinType.INNER, table, builder -> builder.whereColumn(column1, symbol, column2));
     }
 
     @Override
     public Builder<T, K> join(JoinType joinType, String table, String column1, String symbol, String column2) {
-        String sqlPart =
-            FormatUtils.spaces(joinType.getOperation()) + "join " + column(table) + FormatUtils.spaces(
-                "on") +
-                column(column1) + symbol + column(column2);
-        grammar.pushJoin(sqlPart);
-        return this;
+        return join(joinType, table, builder -> builder.whereColumn(column1, symbol, column2));
+    }
+
+
+    @Override
+    public Builder<T, K> join(JoinType joinType, GenerateSqlPartFunctionalInterface<T, K> tempTable, String alias,
+        GenerateSqlPartFunctionalInterface<T, K> joinConditions){
+        String table = generateSql(tempTable) + alias;
+        return join(joinType, table, joinConditions);
+    }
+
+    @Override
+    public Builder<T, K> join(JoinType joinType, String table, GenerateSqlPartFunctionalInterface<T, K> joinConditions){
+        String conditions = generateSqlPart(joinConditions);
+        String sqlPart = FormatUtils.spaces(joinType.getOperation()) + "join " + table + FormatUtils.spaces(
+            "on") + conditions;
+        return joinRaw(sqlPart);
     }
 
     @Override

@@ -55,6 +55,15 @@ public class EntityUtils {
     }
 
     /**
+     * 判断字段是否可以赋值null
+     * @param field 字段
+     * @return 是否
+     */
+    public static boolean isFieldCanBeNull(Field field) {
+        return !FinalVariable.NOT_ACCEPT_NULL_TYPES.contains(field.getType());
+    }
+
+    /**
      * 获取类属性对应的数据库字段名
      * @param field 属性
      * @return 数据库字段名

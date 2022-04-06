@@ -97,21 +97,24 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     }
 
     @Override
-    public Builder<T, K> from(String table) {
-        grammar.pushFrom(FormatUtils.column(table));
+    public Builder<T, K> fromRaw(String sqlPart){
+        grammar.pushFrom(sqlPart);
         return this;
+    }
+
+    @Override
+    public Builder<T, K> from(String table) {
+        return fromRaw(FormatUtils.column(table));
     }
 
     @Override
     public Builder<T, K> from(String alias, GenerateSqlPartFunctionalInterface<T, K> closure) {
-        grammar.pushFrom(generateSql(closure) + alias);
-        return this;
+        return fromRaw(generateSql(closure) + alias);
     }
 
     @Override
     public Builder<T, K> from(String alias, String sql) {
-        grammar.pushFrom(FormatUtils.bracket(sql) + alias);
-        return this;
+        return fromRaw(FormatUtils.bracket(sql) + alias);
     }
 
     @Override

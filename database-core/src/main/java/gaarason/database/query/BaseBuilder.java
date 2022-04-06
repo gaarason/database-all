@@ -546,7 +546,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
     }
 
     /**
-     * 执行闭包生成sql
+     * 执行闭包生成sql, 含绑定参数的合并
      * @param closure  闭包
      * @param wholeSql 是否生成完整sql
      * @return sql

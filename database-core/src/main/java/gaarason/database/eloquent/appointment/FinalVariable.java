@@ -31,6 +31,12 @@ public class FinalVariable {
         Timestamp.class, Date.class, LocalDate.class, LocalTime.class, LocalDateTime.class, String.class, Blob.class, Clob.class);
 
     /**
+     * 不可以接受null的类型
+     */
+    public static final List<Class<?>> NOT_ACCEPT_NULL_TYPES = Arrays.asList(boolean.class, byte.class, char.class, short.class, int.class,
+        long.class,  float.class, double.class);
+
+    /**
      * 关联关系声明注解
      */
     public static final List<Class<? extends Annotation>> RELATION_ANNOTATIONS = Arrays.asList(HasOneOrMany.class,

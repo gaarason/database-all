@@ -417,13 +417,19 @@ public class ConverterUtils {
 
         Class<?> fieldType = fieldInfo.getJavaType();
 
+
+        // 返回的字段值为null, 且目标类型可以接受null
+        if(resultSet.getObject(column) == null && EntityUtils.isFieldCanBeNull(fieldInfo.getField()) ){
+            return null;
+        }
+
         if (Boolean.class.equals(fieldType) || boolean.class.equals(fieldType)) {
             return resultSet.getBoolean(column);
         } else if (Byte.class.equals(fieldType) || byte.class.equals(fieldType)) {
             return resultSet.getByte(column);
         } else if (Character.class.equals(fieldType) || char.class.equals(fieldType)) {
             String tempStr = resultSet.getString(column);
-            return tempStr != null ? tempStr.toCharArray()[0] : null;
+            return tempStr != null ? tempStr.toCharArray()[0] : ' ';
         } else if (Short.class.equals(fieldType) || short.class.equals(fieldType)) {
             return resultSet.getShort(column);
         } else if (Integer.class.equals(fieldType) || int.class.equals(fieldType)) {

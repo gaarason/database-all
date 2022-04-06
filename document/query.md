@@ -620,11 +620,48 @@ RecordList<Student, Long>> records = studentModel.newQuery()
 因为在`select`中使用的别名, 所以在使用`toObject`时无法正确匹配实例属性,因此建议使用`toMap`
 
 ```java
-RecordList<Student, Long>> records = studentModel.newQuery()
-.select("student.*", "t.age as age2")
-.join("student as t", "student.id", "=", "t.age")
-.get();
+// select `student`.*,`t`.`age` as `age2` from `student` inner join `student` as `t` on (`student`.`id`=`t`.`age`)
+RecordList<StudentModel.Entity, Integer> student_as_t = studentModel.newQuery()
+    .select("student.*", "t.age as age2")
+    .join("student as t", "student.id", "=", "t.age")
+    .get();
+    List<Map<String, Object>> maps = student_as_t.toMapList();
+
+// select `student`.*,`t`.`age` as `age2` from `student` inner join `student` as `t` on (`student`.`id`=`t`.`age`)
+RecordList<StudentModel.Entity, Integer> student_as_t = studentModel.newQuery()
+    .select("student.*", "t1.age as age1", "t2.age as age2")
+    .join("student as t1", "student.id", "=", "t1.age")
+    .join("student as t2", "student.id", "=", "t2.age")
+    .get();
+List<Map<String, Object>> maps = student_as_t.toMapList();
+
+
+// select `o`.* from `student` as `o` left join `student` as `s` on (`o`.`id`=`s`.`id`) order by `id` asc
+RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().select("o.*")
+    .from("student as o")
+    .join(JoinType.LEFT, "student as s", builder -> builder.whereColumn("o.id", "=", "s.id"))
+    .orderBy("id").get();
+List<Map<String, Object>> maps = records.toMapList();
+
+// select `o`.* from `student` as `o` right join student as s on (`o`.`id`=`s`.`id` and `s`.`id`!="3" and `s`.`id`not in("4","5")) order by o.`id` asc
+RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().select("o.*")
+    .from("student as o")
+    .join(JoinType.RIGHT, "student as s", builder -> builder.whereColumn("o.id", "=", "s.id")
+    .where("s.id", "!=", "3").whereNotIn("s.id", "4","5"))
+    .orderBy("o.id").get();
+List<Map<String, Object>> maps = records.toMapList();
+
+
+// 找出age最大的男生/女生的信息(有同年龄的就都找出来)
+// select `student`.* from `student` inner join (select `sex`,max(age) as 'max_age' from `student` group by `sex`)t on (`student`.`sex`=`t`.`sex` and `student`.`age`=`t`.`max_age`);
+RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().select("student.*")
+    .join(JoinType.INNER, builder -> builder.select("sex").selectFunction("max", "age", "max_age").group("sex"), "t", 
+        builder -> builder.whereColumn("student.sex", "t.sex").whereColumn("student.age", "t.max_age"))
+    .orderBy("id").get();
+List<StudentModel.Entity> entities = records.toObjectList();
 ```
+
+
 
 ## limit
 ```java
