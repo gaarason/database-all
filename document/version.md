@@ -19,6 +19,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 2.18.1
+
+- 在Spring自动配置类(`GaarasonDatabaseConfiguration`)中, 对`GaarasonDataSource`增加`@Primary`
+
 ### 2.18.0
 
 - 在查询构造器(`Builder`)中增加`join`系列执行方法`joinRaw(sqlPart)`/`join(joinType, table, joinConditions)`/`join(joinType, tempTable, alias, joinConditions)`

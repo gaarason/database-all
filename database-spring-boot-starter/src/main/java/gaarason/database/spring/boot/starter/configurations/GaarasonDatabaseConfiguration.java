@@ -6,6 +6,7 @@ import gaarason.database.config.GaarasonDataSourceConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.eloquent.GeneralModel;
+import gaarason.database.eloquent.annotation.Primary;
 import gaarason.database.generator.GeneralGenerator;
 import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.ModelInstanceProvider;
@@ -27,9 +28,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 import javax.sql.DataSource;
-import java.io.Serializable;
 import java.util.Collections;
-import java.util.UUID;
 
 /**
  * 自动配置
@@ -82,6 +81,7 @@ public class GaarasonDatabaseConfiguration {
      * 数据源配置
      * @return 数据源
      */
+    @Primary
     @Bean
     @ConditionalOnMissingBean
     public GaarasonDataSource gaarasonDataSource() {
