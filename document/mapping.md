@@ -133,19 +133,23 @@ Assert.assertEquals(200, record0.getEntity().getId().intValue());
 
 ### BelongsTo
 
-- 一对一关系
+- 一对一关系  
+见关联关系
 
 ### BelongsToMany
 
-- 多对多关系
+- 多对多关系  
+  见关联关系
 
 ### HasMany
 
-- 一对多关系
+- 一对多关系  
+  见关联关系
 
 ### HasOne
 
-- 一对一关系
+- 一对一关系  
+  见关联关系
 
 
 

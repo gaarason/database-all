@@ -28,7 +28,7 @@ import java.util.Map;
 @SpringBootTest
 @FixMethodOrder(MethodSorters.JVM)
 @Slf4j
-public class TestApplicationTests {
+public class DruidApplicationTests {
 
     @Resource
     GeneralGenerator generator;

@@ -1,7 +1,6 @@
 package gaarason.database.spring.boot.starter.configurations;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
-import com.zaxxer.hikari.HikariDataSource;
 import gaarason.database.config.GaarasonDataSourceConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.support.IdGenerator;
@@ -18,12 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -35,16 +30,14 @@ import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.util.Collections;
 
-;
-
 /**
  * 自动配置
  * @author xt
  */
 @Configuration
-@AutoConfigureAfter(DataSourceAutoConfiguration.class)
+@AutoConfigureAfter({DruidDataSourceAutoConfigure.class, DataSourceAutoConfiguration.class})
 @EnableConfigurationProperties({GaarasonDatabaseProperties.class})
-@Import({GeneralModel.class, GeneralGenerator.class, DruidDataSourceAutoConfigure.class})
+@Import({GeneralModel.class, GeneralGenerator.class})
 public class GaarasonDatabaseAutoConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GaarasonDatabaseAutoConfiguration.class);
@@ -86,8 +79,7 @@ public class GaarasonDatabaseAutoConfiguration {
         @Bean(autowireCandidate = false)
         @ConditionalOnMissingBean(GaarasonDataSource.class)
         public GaarasonDataSource gaarasonDataSource() {
-            LOGGER.info(dataSource.getClass().getName());
-            LOGGER.info("-------------------- gaarasonDataSource init --------------------------");
+            LOGGER.info("-------------------- gaarasonDataSource init with "+dataSource.getClass().getName()+"--------------------------");
             return ContainerProvider.getBean(GaarasonDataSourceConfig.class).build(Collections.singletonList(dataSource));
         }
 
