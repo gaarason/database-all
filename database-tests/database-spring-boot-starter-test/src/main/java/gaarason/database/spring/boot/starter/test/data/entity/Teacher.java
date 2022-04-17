@@ -1,6 +1,6 @@
 package gaarason.database.spring.boot.starter.test.data.entity;
 
-import gaarason.database.eloquent.annotation.*;
+import gaarason.database.annotation.*;
 import gaarason.database.spring.boot.starter.test.data.model.RelationshipStudentTeacherModel;
 import lombok.Data;
 

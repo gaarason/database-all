@@ -1,11 +1,9 @@
 package gaarason.database.generator.element.field;
 
-import gaarason.database.eloquent.appointment.MysqlNumericRange;
+import gaarason.database.appointment.MysqlNumericRange;
 import gaarason.database.generator.element.JavaClassification;
 import gaarason.database.generator.element.JavaVisibility;
 import gaarason.database.util.StringUtils;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,8 +16,6 @@ import java.util.regex.Matcher;
  * mysql 数据库字段信息分析
  * @author xt
  */
-@EqualsAndHashCode(callSuper = true)
-@Data
 public class MysqlFieldGenerator extends BaseFieldGenerator {
 
     public static final String TABLE_CATALOG = "TABLE_CATALOG";
@@ -297,4 +293,163 @@ public class MysqlFieldGenerator extends BaseFieldGenerator {
         field.setJavaClassification(JavaClassification.NUMERIC);
     }
 
+    public String getTableCatalog() {
+        return tableCatalog;
+    }
+
+    public void setTableCatalog(String tableCatalog) {
+        this.tableCatalog = tableCatalog;
+    }
+
+    public String getIsNullable() {
+        return isNullable;
+    }
+
+    public void setIsNullable(String isNullable) {
+        this.isNullable = isNullable;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
+    public String getTableSchema() {
+        return tableSchema;
+    }
+
+    public void setTableSchema(String tableSchema) {
+        this.tableSchema = tableSchema;
+    }
+
+    public String getExtra() {
+        return extra;
+    }
+
+    public void setExtra(String extra) {
+        this.extra = extra;
+    }
+
+    public String getColumnName() {
+        return columnName;
+    }
+
+    public void setColumnName(String columnName) {
+        this.columnName = columnName;
+    }
+
+    public String getColumnKey() {
+        return columnKey;
+    }
+
+    public void setColumnKey(String columnKey) {
+        this.columnKey = columnKey;
+    }
+
+    public String getCharacterOctetLength() {
+        return characterOctetLength;
+    }
+
+    public void setCharacterOctetLength(String characterOctetLength) {
+        this.characterOctetLength = characterOctetLength;
+    }
+
+    public String getNumericPrecision() {
+        return numericPrecision;
+    }
+
+    public void setNumericPrecision(String numericPrecision) {
+        this.numericPrecision = numericPrecision;
+    }
+
+    public String getPrivileges() {
+        return privileges;
+    }
+
+    public void setPrivileges(String privileges) {
+        this.privileges = privileges;
+    }
+
+    public String getColumnComment() {
+        return columnComment;
+    }
+
+    public void setColumnComment(String columnComment) {
+        this.columnComment = columnComment;
+    }
+
+    public String getDatetimePrecision() {
+        return datetimePrecision;
+    }
+
+    public void setDatetimePrecision(String datetimePrecision) {
+        this.datetimePrecision = datetimePrecision;
+    }
+
+    public String getCollationName() {
+        return collationName;
+    }
+
+    public void setCollationName(String collationName) {
+        this.collationName = collationName;
+    }
+
+    public String getNumericScale() {
+        return numericScale;
+    }
+
+    public void setNumericScale(String numericScale) {
+        this.numericScale = numericScale;
+    }
+
+    public String getColumnType() {
+        return columnType;
+    }
+
+    public void setColumnType(String columnType) {
+        this.columnType = columnType;
+    }
+
+    public String getOrdinalPosition() {
+        return ordinalPosition;
+    }
+
+    public void setOrdinalPosition(String ordinalPosition) {
+        this.ordinalPosition = ordinalPosition;
+    }
+
+    public String getCharacterMaximumLength() {
+        return characterMaximumLength;
+    }
+
+    public void setCharacterMaximumLength(String characterMaximumLength) {
+        this.characterMaximumLength = characterMaximumLength;
+    }
+
+    public String getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
+    }
+
+    public String getCharacterSetName() {
+        return characterSetName;
+    }
+
+    public void setCharacterSetName(String characterSetName) {
+        this.characterSetName = characterSetName;
+    }
+
+    public String getColumnDefault() {
+        return columnDefault;
+    }
+
+    public void setColumnDefault(String columnDefault) {
+        this.columnDefault = columnDefault;
+    }
 }

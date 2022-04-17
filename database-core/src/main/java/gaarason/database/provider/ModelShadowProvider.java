@@ -1,21 +1,19 @@
 package gaarason.database.provider;
 
+import gaarason.database.annotation.*;
+import gaarason.database.appointment.FinalVariable;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
-import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.contract.support.ReflectionScan;
-import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.annotation.*;
-import gaarason.database.eloquent.appointment.FinalVariable;
 import gaarason.database.eloquent.relation.BelongsToManyQueryRelation;
 import gaarason.database.eloquent.relation.BelongsToQueryRelation;
 import gaarason.database.eloquent.relation.HasOneOrManyQueryRelation;
 import gaarason.database.exception.*;
+import gaarason.database.lang.Nullable;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
-import lombok.Data;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -134,7 +132,7 @@ public final class ModelShadowProvider {
      * @return 字段信息
      * @throws EntityAttributeInvalidException 无效的字段
      */
-    public static <T extends Serializable> ModelShadowProvider.FieldInfo getFieldInfoByEntityClass(Class<T> clazz,
+    public static <T extends Serializable> FieldInfo getFieldInfoByEntityClass(Class<T> clazz,
         String fieldName) throws EntityAttributeInvalidException, EntityInvalidException {
         final ModelInfo<T, Serializable> modelInfo = getByEntityClass(clazz);
         final FieldInfo fieldInfo = modelInfo.getJavaFieldMap().get(fieldName);
@@ -239,9 +237,9 @@ public final class ModelShadowProvider {
      * @param entity          数据表实体对象
      */
     public static <T extends Serializable, K extends Serializable> void fieldAssignment(FieldInfo fieldInfo,
-        Map<String, gaarason.database.support.Column> stringColumnMap,
+        Map<String, gaarason.database.appointment.Column> stringColumnMap,
         T entity, Record<T, K> theRecord) throws TypeNotSupportedException {
-        gaarason.database.support.Column column = stringColumnMap.get(fieldInfo.columnName);
+        gaarason.database.appointment.Column column = stringColumnMap.get(fieldInfo.columnName);
         if (column != null) {
             try {
                 // 属性赋值
@@ -633,190 +631,5 @@ public final class ModelShadowProvider {
         return isNotStatic && isNotBasicType && hasRelationAnnotation;
     }
 
-    /**
-     * 格式化后的Model信息
-     */
-    @Data
-    public static class ModelInfo<T extends Serializable, K extends Serializable> {
-
-        /**
-         * model类
-         */
-        protected Class<? extends Model<T, K>> modelClass;
-
-        /**
-         * model对象
-         */
-        protected Model<T, K> model;
-
-        /**
-         * entity类
-         */
-        protected Class<T> entityClass;
-
-        /**
-         * 主键信息是否存在
-         */
-        private boolean primaryKeyDefinition;
-
-        /**
-         * 主键列名(并非一定是实体的属性名)
-         */
-        @Nullable
-        protected String primaryKeyColumnName;
-
-        /**
-         * 主键名(实体的属性名)
-         */
-        @Nullable
-        protected String primaryKeyName;
-
-        /**
-         * 主键自动生成
-         */
-        @Nullable
-        protected IdGenerator<K> primaryKeyIdGenerator;
-
-        /**
-         * 主键自增
-         */
-        @Nullable
-        protected Boolean primaryKeyIncrement;
-
-        /**
-         * 主键信息
-         */
-        @Nullable
-        protected FieldInfo primaryKeyFieldInfo;
-
-        /**
-         * 主键类型 (通过model上的第2个泛型类型得到)
-         */
-        protected Class<K> primaryKeyClass;
-
-        /**
-         * 数据库表名
-         */
-        protected String tableName;
-
-        /**
-         * `属性名`对应的`普通`字段数组
-         */
-        protected Map<String, FieldInfo> javaFieldMap = new LinkedHashMap<>();
-
-        /**
-         * `数据库字段`名对应的`普通`字段数组
-         */
-        protected Map<String, FieldInfo> columnFieldMap = new LinkedHashMap<>();
-
-        /**
-         * `属性名`名对应的`普通`字段数组, 可新增的字段
-         */
-        protected Map<String, FieldInfo> javaFieldInsertMap = new LinkedHashMap<>();
-
-        /**
-         * `属性名`名对应的`普通`字段数组, 可更新的字段
-         */
-        protected Map<String, FieldInfo> javaFieldUpdateMap = new LinkedHashMap<>();
-
-        /**
-         * `属性名`对应的`关系`字段数组
-         */
-        protected Map<String, RelationFieldInfo> relationFieldMap = new LinkedHashMap<>();
-
-    }
-
-    /**
-     * 字段信息
-     */
-    @Data
-    public static class FieldInfo {
-
-        /**
-         * Field (已经 设置属性是可访问)
-         */
-        protected Field field;
-
-        /**
-         * 属性名
-         */
-        protected String name;
-
-        /**
-         * 字段名
-         */
-        protected String columnName;
-
-        /**
-         * 可新增
-         */
-        protected boolean insertable = true;
-
-        /**
-         * 可更新
-         */
-        protected boolean updatable = true;
-
-        /**
-         * 可 null
-         */
-        protected boolean nullable;
-
-        /**
-         * java中的字段类型
-         */
-        protected Class<?> javaType;
-
-        /**
-         * 默认值
-         */
-        protected Object defaultValue;
-
-        /**
-         * column 注解
-         */
-        @Nullable
-        protected Column column;
-    }
-
-
-    /**
-     * 字段信息
-     */
-    @Data
-    public static class RelationFieldInfo {
-
-        /**
-         * 是否是集合
-         */
-        protected volatile boolean collection;
-
-        /**
-         * Field
-         */
-        protected Field field;
-
-        /**
-         * 属性名
-         */
-        protected String name;
-
-        /**
-         * java中的字段类型
-         */
-        protected Class<?> javaType;
-
-        /**
-         * java中的字段类型
-         * 当本类型是非集合时, 此处等价于 javaType
-         * 当本类型是集合时, 为集合中的泛型(不支持MAP等多泛型的)
-         */
-        protected Class<?> javaRealType;
-
-        /**
-         * 关联关系注解
-         */
-        protected RelationSubQuery relationSubQuery;
-    }
 
 }

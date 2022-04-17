@@ -1,5 +1,6 @@
 package gaarason.database.support;
 
+import gaarason.database.appointment.Column;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
@@ -8,6 +9,7 @@ import gaarason.database.eloquent.RecordBean;
 import gaarason.database.eloquent.RecordListBean;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.provider.ContainerProvider;
+import gaarason.database.provider.FieldInfo;
 import gaarason.database.provider.ModelShadowProvider;
 
 import java.io.Serializable;
@@ -192,7 +194,7 @@ public class RecordFactory {
         ResultSetMetaData resultSetMetaData, ResultSet resultSet) throws SQLException {
 
         // 字段信息大全
-        Map<String, ModelShadowProvider.FieldInfo> columnInfo = ModelShadowProvider.getByEntityClass(entityClass).getColumnFieldMap();
+        Map<String, FieldInfo> columnInfo = ModelShadowProvider.getByEntityClass(entityClass).getColumnFieldMap();
 
         final int columnCountMoreOne = resultSetMetaData.getColumnCount() + 1;
         for (int i = 1; i < columnCountMoreOne; i++) {

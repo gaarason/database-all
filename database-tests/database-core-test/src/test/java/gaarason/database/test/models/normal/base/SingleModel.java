@@ -1,6 +1,7 @@
 package gaarason.database.test.models.normal.base;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import gaarason.database.connection.GaarasonDataSourceBuilder;
 import gaarason.database.connection.GaarasonDataSourceWrapper;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
@@ -50,7 +51,7 @@ public class SingleModel<T extends Serializable, K extends Serializable> extends
         properties.setProperty("druid.stat.slowSqlMillis", "5000");
         druidDataSource.setConnectProperties(properties);
         druidDataSource.setUseGlobalDataSourceStat(true);
-        return new GaarasonDataSourceWrapper(druidDataSource);
+        return GaarasonDataSourceBuilder.build(druidDataSource);
     }
 
     private static GaarasonDataSource mssqlDataSource() {
@@ -81,7 +82,7 @@ public class SingleModel<T extends Serializable, K extends Serializable> extends
         properties.setProperty("druid.stat.slowSqlMillis", "5000");
         druidDataSource.setConnectProperties(properties);
         druidDataSource.setUseGlobalDataSourceStat(true);
-        return new GaarasonDataSourceWrapper(druidDataSource);
+        return GaarasonDataSourceBuilder.build(druidDataSource);
     }
 
     @Override

@@ -8,11 +8,15 @@
     <packaging>pom</packaging>
     <description>Eloquent ORM</description>
     <modules>
+        <module>database-api</module>
+        <module>database-logging</module>
         <module>database-core</module>
-        <module>database-dependencies</module>
         <module>database-generator</module>
         <module>database-spring-boot-starter</module>
         <module>database-tests</module>
+        <module>database-query-mysql</module>
+        <module>database-query-mssql</module>
+        <module>database-query</module>
     </modules>
     <properties>
         <java.version>1.8</java.version>

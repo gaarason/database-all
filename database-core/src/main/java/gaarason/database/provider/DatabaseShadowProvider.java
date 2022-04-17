@@ -1,7 +1,7 @@
 package gaarason.database.provider;
 
 import gaarason.database.contract.connection.GaarasonDataSource;
-import gaarason.database.support.DBColumn;
+import gaarason.database.appointment.DBColumn;
 import gaarason.database.util.DatabaseInfoUtils;
 
 import java.util.LinkedHashMap;

@@ -1,7 +1,7 @@
 package gaarason.database.test.models.relation.pojo.base;
 
-import gaarason.database.eloquent.annotation.Column;
-import gaarason.database.eloquent.annotation.Primary;
+import gaarason.database.annotation.Column;
+import gaarason.database.annotation.Primary;
 import lombok.Data;
 
 import java.io.Serializable;

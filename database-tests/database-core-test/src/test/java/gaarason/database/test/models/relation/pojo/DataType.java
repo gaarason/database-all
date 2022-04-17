@@ -1,8 +1,8 @@
 package gaarason.database.test.models.relation.pojo;
 
 import gaarason.database.test.models.relation.pojo.base.BaseEntity;
-import gaarason.database.eloquent.annotation.Column;
-import gaarason.database.eloquent.annotation.Table;
+import gaarason.database.annotation.Column;
+import gaarason.database.annotation.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

@@ -1,9 +1,10 @@
 package gaarason.database.util;
 
-import gaarason.database.core.lang.Nullable;
+import gaarason.database.appointment.FinalVariable;
 import gaarason.database.exception.TypeCastException;
 import gaarason.database.exception.TypeNotSupportedException;
-import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.lang.Nullable;
+import gaarason.database.provider.FieldInfo;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -252,7 +253,7 @@ public class ConverterUtils {
      * @param clz 类型
      * @return 对应类型的数据
      * @throws TypeCastException 类型转化失败
-     * @see gaarason.database.eloquent.appointment.FinalVariable ALLOW_FIELD_TYPES
+     * @see FinalVariable ALLOW_FIELD_TYPES
      */
     @Nullable
     public static <R> R castNullable(@Nullable final Object obj, final Class<R> clz) throws TypeCastException {
@@ -272,7 +273,7 @@ public class ConverterUtils {
      * @param clz 类型
      * @return 对应类型的数据
      * @throws TypeCastException 类型转化失败
-     * @see gaarason.database.eloquent.appointment.FinalVariable ALLOW_FIELD_TYPES
+     * @see FinalVariable ALLOW_FIELD_TYPES
      */
     public static <R> R cast(final Object obj, final Class<R> clz) throws TypeCastException {
         Object result;
@@ -337,7 +338,7 @@ public class ConverterUtils {
      * @param clz 类型
      * @return 默认值
      * @throws TypeCastException 类型转换失败
-     * @see gaarason.database.eloquent.appointment.FinalVariable ALLOW_FIELD_TYPES
+     * @see FinalVariable ALLOW_FIELD_TYPES
      */
     @Nullable
     public static <R> R getDefaultValueByJavaType(Class<R> clz) throws TypeCastException {
@@ -405,10 +406,10 @@ public class ConverterUtils {
      * @param column    列名
      * @return 值
      * @throws SQLException 数据库异常
-     * @see gaarason.database.eloquent.appointment.FinalVariable ALLOW_FIELD_TYPES
+     * @see FinalVariable ALLOW_FIELD_TYPES
      */
     @Nullable
-    public static Object getValueFromJdbcResultSet(@Nullable ModelShadowProvider.FieldInfo fieldInfo, ResultSet resultSet,
+    public static Object getValueFromJdbcResultSet(@Nullable FieldInfo fieldInfo, ResultSet resultSet,
         String column) throws SQLException {
         // ModelShadowProvider 中没有指定的字段信息
         if (fieldInfo == null) {
@@ -419,7 +420,7 @@ public class ConverterUtils {
 
 
         // 返回的字段值为null, 且目标类型可以接受null
-        if(resultSet.getObject(column) == null && EntityUtils.isFieldCanBeNull(fieldInfo.getField()) ){
+        if (resultSet.getObject(column) == null && EntityUtils.isFieldCanBeNull(fieldInfo.getField())) {
             return null;
         }
 

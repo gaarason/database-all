@@ -19,6 +19,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 2.19.0
+
+- 更改了`database-spring-boot-starter`中的配置逻辑, 通过配置中的(spring.datasource.type=**DataSource)现在可以使用任意的基本数据源了. 因此这项功能, 所以配置文件将仅支持spring data风格, 而非 druid 风格.
+
 ### 2.18.1
 
 - 在Spring自动配置类(`GaarasonDatabaseConfiguration`)中, 对`GaarasonDataSource`增加`@Primary`

@@ -1,9 +1,9 @@
 package ${namespace};\n
 \n
 import ${base_entity_namespace}.${base_entity_name};\n
-import gaarason.database.eloquent.annotation.Column;\n
-import gaarason.database.eloquent.annotation.Primary;\n
-import gaarason.database.eloquent.annotation.Table;\n
+import gaarason.database.annotation.Column;\n
+import gaarason.database.annotation.Primary;\n
+import gaarason.database.annotation.Table;\n
 ${swagger_import}
 import lombok.Data;\n
 import lombok.EqualsAndHashCode;\n

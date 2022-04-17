@@ -1,12 +1,12 @@
 package gaarason.database.util;
 
+import gaarason.database.annotation.Column;
+import gaarason.database.annotation.Table;
+import gaarason.database.appointment.FinalVariable;
 import gaarason.database.config.ConversionConfig;
-import gaarason.database.core.lang.Nullable;
-import gaarason.database.eloquent.annotation.Column;
-import gaarason.database.eloquent.annotation.Table;
-import gaarason.database.eloquent.appointment.FinalVariable;
 import gaarason.database.exception.IllegalAccessRuntimeException;
 import gaarason.database.exception.TypeNotSupportedException;
+import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ContainerProvider;
 
 import java.lang.reflect.Field;
@@ -86,10 +86,10 @@ public class EntityUtils {
      * @return 对象列表
      * @throws TypeNotSupportedException 实体不支持
      */
-    public static <T> List<T> entityAssignment(List<Map<String, gaarason.database.support.Column>> stringColumnMapList,
+    public static <T> List<T> entityAssignment(List<Map<String, gaarason.database.appointment.Column>> stringColumnMapList,
         Class<T> entityClass) throws TypeNotSupportedException {
         List<T> entityList = new ArrayList<>();
-        for (Map<String, gaarason.database.support.Column> stringColumnMap : stringColumnMapList) {
+        for (Map<String, gaarason.database.appointment.Column> stringColumnMap : stringColumnMapList) {
             T entity = entityAssignment(stringColumnMap, entityClass);
             entityList.add(entity);
         }
@@ -104,7 +104,7 @@ public class EntityUtils {
      * @return 对象
      * @throws TypeNotSupportedException 实体不支持
      */
-    public static <T> T entityAssignment(Map<String, gaarason.database.support.Column> stringColumnMap,
+    public static <T> T entityAssignment(Map<String, gaarason.database.appointment.Column> stringColumnMap,
         Class<T> entityClass) throws TypeNotSupportedException {
         try {
             T entity = entityClass.newInstance();
@@ -116,7 +116,7 @@ public class EntityUtils {
                 }
                 field.setAccessible(true);
                 String columnName = EntityUtils.columnName(field);
-                gaarason.database.support.Column column = stringColumnMap.get(columnName);
+                gaarason.database.appointment.Column column = stringColumnMap.get(columnName);
                 if (column != null) {
                     field.set(entity, column.getValue());
                 }

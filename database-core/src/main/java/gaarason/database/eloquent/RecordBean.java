@@ -1,18 +1,20 @@
 package gaarason.database.eloquent;
 
+import gaarason.database.appointment.Column;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.extra.Bind;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
-import gaarason.database.core.lang.Nullable;
 import gaarason.database.eloquent.record.BindBean;
 import gaarason.database.exception.EntityAttributeInvalidException;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.RelationNotFoundException;
+import gaarason.database.lang.Nullable;
+import gaarason.database.provider.FieldInfo;
+import gaarason.database.provider.ModelInfo;
 import gaarason.database.provider.ModelShadowProvider;
-import gaarason.database.support.Column;
 import gaarason.database.support.RelationGetSupport;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
@@ -176,7 +178,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
      */
     protected void init(Map<String, Column> stringColumnMap) {
         // 如果不是统同一个(引用相同)对象, 则手动赋值下
-        if(metadataMap != stringColumnMap){
+        if (metadataMap != stringColumnMap) {
             metadataMap.clear();
             metadataMap.putAll(stringColumnMap);
         }
@@ -425,13 +427,13 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
 
     @Override
     public Map<String, Object> getDirtyMap() {
-        final ModelShadowProvider.ModelInfo<T, K> modelInfo = ModelShadowProvider.get(model);
+        final ModelInfo<T, K> modelInfo = ModelShadowProvider.get(model);
 
         Map<String, Object> theMap = new HashMap<>(16);
         // 新增与修改的有效字段区别处理
-        final Map<String, ModelShadowProvider.FieldInfo> fieldInfoMap = isHasBind() ? modelInfo.getJavaFieldUpdateMap() : modelInfo.getJavaFieldInsertMap();
+        final Map<String, FieldInfo> fieldInfoMap = isHasBind() ? modelInfo.getJavaFieldUpdateMap() : modelInfo.getJavaFieldInsertMap();
         // 逐个比较, 注意null的处理
-        for (Map.Entry<String, ModelShadowProvider.FieldInfo> entry : fieldInfoMap.entrySet()) {
+        for (Map.Entry<String, FieldInfo> entry : fieldInfoMap.entrySet()) {
             final String columnName = entry.getValue().getColumnName();
             final Column column = metadataMap.get(columnName);
             // 元数据中的值
@@ -449,7 +451,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
 
     @Override
     public boolean isDirty(String fieldName) {
-        final ModelShadowProvider.FieldInfo fieldInfo = ModelShadowProvider.getFieldInfoByEntityClass(model.getEntityClass(), fieldName);
+        final FieldInfo fieldInfo = ModelShadowProvider.getFieldInfoByEntityClass(model.getEntityClass(), fieldName);
         // 获取所有变更属性组成的map
         final Map<String, Object> dirtyMap = getDirtyMap();
         return dirtyMap.containsKey(fieldInfo.getColumnName());
@@ -473,7 +475,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
     @Override
     @Nullable
     public Object getOriginal(String fieldName) throws EntityAttributeInvalidException {
-        final ModelShadowProvider.FieldInfo fieldInfo = ModelShadowProvider.get(model).getJavaFieldMap().get(fieldName);
+        final FieldInfo fieldInfo = ModelShadowProvider.get(model).getJavaFieldMap().get(fieldName);
         // 无效的参数,则抛出异常
         if (ObjectUtils.isEmpty(fieldInfo)) {
             throw new EntityAttributeInvalidException(fieldName, model.getEntityClass());
@@ -545,7 +547,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
             return;
         }
 
-        ModelShadowProvider.FieldInfo fieldInfo = model.getPrimaryKeyFieldInfo();
+        FieldInfo fieldInfo = model.getPrimaryKeyFieldInfo();
         // 没有手动赋值主键时
         if (ModelShadowProvider.fieldGet(fieldInfo, entity) == null) {
 
@@ -577,13 +579,13 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
      */
     protected void selfUpdateMetadataMap(T entity, boolean insertType) {
         // 模型信息
-        ModelShadowProvider.ModelInfo<T, Serializable> modelInfo = ModelShadowProvider.getByEntityClass(entityClass);
+        ModelInfo<T, Serializable> modelInfo = ModelShadowProvider.getByEntityClass(entityClass);
         // 字段信息集合
-        Map<String, ModelShadowProvider.FieldInfo> fieldInfoMap = insertType ? modelInfo.getJavaFieldInsertMap() : modelInfo.getJavaFieldUpdateMap();
+        Map<String, FieldInfo> fieldInfoMap = insertType ? modelInfo.getJavaFieldInsertMap() : modelInfo.getJavaFieldUpdateMap();
 
-        for (Map.Entry<String, ModelShadowProvider.FieldInfo> entry : fieldInfoMap.entrySet()) {
+        for (Map.Entry<String, FieldInfo> entry : fieldInfoMap.entrySet()) {
             // 字段信息
-            ModelShadowProvider.FieldInfo fieldInfo = entry.getValue();
+            FieldInfo fieldInfo = entry.getValue();
             // 获取值
             Object value = ModelShadowProvider.fieldGet(fieldInfo, entity);
             // 声明不可 null, 值仍然为null, 说明值无效

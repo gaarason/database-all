@@ -6,14 +6,14 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.support.IdGenerator;
-import gaarason.database.core.lang.Nullable;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
+import gaarason.database.lang.Nullable;
+import gaarason.database.provider.FieldInfo;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
-import lombok.SneakyThrows;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -194,7 +194,6 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
     }
 
     @Override
-    @SneakyThrows
     public Record<T, K> findByPrimaryKeyOrNew(T entity) {
         // 获取 entity 中的主键的值
         final Serializable primaryKeyValue = ModelShadowProvider.getPrimaryKeyValue(entity);
@@ -336,8 +335,8 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
     }
 
     @Override
-    public ModelShadowProvider.FieldInfo getPrimaryKeyFieldInfo() throws PrimaryKeyNotFoundException {
-        ModelShadowProvider.FieldInfo primaryKeyFieldInfo = ModelShadowProvider.get(this).getPrimaryKeyFieldInfo();
+    public FieldInfo getPrimaryKeyFieldInfo() throws PrimaryKeyNotFoundException {
+        FieldInfo primaryKeyFieldInfo = ModelShadowProvider.get(this).getPrimaryKeyFieldInfo();
         if (null == primaryKeyFieldInfo) {
             throw new PrimaryKeyNotFoundException();
         }

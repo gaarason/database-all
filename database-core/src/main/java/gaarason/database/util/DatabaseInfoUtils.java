@@ -1,9 +1,9 @@
 package gaarason.database.util;
 
+import gaarason.database.appointment.DBColumn;
 import gaarason.database.contract.connection.GaarasonDataSource;
-import gaarason.database.core.lang.Nullable;
-import gaarason.database.support.DBColumn;
-import lombok.SneakyThrows;
+import gaarason.database.exception.GettingInformationException;
+import gaarason.database.lang.Nullable;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -25,7 +25,6 @@ public class DatabaseInfoUtils {
      * @param tableNamePattern   表名过滤表达式(null 表示全部获取)
      * @return 表名集合
      */
-    @SneakyThrows
     public static Set<String> tableNames(GaarasonDataSource gaarasonDataSource, @Nullable String tableNamePattern) {
         Set<String> tableNames = new HashSet<>();
         try (Connection connection = gaarasonDataSource.getConnection()) {
@@ -38,6 +37,8 @@ public class DatabaseInfoUtils {
                 tableNames.add(tableName);
             }
             return tableNames;
+        } catch (Throwable e) {
+            throw new GettingInformationException(e);
         }
     }
 
@@ -47,7 +48,6 @@ public class DatabaseInfoUtils {
      * @param tableNamePattern   表名过滤表达式(null 表示全部获取)
      * @return 表字段信息MAP
      */
-    @SneakyThrows
     public static LinkedHashMap<String, DBColumn> getDBColumnsWIthTable(GaarasonDataSource gaarasonDataSource,
         @Nullable String tableNamePattern) {
         try (Connection connection = gaarasonDataSource.getConnection()) {
@@ -65,6 +65,8 @@ public class DatabaseInfoUtils {
                 dbColumnLinkedHashMap.put(dbColumn.getColumnName(), dbColumn);
             }
             return dbColumnLinkedHashMap;
+        } catch (Throwable e) {
+            throw new GettingInformationException(e);
         }
     }
 }

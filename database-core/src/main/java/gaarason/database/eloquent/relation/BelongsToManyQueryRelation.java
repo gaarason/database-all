@@ -1,13 +1,15 @@
 package gaarason.database.eloquent.relation;
 
+import gaarason.database.annotation.BelongsToMany;
+import gaarason.database.appointment.Column;
+import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
-import gaarason.database.eloquent.annotation.BelongsToMany;
-import gaarason.database.eloquent.appointment.SqlType;
+import gaarason.database.provider.FieldInfo;
+import gaarason.database.provider.ModelInfo;
 import gaarason.database.provider.ModelShadowProvider;
-import gaarason.database.support.Column;
 import gaarason.database.support.RecordFactory;
 import gaarason.database.util.ObjectUtils;
 
@@ -105,10 +107,10 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
         if (!objects.isEmpty()) {
             // 模型信息
-            ModelShadowProvider.ModelInfo<?, ?> modelInfo = ModelShadowProvider.get(
+            ModelInfo<?, ?> modelInfo = ModelShadowProvider.get(
                 targetRecordList.get(0).getModel());
             // 字段信息
-            ModelShadowProvider.FieldInfo fieldInfo = modelInfo.getColumnFieldMap().get(targetModelLocalKey);
+            FieldInfo fieldInfo = modelInfo.getColumnFieldMap().get(targetModelLocalKey);
 
             for (Serializable obj : objects) {
                 // 目标值

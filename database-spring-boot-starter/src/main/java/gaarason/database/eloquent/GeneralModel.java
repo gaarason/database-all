@@ -1,7 +1,6 @@
 package gaarason.database.eloquent;
 
 import gaarason.database.contract.connection.GaarasonDataSource;
-import gaarason.database.eloquent.annotation.Table;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
@@ -22,7 +21,7 @@ public class GeneralModel extends Model<GeneralModel.Table, Serializable> {
         return gaarasonDataSource;
     }
 
-    @gaarason.database.eloquent.annotation.Table(name = "@@GeneralModel.Table@@")
+    @gaarason.database.annotation.Table(name = "@@GeneralModel.Table@@")
     public static class Table implements Serializable {
 
     }

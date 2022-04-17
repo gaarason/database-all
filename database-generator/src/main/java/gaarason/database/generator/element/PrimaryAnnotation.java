@@ -1,8 +1,6 @@
 package gaarason.database.generator.element;
 
-import lombok.Data;
 
-@Data
 public class PrimaryAnnotation {
     private Boolean increment;
 
@@ -11,5 +9,13 @@ public class PrimaryAnnotation {
         return "@Primary(" +
             (!increment ? "increment = " + increment : "") +
             ")";
+    }
+
+    public Boolean getIncrement() {
+        return increment;
+    }
+
+    public void setIncrement(Boolean increment) {
+        this.increment = increment;
     }
 }

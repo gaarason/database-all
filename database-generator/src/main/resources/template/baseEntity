@@ -1,7 +1,7 @@
 package ${namespace};\n
 \n
-import gaarason.database.eloquent.annotation.Column;\n
-import gaarason.database.eloquent.annotation.Primary;\n
+import gaarason.database.annotation.Column;\n
+import gaarason.database.annotation.Primary;\n
 ${swagger_import}
 import lombok.Data;\n
 ${validator_import}

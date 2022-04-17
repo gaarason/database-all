@@ -1,5 +1,6 @@
 package gaarason.database.support;
 
+import gaarason.database.appointment.Column;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
@@ -7,7 +8,10 @@ import gaarason.database.contract.function.GenerateRecordListFunctionalInterface
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.exception.EntityNewInstanceException;
+import gaarason.database.provider.FieldInfo;
+import gaarason.database.provider.ModelInfo;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.provider.RelationFieldInfo;
 
 import java.io.Serializable;
 import java.util.*;
@@ -79,27 +83,27 @@ public class RelationGetSupport<T extends Serializable, K extends Serializable> 
         // 关联关系的临时性缓存
         for (Record<T, K> theRecord : records) {
             // 模型信息
-            ModelShadowProvider.ModelInfo<T, K> modelInfo = ModelShadowProvider.get(records.get(0).getModel());
+            ModelInfo<T, K> modelInfo = ModelShadowProvider.get(records.get(0).getModel());
             try {
                 // 实体类的对象
                 T entity = modelInfo.getEntityClass().newInstance();
                 // 普通属性集合
-                Map<String, ModelShadowProvider.FieldInfo> javaFieldMap = modelInfo.getJavaFieldMap();
-                for (Map.Entry<String, ModelShadowProvider.FieldInfo> entry : javaFieldMap.entrySet()) {
+                Map<String, FieldInfo> javaFieldMap = modelInfo.getJavaFieldMap();
+                for (Map.Entry<String, FieldInfo> entry : javaFieldMap.entrySet()) {
                     // 普通属性信息
-                    ModelShadowProvider.FieldInfo fieldInfo = entry.getValue();
+                    FieldInfo fieldInfo = entry.getValue();
                     // 普通属性赋值
                     ModelShadowProvider.fieldAssignment(fieldInfo, theRecord.getMetadataMap(), entity, theRecord);
                 }
 
                 // 关系属性集合
-                Map<String, ModelShadowProvider.RelationFieldInfo> relationFieldMap = modelInfo.getRelationFieldMap();
-                for (Map.Entry<String, ModelShadowProvider.RelationFieldInfo> entry : relationFieldMap.entrySet()) {
+                Map<String, RelationFieldInfo> relationFieldMap = modelInfo.getRelationFieldMap();
+                for (Map.Entry<String, RelationFieldInfo> entry : relationFieldMap.entrySet()) {
                     // 关系属性信息
-                    ModelShadowProvider.RelationFieldInfo relationFieldInfo = entry.getValue();
+                    RelationFieldInfo relationFieldInfo = entry.getValue();
 
                     // 获取关系的预处理
-                    GenerateSqlPartFunctionalInterface generateSqlPart = theRecord.getRelationBuilderMap()
+                    GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart = theRecord.getRelationBuilderMap()
                         .get(relationFieldInfo.getName());
                     RelationshipRecordWithFunctionalInterface relationshipRecordWith = theRecord.getRelationRecordMap()
                         .get(relationFieldInfo.getName());

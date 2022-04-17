@@ -1,6 +1,6 @@
 package gaarason.database.test.models.relation.pojo;
 
-import gaarason.database.eloquent.annotation.*;
+import gaarason.database.annotation.*;
 import gaarason.database.test.models.relation.model.RelationshipStudentTeacherModel;
 import gaarason.database.test.models.relation.pojo.base.BaseEntity;
 import lombok.Data;

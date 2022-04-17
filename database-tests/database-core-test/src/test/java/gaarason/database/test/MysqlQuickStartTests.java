@@ -1,12 +1,14 @@
 package gaarason.database.test;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import gaarason.database.connection.GaarasonDataSourceBuilder;
 import gaarason.database.connection.GaarasonDataSourceWrapper;
+import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.eloquent.Model;
-import gaarason.database.eloquent.annotation.Column;
-import gaarason.database.eloquent.annotation.Primary;
-import gaarason.database.eloquent.annotation.Table;
+import gaarason.database.annotation.Column;
+import gaarason.database.annotation.Primary;
+import gaarason.database.annotation.Table;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
@@ -53,7 +55,7 @@ public class MysqlQuickStartTests {
      */
     public static class TestModel extends Model<TestModel.Inner, Integer> {
 
-        private final static GaarasonDataSourceWrapper gaarasonDataSourceWrapper;
+        private final static GaarasonDataSource gaarasonDataSourceWrapper;
 
         static {
             DruidDataSource druidDataSource = new DruidDataSource();
@@ -84,7 +86,7 @@ public class MysqlQuickStartTests {
             druidDataSource.setConnectProperties(properties);
             druidDataSource.setUseGlobalDataSourceStat(true);
 
-            gaarasonDataSourceWrapper = new GaarasonDataSourceWrapper(druidDataSource);
+            gaarasonDataSourceWrapper = GaarasonDataSourceBuilder.build(druidDataSource);
         }
 
         /**
@@ -92,7 +94,7 @@ public class MysqlQuickStartTests {
          * @return ProxyDataSource
          */
         @Override
-        public GaarasonDataSourceWrapper getGaarasonDataSource() {
+        public GaarasonDataSource getGaarasonDataSource() {
             return gaarasonDataSourceWrapper;
         }
 

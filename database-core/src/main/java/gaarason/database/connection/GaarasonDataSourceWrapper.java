@@ -2,13 +2,10 @@ package gaarason.database.connection;
 
 import gaarason.database.config.QueryBuilderConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
-import gaarason.database.config.QueryBuilderTypeConfig;
-import gaarason.database.core.lang.Nullable;
 import gaarason.database.exception.*;
+import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ContainerProvider;
 import gaarason.database.util.ObjectUtils;
-import lombok.Getter;
-import lombok.ToString;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
@@ -26,7 +23,6 @@ import java.util.logging.Logger;
  * 嵌套事务如果不发生异常，则继续执行，不提交。由外层事务的逻辑继续执行，若外层事务后续发生异常，则回滚包括嵌套事务在内的所有事务。
  * @author xt
  */
-@ToString
 public class GaarasonDataSourceWrapper implements GaarasonDataSource {
 
     /**
@@ -43,13 +39,11 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
     /**
      * 写连接
      */
-    @Getter
     protected final List<DataSource> masterDataSourceList;
 
     /**
      * 读连接
      */
-    @Getter
     protected final List<DataSource> slaveDataSourceList;
 
     /**
@@ -68,7 +62,7 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
      * @param masterDataSourceList (主)写数据源集合
      * @param slaveDataSourceList  (从)读数据源集合
      */
-    public GaarasonDataSourceWrapper(List<DataSource> masterDataSourceList, List<DataSource> slaveDataSourceList) {
+    GaarasonDataSourceWrapper(List<DataSource> masterDataSourceList, List<DataSource> slaveDataSourceList) {
         if (masterDataSourceList.isEmpty() || slaveDataSourceList.isEmpty()) {
             throw new AbnormalParameterException("The two list of data source should not be empty.");
         }
@@ -81,22 +75,10 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
      * 构造
      * @param masterDataSourceList (主)写数据源集合
      */
-    public GaarasonDataSourceWrapper(List<DataSource> masterDataSourceList) {
+    GaarasonDataSourceWrapper(List<DataSource> masterDataSourceList) {
         if (masterDataSourceList.isEmpty()) {
             throw new AbnormalParameterException("The list of data source should not be empty.");
         }
-        this.masterDataSourceList = masterDataSourceList;
-        this.slaveDataSourceList = new ArrayList<>();
-        hasSlave = false;
-    }
-
-    /**
-     * 构造
-     * @param masterDataSource (主)写数据源
-     */
-    public GaarasonDataSourceWrapper(DataSource masterDataSource) {
-        List<DataSource> masterDataSourceList = new ArrayList<>();
-        masterDataSourceList.add(masterDataSource);
         this.masterDataSourceList = masterDataSourceList;
         this.slaveDataSourceList = new ArrayList<>();
         hasSlave = false;
@@ -338,22 +320,31 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
      * @return 数据库类型
      */
     protected QueryBuilderConfig getQueryBuilder(GaarasonDataSource dataSource) {
-        List<Class<? extends QueryBuilderConfig>> list = ContainerProvider.getBean(QueryBuilderTypeConfig.class).getAllDatabaseTypes();
+        List<QueryBuilderConfig> list = ContainerProvider.getBeans(QueryBuilderConfig.class);
         String databaseProductName;
         Connection connection = dataSource.getLocalConnection(true);
         try {
             databaseProductName = connection.getMetaData().getDatabaseProductName().toLowerCase(Locale.ROOT);
-            for (Class<? extends QueryBuilderConfig> clazz : list) {
-                final QueryBuilderConfig queryBuilder = ContainerProvider.getBean(clazz);
-                if (!ObjectUtils.isEmpty(queryBuilder) && queryBuilder.support(databaseProductName)) {
-                    return queryBuilder;
+            for (QueryBuilderConfig queryBuilderConfig : list) {
+                if (!ObjectUtils.isEmpty(queryBuilderConfig) && queryBuilderConfig.support(databaseProductName)) {
+                    return queryBuilderConfig;
                 }
             }
         } catch (Throwable e) {
             throw new SQLRuntimeException(e.getMessage(), e);
-        }finally {
+        } finally {
             dataSource.localConnectionClose(connection);
         }
         throw new TypeNotSupportedException("Database product name [" + databaseProductName + "] not supported yet.");
+    }
+
+    @Override
+    public List<DataSource> getMasterDataSourceList() {
+        return masterDataSourceList;
+    }
+
+    @Override
+    public List<DataSource> getSlaveDataSourceList() {
+        return slaveDataSourceList;
     }
 }

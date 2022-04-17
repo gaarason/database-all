@@ -14,20 +14,20 @@ public class TeacherModel extends BaseModel<Teacher, Integer> implements Teacher
 
 
     @Resource
-    StudentQuery<Teacher, Integer> studentQuery;
+    StudentQuery<Student, Integer> studentModel;
 
     @Override
     public Student updateName() {
 
-        studentQuery.getInfoFromDB();
+        studentModel.getInfoFromDB();
         try {
 
-            studentQuery.updateName();
+            studentModel.updateName();
         }catch (Exception e) {
 
         }
 
-        Student student = studentQuery.getInfoFromDB();
+        Student student = studentModel.getInfoFromDB();
 
 
         return student;

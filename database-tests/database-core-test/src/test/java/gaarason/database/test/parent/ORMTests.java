@@ -3,7 +3,7 @@ package gaarason.database.test.parent;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.eloquent.appointment.OrderBy;
+import gaarason.database.appointment.OrderBy;
 import gaarason.database.exception.RelationAttachException;
 import gaarason.database.test.models.normal.StudentORMModel;
 import gaarason.database.test.models.relation.model.RelationshipStudentTeacherModel;

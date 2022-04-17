@@ -4,11 +4,11 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
-import gaarason.database.eloquent.annotation.BelongsTo;
-import gaarason.database.eloquent.appointment.SqlType;
+import gaarason.database.annotation.BelongsTo;
+import gaarason.database.appointment.SqlType;
 import gaarason.database.exception.RelationAttachException;
 import gaarason.database.provider.ModelShadowProvider;
-import gaarason.database.support.Column;
+import gaarason.database.appointment.Column;
 import gaarason.database.util.ObjectUtils;
 
 import java.io.Serializable;

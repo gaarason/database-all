@@ -1,12 +1,13 @@
 package gaarason.database.eloquent.relation;
 
+import gaarason.database.appointment.Column;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.eloquent.RecordListBean;
+import gaarason.database.provider.FieldInfo;
+import gaarason.database.provider.ModelInfo;
 import gaarason.database.provider.ModelShadowProvider;
-import gaarason.database.support.Column;
-import gaarason.database.util.ConverterUtils;
 import gaarason.database.util.ObjectUtils;
 
 import java.io.Serializable;
@@ -99,11 +100,11 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
         List<Serializable> objectList = new ArrayList<>();
         if (!relationshipObjectList.isEmpty()) {
             // 模型信息
-            ModelShadowProvider.ModelInfo<? extends Serializable, Serializable> modelInfo = ModelShadowProvider.getByEntityClass(
+            ModelInfo<? extends Serializable, Serializable> modelInfo = ModelShadowProvider.getByEntityClass(
                 relationshipObjectList.get(0).getClass());
 
             // 字段信息
-            ModelShadowProvider.FieldInfo fieldInfo = modelInfo.getColumnFieldMap().get(columnName);
+            FieldInfo fieldInfo = modelInfo.getColumnFieldMap().get(columnName);
 
             for (Serializable o : relationshipObjectList) {
                 // 值

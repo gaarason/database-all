@@ -1,16 +1,17 @@
 package gaarason.database.generator;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import gaarason.database.connection.GaarasonDataSourceBuilder;
 import gaarason.database.connection.GaarasonDataSourceWrapper;
+import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Model;
-import gaarason.database.core.lang.Nullable;
+import gaarason.database.lang.Nullable;
 import gaarason.database.eloquent.ModelBean;
 import gaarason.database.generator.element.field.Field;
 import gaarason.database.generator.element.field.MysqlFieldGenerator;
 import gaarason.database.generator.exception.GeneratorException;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.StringUtils;
-import lombok.Setter;
 
 import javax.sql.DataSource;
 import java.io.*;
@@ -57,31 +58,26 @@ public class Generator {
     /**
      * 输出目录
      */
-    @Setter
     private String outputDir = "./";
 
     /**
      * 命名空间
      */
-    @Setter
     private String namespace = "data";
 
     /**
      * entity目录
      */
-    @Setter
     private String entityDir = "entity";
 
     /**
      * entity前缀
      */
-    @Setter
     private String entityPrefix = "";
 
     /**
      * entity后缀
      */
-    @Setter
     private String entitySuffix = "";
 
     /**
@@ -92,73 +88,61 @@ public class Generator {
     /**
      * BaseEntity 目录
      */
-    @Setter
     private String baseEntityDir = "base";
 
     /**
      * BaseEntity 类名
      */
-    @Setter
     private String baseEntityName = "BaseEntity";
 
     /**
      * model目录
      */
-    @Setter
     private String modelDir = "model";
 
     /**
      * model前缀
      */
-    @Setter
     private String modelPrefix = "";
 
     /**
      * model后缀
      */
-    @Setter
     private String modelSuffix = "Model";
 
     /**
      * baseModel目录
      */
-    @Setter
     private String baseModelDir = "base";
 
     /**
      * baseModel类名
      */
-    @Setter
     private String baseModelName = "BaseModel";
 
     /**
      * 是否使用spring boot注解 model
      */
-    @Setter
     private boolean isSpringBoot;
 
     /**
      * 是否使用swagger注解 entity
      */
-    @Setter
     private boolean isSwagger;
 
     /**
      * 是否使用 org.hibernate.validator.constraints.* 注解 entity
      */
-    @Setter
     private boolean isValidator;
 
     /**
      * 是否生成静态字段名
      */
-    @Setter
     private boolean entityStaticField;
 
     /**
      * 生成并发线程数
      */
-    @Setter
     private int corePoolSize = 20;
 
     /**
@@ -210,6 +194,7 @@ public class Generator {
 
     /**
      * 有参构造
+     * 默认使用 com.mysql.cj.jdbc.Driver 与 com.alibaba.druid.pool.DruidDataSource
      * @param jdbcUrl  数据库连接地址
      * @param username 数据库用户名
      * @param password 数据库密码
@@ -229,7 +214,18 @@ public class Generator {
         List<DataSource> dataSources = new ArrayList<>();
         dataSources.add(druidDataSource);
 
-        ToolModel.gaarasonDataSource = new GaarasonDataSourceWrapper(dataSources);
+        ToolModel.gaarasonDataSource = GaarasonDataSourceBuilder.build(dataSources);
+
+        this.model = ModelShadowProvider.getByModelClass(ToolModel.class).getModel();
+    }
+
+    /**
+     * 有参构造
+     * @param dataSource  数据源
+     */
+    public Generator(DataSource dataSource) {
+
+        ToolModel.gaarasonDataSource = GaarasonDataSourceBuilder.build(dataSource);
 
         this.model = ModelShadowProvider.getByModelClass(ToolModel.class).getModel();
     }
@@ -736,16 +732,86 @@ public class Generator {
         disUpdatable = column;
     }
 
+
+    public void setOutputDir(String outputDir) {
+        this.outputDir = outputDir;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
+
+    public void setEntityDir(String entityDir) {
+        this.entityDir = entityDir;
+    }
+
+    public void setEntityPrefix(String entityPrefix) {
+        this.entityPrefix = entityPrefix;
+    }
+
+    public void setEntitySuffix(String entitySuffix) {
+        this.entitySuffix = entitySuffix;
+    }
+
+    public void setBaseEntityDir(String baseEntityDir) {
+        this.baseEntityDir = baseEntityDir;
+    }
+
+    public void setBaseEntityName(String baseEntityName) {
+        this.baseEntityName = baseEntityName;
+    }
+
+    public void setModelDir(String modelDir) {
+        this.modelDir = modelDir;
+    }
+
+    public void setModelPrefix(String modelPrefix) {
+        this.modelPrefix = modelPrefix;
+    }
+
+    public void setModelSuffix(String modelSuffix) {
+        this.modelSuffix = modelSuffix;
+    }
+
+    public void setBaseModelDir(String baseModelDir) {
+        this.baseModelDir = baseModelDir;
+    }
+
+    public void setBaseModelName(String baseModelName) {
+        this.baseModelName = baseModelName;
+    }
+
+    public void setSpringBoot(boolean springBoot) {
+        isSpringBoot = springBoot;
+    }
+
+    public void setSwagger(boolean swagger) {
+        isSwagger = swagger;
+    }
+
+    public void setValidator(boolean validator) {
+        isValidator = validator;
+    }
+
+    public void setEntityStaticField(boolean entityStaticField) {
+        this.entityStaticField = entityStaticField;
+    }
+
+    public void setCorePoolSize(int corePoolSize) {
+        this.corePoolSize = corePoolSize;
+    }
+
+
     private String getAbsoluteWriteFilePath(String namespace) {
         return StringUtils.rtrim(outputDir, "/") + "/" + namespace2dir(namespace) + '/';
     }
 
     public static class ToolModel extends ModelBean<ToolModel.Inner, Serializable> {
 
-        protected static GaarasonDataSourceWrapper gaarasonDataSource;
+        protected static GaarasonDataSource gaarasonDataSource;
 
         @Override
-        public GaarasonDataSourceWrapper getGaarasonDataSource() {
+        public GaarasonDataSource getGaarasonDataSource() {
             return gaarasonDataSource;
         }
 
@@ -754,4 +820,5 @@ public class Generator {
             private static final long serialVersionUID = 1L;
         }
     }
+
 }

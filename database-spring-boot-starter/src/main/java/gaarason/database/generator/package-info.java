@@ -1,4 +1,5 @@
-@NonNullApi
+@NonNullApi @NonNullFields
 package gaarason.database.generator;
 
-import gaarason.database.core.lang.NonNullApi;
+import gaarason.database.lang.NonNullApi;
+import gaarason.database.lang.NonNullFields;

@@ -2,6 +2,7 @@ package gaarason.database.test.parent;
 
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
+import gaarason.database.provider.ModelInfo;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.test.models.normal.DatetimeTestModel;
 import gaarason.database.test.parent.base.BaseTests;
@@ -81,7 +82,7 @@ abstract public class LocalDateTests extends BaseTests {
 
     @Test
     public void t(){
-        ModelShadowProvider.ModelInfo<Serializable, Serializable> datetimeTest = ModelShadowProvider.getByTableName("datetime_test");
+        ModelInfo<Serializable, Serializable> datetimeTest = ModelShadowProvider.getByTableName("datetime_test");
         Set<String> strings = datetimeTest.getColumnFieldMap().keySet();
         Assert.assertTrue(strings.contains("time_column"));
         Assert.assertTrue(strings.contains("date_column"));

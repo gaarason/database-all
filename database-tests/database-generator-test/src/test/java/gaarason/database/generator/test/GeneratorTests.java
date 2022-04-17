@@ -1,27 +1,23 @@
 package gaarason.database.generator.test;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import gaarason.database.connection.GaarasonDataSourceBuilder;
 import gaarason.database.connection.GaarasonDataSourceWrapper;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.eloquent.Model;
 import gaarason.database.generator.Generator;
-import gaarason.database.generator.util.DatabaseInfoUtil;
-import gaarason.database.support.Column;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import javax.sql.DataSource;
 import java.io.Serializable;
-import java.sql.SQLException;
 import java.util.*;
 
 /**
  * 测试
  * @author xt
  */
-@Slf4j
 @FixMethodOrder(MethodSorters.JVM)
 public class GeneratorTests {
 
@@ -64,7 +60,7 @@ public class GeneratorTests {
 
     @Test
     public void run无参构造() {
-        ToolModel.gaarasonDataSourceWrapper = proxyDataSource();
+        ToolModel.gaarasonDataSource = proxyDataSource();
         ToolModel toolModel = new ToolModel();
         AutoGenerator autoGenerator = new AutoGenerator(toolModel);
         // set
@@ -101,18 +97,18 @@ public class GeneratorTests {
         return dataSources;
     }
 
-    private GaarasonDataSourceWrapper proxyDataSource() {
+    private GaarasonDataSource proxyDataSource() {
         List<DataSource> dataSources = dataSourceMasterList();
-        return new GaarasonDataSourceWrapper(dataSources);
+        return GaarasonDataSourceBuilder.build(dataSources);
     }
 
     public static class ToolModel extends Model<ToolModel.Inner, Serializable> {
 
-        public static GaarasonDataSourceWrapper gaarasonDataSourceWrapper;
+        public static GaarasonDataSource gaarasonDataSource;
 
         @Override
-        public GaarasonDataSourceWrapper getGaarasonDataSource() {
-            return gaarasonDataSourceWrapper;
+        public GaarasonDataSource getGaarasonDataSource() {
+            return gaarasonDataSource;
         }
 
         public static class Inner implements Serializable{
@@ -135,33 +131,4 @@ public class GeneratorTests {
 
     }
 
-    @Test
-    public void test() throws SQLException {
-
-        DruidDataSource druidDataSource = new DruidDataSource();
-        druidDataSource.setUrl(
-            "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
-        druidDataSource.setUsername("root");
-        druidDataSource.setPassword("root");
-
-        druidDataSource.setDbType("com.alibaba.druid.pool.DruidDataSource");
-        druidDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        druidDataSource.setInitialSize(20);
-        druidDataSource.setMaxActive(20);
-        druidDataSource.setLoginTimeout(3);
-        druidDataSource.setQueryTimeout(3);
-
-        GaarasonDataSource gaarasonDataSourceWrapper = new GaarasonDataSourceWrapper(Collections.singletonList(druidDataSource));
-
-        Set<String> test = DatabaseInfoUtil.tableNames(gaarasonDataSourceWrapper, "test_master_0", null, null);
-        System.out.println(test);
-
-//        List<Map<String, Column>> test1 = DatabaseInfoUtil.columns(gaarasonDataSourceWrapper, "test_master_0", null, null);
-
-//        for (Map<String, Column> stringObjectMap : test1) {
-//            System.out.println(stringObjectMap);
-//        }
-
-
-    }
 }

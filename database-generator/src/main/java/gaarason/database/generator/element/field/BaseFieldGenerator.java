@@ -1,6 +1,6 @@
 package gaarason.database.generator.element.field;
 
-import gaarason.database.core.lang.Nullable;
+import gaarason.database.lang.Nullable;
 import gaarason.database.util.StringUtils;
 
 import java.util.regex.Pattern;

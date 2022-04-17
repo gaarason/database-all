@@ -3,7 +3,7 @@ package gaarason.database.test.parent;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.provider.DatabaseShadowProvider;
-import gaarason.database.support.DBColumn;
+import gaarason.database.appointment.DBColumn;
 import gaarason.database.test.models.normal.PeopleModel;
 import gaarason.database.test.parent.base.BaseTests;
 import gaarason.database.util.LocalDateUtils;

@@ -71,15 +71,14 @@ studentModel.findOrFail(8).bind("teachers").toggle(teacherModel.findMany(2));
 ```
 3.配置连接 application.properties  
 ```$xslt
-spring.datasource.druid.url=jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai
-spring.datasource.druid.username=root
-spring.datasource.druid.password=root
-spring.datasource.druid.driver-class-name=com.mysql.cj.jdbc.Driver
-spring.datasource.druid.db-type=com.alibaba.druid.pool.DruidDataSource
-spring.datasource.druid.initialSize=1
-spring.datasource.druid.minIdle=1
-spring.datasource.druid.maxActive=20
-spring.datasource.druid.maxWait=60000
+spring.datasource.url=jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai
+spring.datasource.username=root
+spring.datasource.password=root
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+# choose the type as u like
+spring.datasource.type=com.alibaba.druid.pool.DruidDataSource
+
+gaarason.database.snow-flake.worker-id=2
 ```
 4.快速开始  
 ```java

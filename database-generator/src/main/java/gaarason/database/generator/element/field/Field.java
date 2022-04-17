@@ -3,15 +3,11 @@ package gaarason.database.generator.element.field;
 import gaarason.database.generator.element.JavaClassification;
 import gaarason.database.generator.element.JavaElement;
 import gaarason.database.generator.element.JavaVisibility;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 /**
  * 数据库列属性
  * @author xt
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
 public class Field extends JavaElement {
 
     /**
@@ -207,4 +203,147 @@ public class Field extends JavaElement {
         return (!nullable) && (defaultValue == null);
     }
 
+    public String getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
+    }
+
+    public String getColumnType() {
+        return columnType;
+    }
+
+    public void setColumnType(String columnType) {
+        this.columnType = columnType;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getColumnName() {
+        return columnName;
+    }
+
+    public void setColumnName(String columnName) {
+        this.columnName = columnName;
+    }
+
+    public boolean isUnique() {
+        return unique;
+    }
+
+    public void setUnique(boolean unique) {
+        this.unique = unique;
+    }
+
+    public boolean isUnsigned() {
+        return unsigned;
+    }
+
+    public void setUnsigned(boolean unsigned) {
+        this.unsigned = unsigned;
+    }
+
+    public boolean isNullable() {
+        return nullable;
+    }
+
+    public void setNullable(boolean nullable) {
+        this.nullable = nullable;
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
+    public boolean isInsertable() {
+        return insertable;
+    }
+
+    public void setInsertable(boolean insertable) {
+        this.insertable = insertable;
+    }
+
+    public boolean isUpdatable() {
+        return updatable;
+    }
+
+    public void setUpdatable(boolean updatable) {
+        this.updatable = updatable;
+    }
+
+    public Long getLength() {
+        return length;
+    }
+
+    public void setLength(Long length) {
+        this.length = length;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public boolean isPrimary() {
+        return primary;
+    }
+
+    public void setPrimary(boolean primary) {
+        this.primary = primary;
+    }
+
+    public boolean isIncrement() {
+        return increment;
+    }
+
+    public void setIncrement(boolean increment) {
+        this.increment = increment;
+    }
+
+    public String getJavaClassTypeString() {
+        return javaClassTypeString;
+    }
+
+    public void setJavaClassTypeString(String javaClassTypeString) {
+        this.javaClassTypeString = javaClassTypeString;
+    }
+
+    public JavaClassification getJavaClassification() {
+        return javaClassification;
+    }
+
+    public void setJavaClassification(JavaClassification javaClassification) {
+        this.javaClassification = javaClassification;
+    }
+
+    public long getMin() {
+        return min;
+    }
+
+    public void setMin(long min) {
+        this.min = min;
+    }
+
+    public long getMax() {
+        return max;
+    }
+
+    public void setMax(long max) {
+        this.max = max;
+    }
 }

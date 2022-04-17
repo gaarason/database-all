@@ -1,14 +1,19 @@
 package gaarason.database.eloquent;
 
+import gaarason.database.appointment.Column;
+import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.FilterRecordAttributeFunctionalInterface;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
-import gaarason.database.core.lang.Nullable;
+import gaarason.database.exception.AbnormalParameterException;
+import gaarason.database.exception.NoSuchAlgorithmException;
 import gaarason.database.exception.OperationNotSupportedException;
+import gaarason.database.lang.Nullable;
+import gaarason.database.provider.ContainerProvider;
+import gaarason.database.provider.FieldInfo;
 import gaarason.database.provider.ModelShadowProvider;
-import gaarason.database.support.Column;
 import gaarason.database.support.RelationGetSupport;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
@@ -181,8 +186,7 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
         if (columnArr.length > 1) {
             String lastLevelColumn = columnArr[columnArr.length - 1];
             String otherLevelColumn = StringUtils.rtrim(column, "." + lastLevelColumn);
-            return with(otherLevelColumn, builder -> builder,
-                theRecord -> theRecord.with(lastLevelColumn, builderClosure, recordClosure));
+            return with(otherLevelColumn, builder -> builder, theRecord -> theRecord.with(lastLevelColumn, builderClosure, recordClosure));
         }
         for (Record<T, K> tkRecord : this) {
             // 赋值关联关系过滤
@@ -201,8 +205,7 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
     @Override
     @Nullable
     public <W> W elementGetValueByFieldName(Record<T, K> theRecord, String fieldName) {
-        final ModelShadowProvider.FieldInfo fieldInfo = ModelShadowProvider.getFieldInfoByEntityClass(
-            theRecord.getModel().getEntityClass(), fieldName);
+        final FieldInfo fieldInfo = ModelShadowProvider.getFieldInfoByEntityClass(theRecord.getModel().getEntityClass(), fieldName);
         final Column column = theRecord.getMetadataMap().get(fieldInfo.getColumnName());
         return column != null ? ObjectUtils.typeCast(column.getValue()) : null;
     }
@@ -211,5 +214,51 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
     public Map<String, Object> elementToMap(Record<T, K> theRecord) throws OperationNotSupportedException {
         return theRecord.toMap();
     }
+
+    @Override
+    public ConversionConfig getConversionWorkerFromContainer() {
+        return ContainerProvider.getBean(ConversionConfig.class);
+    }
+
+    @Override
+    public boolean isEmpty(@Nullable Object obj) {
+        return ObjectUtils.isEmpty(obj);
+    }
+
+    @Override
+    public boolean isEmpty(@Nullable Object[] obj) {
+        return ObjectUtils.isEmpty(obj);
+    }
+
+    @Override
+    public boolean contains(String fieldName, Object value) {
+        for (Record<T, K> e : this) {
+            if (ObjectUtils.nullSafeEquals(elementGetValueByFieldName(e, fieldName), value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public List<Record<T, K>> random(int count) throws NoSuchAlgorithmException {
+        if (count > size()) {
+            throw new AbnormalParameterException(
+                "The parameter count [" + count + "] of the random method should not be less than size [" + size() + "]");
+        }
+        if (isEmpty()) {
+            return new ArrayList<>();
+        }
+        if (size() == 1) {
+            return Collections.singletonList(get(0));
+        }
+        final List<Record<T, K>> list = new ArrayList<>(count);
+        final Set<Integer> randomSet = ObjectUtils.random(size(), count);
+        for (Integer index : randomSet) {
+            list.add(get(index));
+        }
+        return list;
+    }
+
 
 }

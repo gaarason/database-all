@@ -1,12 +1,13 @@
 package gaarason.database.spring.boot.starter.configurations;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
-import com.zaxxer.hikari.HikariDataSource;
 import gaarason.database.config.GaarasonDataSourceConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.generator.GeneralGenerator;
+import gaarason.database.logging.Log;
+import gaarason.database.logging.LogFactory;
 import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.ModelInstanceProvider;
 import gaarason.database.spring.boot.starter.properties.GaarasonDatabaseProperties;
@@ -18,12 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -35,19 +32,17 @@ import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.util.Collections;
 
-;
-
 /**
  * 自动配置
  * @author xt
  */
 @Configuration
-@AutoConfigureAfter(DataSourceAutoConfiguration.class)
+@AutoConfigureAfter({DruidDataSourceAutoConfigure.class, DataSourceAutoConfiguration.class})
 @EnableConfigurationProperties({GaarasonDatabaseProperties.class})
-@Import({GeneralModel.class, GeneralGenerator.class, DruidDataSourceAutoConfigure.class})
+@Import({GeneralModel.class, GeneralGenerator.class})
 public class GaarasonDatabaseAutoConfiguration {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GaarasonDatabaseAutoConfiguration.class);
+    private static final Log LOGGER = LogFactory.getLog(GaarasonDatabaseAutoConfiguration.class);
 
     /**
      * 指定 model 扫描范围
@@ -68,7 +63,7 @@ public class GaarasonDatabaseAutoConfiguration {
         final int dataId = gaarasonDatabaseProperties.getSnowFlake().getDataId();
         ContainerProvider.register(IdGenerator.SnowFlakesID.class, clazz -> new SnowFlakeIdGenerator(workerId, dataId));
 
-        LOGGER.info("SnowFlakesID[ workId: {}, dataId: {}] instance has been registered success.", workerId, dataId);
+        LOGGER.info("SnowFlakesID[ workId: " + workerId + ", dataId: " + dataId + "] instance has been registered success.");
 
     }
 
@@ -86,8 +81,7 @@ public class GaarasonDatabaseAutoConfiguration {
         @Bean(autowireCandidate = false)
         @ConditionalOnMissingBean(GaarasonDataSource.class)
         public GaarasonDataSource gaarasonDataSource() {
-            LOGGER.info(dataSource.getClass().getName());
-            LOGGER.info("-------------------- gaarasonDataSource init --------------------------");
+            LOGGER.info("-------------------- gaarasonDataSource init with " + dataSource.getClass().getName() + "--------------------------");
             return ContainerProvider.getBean(GaarasonDataSourceConfig.class).build(Collections.singletonList(dataSource));
         }
 

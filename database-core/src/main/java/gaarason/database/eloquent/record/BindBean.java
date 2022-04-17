@@ -5,7 +5,9 @@ import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.extra.Bind;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.exception.RelationNotFoundException;
+import gaarason.database.provider.ModelInfo;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.provider.RelationFieldInfo;
 import gaarason.database.support.RecordFactory;
 
 import java.io.Serializable;
@@ -27,12 +29,12 @@ public class BindBean<T extends Serializable, K extends Serializable> implements
     public BindBean(Record<T, K> tkRecord, String fieldName) {
         this.tkRecord = tkRecord;
         // 模型信息
-        ModelShadowProvider.ModelInfo<?, ?> modelInfo = ModelShadowProvider.get(tkRecord.getModel());
+        ModelInfo<?, ?> modelInfo = ModelShadowProvider.get(tkRecord.getModel());
         // 关系信息
-        ModelShadowProvider.RelationFieldInfo relationFieldInfo = modelInfo.getRelationFieldMap().get(fieldName);
+        RelationFieldInfo relationFieldInfo = modelInfo.getRelationFieldMap().get(fieldName);
         if (relationFieldInfo == null) {
             throw new RelationNotFoundException(
-                    "No associations were found for property[" + fieldName + "] in the entity[" + modelInfo.getEntityClass() + "].");
+                "No associations were found for property[" + fieldName + "] in the entity[" + modelInfo.getEntityClass() + "].");
         }
         relationSubQuery = relationFieldInfo.getRelationSubQuery();
     }
