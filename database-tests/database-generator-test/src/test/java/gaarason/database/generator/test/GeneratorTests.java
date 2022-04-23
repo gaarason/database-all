@@ -30,7 +30,8 @@ public class GeneratorTests {
         Generator generator = new Generator(jdbcUrl, username, password);
 
         // set
-        generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
+//        generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
+        generator.setOutputDir("./src/test/java1/");     // 所有生成文件的路径
         generator.setNamespace("gaarason.database.test.models.relation.pojo");                 // 所有生成文件的所属命名空间
         generator.setCorePoolSize(20);                  // 所用的线程数
         generator.setSpringBoot(true);                // 是否生成spring boot相关注解
@@ -67,7 +68,8 @@ public class GeneratorTests {
         autoGenerator.setEntityStaticField(true);
         autoGenerator.setSpringBoot(true);
         autoGenerator.setCorePoolSize(20);
-        autoGenerator.setOutputDir("./src/test/java/");
+//        autoGenerator.setOutputDir("./src/test/java/");
+        autoGenerator.setOutputDir("./src/test/java1/");
         autoGenerator.setNamespace("test.data");
         autoGenerator.setDisInsertable("created_at", "updated_at");
         autoGenerator.setDisUpdatable("created_at", "updated_at");

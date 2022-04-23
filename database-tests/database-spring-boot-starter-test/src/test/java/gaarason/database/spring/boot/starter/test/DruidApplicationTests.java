@@ -48,7 +48,8 @@ public class DruidApplicationTests {
     @Test
     public void 生成代码() {
         // set
-        generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
+//        generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
+        generator.setOutputDir("./src/test/java1/");     // 所有生成文件的路径
         generator.setNamespace("data");                 // 所有生成文件的所属命名空间
         generator.setCorePoolSize(20);                  // 所用的线程数
         generator.setSpringBoot(true);                  // 是否生成spring boot相关注解
@@ -90,7 +91,8 @@ public class DruidApplicationTests {
         generator.setSwagger(true);                   // 是否生成swagger相关注解
         generator.setValidator(true);                 // 是否生成validator相关注解
         generator.setCorePoolSize(20);
-        generator.setOutputDir("./src/test/java/");
+//        generator.setOutputDir("./src/test/java/");
+        generator.setOutputDir("./src/test/java1/");
         generator.setNamespace("test.data");
         generator.setDisInsertable("created_at", "updated_at");
         generator.setDisUpdatable("created_at", "updated_at");
