@@ -109,12 +109,8 @@ public class EntityUtils {
         Class<T> entityClass) throws TypeNotSupportedException {
         try {
             T entity = entityClass.newInstance();
-            List<Field> fields = getDeclaredFieldsContainParent(entityClass);
+            List<Field> fields = getDeclaredFieldsContainParentWithoutStatic(entityClass);
             for (Field field : fields) {
-                // 跳过(静态属性)
-                if (EntityUtils.isStaticField(field)) {
-                    continue;
-                }
                 field.setAccessible(true);
                 String columnName = EntityUtils.columnName(field);
                 gaarason.database.appointment.Column column = stringColumnMap.get(columnName);
@@ -158,12 +154,8 @@ public class EntityUtils {
     public static <T> T entityAssignmentBySimpleMap(Map<String, Object> stringObjectMap, Class<T> entityClass) throws TypeNotSupportedException {
         try {
             T entity = entityClass.newInstance();
-            List<Field> fields = getDeclaredFieldsContainParent(entityClass);
+            List<Field> fields = getDeclaredFieldsContainParentWithoutStatic(entityClass);
             for (Field field : fields) {
-                // 跳过(静态属性)
-                if (EntityUtils.isStaticField(field)) {
-                    continue;
-                }
                 field.setAccessible(true);
                 String columnName = EntityUtils.columnName(field);
                 field.set(entity, stringObjectMap.get(columnName));
@@ -197,12 +189,8 @@ public class EntityUtils {
      */
     public static <T> void entityMergeReference(T baseEntity, T complementEntity) {
         try {
-            List<Field> fields = getDeclaredFieldsContainParent(complementEntity.getClass());
+            List<Field> fields = getDeclaredFieldsContainParentWithoutStatic(complementEntity.getClass());
             for (Field field : fields) {
-                // 跳过(静态属性)
-                if (EntityUtils.isStaticField(field)) {
-                    continue;
-                }
                 field.setAccessible(true);
                 final Object val = field.get(complementEntity);
                 if (val != null) {

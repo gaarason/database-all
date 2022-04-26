@@ -23,7 +23,7 @@ Eloquent ORM for Java
 
 - 更改了项目的模块分布, 主要是拆分出的`database-api`模块, 以供rpc的接口模块去做依赖, 以及`database-query-*`模块, 以供拓展更多的数据库支持
 - 更新了部分的依赖的版本
-- 为了降低使用的门槛, 依然在`database-core`中维持了`druid`依赖, 以及`database-spring-boot-starter`中维持了全部的`database-query-*`与`mysql-connector-java`等. 
+- 为了降低使用的门槛, 依然在`database-core`中维持了`druid`依赖, 以及`database-spring-boot-starter`中维持了`database-query-*`与`mysql-connector-java`等. 
 
 ### 2.19.0
 
