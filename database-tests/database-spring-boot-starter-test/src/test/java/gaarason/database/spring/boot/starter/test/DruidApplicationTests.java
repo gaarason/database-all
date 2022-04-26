@@ -102,7 +102,7 @@ public class DruidApplicationTests {
 
     @Test
     public void 简单查询_通用() {
-        Record<GeneralModel.Table, Serializable> first = generalModel.newQuery().from("student").where("id", "3").first();
+        Record<GeneralModel.Table, Serializable> first = generalModel.newQuery().from("student").where("id", "3").firstOrFail();
         Assert.assertNotNull(first);
         Map<String, Object> stringObjectMap = first.toMap();
         Assert.assertEquals(stringObjectMap.get("id").toString(), "3");

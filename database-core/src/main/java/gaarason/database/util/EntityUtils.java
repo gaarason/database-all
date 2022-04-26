@@ -12,6 +12,7 @@ import gaarason.database.provider.ContainerProvider;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 实体处理工具
@@ -242,6 +243,16 @@ public class EntityUtils {
             fields.addAll(getDeclaredFieldsContainParent(superclass));
         }
         return fields;
+    }
+
+    /**
+     * 返回 clazz 中的所有属性(public/protected/private/default), 含父类, 不含static, 不含接口的
+     * @param clazz 类型
+     * @return 所有字段列表(子类的更加靠前)
+     */
+    public static List<Field> getDeclaredFieldsContainParentWithoutStatic(Class<?> clazz) {
+        List<Field> containStatic = getDeclaredFieldsContainParent(clazz);
+        return containStatic.stream().filter( field -> !EntityUtils.isStaticField(field)).collect(Collectors.toList());
     }
 
     /**

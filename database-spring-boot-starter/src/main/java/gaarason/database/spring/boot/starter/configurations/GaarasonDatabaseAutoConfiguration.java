@@ -81,7 +81,7 @@ public class GaarasonDatabaseAutoConfiguration {
         @Bean(autowireCandidate = false)
         @ConditionalOnMissingBean(GaarasonDataSource.class)
         public GaarasonDataSource gaarasonDataSource() {
-            LOGGER.info("-------------------- gaarasonDataSource init with " + dataSource.getClass().getName() + "--------------------------");
+            LOGGER.info("-------------------- GaarasonDataSource init with " + dataSource.getClass().getName() + "--------------------------");
             return ContainerProvider.getBean(GaarasonDataSourceConfig.class).build(Collections.singletonList(dataSource));
         }
 
@@ -93,7 +93,7 @@ public class GaarasonDatabaseAutoConfiguration {
         @Bean
         @ConditionalOnMissingBean(GaarasonTransactionManager.class)
         public GaarasonTransactionManager gaarasonTransactionManager() {
-            LOGGER.info("-------------------- gaarasonTransactionManager init ------------------");
+            LOGGER.info("-------------------- GaarasonTransactionManager init ------------------");
             return new GaarasonTransactionManager(gaarasonDataSource());
         }
     }

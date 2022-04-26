@@ -19,6 +19,12 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 2.20.0
+
+- 更改了项目的模块分布, 主要是拆分出的`database-api`模块, 以供rpc的接口模块去做依赖, 以及`database-query-*`模块, 以供拓展更多的数据库支持
+- 更新了部分的依赖的版本
+- 为了降低使用的门槛, 依然在`database-core`中维持了`druid`依赖, 以及`database-spring-boot-starter`中维持了全部的`database-query-*`与`mysql-connector-java`等. 
+
 ### 2.19.0
 
 - 更改了`database-spring-boot-starter`中的配置逻辑, 通过配置中的(spring.datasource.type=**DataSource)现在可以使用任意的基本数据源了. 因此这项功能, 所以配置文件将仅支持spring data风格, 而非 druid 风格.

@@ -56,9 +56,32 @@ public class EntityUtilsTests {
     @Test
     public void getDeclaredFieldsContainParentTest(){
         List<Field> fields = EntityUtils.getDeclaredFieldsContainParent(Son.class);
-        Assert.assertEquals(fields.size(), 9);
+        System.out.println(fields);
+
+        /**
+         * 使用测试覆盖率工具时, 会在类中在增加  类似于 private static transient int[] gaarason.database.test.EntityUtilsTests$Son.__$lineHits$__,
+         [
+         private static final long gaarason.database.test.EntityUtilsTests$Son.serialVersionUID,
+         private java.lang.String gaarason.database.test.EntityUtilsTests$Son.name,
+         private java.lang.Integer gaarason.database.test.EntityUtilsTests$Son.age,
+         private java.lang.String gaarason.database.test.EntityUtilsTests$Son.onlySon,
+         private static transient int[] gaarason.database.test.EntityUtilsTests$Son.__$lineHits$__,
+         private static final long gaarason.database.test.EntityUtilsTests$Father.serialVersionUID,
+         private java.lang.String gaarason.database.test.EntityUtilsTests$Father.name,
+         private java.lang.Integer gaarason.database.test.EntityUtilsTests$Father.age,
+         protected java.lang.Integer gaarason.database.test.EntityUtilsTests$Father.sex,
+         private java.lang.String gaarason.database.test.EntityUtilsTests$Father.onlyFather,
+         private static transient int[] gaarason.database.test.EntityUtilsTests$Father.__$lineHits$__
+         ]
+         */
+        Assert.assertEquals(9, fields.size());
     }
 
+    @Test
+    public void getDeclaredFieldsContainParentWithoutStaticTest(){
+        List<Field> fields = EntityUtils.getDeclaredFieldsContainParentWithoutStatic(Son.class);
+        Assert.assertEquals(7, fields.size());
+    }
 
     @Test
     public void getDeclaredFieldContainParentTest() throws NoSuchFieldException, IllegalAccessException {

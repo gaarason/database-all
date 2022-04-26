@@ -11,8 +11,10 @@ Eloquent ORM for Java
  
 - 对于关联关系 Eloquent ORM 提供了富有表现力的声明方式，与简洁的使用方法，并专注在内部进行查询与内存优化，在复杂的关系中有仍然有着良好的体验。  
 
+- 兼容于其他常见的 ORM 框架, 以及常见的数据源 (DataSource)
+
 ## 目录
-* [注册bean](/document/bean.md)
+* [注册配置](/document/bean.md)
 * [数据映射](/document/mapping.md)
 * [数据模型](/document/model.md)
 * [查询结果集](/document/record.md)
@@ -23,10 +25,15 @@ Eloquent ORM for Java
 
 
 - 以如下的方式在程序中查询数据
+- 查询 model.newQuery().select().where().get().toObject();
+- 更新 model.newQuery().data().where().update();
+- 删除 model.newQuery().where().delete();
+- 新增 model.newQuery().select().value().insert();
 
 ```java
 // 查询id为4的一条数据
 Student student = studentModel.find(4).toObject();
+
 
 // 稍复杂嵌套的语句 select id,name from student where id=3 or(age>11 and id=7 and(id between 4 and 10 and age>11))
 List<Student> Students = studentModel.newQuery().where("id", "3").orWhere(
@@ -35,20 +42,13 @@ List<Student> Students = studentModel.newQuery().where("id", "3").orWhere(
     )
 ).select("id", "name").get().toObjectList();
 
+
 // 关联查询 找出学生们的老师们的父亲们的那些房子
 List<Student> Students = studentModel.newQuery().whereIn("id", "1","2","3").get().with("teacher.father.house").toObjectList();
 
+
 // 增加关联 给id为8的学生增加3名老师(id分别为1,2,3)
-studentModel.findOrFail(8).bind("teachers").attach(teacherModel.findMany(1,2,3));
-
-// 解除关联 id为8的学生不再有id为2的老师
-studentModel.findOrFail(8).bind("teachers").detach(teacherModel.findOrFail(2));
-
-// 同步关联 id为8的学生只有id为2和3的两名老师
-studentModel.findOrFail(8).bind("teachers").sync(teacherModel.findMany(2,3));
-
-// 切换关联 id为8的学生 如果原本是id为2老师的学生,则解除, 反之则新增
-studentModel.findOrFail(8).bind("teachers").toggle(teacherModel.findMany(2));
+studentModel.findOrFail(8).bind("teachers").attach( teacherModel.findMany(1,2,3) );
 ```
 ## spring boot 快速开始
 
@@ -82,40 +82,17 @@ gaarason.database.snow-flake.worker-id=2
 ```
 4.快速开始  
 ```java
-package gaarason.database.spring.boot.starter.test;
+@Resource
+GeneralModel generalModel;
 
-import gaarason.database.eloquent.GeneralModel;
-import gaarason.database.eloquent.Record;
-import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import javax.annotation.Resource;
-import java.util.Map;
-
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@FixMethodOrder(MethodSorters.JVM)
-public class TestApplicationTests {
-
-    @Resource
-    GeneralModel generalModel;
-
-    @Test
-    public void 简单查询() {
-        // select * from student where id=3 limit 1
-        Record<GeneralModel.Table, Object> first = generalModel.newQuery().from("student").where("id", "3").first();
-        
-        Assert.assertNotNull(first);
-        Map<String, Object> stringObjectMap = first.toMap();
-        Assert.assertEquals((long) stringObjectMap.get("id"), 3);
-        System.out.println(stringObjectMap);
-    }
-
+@Test
+public void 简单查询() {
+    // select * from student where id=3 limit 1
+    Record<GeneralModel.Table, Object> record = generalModel.newQuery().from("student").where("id", "3").firstOrFail();
+    
+    Map<String, Object> stringObjectMap = record.toMap();
+    
+    System.out.println(stringObjectMap);
 }
+
 ```
