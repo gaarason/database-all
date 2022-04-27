@@ -145,13 +145,43 @@ public final class ModelShadowProvider {
     /**
      * 通过entity解析对应的字段和值组成的map, 忽略不符合规则的字段
      * @param entity     数据表实体对象
+     * @param <T>        数据表实体类
+     * @return 字段对值的映射
+     */
+    public static <T extends Serializable> Map<String, Object> columnValueMap(@Nullable T entity) {
+        // 结果集
+        Map<String, Object> columnValueMap = new HashMap<>();
+        if(ObjectUtils.isNull(entity)){
+            return columnValueMap;
+        }
+        // 属性信息集合
+        Map<String, FieldInfo> columnFieldMap = getByEntityClass(entity.getClass()).getColumnFieldMap();
+        for (Map.Entry<String, FieldInfo> entry : columnFieldMap.entrySet()) {
+            // 属性信息
+            FieldInfo fieldInfo = entry.getValue();
+            // 值
+            Object value = fieldGet(fieldInfo, entity);
+            // 有效则加入 结果集
+            if (effectiveField(fieldInfo, value)) {
+                columnValueMap.put(entry.getKey(), EntityUtils.valueFormat(value));
+            }
+        }
+        return columnValueMap;
+    }
+
+    /**
+     * 通过entity解析对应的字段和值组成的map, 忽略不符合规则的字段
+     * @param entity     数据表实体对象
      * @param insertType 新增?
      * @param <T>        数据表实体类
      * @return 字段对值的映射
      */
-    public static <T extends Serializable> Map<String, Object> columnValueMap(T entity, boolean insertType) {
+    public static <T extends Serializable> Map<String, Object> columnValueMap(@Nullable T entity, boolean insertType) {
         // 结果集
         Map<String, Object> columnValueMap = new HashMap<>();
+        if(ObjectUtils.isNull(entity)){
+            return columnValueMap;
+        }
         // 属性信息集合
         Map<String, FieldInfo> columnFieldMap = getByEntityClass(entity.getClass()).getColumnFieldMap();
         for (Map.Entry<String, FieldInfo> entry : columnFieldMap.entrySet()) {
@@ -335,6 +365,16 @@ public final class ModelShadowProvider {
         } catch (IllegalAccessException | InstantiationException e) {
             throw new EntityNewInstanceException(e);
         }
+    }
+
+    /**
+     * 是否有效字段
+     * @param fieldInfo  字段
+     * @param value      字段值
+     * @return 有效
+     */
+    private static boolean effectiveField(FieldInfo fieldInfo, @Nullable Object value) {
+        return fieldInfo.nullable || value != null;
     }
 
     /**

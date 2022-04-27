@@ -19,11 +19,16 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 2.21.0
+
+- 在查询构造器(`Builder`)中增加`whereLike`/`havingLike`系列执行方法`whereLike(column, value)`/`whereLike(entity)`/`whereLike(likeMap)`/`havingLike(column, value)`/`havingLike(entity)`/`havingLike(likeMap)`
+- 修复查询构造器(`Builder`)中使用`where(entity)`/`having(entity)`等方法时, 当实体`entity`中`@Column`中`insertable=false`时, 不正确的行为.
+
 ### 2.20.0
 
 - 更改了项目的模块分布, 主要是拆分出的`database-api`模块, 以供rpc的接口模块去做依赖, 以及`database-query-*`模块, 以供拓展更多的数据库支持
 - 更新了部分的依赖的版本
-- 为了降低使用的门槛, 依然在`database-core`中维持了`druid`依赖, 以及`database-spring-boot-starter`中维持了`database-query-*`与`mysql-connector-java`等. 
+- 为了降低使用的门槛, 依然在`database-core`中维持了`druid`依赖, 以及`database-spring-boot-starter`中维持了`database-query-*`与`mysql-connector-java`等.
 
 ### 2.19.0
 

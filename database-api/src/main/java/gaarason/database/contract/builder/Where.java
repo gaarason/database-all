@@ -79,6 +79,28 @@ public interface Where<T extends Serializable, K extends Serializable> {
     Builder<T, K> whereIgnoreNull(@Nullable Map<String, Object> map);
 
     /**
+     * "列like值" 的查询条件, 其中值需要自行包含 % 符号 (忽略值为null的情况)
+     * @param column 列名
+     * @param value  值
+     * @return 查询构建器
+     */
+    Builder<T, K> whereLike(String column, @Nullable Object value);
+
+    /**
+     * 将对象的属性转化为, "列like值" 的查询条件, 其中值需要自行包含 % 符号 (忽略entity中，值为null的情况)
+     * @param entity 实体对象
+     * @return 查询构建器
+     */
+    Builder<T, K> whereLike(@Nullable T entity);
+
+    /**
+     * "列like值" 的查询条件, 其中值需要自行包含 % 符号 (忽略MAP中，值为null的情况)
+     * @param map 条件map
+     * @return 查询构建器
+     */
+    Builder<T, K> whereLike(@Nullable Map<String, Object> map);
+
+    /**
      * 条件子查询
      * @param column      列名
      * @param symbol      关系符号

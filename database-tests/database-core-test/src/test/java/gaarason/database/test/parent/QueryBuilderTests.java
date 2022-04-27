@@ -456,8 +456,8 @@ abstract public class QueryBuilderTests extends BaseTests {
             Assert.assertEquals(entity2.getName(), "小明");
             Assert.assertEquals(entity2.getAge().intValue(), 6);
             Assert.assertEquals(entity2.getTeacherId().intValue(), 6);
-            Assert.assertEquals(entity2.getCreatedAt().toString(), "2009-03-14 17:15:23.0");
-            Assert.assertEquals(entity2.getUpdatedAt().toString(), "2010-04-24 22:11:03.0");
+            Assert.assertEquals(LocalDateUtils.date2LocalDateTime(entity2.getCreatedAt()), LocalDateUtils.str2LocalDateTime("2009-03-14 17:15:23.0"));
+            Assert.assertEquals(LocalDateUtils.date2LocalDateTime(entity2.getUpdatedAt()), LocalDateUtils.str2LocalDateTime("2010-04-24 22:11:03.0"));
         });
     }
 
@@ -868,6 +868,80 @@ abstract public class QueryBuilderTests extends BaseTests {
             .get()
             .toObjectList();
         Assert.assertEquals(entityList3.size(), 3);
+    }
+
+    @Test
+    public void 条件_whereLike() {
+        List<StudentModel.Entity> entityList1 = studentModel.newQuery()
+            .whereLike("name", "小%")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(5, entityList1.size());
+
+        List<StudentModel.Entity> entityList2 = studentModel.newQuery()
+            .whereLike("name", "小")
+            .whereLike("name", null)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(0, entityList2.size());
+
+        Map<String, Object> likeMap = new HashMap<>();
+        likeMap.put("name", "%卡");
+        Map<String, Object> likeMap2 = null;
+        List<StudentModel.Entity> entityList3 = studentModel.newQuery()
+            .whereLike(likeMap)
+            .whereLike(likeMap2)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(3, entityList3.size());
+
+
+        StudentModel.Entity student = new StudentModel.Entity();
+        student.setName("%卡");
+        StudentModel.Entity student2 = null;
+        List<StudentModel.Entity> entityList4 = studentModel.newQuery()
+            .whereLike(student)
+            .whereLike(student2)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(3, entityList3.size());
+    }
+
+    @Test
+    public void 筛选_havingLike() {
+        List<StudentModel.Entity> entityList1 = studentModel.newQuery()
+            .havingLike("name", "小%")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(5, entityList1.size());
+
+        List<StudentModel.Entity> entityList2 = studentModel.newQuery()
+            .havingLike("name", "小")
+            .havingLike("name", null)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(0, entityList2.size());
+
+        Map<String, Object> likeMap = new HashMap<>();
+        likeMap.put("name", "%卡");
+        Map<String, Object> likeMap2 = null;
+        List<StudentModel.Entity> entityList3 = studentModel.newQuery()
+            .havingLike(likeMap)
+            .havingLike(likeMap2)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(3, entityList3.size());
+
+
+        StudentModel.Entity student = new StudentModel.Entity();
+        student.setName("%卡");
+        StudentModel.Entity student2 = null;
+        List<StudentModel.Entity> entityList4 = studentModel.newQuery()
+            .havingLike(student)
+            .havingLike(student2)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(3, entityList3.size());
     }
 
     @Test

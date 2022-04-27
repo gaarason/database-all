@@ -463,15 +463,49 @@ Record<Student, Long> record = studentModel.newQuery().selectFunction("concat_ws
 ## where
 ### 字段与值的比较
 #### where
+比较列与值   
+值为null时, 会使用 is null 语句
 ```java
+// select * from student where name id < 2 limit 1
 Record<Student, Long> record = studentModel.newQuery().whereRaw("id<2").first();
+
+// select * from student where name id > 2 limit 1
 Record<Student, Long> record = studentModel.newQuery().where("id", ">", "2").first();
+
+// select * from student where name id != 2 limit 1
 Record<Student, Long> record = studentModel.newQuery().where("id", "!=", "2").first();
+
+// select * from student where name id = 2 limit 1
 Record<Student, Long> record = studentModel.newQuery().where("id", "2").first();
+
+// select * from student where name like "%明%" limit 1
 Record<Student, Long> record = studentModel.newQuery().where("name", "like", "%明%").first();
 
 // select * from student where id is null limit 1
 Record<Student, Long> record = studentModel.newQuery().where("id", null).first();
+```
+
+#### whereLike
+"列like值" 的查询条件, 其中值需要自行包含 % 符号  
+忽略entity中，值为null的情况
+```java
+// select * from `student` where `name`like"小%"
+studentModel.newQuery().whereLike("name", "小%").get();
+
+// select * from `student` where `name`like"小"
+studentModel.newQuery().whereLike("name", "小").get();
+
+// select * from `student` where `name`like"%卡"
+Map<String, Object> likeMap = new HashMap<>(); 
+likeMap.put("name", "%卡");
+
+entityList3 = studentModel.newQuery().whereLike(likeMap).get();
+
+// select * from `student` where `name`like"%卡"
+StudentModel.Entity student = new StudentModel.Entity();
+student.setName("%卡");
+
+studentModel.newQuery().whereLike(student).get();
 ```
 
 #### whereIgnoreNull

@@ -191,7 +191,7 @@ abstract public class TransactionTests extends BaseTests {
         studentModel.newQuery().transaction(() -> {
 
             // 因为事物状态 绑定到了线程 所以先开启事物,然后在事物中开启多个子线程,这些子进程是不处于事物中的!
-            MultiThreadUtil.run(100, 3, () -> {
+            MultiThreadUtil.runWithoutAssert(100, 3, () -> {
                 System.out.println("子线程开启 ------------ " + Thread.currentThread().getName());
                 try {
                     studentModel.newQuery().data("name", "tesxxt").where("id", "9").update();

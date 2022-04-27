@@ -326,7 +326,7 @@ database.slave1.useGlobalDataSourceStat=${useGlobalDataSourceStat}
 - 多个数据库连接(GaarasonDataSource), 一般场景是根据业务的上下文, 来确定使用哪个( GaarasonDataSource ), 兼容于读写分离
 - 建议自定义代理类, 继承`GaarasonDataSourceWrapper`(即实现`GaarasonDataSource`接口), 并重写`protected DataSource getRealDataSource(boolean isWriteOrTransaction)`
 
-#### 使用GaarasonDataSource
+### 使用GaarasonDataSource
 
 
 ```java

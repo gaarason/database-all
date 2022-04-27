@@ -87,13 +87,13 @@ public class DatabaseUtilsTests {
 
     @Test
     public void testSnowFlakeIdUtil() throws InterruptedException {
-        ArrayList<Long> ids = new ArrayList<>();
+        List<Long> ids = new LinkedList<>();
 
         int a = 100;
         int b = 30000;
-
+        IdGenerator.SnowFlakesID snowFlakesID = ContainerProvider.getBean(IdGenerator.SnowFlakesID.class);
         MultiThreadUtil.run(a, b, () -> {
-            long id = ContainerProvider.getBean(IdGenerator.SnowFlakesID.class).nextId();
+            long id = snowFlakesID.nextId();
             synchronized (ids) {
                 ids.add(id);
             }
@@ -108,10 +108,10 @@ public class DatabaseUtilsTests {
         System.out.println("没有重复id");
 
         System.out.println(Long.MAX_VALUE);
-        System.out.println(ContainerProvider.getBean(IdGenerator.SnowFlakesID.class).nextId());
-        System.out.println(ContainerProvider.getBean(IdGenerator.SnowFlakesID.class).nextId());
-        System.out.println(ContainerProvider.getBean(IdGenerator.SnowFlakesID.class).nextId());
-        System.out.println(ContainerProvider.getBean(IdGenerator.SnowFlakesID.class).nextId());
+        System.out.println(snowFlakesID.nextId());
+        System.out.println(snowFlakesID.nextId());
+        System.out.println(snowFlakesID.nextId());
+        System.out.println(snowFlakesID.nextId());
     }
 
     @Test

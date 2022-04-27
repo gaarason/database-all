@@ -59,7 +59,7 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> where(T entity) {
-        final Map<String, Object> columnValueMap = ModelShadowProvider.columnValueMap(entity, true);
+        final Map<String, Object> columnValueMap = ModelShadowProvider.columnValueMap(entity);
         return where(columnValueMap);
     }
 
@@ -77,6 +77,28 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 whereIgnoreNull(entry.getKey(), entry.getValue());
             }
+        }
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> whereLike(String column, @Nullable Object value) {
+        return whereIgnoreNull(column, "like", value);
+    }
+
+    @Override
+    public Builder<T, K> whereLike(@Nullable T entity) {
+        final Map<String, Object> columnValueMap = ModelShadowProvider.columnValueMap(entity);
+        return whereLike(columnValueMap);
+    }
+
+    @Override
+    public Builder<T, K> whereLike(@Nullable Map<String, Object> map) {
+        if(ObjectUtils.isNull(map)){
+            return this;
+        }
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            whereIgnoreNull(entry.getKey(), "like", entry.getValue());
         }
         return this;
     }
@@ -171,8 +193,7 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> whereNotBetween(String column, Object min, Object max) {
-        String sqlPart =
-            column(column) + "not between" + formatValue(min) + "and" + formatValue(max);
+        String sqlPart = column(column) + "not between" + formatValue(min) + "and" + formatValue(max);
         return whereRaw(sqlPart);
     }
 
@@ -266,7 +287,7 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> having(T entity) {
-        final Map<String, Object> columnValueMap = ModelShadowProvider.columnValueMap(entity, true);
+        final Map<String, Object> columnValueMap = ModelShadowProvider.columnValueMap(entity);
         return having(columnValueMap);
     }
 
@@ -284,6 +305,28 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 havingIgnoreNull(entry.getKey(), entry.getValue());
             }
+        }
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> havingLike(String column, @Nullable Object value) {
+        return havingIgnoreNull(column, "like", value);
+    }
+
+    @Override
+    public Builder<T, K> havingLike(@Nullable T entity) {
+        final Map<String, Object> columnValueMap = ModelShadowProvider.columnValueMap(entity);
+        return havingLike(columnValueMap);
+    }
+
+    @Override
+    public Builder<T, K> havingLike(@Nullable Map<String, Object> map) {
+        if(ObjectUtils.isNull(map)){
+            return this;
+        }
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            having(entry.getKey(), "like", entry.getValue());
         }
         return this;
     }
@@ -364,8 +407,7 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> havingNotBetween(String column, Object min, Object max) {
-        String sqlPart =
-            column(column) + "not between" + formatValue(min) + "and" + formatValue(max);
+        String sqlPart = column(column) + "not between" + formatValue(min) + "and" + formatValue(max);
         return havingRaw(sqlPart);
     }
 
@@ -462,8 +504,7 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     // todo
     @Override
     public Builder<T, K> selectFunction(String function, String parameter, @Nullable String alias) {
-        String sqlPart = function + FormatUtils.bracket(parameter) + (alias == null ? "" :
-            " as " + FormatUtils.quotes(alias));
+        String sqlPart = function + FormatUtils.bracket(parameter) + (alias == null ? "" : " as " + FormatUtils.quotes(alias));
         grammar.pushSelect(sqlPart);
         return this;
     }
@@ -474,11 +515,9 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     }
 
     @Override
-    public Builder<T, K> selectFunction(String function, GenerateSqlPartFunctionalInterface<T, K> closure,
-        @Nullable String alias) {
+    public Builder<T, K> selectFunction(String function, GenerateSqlPartFunctionalInterface<T, K> closure, @Nullable String alias) {
         String completeSql = generateSql(closure);
-        String sqlPart = function + FormatUtils.bracket(completeSql) + (alias == null ? "" :
-            " as " + FormatUtils.quotes(alias));
+        String sqlPart = function + FormatUtils.bracket(completeSql) + (alias == null ? "" : " as " + FormatUtils.quotes(alias));
         grammar.pushSelect(sqlPart);
         return this;
     }
@@ -655,8 +694,7 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     @Override
     public Builder<T, K> join(JoinType joinType, String table, GenerateSqlPartFunctionalInterface<T, K> joinConditions) {
         String conditions = generateSqlPart(joinConditions);
-        String sqlPart = FormatUtils.spaces(joinType.getOperation()) + "join " + table + FormatUtils.spaces(
-            "on") + conditions;
+        String sqlPart = FormatUtils.spaces(joinType.getOperation()) + "join " + table + FormatUtils.spaces("on") + conditions;
         return joinRaw(sqlPart);
     }
 

@@ -335,10 +335,10 @@ abstract public class ORMTests extends BaseTests {
         final Long newCount2 = studentORMModel.newQuery().count();
         final StudentORMModel.Entity entity2 = theRecord2.toObject();
 
-        Assert.assertEquals(entity2.getName(), name);
-        Assert.assertEquals(entity2.getAge(), age);
-        Assert.assertNotEquals(entity2.getAge(), age3);
-        Assert.assertEquals(newCount2, newCount);
+        Assert.assertEquals(name, entity2.getName());
+        Assert.assertEquals(age, entity2.getAge());
+        Assert.assertNotEquals(age3, entity2.getAge());
+        Assert.assertEquals(newCount, newCount2);
     }
 
     @Test

@@ -79,6 +79,28 @@ public interface Having<T extends Serializable, K extends Serializable> {
     Builder<T, K> havingIgnoreNull(@Nullable Map<String, Object> map);
 
     /**
+     * "列like值" 的查询条件, 其中值需要自行包含 % 符号 (忽略值为null的情况)
+     * @param column 列名
+     * @param value  值
+     * @return 查询构建器
+     */
+    Builder<T, K> havingLike(String column, @Nullable Object value);
+
+    /**
+     * 将对象的属性转化为, "列like值" 的查询条件, 其中值需要自行包含 % 符号 (忽略entity中，值为null的情况)
+     * @param entity 实体对象
+     * @return 查询构建器
+     */
+    Builder<T, K> havingLike(@Nullable T entity);
+
+    /**
+     * "列like值" 的查询条件, 其中值需要自行包含 % 符号, (忽略MAP中，值为null的情况)
+     * @param map 条件map
+     * @return 查询构建器
+     */
+    Builder<T, K> havingLike(@Nullable Map<String, Object> map);
+
+    /**
      * 列值在范围内
      * @param column    列名
      * @param valueList 值所在的list
