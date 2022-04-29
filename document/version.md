@@ -19,6 +19,12 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 2.23.0 (未发布)
+
+- 在查询构造器(`Builder`)中增加`whereKeywords(value, column...)`/`whereKeywordsIgnoreNull(value, column...)`/`havingKeywords(value, column...)`/`havingKeywordsIgnoreNull(value, column...)`等方法
+- 在查询构造器(`Builder`)中增加`whereMayLikeIgnoreNull(map)/whereMayLikeIgnoreNull(column, value)`/`havingMayLikeIgnoreNull(map)/havingMayLikeIgnoreNull(column, value)`
+- 在查询构造器(`Builder`)中增加`andWhereIgnoreEmpty(closure)`/`orWhereIgnoreEmpty(closure)`/`andHavingIgnoreEmpty(closure)`/`orHavingIgnoreEmpty(closure)`
+
 ### 2.22.0
 
 - 在查询构造器(`Builder`)中增加`whereMayLike`/`havingMayLike`系列执行方法`whereMayLike(column, value)`/`whereMayLike(entity)`/`whereMayLike(map)`/`havingMayLike(column, value)`/`havingMayLike(entity)`/`havingMayLike(map)`

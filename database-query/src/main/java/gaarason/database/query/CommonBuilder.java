@@ -94,6 +94,38 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     }
 
     @Override
+    public Builder<T, K> whereKeywords(@Nullable Object value, Collection<String> columns) {
+        andWhere(builder -> {
+            for (String column : columns) {
+                builder.orWhere(builderInner -> builderInner.whereMayLike(column, value));
+            }
+            return builder;
+        });
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> whereKeywords(@Nullable Object value, String... columns) {
+        return whereKeywords(value, Arrays.asList(columns));
+    }
+
+    @Override
+    public Builder<T, K> whereKeywordsIgnoreNull(@Nullable Object value, Collection<String> columns) {
+        andWhereIgnoreEmpty(builder -> {
+            for (String column : columns) {
+                builder.orWhereIgnoreEmpty(builderInner -> builderInner.whereMayLikeIgnoreNull(column, value));
+            }
+            return builder;
+        });
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> whereKeywordsIgnoreNull(@Nullable Object value, String... columns) {
+        return whereKeywordsIgnoreNull(value, Arrays.asList(columns));
+    }
+
+    @Override
     public Builder<T, K> whereLike(String column, @Nullable Object value) {
         return whereIgnoreNull(column, "like", value);
     }
@@ -126,6 +158,14 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     }
 
     @Override
+    public Builder<T, K> whereMayLikeIgnoreNull(String column, @Nullable Object value) {
+        if (ObjectUtils.isNull(value)) {
+            return this;
+        }
+        return whereMayLike(column, value);
+    }
+
+    @Override
     public Builder<T, K> whereMayLike(@Nullable T entity) {
         final Map<String, Object> columnValueMap = ModelShadowProvider.columnValueMap(entity);
         return whereMayLike(columnValueMap);
@@ -138,6 +178,17 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             whereMayLike(entry.getKey(), entry.getValue());
+        }
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> whereMayLikeIgnoreNull(@Nullable Map<String, Object> map) {
+        if (ObjectUtils.isEmpty(map)) {
+            return this;
+        }
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            whereMayLikeIgnoreNull(entry.getKey(), entry.getValue());
         }
         return this;
     }
@@ -291,9 +342,27 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     }
 
     @Override
+    public Builder<T, K> andWhereIgnoreEmpty(GenerateSqlPartFunctionalInterface<T, K> closure) {
+        String sqlPart = generateSqlPart(closure);
+        if (!isEmptySql(sqlPart)) {
+            grammar.pushWhere(sqlPart, "and");
+        }
+        return this;
+    }
+
+    @Override
     public Builder<T, K> orWhere(GenerateSqlPartFunctionalInterface<T, K> closure) {
         String sqlPart = generateSqlPart(closure);
         grammar.pushWhere(sqlPart, "or");
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> orWhereIgnoreEmpty(GenerateSqlPartFunctionalInterface<T, K> closure) {
+        String sqlPart = generateSqlPart(closure);
+        if (!isEmptySql(sqlPart)) {
+            grammar.pushWhere(sqlPart, "or");
+        }
         return this;
     }
 
@@ -361,6 +430,40 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     }
 
     @Override
+    public Builder<T, K> havingKeywords(@Nullable Object value, Collection<String> columns) {
+        andHaving(builder -> {
+            for (String column : columns) {
+                builder.orHaving(builderInner -> builderInner.havingMayLike(column, value));
+            }
+            return builder;
+        });
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> havingKeywords(@Nullable Object value, String... columns) {
+        return havingKeywords(value, Arrays.asList(columns));
+
+    }
+
+    @Override
+    public Builder<T, K> havingKeywordsIgnoreNull(@Nullable Object value, Collection<String> columns) {
+        andHavingIgnoreEmpty(builder -> {
+            for (String column : columns) {
+                builder.orHavingIgnoreEmpty(builderInner -> builderInner.havingMayLikeIgnoreNull(column, value));
+            }
+            return builder;
+        });
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> havingKeywordsIgnoreNull(@Nullable Object value, String... columns) {
+        return havingKeywordsIgnoreNull(value, Arrays.asList(columns));
+
+    }
+
+    @Override
     public Builder<T, K> havingLike(String column, @Nullable Object value) {
         return havingIgnoreNull(column, "like", value);
     }
@@ -393,6 +496,14 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     }
 
     @Override
+    public Builder<T, K> havingMayLikeIgnoreNull(String column, @Nullable Object value) {
+        if (ObjectUtils.isNull(value)) {
+            return this;
+        }
+        return havingMayLike(column, value);
+    }
+
+    @Override
     public Builder<T, K> havingMayLike(@Nullable T entity) {
         final Map<String, Object> columnValueMap = ModelShadowProvider.columnValueMap(entity);
         return havingMayLike(columnValueMap);
@@ -405,6 +516,17 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             havingMayLike(entry.getKey(), entry.getValue());
+        }
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> havingMayLikeIgnoreNull(@Nullable Map<String, Object> map) {
+        if (ObjectUtils.isEmpty(map)) {
+            return this;
+        }
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            havingMayLikeIgnoreNull(entry.getKey(), entry.getValue());
         }
         return this;
     }
@@ -544,9 +666,28 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     }
 
     @Override
+    public Builder<T, K> andHavingIgnoreEmpty(GenerateSqlPartFunctionalInterface<T, K> closure) {
+        String sqlPart = generateSqlPart(closure);
+        if (!isEmptySql(sqlPart)) {
+            grammar.pushHaving(sqlPart, "and");
+        }
+
+        return this;
+    }
+
+    @Override
     public Builder<T, K> orHaving(GenerateSqlPartFunctionalInterface<T, K> closure) {
         String sqlPart = generateSqlPart(closure);
         grammar.pushHaving(sqlPart, "or");
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> orHavingIgnoreEmpty(GenerateSqlPartFunctionalInterface<T, K> closure) {
+        String sqlPart = generateSqlPart(closure);
+        if (!isEmptySql(sqlPart)) {
+            grammar.pushHaving(sqlPart, "or");
+        }
         return this;
     }
 
@@ -583,7 +724,7 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     @Override
     public Builder<T, K> selectFunction(String function, String parameter, @Nullable String alias) {
         String sqlPart =
-                function + FormatUtils.bracket(parameter) + (alias == null ? "" : " as " + FormatUtils.quotes(alias));
+            function + FormatUtils.bracket(parameter) + (alias == null ? "" : " as " + FormatUtils.quotes(alias));
         grammar.pushSelect(sqlPart);
         return this;
     }
@@ -598,7 +739,7 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
                                         @Nullable String alias) {
         String completeSql = generateSql(closure);
         String sqlPart =
-                function + FormatUtils.bracket(completeSql) + (alias == null ? "" : " as " + FormatUtils.quotes(alias));
+            function + FormatUtils.bracket(completeSql) + (alias == null ? "" : " as " + FormatUtils.quotes(alias));
         grammar.pushSelect(sqlPart);
         return this;
     }
@@ -777,7 +918,7 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
                               GenerateSqlPartFunctionalInterface<T, K> joinConditions) {
         String conditions = generateSqlPart(joinConditions);
         String sqlPart =
-                FormatUtils.spaces(joinType.getOperation()) + "join " + table + FormatUtils.spaces("on") + conditions;
+            FormatUtils.spaces(joinType.getOperation()) + "join " + table + FormatUtils.spaces("on") + conditions;
         return joinRaw(sqlPart);
     }
 

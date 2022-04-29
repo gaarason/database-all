@@ -945,10 +945,148 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
+    public void 条件_whereKeywords(){
+
+        List<StudentModel.Entity> list = studentModel.newQuery()
+            .whereKeywords("小", "name", "age", "id")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(0, list.size());
+
+        List<StudentModel.Entity> list1 = studentModel.newQuery()
+            .whereKeywords("小%", "name", "age", "id")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(5, list1.size());
+
+        List<StudentModel.Entity> list2 = studentModel.newQuery()
+            .whereKeywords(null, "name", "age", "id")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(0, list2.size());
+
+        List<StudentModel.Entity> list3 = studentModel.newQuery()
+            .whereKeywords(2, "name", "age", "id")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(1, list3.size());
+
+        List<StudentModel.Entity> list4 = studentModel.newQuery()
+            .whereKeywords(6, "name", "age", "id")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(2, list4.size());
+
+        List<StudentModel.Entity> list5 = studentModel.newQuery()
+            .whereKeywords("%6", "name", "age", "id")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(3, list5.size());
+
+        List<StudentModel.Entity> list6 = studentModel.newQuery()
+            .whereKeywordsIgnoreNull(null, "name", "age", "id")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(10, list6.size());
+
+        List<StudentModel.Entity> list7 = studentModel.newQuery()
+            .whereKeywords("%1", "name", "age", "id")
+            .whereKeywords("%张", "name", "age", "id")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(1, list7.size());
+
+        List<StudentModel.Entity> list8 = studentModel.newQuery()
+            .whereKeywordsIgnoreNull("%1", "name", "age", "id")
+            .whereKeywordsIgnoreNull("%张", "name", "age", "id")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(1, list8.size());
+
+        List<StudentModel.Entity> list9 = studentModel.newQuery()
+            .whereKeywordsIgnoreNull(null, "name", "age", "id")
+            .whereKeywordsIgnoreNull(null, "name", "age", "id")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(10, list9.size());
+    }
+
+    @Test
+    public void 条件_havingKeywords(){
+
+        List<StudentModel.Entity> list = studentModel.newQuery()
+            .havingKeywords("小", "name", "age", "id")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(0, list.size());
+
+        List<StudentModel.Entity> list1 = studentModel.newQuery()
+            .havingKeywords("小%", "name", "age", "id")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(5, list1.size());
+
+        List<StudentModel.Entity> list2 = studentModel.newQuery()
+            .havingKeywords(null, "name", "age", "id")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(0, list2.size());
+
+        List<StudentModel.Entity> list3 = studentModel.newQuery()
+            .havingKeywords(2, "name", "age", "id")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(1, list3.size());
+
+        List<StudentModel.Entity> list4 = studentModel.newQuery()
+            .havingKeywords(6, "name", "age", "id")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(2, list4.size());
+
+        List<StudentModel.Entity> list5 = studentModel.newQuery()
+            .havingKeywords("%6", "name", "age", "id")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(3, list5.size());
+
+        List<StudentModel.Entity> list6 = studentModel.newQuery()
+            .havingKeywordsIgnoreNull(null, "name", "age", "id")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(10, list6.size());
+
+        List<StudentModel.Entity> list7 = studentModel.newQuery()
+            .havingKeywords("%1", "name", "age", "id")
+            .havingKeywords("%张", "name", "age", "id")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(1, list7.size());
+
+        List<StudentModel.Entity> list8 = studentModel.newQuery()
+            .havingKeywordsIgnoreNull("%1", "name", "age", "id")
+            .havingKeywordsIgnoreNull("%张", "name", "age", "id")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(1, list8.size());
+
+        List<StudentModel.Entity> list9 = studentModel.newQuery()
+            .havingKeywordsIgnoreNull(null, "name", "age", "id")
+            .havingKeywordsIgnoreNull(null, "name", "age", "id")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(10, list9.size());
+    }
+
+
+
+    @Test
     public void 条件_whereMayLike() {
+        // select * from `student` where `name`like"小%"
         List<StudentModel.Entity> entityList1 = studentModel.newQuery().whereMayLike("name", "小%").get().toObjectList();
         Assert.assertEquals(5, entityList1.size());
 
+        // select * from `student` where `name`="小"
         List<StudentModel.Entity> entityList2 = studentModel.newQuery()
                 .whereMayLike("name", "小")
                 .get()
@@ -958,6 +1096,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         Map<String, Object> likeMap = new HashMap<>();
         likeMap.put("name", "%卡");
         Map<String, Object> likeMap2 = null;
+        // select * from `student` where `name`like"%卡"
         List<StudentModel.Entity> entityList3 = studentModel.newQuery()
                 .whereMayLike(likeMap)
                 .whereMayLike(likeMap2)
@@ -969,22 +1108,46 @@ abstract public class QueryBuilderTests extends BaseTests {
         StudentModel.Entity student = new StudentModel.Entity();
         student.setName("%卡");
         StudentModel.Entity student2 = null;
+        // select * from `student` where `name`like"%卡"
         List<StudentModel.Entity> entityList4 = studentModel.newQuery()
-                .whereMayLike(student)
-                .whereMayLike(student2)
-                .get()
-                .toObjectList();
+            .whereMayLike(student)
+            .whereMayLike(student2)
+            .get()
+            .toObjectList();
         Assert.assertEquals(3, entityList4.size());
+
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", "%卡");
+        map.put("age", null);
+        // select * from `student` where `name`like"%卡" and `age`is null
+        List<StudentModel.Entity> entityList5 = studentModel.newQuery()
+            .whereMayLike(map)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(0, entityList5.size());
+
+        Map<String, Object> map2 = new HashMap<>();
+        map2.put("name", "%卡");
+        map2.put("age", null);
+        // select * from `student` where `name`like"%卡"
+        List<StudentModel.Entity> entityList6 = studentModel.newQuery()
+            .whereMayLikeIgnoreNull(map2)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(3, entityList6.size());
     }
 
     @Test
     public void 条件_havingMayLike() {
+        // select * from `student` having `name`like"小%"
         List<StudentModel.Entity> entityList1 = studentModel.newQuery()
                 .havingMayLike("name", "小%")
                 .get()
                 .toObjectList();
         Assert.assertEquals(5, entityList1.size());
 
+        // select * from `student` having `name`="小"
         List<StudentModel.Entity> entityList2 = studentModel.newQuery()
                 .havingMayLike("name", "小")
                 .get()
@@ -994,6 +1157,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         Map<String, Object> likeMap = new HashMap<>();
         likeMap.put("name", "%卡");
         Map<String, Object> likeMap2 = null;
+        // select * from `student` having `name`like"%卡"
         List<StudentModel.Entity> entityList3 = studentModel.newQuery()
                 .havingMayLike(likeMap)
                 .havingMayLike(likeMap2)
@@ -1005,12 +1169,33 @@ abstract public class QueryBuilderTests extends BaseTests {
         StudentModel.Entity student = new StudentModel.Entity();
         student.setName("%卡");
         StudentModel.Entity student2 = null;
+        // select * from `student` having `name`like"%卡"
         List<StudentModel.Entity> entityList4 = studentModel.newQuery()
                 .havingMayLike(student)
                 .havingMayLike(student2)
                 .get()
                 .toObjectList();
         Assert.assertEquals(3, entityList4.size());
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", "%卡");
+        map.put("age", null);
+        // select * from `student` having `name`like"%卡" and `age`is null
+        List<StudentModel.Entity> entityList5 = studentModel.newQuery()
+            .havingMayLike(map)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(0, entityList5.size());
+
+        Map<String, Object> map2 = new HashMap<>();
+        map2.put("name", "%卡");
+        map2.put("age", null);
+        // select * from `student` having `name`like"%卡"
+        List<StudentModel.Entity> entityList6 = studentModel.newQuery()
+            .havingMayLikeIgnoreNull(map2)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(3, entityList6.size());
     }
 
     @Test

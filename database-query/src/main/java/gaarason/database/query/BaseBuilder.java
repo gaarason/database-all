@@ -79,7 +79,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * @param closure 闭包
      * @return sqlPart eg:(`id`="3" and `age` between "12" and "19")
      */
-    String generateSqlPart(GenerateSqlPartFunctionalInterface<T, K> closure) {
+    protected String generateSqlPart(GenerateSqlPartFunctionalInterface<T, K> closure) {
         return generateSql(closure, false);
     }
 
@@ -88,8 +88,19 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * @param closure 闭包
      * @return sqlPart eg:(select * from `student` where `id`="3" and `age` between "12" and "19")
      */
-    String generateSql(GenerateSqlPartFunctionalInterface<T, K> closure) {
+    protected String generateSql(GenerateSqlPartFunctionalInterface<T, K> closure) {
         return generateSql(closure, true);
+    }
+
+    /**
+     * 是否是空sql
+     * 用于检测 generateSql, generateSqlPart 的结果
+     * @param sql sql
+     * @return 是空sql
+     */
+    protected boolean isEmptySql(String sql) {
+        // () 的含义即是 generateSql(builder -> builder) 的结果;
+        return ObjectUtils.isEmpty(sql) || "()".equals(sql);
     }
 
     /**
@@ -123,7 +134,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
 
     /**
      * 渴求式关联
-     * @param column         所关联的Model(当前模块的属性名)
+     * @param column 所关联的Model(当前模块的属性名)
      * @param builderClosure 所关联的Model的查询构造器约束
      * @return 关联的Model的查询构造器
      */
@@ -134,14 +145,14 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
 
     /**
      * 渴求式关联
-     * @param column         所关联的Model(当前模块的属性名)
+     * @param column 所关联的Model(当前模块的属性名)
      * @param builderClosure 所关联的Model的查询构造器约束
-     * @param recordClosure  所关联的Model的再一级关联
+     * @param recordClosure 所关联的Model的再一级关联
      * @return 关联的Model的查询构造器
      */
     @Override
     public Builder<T, K> with(String column, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
-        RelationshipRecordWithFunctionalInterface recordClosure) {
+                              RelationshipRecordWithFunctionalInterface recordClosure) {
         grammar.pushWith(column, builderClosure, recordClosure);
         return this;
     }
@@ -149,13 +160,14 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
     /**
      * 带总数的分页
      * @param currentPage 当前页
-     * @param perPage     每页数量
+     * @param perPage 每页数量
      * @return 分页对象
-     * @throws SQLRuntimeException               数据库异常
+     * @throws SQLRuntimeException 数据库异常
      * @throws CloneNotSupportedRuntimeException 克隆异常
      */
     @Override
-    public Paginate<T> paginate(int currentPage, int perPage) throws SQLRuntimeException, CloneNotSupportedRuntimeException {
+    public Paginate<T> paginate(int currentPage, int perPage)
+        throws SQLRuntimeException, CloneNotSupportedRuntimeException {
         Long count = clone().count("*");
         List<T> list = limit((currentPage - 1) * perPage, perPage).get().toObjectList();
         return new Paginate<>(list, currentPage, perPage, count.intValue());
@@ -164,14 +176,15 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
     /**
      * 带总数的分页
      * @param currentPage 当前页
-     * @param perPage     每页数量
+     * @param perPage 每页数量
      * @return 分页对象
-     * @throws SQLRuntimeException               数据库异常
+     * @throws SQLRuntimeException 数据库异常
      * @throws CloneNotSupportedRuntimeException 克隆异常
      */
     @Override
     public Paginate<Map<String, Object>> paginateMapStyle(int currentPage,
-        int perPage) throws SQLRuntimeException, CloneNotSupportedRuntimeException {
+                                                          int perPage)
+        throws SQLRuntimeException, CloneNotSupportedRuntimeException {
         Long count = clone().count("*");
         List<Map<String, Object>> list = limit((currentPage - 1) * perPage, perPage).get().toMapList();
         return new Paginate<>(list, currentPage, perPage, count.intValue());
@@ -180,7 +193,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
     /**
      * 不带总数的分页
      * @param currentPage 当前页
-     * @param perPage     每页数量
+     * @param perPage 每页数量
      * @return 分页对象
      * @throws SQLRuntimeException 数据库异常
      */
@@ -193,12 +206,13 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
     /**
      * 不带总数的分页
      * @param currentPage 当前页
-     * @param perPage     每页数量
+     * @param perPage 每页数量
      * @return 分页对象
      * @throws SQLRuntimeException 数据库异常
      */
     @Override
-    public Paginate<Map<String, Object>> simplePaginateMapStyle(int currentPage, int perPage) throws SQLRuntimeException {
+    public Paginate<Map<String, Object>> simplePaginateMapStyle(int currentPage, int perPage)
+        throws SQLRuntimeException {
         List<Map<String, Object>> list = limit((currentPage - 1) * perPage, perPage).get().toMapList();
         return new Paginate<>(list, currentPage, perPage);
     }
@@ -318,7 +332,8 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
     }
 
     @Override
-    public Record<T, K> queryOrFail(String sql, Collection<String> parameters) throws SQLRuntimeException, EntityNotFoundException {
+    public Record<T, K> queryOrFail(String sql, Collection<String> parameters)
+        throws SQLRuntimeException, EntityNotFoundException {
         return doSomethingInConnection(preparedStatement -> {
             ResultSet resultSet = preparedStatement.executeQuery();
             return RecordFactory.newRecord(entityClass, model, resultSet, sql);
@@ -326,7 +341,8 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
     }
 
     @Override
-    public Record<T, K> queryOrFail(String sql, String... parameters) throws SQLRuntimeException, EntityNotFoundException {
+    public Record<T, K> queryOrFail(String sql, String... parameters)
+        throws SQLRuntimeException, EntityNotFoundException {
         return queryOrFail(sql, Arrays.asList(parameters));
     }
 
@@ -401,16 +417,17 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
 
     /**
      * 在连接中执行
-     * @param closure    闭包
-     * @param sql        带占位符的sql
+     * @param closure 闭包
+     * @param sql 带占位符的sql
      * @param parameters sql的参数
-     * @param isWrite    是否写(主)链接
-     * @param <U>        响应类型
+     * @param isWrite 是否写(主)链接
+     * @param <U> 响应类型
      * @return 响应
      * @throws SQLRuntimeException 数据库异常
      */
-    protected <U> U doSomethingInConnection(ExecSqlWithinConnectionFunctionalInterface<U> closure, String sql, Collection<String> parameters,
-        boolean isWrite) throws SQLRuntimeException {
+    protected <U> U doSomethingInConnection(ExecSqlWithinConnectionFunctionalInterface<U> closure, String sql,
+                                            Collection<String> parameters,
+                                            boolean isWrite) throws SQLRuntimeException {
         // 获取连接
         Connection connection = gaarasonDataSource.getLocalConnection(isWrite);
         try {
@@ -421,7 +438,8 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
         } catch (EntityNotFoundException e) {
             throw new EntityNotFoundException(String.format(sql.replace(" ? ", "\"%s\""), parameters.toArray()));
         } catch (Throwable e) {
-            throw new SQLRuntimeException(sql, parameters, e.getMessage(), gaarasonDataSource.getQueryBuilder().getValueSymbol(), e);
+            throw new SQLRuntimeException(sql, parameters, e.getMessage(),
+                gaarasonDataSource.getQueryBuilder().getValueSymbol(), e);
         } finally {
             // 关闭连接
             gaarasonDataSource.localConnectionClose(connection);
@@ -432,7 +450,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * 获取主键
      * @param generatedKeys 数据集
      * @return 主键
-     * @throws SQLException                      数据库异常
+     * @throws SQLException 数据库异常
      * @throws PrimaryKeyTypeNotSupportException 不支持的主键类型
      */
     private K getGeneratedKeys(ResultSet generatedKeys) throws SQLException, PrimaryKeyTypeNotSupportException {
@@ -443,16 +461,18 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
             return ObjectUtils.typeCast(generatedKeys.getInt(1));
         } else if (Long.class.equals(primaryKeyClass) || long.class.equals(primaryKeyClass)) {
             return ObjectUtils.typeCast(generatedKeys.getLong(1));
-        } else if (String.class.equals(primaryKeyClass) || Object.class.equals(primaryKeyClass) || Serializable.class.equals(primaryKeyClass)) {
+        } else if (String.class.equals(primaryKeyClass) || Object.class.equals(primaryKeyClass) ||
+            Serializable.class.equals(primaryKeyClass)) {
             return ObjectUtils.typeCast(generatedKeys.getString(1));
         }
-        throw new PrimaryKeyTypeNotSupportException("Primary key type [" + primaryKeyClass + "] not support get " + "generated keys yet.");
+        throw new PrimaryKeyTypeNotSupportException(
+            "Primary key type [" + primaryKeyClass + "] not support get " + "generated keys yet.");
     }
 
     /**
      * 执行sql, 处理jdbc结果集, 返回收集器
      * @return 收集器
-     * @throws SQLRuntimeException     数据库异常
+     * @throws SQLRuntimeException 数据库异常
      * @throws EntityNotFoundException 查询结果为空
      */
     Record<T, K> querySql() throws SQLRuntimeException, EntityNotFoundException {
@@ -463,7 +483,8 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
         Record<T, K> theRecord = queryOrFail(sql, parameterList);
         for (Map.Entry<String, Object[]> stringEntry : columnMap.entrySet()) {
             Object[] value = stringEntry.getValue();
-            theRecord.with(stringEntry.getKey(), (GenerateSqlPartFunctionalInterface) value[0], (RelationshipRecordWithFunctionalInterface) value[1]);
+            theRecord.with(stringEntry.getKey(), (GenerateSqlPartFunctionalInterface) value[0],
+                (RelationshipRecordWithFunctionalInterface) value[1]);
         }
         return theRecord;
     }
@@ -471,7 +492,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
     /**
      * 执行sql, 处理jdbc结果集, 返回收集器
      * @return 收集器
-     * @throws SQLRuntimeException     数据库异常
+     * @throws SQLRuntimeException 数据库异常
      * @throws EntityNotFoundException 查询结果为空
      */
     RecordList<T, K> querySqlList() throws SQLRuntimeException, EntityNotFoundException {
@@ -515,7 +536,8 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      */
     int updateSql(SqlType sqlType) throws SQLRuntimeException {
         if (sqlType != SqlType.INSERT && !grammar.hasWhere()) {
-            throw new ConfirmOperationException("You made a risky operation without where conditions, use where(1) " + "for sure");
+            throw new ConfirmOperationException(
+                "You made a risky operation without where conditions, use where(1) " + "for sure");
         }
         // sql组装执行
         String sql = grammar.generateSql(sqlType);
@@ -525,13 +547,14 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
 
     /**
      * 执行sql
-     * @param connection    数据库连接
-     * @param sql           查询语句
+     * @param connection 数据库连接
+     * @param sql 查询语句
      * @param parameterList 参数绑定
      * @return 预执行对象
      * @throws SQLException sql错误
      */
-    private PreparedStatement executeSql(Connection connection, String sql, Collection<String> parameterList) throws SQLException {
+    private PreparedStatement executeSql(Connection connection, String sql, Collection<String> parameterList)
+        throws SQLException {
         // 日志记录
         model.log(sql, parameterList);
         // 预执行 ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY
@@ -547,7 +570,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
 
     /**
      * 执行闭包生成sql, 含绑定参数的合并
-     * @param closure  闭包
+     * @param closure 闭包
      * @param wholeSql 是否生成完整sql
      * @return sql
      */

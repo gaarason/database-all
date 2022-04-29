@@ -65,7 +65,7 @@ Eloquent ORM for Java
 ## 原生语句
 - 语句中使用 ? 做占位符, 注意问号(?)前后应该分别保留1个半角空格, 以便SQL日志记录
 ### 原生查询
-
+#### query queryList
 ```java
 // 查询单条
 Record<Student, Long> record = studentModel.newQuery()
@@ -81,6 +81,7 @@ RecordList<Student, Long>, Long> records1 = studentModel.newQuery().queryList("s
 RecordList<Student, Long>, Long> records2 = studentModel.newQuery().queryList("select * from student where sex= ? ", "2");
 ```
 ### 原生更新
+#### execute
 ```java
 List<String> parameters = new ArrayList<>();
 parameters.add("134");
@@ -93,6 +94,7 @@ int num2 = studentModel.newQuery()
     .execute("insert into `student`(`id`,`name`,`age`,`sex`) values( ? , ? , ? , ? )", "134","testNAme","11","1");
 ```
 ### 原生新增
+#### executeGetId executeGetIds
 ```java
 
 List<String> parameters = new ArrayList<>();
@@ -111,6 +113,7 @@ List<Object> ids = studentModel.newQuery()
 ```
 
 ## 获取
+#### first firstOrFail get
 
 ```java
 // select name,id from student limit 1
@@ -126,6 +129,7 @@ Record<Student, Long> record = studentModel.findOrFail("9")
 RecordList<Student, Long>> records = studentModel.where("age","<","9").get();
 ```
 ### 分块处理
+#### dealChunk
 当要进行大量数据查询时,可以使用分块,他将自动拼接`limit`字段,在闭包中返回`boolean`表示是否进行下一次迭代  
 因为分块查询,并发的数据更改一定会伴随数据不准确的问题,如同redis中的`keys`与`scan`
 ```java
@@ -137,7 +141,7 @@ studentModel.where("age","<","9").dealChunk(2000, records -> {
 ```
 
 ## 插入
-
+#### insert insertMapStyle insertGetId insertGetIds insertGetIdMapStyle insertGetIdOrFail insertGetIdOrFailMapStyle
 ```java
 
 // 推荐
@@ -219,6 +223,7 @@ int insert = studentModel.newQuery().insertMapStyle(entityList);
 ```
 
 ## 更新
+#### update  updateMapStyle
 当一个更新语句没有`where`时,将会抛出`ConfirmOperationException`
 ```java
 int num = studentModel.newQuery().data("name", "xxcc").where("id", "3").update();
@@ -248,6 +253,7 @@ int update = studentModel.newQuery().where("id", "3").updateMapStyle(map);
 当一个删除语句没有`where`时,将会抛出`ConfirmOperationException`
 
 ### 默认删除
+#### delete
 ```java
 int num = studentModel.newQuery().where("id", "3").delete();
 
@@ -257,6 +263,7 @@ studentModel.newQuery().delete();
 studentModel.newQuery().whereRaw(1).update();
 ```
 ### 强力删除
+#### forceDelete
 ```java
 int num = studentModel.newQuery().where("id", "3").forceDelete();
 
@@ -445,6 +452,8 @@ Assert.assertEquals(min4.toString(), "3");
 ```
 
 ## 自增或自减
+
+#### dataDecrement  dataIncrement
 ```java
 int update = studentModel.newQuery().dataDecrement("age", 2).whereRaw("id=4").update();
 
@@ -507,10 +516,11 @@ studentModel.newQuery().whereLike("name", "小%").get();
 
     studentModel.newQuery().whereLike(student).get();
 ```
-#### whereMayLike
+#### whereMayLike  whereMayLikeIgnoreNull
 选择可能的条件类型
 * 当 value 以 %开头或者结尾时, 使用like查询
-* 当 value 为 null 时, 使用 is null 查询
+* whereMayLike 当 value 为 null 时, 使用 is null 查询
+* whereMayLikeIgnoreNull 当 value 为 null 时, 忽略
 * 其他情况下, 使用 = 查询
 ```java
 // select * from `student` where `name`like"小%"
@@ -538,6 +548,36 @@ student.setDes("卡");
 studentModel.newQuery().whereMayLike(student).get();
 ```
 
+#### whereKeywords  whereKeywordsIgnoreNull
+在多个列中, 查找值
+* 当 value 以 %开头或者结尾时, 使用like查询
+* whereKeywords 当 value 为 null 时, 使用 is null 查询
+* whereKeywordsIgnoreNull 当 value 为 null 时, 忽略
+* 其他情况下, 使用 = 查询
+```java
+// select * from `student` where ((`name`="小") or (`age`="小") or (`id`="小"))
+studentModel.newQuery().whereKeywords("小", "name", "age", "id").get()
+    
+// select * from `student` where ((`name`like"小%") or (`age`like"小%") or (`id`like"小%"))
+studentModel.newQuery().whereKeywords("小%", "name", "age", "id").get()
+    
+// select * from `student` where ((`name`is null) or (`age`is null) or (`id`is null))
+studentModel.newQuery().whereKeywords(null, "name", "age", "id").get()
+    
+// select * from `student`
+studentModel.newQuery().whereKeywordsIgnoreNull(null, "name", "age", "id").get()
+
+// select * from `student` where ((`name`like"%1") or (`age`like"%1") or (`id`like"%1")) and ((`name`like"%张") or (`age`like"%张") or (`id`like"%张"))
+studentModel.newQuery().whereKeywords("%1", "name", "age", "id").whereKeywords("%张", "name", "age", "id").get()
+
+// select * from `student` where ((`name`like"%1") or (`age`like"%1") or (`id`like"%1")) and ((`name`like"%张") or (`age`like"%张") or (`id`like"%张"))
+studentModel.newQuery().whereKeywordsIgnoreNull("%1", "name", "age", "id").whereKeywordsIgnoreNull("%张", "name", "age", "id").get()
+
+// select * from `student`
+studentModel.newQuery().whereKeywordsIgnoreNull(null, "name", "age", "id").whereKeywordsIgnoreNull(null, "name", "age", "id").get()
+
+```
+
 #### whereIgnoreNull
 会忽略为`null`的值
 ```java
@@ -552,13 +592,12 @@ Record<Student, Long> record = studentModel.newQuery().whereIgnoreNull(map).firs
 ```
 
 ### 字段之间的比较
-whereColumn
+#### whereColumn
 ```java
 Record<Student, Long> record = studentModel.newQuery().whereColumn("id", ">", "sex").first();
 ```
 ### 字段(不)在两值之间
-whereBetween
-whereNotBetween
+#### whereBetween whereNotBetween
 ```java
 RecordList<Student, Long>> records = studentModel.newQuery().whereBetween("id", "3", "5").get();
 
@@ -604,15 +643,17 @@ RecordList<Student, Long>> records = studentModel.newQuery().whereNotInIgnoreEmp
 ```
 
 ### 字段(不)为null
-whereNull
-whereNotNull
+#### whereNull  whereNotNull
 ```java
-RecordList<Student, Long>> records = studentModel.newQuery().whereNull("id").get();
+// select * from student where id is null;
+studentModel.newQuery().whereNull("id").get();
 
-RecordList<Student, Long>> records = studentModel.newQuery().whereNotNull("id").get();
+// select * from student where id is not null;
+studentModel.newQuery().whereNotNull("id").get();
 ```
 
 ### 子查询
+#### whereSubQuery
 ```java
 List<Object> ins = new ArrayList<>();
 ins.add("1");
@@ -629,14 +670,14 @@ RecordList<Student, Long>> records = studentModel.newQuery()
 .get();
 ```
 ### 且
-andWhere
+#### andWhere  andWhereIgnoreEmpty
 ```java
 RecordList<Student, Long>> records = studentModel.newQuery().where("id", "3").andWhere(
     (builder) -> builder.whereRaw("id=4")
 ).get();
 ```
 ### 或
-orWhere
+#### orWhere  orWhereIgnoreEmpty
 ```java
 RecordList<Student, Long>> records = studentModel.newQuery().where("id", "3").orWhere(
     (builder) -> builder.whereRaw("id=4")
@@ -644,8 +685,7 @@ RecordList<Student, Long>> records = studentModel.newQuery().where("id", "3").or
 ```
 
 ### 条件为真(假)
-whereExists
-whereNotExists
+#### whereExists  whereNotExists
 ```java
 RecordList<Student, Long>> records = studentModel.newQuery()
 .select("id", "name", "age")
@@ -759,6 +799,8 @@ Assert.assertEquals(count.intValue(), 2);
 
 
 ## index
+
+#### forceIndex  ignoreIndex
 
 用以指定使用的索引或者不使用的索引
 
@@ -875,6 +917,7 @@ boolean success = studentModel.newQuery().transaction(() -> {
 }, 3);
 ```
 ### 共享锁与排他锁
+####  sharedLock  lockForUpdate
 ```java
 studentModel.newQuery().transaction(()->{
     studentModel.newQuery().where("id", "3").sharedLock().get();
@@ -887,6 +930,7 @@ studentModel.newQuery().transaction(()->{
 ```
 ## 分页
 ### 快速分页
+#### simplePaginate
 不包含总数的分页
 ```java
 Paginate<Student> paginate = studentModel.newQuery().orderBy("id").simplePaginate(1, 3);
@@ -895,6 +939,7 @@ Paginate<Student> paginate = studentModel.newQuery().orderBy("id").simplePaginat
 Paginate<Map<String, Object>> paginateMap = studentModel.newQuery().orderBy("id").simplePaginateMapStyle(1, 3);
 ```
 ### 总数分页
+#### paginate
 包含总数的分页
 ```java
 Paginate<Student> paginate = studentModel.newQuery().orderBy("id").paginate(1, 4);
@@ -904,7 +949,7 @@ Paginate<Map<String, Object>> paginate = studentModel.newQuery().orderBy("id").p
 ## 功能
 
 ### 随机抽样
-inRandomOrder()  
+#### inRandomOrder  
 接收一个参数,优先选用连续计数类型字段(均匀分布的自增主键最佳).  
 在300w数据量下,效率约是`order by rand()`的5倍,任何情况下均有优越表现
 ```java
