@@ -493,19 +493,49 @@ Record<Student, Long> record = studentModel.newQuery().where("id", null).first()
 studentModel.newQuery().whereLike("name", "小%").get();
 
 // select * from `student` where `name`like"小"
-studentModel.newQuery().whereLike("name", "小").get();
+    studentModel.newQuery().whereLike("name", "小").get();
 
 // select * from `student` where `name`like"%卡"
-Map<String, Object> likeMap = new HashMap<>(); 
+    Map<String, Object> likeMap = new HashMap<>();
+    likeMap.put("name", "%卡");
+
+    entityList3 = studentModel.newQuery().whereLike(likeMap).get();
+
+// select * from `student` where `name`like"%卡"
+    StudentModel.Entity student = new StudentModel.Entity();
+    student.setName("%卡");
+
+    studentModel.newQuery().whereLike(student).get();
+```
+#### whereMayLike
+选择可能的条件类型
+* 当 value 以 %开头或者结尾时, 使用like查询
+* 当 value 为 null 时, 使用 is null 查询
+* 其他情况下, 使用 = 查询
+```java
+// select * from `student` where `name`like"小%"
+studentModel.newQuery().whereMayLike("name", "小%").get();
+
+// select * from `student` where `name` is null
+studentModel.newQuery().whereMayLike("name", null).get();
+
+// select * from `student` where `name`="小"
+studentModel.newQuery().whereMayLike("name", "小").get();
+
+
+// select * from `student` where `name`like"%卡" and `des`="卡"
+Map<String, Object> likeMap = new HashMap<>();
 likeMap.put("name", "%卡");
+likeMap.put("des", "卡");
 
-entityList3 = studentModel.newQuery().whereLike(likeMap).get();
+entityList3 = studentModel.newQuery().whereMayLike(likeMap).get();
 
-// select * from `student` where `name`like"%卡"
+// select * from `student` where `name`like"%卡" and `des`="卡"
 StudentModel.Entity student = new StudentModel.Entity();
 student.setName("%卡");
+student.setDes("卡");
 
-studentModel.newQuery().whereLike(student).get();
+studentModel.newQuery().whereMayLike(student).get();
 ```
 
 #### whereIgnoreNull

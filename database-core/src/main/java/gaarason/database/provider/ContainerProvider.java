@@ -8,10 +8,7 @@ import gaarason.database.logging.Log;
 import gaarason.database.logging.LogFactory;
 import gaarason.database.util.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -33,11 +30,10 @@ public final class ContainerProvider {
     private static final ConcurrentHashMap<Class<?>, List<Object>> INSTANCE_MAP = new ConcurrentHashMap<>();
 
     static {
-        // 默认配置初始化
+        /*
+         * 默认配置初始化, 自动配置类扫描并初始化
+         */
         DefaultAutoConfiguration.init();
-
-        // 包扫描获取配置 初始化
-
     }
 
 
@@ -57,6 +53,7 @@ public final class ContainerProvider {
         // 添加到头部
         List<InstanceCreatorFunctionalInterface<?>> instanceCreators = INSTANCE_CREATOR_MAP.computeIfAbsent(interfaceClass, k -> new LinkedList<>());
         instanceCreators.add(0, closure);
+        instanceCreators.sort(Comparator.comparing(InstanceCreatorFunctionalInterface::getOrder));
     }
 
     /**

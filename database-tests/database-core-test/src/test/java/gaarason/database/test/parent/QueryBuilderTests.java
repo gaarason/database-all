@@ -904,7 +904,7 @@ abstract public class QueryBuilderTests extends BaseTests {
             .whereLike(student2)
             .get()
             .toObjectList();
-        Assert.assertEquals(3, entityList3.size());
+        Assert.assertEquals(3, entityList4.size());
     }
 
     @Test
@@ -941,7 +941,76 @@ abstract public class QueryBuilderTests extends BaseTests {
             .havingLike(student2)
             .get()
             .toObjectList();
+        Assert.assertEquals(3, entityList4.size());
+    }
+
+    @Test
+    public void 条件_whereMayLike() {
+        List<StudentModel.Entity> entityList1 = studentModel.newQuery().whereMayLike("name", "小%").get().toObjectList();
+        Assert.assertEquals(5, entityList1.size());
+
+        List<StudentModel.Entity> entityList2 = studentModel.newQuery()
+                .whereMayLike("name", "小")
+                .get()
+                .toObjectList();
+        Assert.assertEquals(0, entityList2.size());
+
+        Map<String, Object> likeMap = new HashMap<>();
+        likeMap.put("name", "%卡");
+        Map<String, Object> likeMap2 = null;
+        List<StudentModel.Entity> entityList3 = studentModel.newQuery()
+                .whereMayLike(likeMap)
+                .whereMayLike(likeMap2)
+                .get()
+                .toObjectList();
         Assert.assertEquals(3, entityList3.size());
+
+
+        StudentModel.Entity student = new StudentModel.Entity();
+        student.setName("%卡");
+        StudentModel.Entity student2 = null;
+        List<StudentModel.Entity> entityList4 = studentModel.newQuery()
+                .whereMayLike(student)
+                .whereMayLike(student2)
+                .get()
+                .toObjectList();
+        Assert.assertEquals(3, entityList4.size());
+    }
+
+    @Test
+    public void 条件_havingMayLike() {
+        List<StudentModel.Entity> entityList1 = studentModel.newQuery()
+                .havingMayLike("name", "小%")
+                .get()
+                .toObjectList();
+        Assert.assertEquals(5, entityList1.size());
+
+        List<StudentModel.Entity> entityList2 = studentModel.newQuery()
+                .havingMayLike("name", "小")
+                .get()
+                .toObjectList();
+        Assert.assertEquals(0, entityList2.size());
+
+        Map<String, Object> likeMap = new HashMap<>();
+        likeMap.put("name", "%卡");
+        Map<String, Object> likeMap2 = null;
+        List<StudentModel.Entity> entityList3 = studentModel.newQuery()
+                .havingMayLike(likeMap)
+                .havingMayLike(likeMap2)
+                .get()
+                .toObjectList();
+        Assert.assertEquals(3, entityList3.size());
+
+
+        StudentModel.Entity student = new StudentModel.Entity();
+        student.setName("%卡");
+        StudentModel.Entity student2 = null;
+        List<StudentModel.Entity> entityList4 = studentModel.newQuery()
+                .havingMayLike(student)
+                .havingMayLike(student2)
+                .get()
+                .toObjectList();
+        Assert.assertEquals(3, entityList4.size());
     }
 
     @Test
@@ -964,6 +1033,44 @@ abstract public class QueryBuilderTests extends BaseTests {
 
         List<StudentModel.Entity> entityList2 = studentModel.newQuery().whereNull("age").get().toObjectList();
         Assert.assertEquals(entityList2.size(), 0);
+    }
+
+    @Test
+    public void 条件_whereRaw() {
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().whereRaw((String) null).get();
+        Assert.assertEquals(10, records.size());
+
+        StudentModel.Entity entity = studentModel.newQuery().whereRaw("id=3").firstOrFail().toObject();
+        Assert.assertEquals(3, entity.getId().intValue());
+
+        StudentModel.Entity entity1 = studentModel.newQuery().whereRaw("id>3").whereRaw("id<5").firstOrFail().toObject();
+        Assert.assertEquals(4, entity1.getId().intValue());
+
+        Set<String> sqlList = new HashSet<>();
+        sqlList.add("id >5");
+        sqlList.add("id<=8");
+        sqlList.add(null);
+        RecordList<StudentModel.Entity, Integer> records1 = studentModel.newQuery().whereRaw(sqlList).get();
+        Assert.assertEquals(3, records1.count());
+    }
+
+    @Test
+    public void 条件_havingRaw() {
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().havingRaw((String) null).get();
+        Assert.assertEquals(10, records.size());
+
+        StudentModel.Entity entity = studentModel.newQuery().havingRaw("id=3").firstOrFail().toObject();
+        Assert.assertEquals(3, entity.getId().intValue());
+
+        StudentModel.Entity entity1 = studentModel.newQuery().havingRaw("id>3").havingRaw("id<5").firstOrFail().toObject();
+        Assert.assertEquals(4, entity1.getId().intValue());
+
+        Set<String> sqlList = new HashSet<>();
+        sqlList.add("id >5");
+        sqlList.add("id<=8");
+        sqlList.add(null);
+        RecordList<StudentModel.Entity, Integer> records1 = studentModel.newQuery().havingRaw(sqlList).get();
+        Assert.assertEquals(3, records1.count());
     }
 
     @Test

@@ -19,9 +19,16 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 2.22.0
+
+- 在查询构造器(`Builder`)中增加`whereMayLike`/`havingMayLike`系列执行方法`whereMayLike(column, value)`/`whereMayLike(entity)`/`whereMayLike(map)`/`havingMayLike(column, value)`/`havingMayLike(entity)`/`havingMayLike(map)`
+- 在查询构造器(`Builder`)中增加`whereRaw(list)`/`havingRaw(list)`
+- 增加`GaarasonAutoconfiguration`接口, 程序会自动通过包扫描, 完成加载对其子类加载, 并调用其`init()` 完成初始化
+- `InstanceCreatorFunctionalInterface`接口中, 增加默认的`getOrder()`方法. 用于支持, 在调用`ContainerProvider.register()`进行优先级判断.
+
 ### 2.21.0
 
-- 在查询构造器(`Builder`)中增加`whereLike`/`havingLike`系列执行方法`whereLike(column, value)`/`whereLike(entity)`/`whereLike(likeMap)`/`havingLike(column, value)`/`havingLike(entity)`/`havingLike(likeMap)`
+- 在查询构造器(`Builder`)中增加`whereLike`/`havingLike`系列执行方法`whereLike(column, value)`/`whereLike(entity)`/`whereLike(map)`/`havingLike(column, value)`/`havingLike(entity)`/`havingLike(map)`
 - 修复查询构造器(`Builder`)中使用`where(entity)`/`having(entity)`等方法时, 当实体`entity`中`@Column`中`insertable=false`时, 不正确的行为.
 
 ### 2.20.0

@@ -21,7 +21,14 @@ public interface Having<T extends Serializable, K extends Serializable> {
      * @param sqlPart sql片段
      * @return 查询构建器
      */
-    Builder<T, K> havingRaw(String sqlPart);
+    Builder<T, K> havingRaw(@Nullable String sqlPart);
+
+    /**
+     * 加入sql片段集合
+     * @param sqlParts sql片段集合
+     * @return 查询构建器
+     */
+    Builder<T, K> havingRaw(@Nullable Collection<String> sqlParts);
 
     /**
      * 比较列与值
@@ -99,6 +106,38 @@ public interface Having<T extends Serializable, K extends Serializable> {
      * @return 查询构建器
      */
     Builder<T, K> havingLike(@Nullable Map<String, Object> map);
+
+    /**
+     * 选择可能的条件类型
+     * 当 value 以 %开头或者结尾时, 使用like查询
+     * 当 value 为 null 时, 使用 is null 查询
+     * 其他情况下, 使用 = 查询
+     * @param column 列名
+     * @param value  值
+     * @return 查询构建器
+     */
+    Builder<T, K> havingMayLike(String column, @Nullable Object value);
+
+    /**
+     * 选择可能的条件类型
+     * 当 value 以 %开头或者结尾时, 使用like查询
+     * 当 value 为 null 时, 当 @Column中的nullable=true ,使用 is null 查询
+     * 当 value 为 null 时, 当 @Column中的nullable=false, 忽略
+     * 其他情况下, 使用 = 查询
+     * @param entity 实体对象
+     * @return 查询构建器
+     */
+    Builder<T, K> havingMayLike(@Nullable T entity);
+
+    /**
+     * 选择可能的条件类型
+     * 当 value 以 %开头或者结尾时, 使用like查询
+     * 当 value 为 null 时, 忽略
+     * 其他情况下, 使用 = 查询
+     * @param map 条件map
+     * @return 查询构建器
+     */
+    Builder<T, K> havingMayLike(@Nullable Map<String, Object> map);
 
     /**
      * 列值在范围内

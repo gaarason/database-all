@@ -40,14 +40,16 @@ public class DefaultAutoConfiguration {
         // ID生成 UUID 36
         ContainerProvider.register(IdGenerator.UUID36.class, clazz -> () -> UUID.randomUUID().toString());
         // ID生成 UUID 32
-        ContainerProvider.register(IdGenerator.UUID32.class, clazz -> () -> UUID.randomUUID().toString().replace("-", ""));
+        ContainerProvider.register(IdGenerator.UUID32.class,
+            clazz -> () -> UUID.randomUUID().toString().replace("-", ""));
         // ID生成 Never
         ContainerProvider.register(IdGenerator.Never.class, clazz -> () -> null);
 
         /*
          * 包扫描 - model
          */
-        ContainerProvider.register(ReflectionScan.class, clazz -> () -> ObjectUtils.typeCast(reflections.getSubTypesOf(Model.class)));
+        ContainerProvider.register(ReflectionScan.class,
+            clazz -> () -> ObjectUtils.typeCast(reflections.getSubTypesOf(Model.class)));
 
         // 数据源
         ContainerProvider.register(GaarasonDataSourceConfig.class, clazz -> new GaarasonDataSourceConfig() {
@@ -63,7 +65,8 @@ public class DefaultAutoConfiguration {
             }
 
             @Override
-            public GaarasonDataSource build(List<DataSource> masterDataSourceList, List<DataSource> slaveDataSourceList) {
+            public GaarasonDataSource build(List<DataSource> masterDataSourceList,
+                                            List<DataSource> slaveDataSourceList) {
                 return GaarasonDataSourceBuilder.build(masterDataSourceList, slaveDataSourceList);
             }
 
@@ -91,23 +94,30 @@ public class DefaultAutoConfiguration {
 
             @Nullable
             @Override
-            public Object getValueFromJdbcResultSet(@Nullable FieldInfo fieldInfo, ResultSet resultSet, String column) throws SQLException {
+            public Object getValueFromJdbcResultSet(@Nullable FieldInfo fieldInfo, ResultSet resultSet, String column)
+                throws SQLException {
                 return ConverterUtils.getValueFromJdbcResultSet(fieldInfo, resultSet, column);
             }
         });
     }
 
     /**
-     * 默认配置初始化
+     * 自动配置类, 执行其 init()
      */
-    public static void init(){
-        // QueryBuilderConfig 扫描
-        Set<Class<? extends QueryBuilderConfig>> queryBuilderConfigs = reflections.getSubTypesOf(QueryBuilderConfig.class);
-        for (Class<? extends QueryBuilderConfig> queryBuilderConfig : queryBuilderConfigs) {
-            // QueryBuilderConfig 注册
-            ContainerProvider.register(QueryBuilderConfig.class, clazz -> queryBuilderConfig.newInstance());
+    public static void init() {
+        // GaarasonAutoconfiguration 扫描
+        Set<Class<? extends GaarasonAutoconfiguration>> gaarasonAutoconfigurations = reflections.getSubTypesOf(
+            GaarasonAutoconfiguration.class);
+        for (Class<? extends GaarasonAutoconfiguration> gaarasonAutoconfiguration : gaarasonAutoconfigurations) {
+            try {
+                gaarasonAutoconfiguration.newInstance().init();
+                log.debug("Auto configuration [" + gaarasonAutoconfiguration.getName() + "] executed successfully .");
+            } catch (Throwable e) {
+                log.error(
+                    "A problem was encountered during automatic configuration [" + gaarasonAutoconfiguration.getName() +
+                        "].", e);
+            }
         }
-
-        log.debug("DefaultAutoConfiguration init.");
+        log.debug("All gaarasonAutoconfiguration has been init.");
     }
 }

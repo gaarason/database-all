@@ -499,7 +499,29 @@ public class H2QueryBuilderConfig implements QueryBuilderConfig {
     }
 }
 ```
-4. 程序会自动通过包扫描, 完成加载, 任何的数据库操作的产生, 都会触发有且仅有的一次扫描.
+4. 实现`GaarasonAutoconfiguration`接口, 程序会自动通过包扫描, 完成加载, 任何的数据库操作的产生, 都会触发有且仅有的一次扫描.
+```java
+
+public class H2Autoconfiguration implements GaarasonAutoconfiguration {
+    @Override
+    public void init() {
+        // 执行注册 H2QueryBuilderConfig
+        ContainerProvider.register(QueryBuilderConfig.class,
+            new InstanceCreatorFunctionalInterface<QueryBuilderConfig>() {
+                @Override
+                public QueryBuilderConfig execute(Class<QueryBuilderConfig> clazz) throws Throwable {
+                    return new H2QueryBuilderConfig();
+                }
+
+                @Override
+                public Integer getOrder() {
+                    return InstanceCreatorFunctionalInterface.super.getOrder() - 1;
+                }
+            });
+        // ....
+    }
+}
+```
 
 ### 自定义查询构造器方法
 - 对于`model`中使用`newQuery()`返回的`Builder`对象,进行修改.
@@ -531,4 +553,27 @@ public class MysqlQueryBuilderConfigV2 extends MysqlQueryBuilderConfig {
 }
 
 ```
-3. 程序会自动通过包扫描, 完成加载, 任何的数据库操作的产生, 都会触发有且仅有的一次扫描.
+3. 实现`GaarasonAutoconfiguration`接口, 程序会自动通过包扫描, 完成加载, 任何的数据库操作的产生, 都会触发有且仅有的一次扫描.
+```java
+
+public class MysqlV2Autoconfiguration implements GaarasonAutoconfiguration {
+    @Override
+    public void init() {
+        // 执行注册 MysqlQueryBuilderConfigV2
+        ContainerProvider.register(QueryBuilderConfig.class,
+            new InstanceCreatorFunctionalInterface<QueryBuilderConfig>() {
+                @Override
+                public QueryBuilderConfig execute(Class<QueryBuilderConfig> clazz) throws Throwable {
+                    return new MysqlQueryBuilderConfigV2();
+                }
+
+                // 更高的优先级, 很关键
+                @Override
+                public Integer getOrder() {
+                    return InstanceCreatorFunctionalInterface.super.getOrder() - 1;
+                }
+            });
+        // ....
+    }
+}
+```

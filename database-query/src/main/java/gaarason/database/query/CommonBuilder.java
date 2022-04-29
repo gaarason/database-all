@@ -3,12 +3,14 @@ package gaarason.database.query;
 import gaarason.database.appointment.JoinType;
 import gaarason.database.appointment.OrderBy;
 import gaarason.database.appointment.SqlType;
+import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
+import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
@@ -29,9 +31,19 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     }
 
     @Override
-    public Builder<T, K> whereRaw(String sqlPart) {
+    public Builder<T, K> whereRaw(@Nullable String sqlPart) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
             grammar.pushWhere(sqlPart, "and");
+        }
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> whereRaw(@Nullable Collection<String> sqlParts) {
+        if (!ObjectUtils.isEmpty(sqlParts)) {
+            for (String sqlPart : sqlParts) {
+                whereRaw(sqlPart);
+            }
         }
         return this;
     }
@@ -94,11 +106,38 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> whereLike(@Nullable Map<String, Object> map) {
-        if(ObjectUtils.isNull(map)){
+        if (ObjectUtils.isEmpty(map)) {
             return this;
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
-            whereIgnoreNull(entry.getKey(), "like", entry.getValue());
+            whereLike(entry.getKey(), entry.getValue());
+        }
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> whereMayLike(String column, @Nullable Object value) {
+        String s = ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class);
+        if (!ObjectUtils.isNull(s) && (s.endsWith("%") || s.startsWith("%"))) {
+            return whereLike(column, value);
+        } else {
+            return where(column, value);
+        }
+    }
+
+    @Override
+    public Builder<T, K> whereMayLike(@Nullable T entity) {
+        final Map<String, Object> columnValueMap = ModelShadowProvider.columnValueMap(entity);
+        return whereMayLike(columnValueMap);
+    }
+
+    @Override
+    public Builder<T, K> whereMayLike(@Nullable Map<String, Object> map) {
+        if (ObjectUtils.isEmpty(map)) {
+            return this;
+        }
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            whereMayLike(entry.getKey(), entry.getValue());
         }
         return this;
     }
@@ -259,8 +298,20 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     }
 
     @Override
-    public Builder<T, K> havingRaw(String sqlPart) {
-        grammar.pushHaving(sqlPart, "and");
+    public Builder<T, K> havingRaw(@Nullable String sqlPart) {
+        if (!ObjectUtils.isEmpty(sqlPart)) {
+            grammar.pushHaving(sqlPart, "and");
+        }
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> havingRaw(@Nullable Collection<String> sqlParts) {
+        if (!ObjectUtils.isEmpty(sqlParts)) {
+            for (String sqlPart : sqlParts) {
+                havingRaw(sqlPart);
+            }
+        }
         return this;
     }
 
@@ -322,11 +373,38 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> havingLike(@Nullable Map<String, Object> map) {
-        if(ObjectUtils.isNull(map)){
+        if (ObjectUtils.isEmpty(map)) {
             return this;
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             having(entry.getKey(), "like", entry.getValue());
+        }
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> havingMayLike(String column, @Nullable Object value) {
+        String s = ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class);
+        if (!ObjectUtils.isNull(s) && (s.endsWith("%") || s.startsWith("%"))) {
+            return havingLike(column, value);
+        } else {
+            return having(column, value);
+        }
+    }
+
+    @Override
+    public Builder<T, K> havingMayLike(@Nullable T entity) {
+        final Map<String, Object> columnValueMap = ModelShadowProvider.columnValueMap(entity);
+        return havingMayLike(columnValueMap);
+    }
+
+    @Override
+    public Builder<T, K> havingMayLike(@Nullable Map<String, Object> map) {
+        if (ObjectUtils.isEmpty(map)) {
+            return this;
+        }
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            havingMayLike(entry.getKey(), entry.getValue());
         }
         return this;
     }
@@ -504,7 +582,8 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     // todo
     @Override
     public Builder<T, K> selectFunction(String function, String parameter, @Nullable String alias) {
-        String sqlPart = function + FormatUtils.bracket(parameter) + (alias == null ? "" : " as " + FormatUtils.quotes(alias));
+        String sqlPart =
+                function + FormatUtils.bracket(parameter) + (alias == null ? "" : " as " + FormatUtils.quotes(alias));
         grammar.pushSelect(sqlPart);
         return this;
     }
@@ -515,9 +594,11 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     }
 
     @Override
-    public Builder<T, K> selectFunction(String function, GenerateSqlPartFunctionalInterface<T, K> closure, @Nullable String alias) {
+    public Builder<T, K> selectFunction(String function, GenerateSqlPartFunctionalInterface<T, K> closure,
+                                        @Nullable String alias) {
         String completeSql = generateSql(closure);
-        String sqlPart = function + FormatUtils.bracket(completeSql) + (alias == null ? "" : " as " + FormatUtils.quotes(alias));
+        String sqlPart =
+                function + FormatUtils.bracket(completeSql) + (alias == null ? "" : " as " + FormatUtils.quotes(alias));
         grammar.pushSelect(sqlPart);
         return this;
     }
@@ -686,15 +767,17 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> join(JoinType joinType, GenerateSqlPartFunctionalInterface<T, K> tempTable, String alias,
-        GenerateSqlPartFunctionalInterface<T, K> joinConditions) {
+                              GenerateSqlPartFunctionalInterface<T, K> joinConditions) {
         String table = generateSql(tempTable) + alias;
         return join(joinType, table, joinConditions);
     }
 
     @Override
-    public Builder<T, K> join(JoinType joinType, String table, GenerateSqlPartFunctionalInterface<T, K> joinConditions) {
+    public Builder<T, K> join(JoinType joinType, String table,
+                              GenerateSqlPartFunctionalInterface<T, K> joinConditions) {
         String conditions = generateSqlPart(joinConditions);
-        String sqlPart = FormatUtils.spaces(joinType.getOperation()) + "join " + table + FormatUtils.spaces("on") + conditions;
+        String sqlPart =
+                FormatUtils.spaces(joinType.getOperation()) + "join " + table + FormatUtils.spaces("on") + conditions;
         return joinRaw(sqlPart);
     }
 

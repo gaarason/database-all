@@ -15,4 +15,12 @@ public interface InstanceCreatorFunctionalInterface<T> {
      */
     T execute(Class<T> clazz) throws Throwable;
 
+    /**
+     * 排序(越小, 优先级越高)
+     * @return 序号
+     */
+    default Integer getOrder(){
+        return 0;
+    }
+
 }
