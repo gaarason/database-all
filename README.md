@@ -1,5 +1,7 @@
 # database
-[![](https://jitpack.io/v/gaarason/database-all.svg)](https://jitpack.io/#gaarason/database-all)  
+[![](https://jitpack.io/v/gaarason/database-all.svg)](https://jitpack.io/#gaarason/database-all)
+[![](https://img.shields.io/github/stars/gaarason/database-all)](https://github.com/gaarason/database-all)
+
 
 Eloquent ORM for Java
 
