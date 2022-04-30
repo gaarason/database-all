@@ -9,6 +9,7 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.ToSqlFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.InsertNotSuccessException;
@@ -119,9 +120,14 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public String toSql(SqlType sqlType) {
+        return toSql(sqlType, ((sql, parameters) -> String.format(sql.replace(" ? ", "\"%s\""), parameters.toArray())));
+    }
+
+    @Override
+    public String toSql(SqlType sqlType, ToSqlFunctionalInterface closure) {
         String sql = grammar.generateSql(sqlType);
-        List<String> parameterList = grammar.getParameterList(sqlType);
-        return String.format(sql.replace(" ? ", "\"%s\""), parameterList.toArray());
+        List<String> parameterList = grammar.getAllParameterList(sqlType);
+        return closure.execute(sql, parameterList);
     }
 
     @Override
@@ -206,7 +212,7 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     @Override
     public K insertGetId() throws SQLRuntimeException {
         String sql = grammar.generateSql(SqlType.INSERT);
-        List<String> parameterList = grammar.getParameterList(SqlType.INSERT);
+        List<String> parameterList = grammar.getAllParameterList(SqlType.INSERT);
         return executeGetId(sql, parameterList);
     }
 
@@ -261,7 +267,8 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     }
 
     @Override
-    public K insertGetIdOrFailMapStyle(Map<String, Object> entityMap) throws SQLRuntimeException, InsertNotSuccessException {
+    public K insertGetIdOrFailMapStyle(Map<String, Object> entityMap)
+        throws SQLRuntimeException, InsertNotSuccessException {
         K id = insertGetIdMapStyle(entityMap);
         if (id == null) {
             throw new InsertNotSuccessException();
@@ -273,7 +280,7 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     public List<K> insertGetIds() throws SQLRuntimeException {
         // sql 组装
         String sql = grammar.generateSql(SqlType.INSERT);
-        List<String> parameterList = grammar.getParameterList(SqlType.INSERT);
+        List<String> parameterList = grammar.getAllParameterList(SqlType.INSERT);
         return executeGetIds(sql, parameterList);
     }
 
@@ -355,17 +362,9 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
      * @param value 参数
      * @return 参数占位符?
      */
-    protected String formatValue(@Nullable Object value) {
-        return FormatUtils.value(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class), grammar);
-    }
-
-    /**
-     * 格式化参数类型,到绑定参数
-     * @param value 参数
-     * @return 参数占位符?
-     */
     protected String formatData(@Nullable Object value) {
-        return FormatUtils.data(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class), grammar);
+        return FormatUtils.data(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class),
+            grammar);
     }
 
     /**
@@ -373,15 +372,44 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
      * @param valueList 参数
      * @return 参数占位符?
      */
-    protected String formatValue(Collection<?> valueList) {
-        return FormatUtils.value(valueList, grammar);
+    protected String formatWhere(Collection<?> valueList) {
+        return FormatUtils.where(valueList, grammar);
+    }
+
+    /**
+     * 格式化参数类型,到绑定参数
+     * @param value 参数
+     * @return 参数占位符?
+     */
+    protected String formatWhere(@Nullable Object value) {
+        return FormatUtils.where(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class),
+            grammar);
+    }
+
+    /**
+     * 格式化参数类型,到绑定参数
+     * @param valueList 参数
+     * @return 参数占位符?
+     */
+    protected String formatHaving(Collection<?> valueList) {
+        return FormatUtils.having(valueList, grammar);
+    }
+
+    /**
+     * 格式化参数类型,到绑定参数
+     * @param value 参数
+     * @return 参数占位符?
+     */
+    protected String formatHaving(@Nullable Object value) {
+        return FormatUtils.having(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class),
+            grammar);
     }
 
     /**
      * 返回数据库方法的拼接字符
      * @param functionName 方法名
-     * @param parameter    参数字符串
-     * @param alias        别名
+     * @param parameter 参数字符串
+     * @param alias 别名
      * @return 拼接后的字符
      */
     protected String function(String functionName, String parameter, @Nullable String alias) {

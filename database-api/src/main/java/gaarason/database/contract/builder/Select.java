@@ -24,10 +24,10 @@ public interface Select<T extends Serializable, K extends Serializable> {
 
     /**
      * 查询字段
-     * @param column 列名
+     * @param sqlPort sql片段
      * @return 查询构造器
      */
-    Builder<T, K> selectRaw(String column);
+    Builder<T, K> selectRaw(@Nullable String sqlPort);
 
     /**
      * 查询字段

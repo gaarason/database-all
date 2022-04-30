@@ -115,17 +115,29 @@ public interface Grammar {
     void pushWhereParameter(String value);
 
     /**
+     * 加入 Having Parameter
+     * @param value 实际参数
+     */
+    void pushHavingParameter(String value);
+
+    /**
      * 加入 Data Parameter
      * @param value 实际参数
      */
     void pushDataParameter(String value);
 
     /**
-     * 获取 参数列表 ( 含 data 与 where)
+     * 获取 参数列表 ( 含 data 与 where 与 having)
      * @param sqlType sql类型
      * @return 参数列表
      */
-    List<String> getParameterList(SqlType sqlType);
+    List<String> getAllParameterList(SqlType sqlType);
+
+    /**
+     * 将自身所有的参数列表, 复制最佳到目标
+     * @param targetGrammar 目标
+     */
+    void copyAllParameterTo(Grammar targetGrammar);
 
     /**
      * 是否存在 select

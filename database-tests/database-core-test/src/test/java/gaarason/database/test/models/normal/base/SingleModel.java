@@ -99,10 +99,9 @@ public class SingleModel<T extends Serializable, K extends Serializable> extends
 
     @Override
     public void log(String sql, Collection<String> parameterList) {
-        String format = String.format(sql.replace(" ? ", "\"%s\""), parameterList.toArray());
+        String format = String.format(sql.replace("?", "\"%s\""), parameterList.toArray());
         log.info("SQL complete         : {}", format);
     }
-
 
     /**
      * 事件会当一个新模型被首次保存的时候触发

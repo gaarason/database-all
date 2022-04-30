@@ -21,6 +21,8 @@ Eloquent ORM for Java
 
 ### 2.23.0 (未发布)
 
+- 在查询构造器(`Builder`)中增加`toSql(sqlType, closure)`/`whereRaw(sqlPart, parameters)`/`havingRaw(sqlPart, parameters)`/`orderByRaw(sqlPart)`
+- 在查询构造器(`Builder`)中增加`when(condition, closure)`/`when(condition, closure, closure)`
 - 在查询构造器(`Builder`)中增加`whereKeywords(value, column...)`/`whereKeywordsIgnoreNull(value, column...)`/`havingKeywords(value, column...)`/`havingKeywordsIgnoreNull(value, column...)`等方法
 - 在查询构造器(`Builder`)中增加`whereMayLikeIgnoreNull(map)/whereMayLikeIgnoreNull(column, value)`/`havingMayLikeIgnoreNull(map)/havingMayLikeIgnoreNull(column, value)`
 - 在查询构造器(`Builder`)中增加`andWhereIgnoreEmpty(closure)`/`orWhereIgnoreEmpty(closure)`/`andHavingIgnoreEmpty(closure)`/`orHavingIgnoreEmpty(closure)`

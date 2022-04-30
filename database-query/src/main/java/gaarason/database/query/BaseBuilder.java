@@ -478,7 +478,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
     Record<T, K> querySql() throws SQLRuntimeException, EntityNotFoundException {
         // sql组装执行
         String sql = grammar.generateSql(SqlType.SELECT);
-        List<String> parameterList = grammar.getParameterList(SqlType.SELECT);
+        List<String> parameterList = grammar.getAllParameterList(SqlType.SELECT);
         Map<String, Object[]> columnMap = grammar.pullWith();
         Record<T, K> theRecord = queryOrFail(sql, parameterList);
         for (Map.Entry<String, Object[]> stringEntry : columnMap.entrySet()) {
@@ -498,7 +498,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
     RecordList<T, K> querySqlList() throws SQLRuntimeException, EntityNotFoundException {
         // sql组装执行
         String sql = grammar.generateSql(SqlType.SELECT);
-        List<String> parameterList = grammar.getParameterList(SqlType.SELECT);
+        List<String> parameterList = grammar.getAllParameterList(SqlType.SELECT);
         Map<String, Object[]> columnMap = grammar.pullWith();
         RecordList<T, K> records = queryList(sql, parameterList);
         for (Map.Entry<String, Object[]> stringEntry : columnMap.entrySet()) {
@@ -516,7 +516,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
             Builder<T, K> cloneBuilder = clone();
             cloneBuilder.limit(offset, num);
             String sql = cloneBuilder.getGrammar().generateSql(SqlType.SELECT);
-            List<String> parameterList = cloneBuilder.getGrammar().getParameterList(SqlType.SELECT);
+            List<String> parameterList = cloneBuilder.getGrammar().getAllParameterList(SqlType.SELECT);
             Map<String, Object[]> columnMap = grammar.pullWith();
             RecordList<T, K> records = queryList(sql, parameterList);
             for (Map.Entry<String, Object[]> stringEntry : columnMap.entrySet()) {
@@ -541,7 +541,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
         }
         // sql组装执行
         String sql = grammar.generateSql(sqlType);
-        List<String> parameterList = grammar.getParameterList(sqlType);
+        List<String> parameterList = grammar.getAllParameterList(sqlType);
         return execute(sql, parameterList);
     }
 
@@ -576,10 +576,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      */
     private String generateSql(GenerateSqlPartFunctionalInterface<T, K> closure, boolean wholeSql) {
         Builder<T, K> subBuilder = closure.execute(getNewSelf());
-        List<String> parameterList = subBuilder.getGrammar().getParameterList(SqlType.SUB_QUERY);
-        for (String parameter : parameterList) {
-            grammar.pushWhereParameter(parameter);
-        }
+        subBuilder.getGrammar().copyAllParameterTo(grammar);
         SqlType sqlType = wholeSql ? SqlType.SELECT : SqlType.SUB_QUERY;
         return FormatUtils.bracket(subBuilder.getGrammar().generateSql(sqlType));
     }

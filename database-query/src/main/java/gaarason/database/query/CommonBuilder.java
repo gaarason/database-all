@@ -31,11 +31,19 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     }
 
     @Override
-    public Builder<T, K> whereRaw(@Nullable String sqlPart) {
+    public Builder<T, K> whereRaw(@Nullable String sqlPart, @Nullable Collection<Object> parameters) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
             grammar.pushWhere(sqlPart, "and");
         }
+        if (!ObjectUtils.isEmpty(parameters)) {
+            formatWhere(parameters);
+        }
         return this;
+    }
+
+    @Override
+    public Builder<T, K> whereRaw(@Nullable String sqlPart) {
+        return whereRaw(sqlPart, null);
     }
 
     @Override
@@ -50,7 +58,7 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> where(String column, String symbol, Object value) {
-        String sqlPart = column(column) + symbol + formatValue(value);
+        String sqlPart = column(column) + symbol + formatWhere(value);
         return whereRaw(sqlPart);
     }
 
@@ -209,7 +217,7 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> whereIn(String column, Collection<?> valueList) {
-        String sqlPart = column(column) + "in" + FormatUtils.bracket(formatValue(valueList));
+        String sqlPart = column(column) + "in" + FormatUtils.bracket(formatWhere(valueList));
         return whereRaw(sqlPart);
     }
 
@@ -243,7 +251,7 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> whereNotIn(String column, Collection<?> valueList) {
-        String sqlPart = column(column) + "not in" + FormatUtils.bracket(formatValue(valueList));
+        String sqlPart = column(column) + "not in" + FormatUtils.bracket(formatWhere(valueList));
         return whereRaw(sqlPart);
     }
 
@@ -277,13 +285,13 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> whereBetween(String column, Object min, Object max) {
-        String sqlPart = column(column) + "between" + formatValue(min) + "and" + formatValue(max);
+        String sqlPart = column(column) + "between" + formatWhere(min) + "and" + formatWhere(max);
         return whereRaw(sqlPart);
     }
 
     @Override
     public Builder<T, K> whereNotBetween(String column, Object min, Object max) {
-        String sqlPart = column(column) + "not between" + formatValue(min) + "and" + formatValue(max);
+        String sqlPart = column(column) + "not between" + formatWhere(min) + "and" + formatWhere(max);
         return whereRaw(sqlPart);
     }
 
@@ -367,11 +375,19 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     }
 
     @Override
-    public Builder<T, K> havingRaw(@Nullable String sqlPart) {
+    public Builder<T, K> havingRaw(@Nullable String sqlPart, @Nullable Collection<Object> parameters) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
             grammar.pushHaving(sqlPart, "and");
         }
+        if (!ObjectUtils.isEmpty(parameters)) {
+            formatHaving(parameters);
+        }
         return this;
+    }
+
+    @Override
+    public Builder<T, K> havingRaw(@Nullable String sqlPart) {
+        return havingRaw(sqlPart, null);
     }
 
     @Override
@@ -386,7 +402,7 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> having(String column, String symbol, Object value) {
-        String sqlPart = column(column) + symbol + formatValue(value);
+        String sqlPart = column(column) + symbol + formatHaving(value);
         return havingRaw(sqlPart);
     }
 
@@ -533,7 +549,7 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> havingIn(String column, Collection<?> valueList) {
-        String sqlPart = column(column) + "in" + FormatUtils.bracket(formatValue(valueList));
+        String sqlPart = column(column) + "in" + FormatUtils.bracket(formatHaving(valueList));
         return havingRaw(sqlPart);
     }
 
@@ -567,7 +583,7 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> havingNotIn(String column, Collection<?> valueList) {
-        String sqlPart = column(column) + "not in" + FormatUtils.bracket(formatValue(valueList));
+        String sqlPart = column(column) + "not in" + FormatUtils.bracket(formatHaving(valueList));
         return havingRaw(sqlPart);
     }
 
@@ -601,13 +617,13 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> havingBetween(String column, Object min, Object max) {
-        String sqlPart = column(column) + "between" + formatValue(min) + "and" + formatValue(max);
+        String sqlPart = column(column) + "between" + formatHaving(min) + "and" + formatHaving(max);
         return havingRaw(sqlPart);
     }
 
     @Override
     public Builder<T, K> havingNotBetween(String column, Object min, Object max) {
-        String sqlPart = column(column) + "not between" + formatValue(min) + "and" + formatValue(max);
+        String sqlPart = column(column) + "not between" + formatHaving(min) + "and" + formatHaving(max);
         return havingRaw(sqlPart);
     }
 
@@ -694,13 +710,14 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     @Override
     public Builder<T, K> select(String column) {
         String sqlPart = column(column);
-        grammar.pushSelect(sqlPart);
-        return this;
+        return selectRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> selectRaw(String column) {
-        grammar.pushSelect(column);
+    public Builder<T, K> selectRaw(@Nullable String sqlPart) {
+        if (!ObjectUtils.isEmpty(sqlPart)) {
+            grammar.pushSelect(sqlPart);
+        }
         return this;
     }
 
@@ -725,8 +742,7 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     public Builder<T, K> selectFunction(String function, String parameter, @Nullable String alias) {
         String sqlPart =
             function + FormatUtils.bracket(parameter) + (alias == null ? "" : " as " + FormatUtils.quotes(alias));
-        grammar.pushSelect(sqlPart);
-        return this;
+        return selectRaw(sqlPart);
     }
 
     @Override
@@ -740,8 +756,7 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
         String completeSql = generateSql(closure);
         String sqlPart =
             function + FormatUtils.bracket(completeSql) + (alias == null ? "" : " as " + FormatUtils.quotes(alias));
-        grammar.pushSelect(sqlPart);
-        return this;
+        return selectRaw(sqlPart);
     }
 
     @Override
@@ -754,7 +769,7 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     public Builder<T, K> orderBy(@Nullable String column, OrderBy type) {
         if (null != column) {
             String sqlPart = column(column) + " " + type.getOperation();
-            grammar.pushOrderBy(sqlPart);
+            return orderByRaw(sqlPart);
         }
         return this;
     }
@@ -765,8 +780,18 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
     }
 
     @Override
-    public Builder<T, K> groupRaw(String sqlPart) {
-        grammar.pushGroup(sqlPart);
+    public Builder<T, K> orderByRaw(@Nullable String sqlPart) {
+        if (!ObjectUtils.isEmpty(sqlPart)) {
+            grammar.pushOrderBy(sqlPart);
+        }
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> groupRaw(@Nullable String sqlPart) {
+        if (!ObjectUtils.isEmpty(sqlPart)) {
+            grammar.pushGroup(sqlPart);
+        }
         return this;
     }
 
@@ -934,4 +959,16 @@ public abstract class CommonBuilder<T extends Serializable, K extends Serializab
         // (`id`) from `student`))+(select min(`id`) from `student`))) limit 5
         return whereSubQuery(field, "in", builder -> builder.selectFunction("floor", floorSql, null));
     }
+
+    @Override
+    public Builder<T, K> when(boolean condition, GenerateSqlPartFunctionalInterface<T, K> closure) {
+        return when(condition, closure, builder -> builder);
+    }
+
+    @Override
+    public Builder<T, K> when(boolean condition, GenerateSqlPartFunctionalInterface<T, K> closureIfTrue,
+                              GenerateSqlPartFunctionalInterface<T, K> closureIfFalse) {
+        return condition ? closureIfTrue.execute(this) : closureIfFalse.execute(this);
+    }
+
 }

@@ -19,6 +19,14 @@ public interface Where<T extends Serializable, K extends Serializable> {
     /**
      * 加入sql片段
      * @param sqlPart sql片段
+     * @param parameters 参数绑定列表
+     * @return 查询构造器
+     */
+    Builder<T, K> whereRaw(@Nullable String sqlPart, @Nullable Collection<Object> parameters);
+
+    /**
+     * 加入sql片段
+     * @param sqlPart sql片段
      * @return 查询构造器
      */
     Builder<T, K> whereRaw(@Nullable String sqlPart);

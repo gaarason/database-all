@@ -31,7 +31,7 @@ abstract public class QueryBuilderTests extends BaseTests {
     private static final StudentModel studentModel = new StudentModel();
 
     @Override
-    protected GaarasonDataSource getGaarasonDataSource(){
+    protected GaarasonDataSource getGaarasonDataSource() {
         return studentModel.getGaarasonDataSource();
     }
 
@@ -268,7 +268,11 @@ abstract public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 更新_普通更新_dataIgnoreNull() {
-        int update = studentModel.newQuery().dataIgnoreNull("name", null).dataIgnoreNull("age", 55).where("id", "3").update();
+        int update = studentModel.newQuery()
+            .dataIgnoreNull("name", null)
+            .dataIgnoreNull("age", 55)
+            .where("id", "3")
+            .update();
         Assert.assertEquals(update, 1);
 
         StudentModel.Entity entity = studentModel.findOrFail(3).toObject();
@@ -403,7 +407,8 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(first2.getName(), "小明");
         Assert.assertNull(first2.getAge());
         Assert.assertNull(first2.getTeacherId());
-        Assert.assertEquals(first2.getCreatedAt().getTime()/1000L, LocalDateUtils.str2LocalDateTime("2009-03-14 17:15:23.0").toEpochSecond(ZoneOffset.of("+8")));
+        Assert.assertEquals(first2.getCreatedAt().getTime() / 1000L,
+            LocalDateUtils.str2LocalDateTime("2009-03-14 17:15:23.0").toEpochSecond(ZoneOffset.of("+8")));
         Assert.assertNull(first2.getUpdatedAt());
 
         Assert.assertNotNull(first1);
@@ -428,8 +433,10 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(first5.getName(), "小明");
         Assert.assertEquals(first5.getAge().intValue(), 6);
         Assert.assertEquals(first5.getTeacherId().intValue(), 6);
-        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first5.getCreatedAt()), LocalDateUtils.str2LocalDateTime("2009-03-14 17:15:23.0"));
-        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first5.getUpdatedAt()), LocalDateUtils.str2LocalDateTime("2010-04-24 22:11:03.0"));
+        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first5.getCreatedAt()),
+            LocalDateUtils.str2LocalDateTime("2009-03-14 17:15:23.0"));
+        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first5.getUpdatedAt()),
+            LocalDateUtils.str2LocalDateTime("2010-04-24 22:11:03.0"));
 
         Assert.assertThrows(EntityNotFoundException.class, () -> {
             studentModel.newQuery().select("name", "id").where("id", "not found").firstOrFail();
@@ -456,8 +463,10 @@ abstract public class QueryBuilderTests extends BaseTests {
             Assert.assertEquals(entity2.getName(), "小明");
             Assert.assertEquals(entity2.getAge().intValue(), 6);
             Assert.assertEquals(entity2.getTeacherId().intValue(), 6);
-            Assert.assertEquals(LocalDateUtils.date2LocalDateTime(entity2.getCreatedAt()), LocalDateUtils.str2LocalDateTime("2009-03-14 17:15:23.0"));
-            Assert.assertEquals(LocalDateUtils.date2LocalDateTime(entity2.getUpdatedAt()), LocalDateUtils.str2LocalDateTime("2010-04-24 22:11:03.0"));
+            Assert.assertEquals(LocalDateUtils.date2LocalDateTime(entity2.getCreatedAt()),
+                LocalDateUtils.str2LocalDateTime("2009-03-14 17:15:23.0"));
+            Assert.assertEquals(LocalDateUtils.date2LocalDateTime(entity2.getUpdatedAt()),
+                LocalDateUtils.str2LocalDateTime("2010-04-24 22:11:03.0"));
         });
     }
 
@@ -571,14 +580,20 @@ abstract public class QueryBuilderTests extends BaseTests {
     public void 查询_聚合函数_count_带group() {
         // 以下为手动
         // select count(*) as 'ccc' from (select `sex` from `student` group by `sex`)t
-        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().selectFunction("count", "*", "ccc").from("t",
-            builder -> builder.group("sex").select("sex")).get();
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
+            .selectFunction("count", "*", "ccc")
+            .from("t",
+                builder -> builder.group("sex").select("sex"))
+            .get();
         Assert.assertEquals(records.size(), 1);
         Assert.assertEquals(records.toMapList().get(0).get("ccc").toString(), "2");
 
         // select count(*) as 'ccc' from (select `sex` from `student` group by `sex`)t limit 1
-        Record<StudentModel.Entity, Integer> record = studentModel.newQuery().selectFunction("count", "*", "ccc").from("t",
-            builder -> builder.group("sex").select("sex")).firstOrFail();
+        Record<StudentModel.Entity, Integer> record = studentModel.newQuery()
+            .selectFunction("count", "*", "ccc")
+            .from("t",
+                builder -> builder.group("sex").select("sex"))
+            .firstOrFail();
         Assert.assertEquals(record.toMap().get("ccc").toString(), "2");
 
         // 以下为自动
@@ -587,7 +602,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(count01.longValue(), 2);
 
         // select count(*) as 'GtMbMe' from (select `sex`,`age`,`name` from `student` group by `sex`,`age`,`name`)GtMbMesub limit 1
-        Long count02 = studentModel.newQuery().group("sex").group("age","name").count("*");
+        Long count02 = studentModel.newQuery().group("sex").group("age", "name").count("*");
         Assert.assertEquals(count02.longValue(), 10);
 
         // select count(*) as 'oLmXhJ' from (select `sex` from `student` group by `sex`)oLmXhJsub limit 1
@@ -603,14 +618,20 @@ abstract public class QueryBuilderTests extends BaseTests {
     public void 查询_聚合函数_max_带group() {
         // 以下为手动
         // select max(sex) as 'ccc' from (select `sex` from `student` group by `sex`)t
-        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().selectFunction("max", "sex", "ccc").from("t",
-            builder -> builder.group("sex").select("sex")).get();
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
+            .selectFunction("max", "sex", "ccc")
+            .from("t",
+                builder -> builder.group("sex").select("sex"))
+            .get();
         Assert.assertEquals(records.size(), 1);
         Assert.assertEquals(records.toMapList().get(0).get("ccc").toString(), "2");
 
         // select max(sex) as 'ccc' from (select `sex` from `student` group by `sex`)t limit 1
-        Record<StudentModel.Entity, Integer> record = studentModel.newQuery().selectFunction("max", "sex", "ccc").from("t",
-            builder -> builder.group("sex").select("sex")).firstOrFail();
+        Record<StudentModel.Entity, Integer> record = studentModel.newQuery()
+            .selectFunction("max", "sex", "ccc")
+            .from("t",
+                builder -> builder.group("sex").select("sex"))
+            .firstOrFail();
         Assert.assertEquals(record.toMap().get("ccc").toString(), "2");
 
         // 以下为自动
@@ -619,7 +640,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(max1, "2");
 
         // select max(sex) as 'ZldfCz' from (select `sex`,`age`,`name` from `student` group by `sex`,`age`,`name`)ZldfCzsub limit 1
-        String count02 = studentModel.newQuery().group("sex").group("age","name").max("sex");
+        String count02 = studentModel.newQuery().group("sex").group("age", "name").max("sex");
         Assert.assertEquals(count02, "2");
 
         // select max(sex) as 'uOhnwy' from (select `sex` from `student` group by `sex`)uOhnwysub limit 1
@@ -635,8 +656,11 @@ abstract public class QueryBuilderTests extends BaseTests {
     public void 查询_聚合函数_min_带group() {
         // 以下为手动
         // select min(sex) as 'ccc' from (select `sex` from `student` group by `sex`)t limit 1
-        Record<StudentModel.Entity, Integer> record = studentModel.newQuery().selectFunction("min", "sex", "ccc").from("t",
-            builder -> builder.group("sex").select("sex")).firstOrFail();
+        Record<StudentModel.Entity, Integer> record = studentModel.newQuery()
+            .selectFunction("min", "sex", "ccc")
+            .from("t",
+                builder -> builder.group("sex").select("sex"))
+            .firstOrFail();
         Assert.assertEquals(record.toMap().get("ccc").toString(), "1");
 
         // 以下为自动
@@ -645,7 +669,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(min1, "1");
 
         // select min(sex) as 'YAhmzr' from (select `sex`,`age`,`name` from `student` group by `sex`,`age`,`name`)YAhmzrsub limit 1
-        String min2 = studentModel.newQuery().group("sex").group("age","name").min("sex");
+        String min2 = studentModel.newQuery().group("sex").group("age", "name").min("sex");
         Assert.assertEquals(min2, "1");
 
         // select min(sex) as 'RntldM' from (select `sex` from `student` group by `sex`)RntldMsub limit 1
@@ -661,8 +685,11 @@ abstract public class QueryBuilderTests extends BaseTests {
     public void 查询_聚合函数_avg_带group() {
         // 以下为手动
         // select avg(sex) as 'ccc' from (select `sex` from `student` group by `sex`)t limit 1
-        Record<StudentModel.Entity, Integer> record = studentModel.newQuery().selectFunction("avg", "sex", "ccc").from("t",
-            builder -> builder.group("sex").select("sex")).firstOrFail();
+        Record<StudentModel.Entity, Integer> record = studentModel.newQuery()
+            .selectFunction("avg", "sex", "ccc")
+            .from("t",
+                builder -> builder.group("sex").select("sex"))
+            .firstOrFail();
         Assert.assertEquals(record.toMap().get("ccc").toString(), "1.5000");
 
         // 以下为自动
@@ -671,7 +698,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(res1.toString(), "1.5000");
 
         // select avg(sex) as 'JuDitC' from (select `sex`,`age`,`name` from `student` group by `sex`,`age`,`name`)JuDitCsub limit 1
-        BigDecimal res2 = studentModel.newQuery().group("sex").group("age","name").avg("sex");
+        BigDecimal res2 = studentModel.newQuery().group("sex").group("age", "name").avg("sex");
         Assert.assertEquals(res2.toString(), "1.4000");
 
         // select avg(sex) as 'LRxkwD' from (select `sex` from `student` group by `sex`)LRxkwDsub limit 1
@@ -687,8 +714,11 @@ abstract public class QueryBuilderTests extends BaseTests {
     public void 查询_聚合函数_sum_带group() {
         // 以下为手动
         // select sum(sex) as 'ccc' from (select `sex` from `student` group by `sex`)t limit 1
-        Record<StudentModel.Entity, Integer> record = studentModel.newQuery().selectFunction("sum", "sex", "ccc").from("t",
-            builder -> builder.group("sex").select("sex")).firstOrFail();
+        Record<StudentModel.Entity, Integer> record = studentModel.newQuery()
+            .selectFunction("sum", "sex", "ccc")
+            .from("t",
+                builder -> builder.group("sex").select("sex"))
+            .firstOrFail();
         Assert.assertEquals(record.toMap().get("ccc").toString(), "3");
 
         // 以下为自动
@@ -697,7 +727,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(min1.toString(), "3");
 
         // select sum(sex) as 'yMpOUV' from (select `sex`,`age`,`name` from `student` group by `sex`,`age`,`name`)yMpOUVsub limit 1
-        BigDecimal min2 = studentModel.newQuery().group("sex").group("age","name").sum("sex");
+        BigDecimal min2 = studentModel.newQuery().group("sex").group("age", "name").sum("sex");
         Assert.assertEquals(min2.toString(), "14");
 
         // select sum(sex) as 'MxNqTs' from (select `sex` from `student` group by `sex`)MxNqTssub limit 1
@@ -722,9 +752,12 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(first.getName(), "小腾");
         Assert.assertEquals(first.getAge().intValue(), 16);
         Assert.assertEquals(first.getTeacherId().intValue(), 6);
-        Assert.assertNotEquals(LocalDateUtils.date2LocalDateTime(first.getCreatedAt()), LocalDateUtils.str2LocalDateTime("2009-03-14 15:11:29.0"));
-        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first.getCreatedAt()), LocalDateUtils.str2LocalDateTime("2009-03-14 15:11:23.0"));
-        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first.getUpdatedAt()), LocalDateUtils.str2LocalDateTime("2010-04-24 22:11:03.0"));
+        Assert.assertNotEquals(LocalDateUtils.date2LocalDateTime(first.getCreatedAt()),
+            LocalDateUtils.str2LocalDateTime("2009-03-14 15:11:29.0"));
+        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first.getCreatedAt()),
+            LocalDateUtils.str2LocalDateTime("2009-03-14 15:11:23.0"));
+        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first.getUpdatedAt()),
+            LocalDateUtils.str2LocalDateTime("2010-04-24 22:11:03.0"));
 
         Record<StudentModel.Entity, Integer> entityRecord2 =
             studentModel.newQuery().whereColumn("id", "sex").first();
@@ -736,9 +769,12 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(first2.getName(), "小张");
         Assert.assertEquals(first2.getAge().intValue(), 11);
         Assert.assertEquals(first2.getTeacherId().intValue(), 6);
-        Assert.assertNotEquals(LocalDateUtils.date2LocalDateTime(first2.getCreatedAt()), LocalDateUtils.str2LocalDateTime("2009-03-14 15:11:29.0"));
-        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first2.getCreatedAt()), LocalDateUtils.str2LocalDateTime("2009-03-14 15:15:23.0"));
-        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first2.getUpdatedAt()), LocalDateUtils.str2LocalDateTime("2010-04-24 22:11:03.0"));
+        Assert.assertNotEquals(LocalDateUtils.date2LocalDateTime(first2.getCreatedAt()),
+            LocalDateUtils.str2LocalDateTime("2009-03-14 15:11:29.0"));
+        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first2.getCreatedAt()),
+            LocalDateUtils.str2LocalDateTime("2009-03-14 15:15:23.0"));
+        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first2.getUpdatedAt()),
+            LocalDateUtils.str2LocalDateTime("2010-04-24 22:11:03.0"));
     }
 
     @Test
@@ -752,9 +788,12 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(first.getName(), "小腾");
         Assert.assertEquals(first.getAge().intValue(), 16);
         Assert.assertEquals(first.getTeacherId().intValue(), 6);
-        Assert.assertNotEquals(LocalDateUtils.date2LocalDateTime(first.getCreatedAt()), LocalDateUtils.str2LocalDateTime("2009-03-14 15:11:29.0"));
-        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first.getCreatedAt()), LocalDateUtils.str2LocalDateTime("2009-03-14 15:11:23.0"));
-        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first.getUpdatedAt()), LocalDateUtils.str2LocalDateTime("2010-04-24 22:11:03.0"));
+        Assert.assertNotEquals(LocalDateUtils.date2LocalDateTime(first.getCreatedAt()),
+            LocalDateUtils.str2LocalDateTime("2009-03-14 15:11:29.0"));
+        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first.getCreatedAt()),
+            LocalDateUtils.str2LocalDateTime("2009-03-14 15:11:23.0"));
+        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first.getUpdatedAt()),
+            LocalDateUtils.str2LocalDateTime("2010-04-24 22:11:03.0"));
 
 
         List<StudentModel.Entity> entityList1 = studentModel.newQuery()
@@ -945,7 +984,7 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
-    public void 条件_whereKeywords(){
+    public void 条件_whereKeywords() {
 
         List<StudentModel.Entity> list = studentModel.newQuery()
             .whereKeywords("小", "name", "age", "id")
@@ -1012,7 +1051,7 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
-    public void 条件_havingKeywords(){
+    public void 条件_havingKeywords() {
 
         List<StudentModel.Entity> list = studentModel.newQuery()
             .havingKeywords("小", "name", "age", "id")
@@ -1079,7 +1118,6 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
 
-
     @Test
     public void 条件_whereMayLike() {
         // select * from `student` where `name`like"小%"
@@ -1088,9 +1126,9 @@ abstract public class QueryBuilderTests extends BaseTests {
 
         // select * from `student` where `name`="小"
         List<StudentModel.Entity> entityList2 = studentModel.newQuery()
-                .whereMayLike("name", "小")
-                .get()
-                .toObjectList();
+            .whereMayLike("name", "小")
+            .get()
+            .toObjectList();
         Assert.assertEquals(0, entityList2.size());
 
         Map<String, Object> likeMap = new HashMap<>();
@@ -1098,10 +1136,10 @@ abstract public class QueryBuilderTests extends BaseTests {
         Map<String, Object> likeMap2 = null;
         // select * from `student` where `name`like"%卡"
         List<StudentModel.Entity> entityList3 = studentModel.newQuery()
-                .whereMayLike(likeMap)
-                .whereMayLike(likeMap2)
-                .get()
-                .toObjectList();
+            .whereMayLike(likeMap)
+            .whereMayLike(likeMap2)
+            .get()
+            .toObjectList();
         Assert.assertEquals(3, entityList3.size());
 
 
@@ -1142,16 +1180,16 @@ abstract public class QueryBuilderTests extends BaseTests {
     public void 条件_havingMayLike() {
         // select * from `student` having `name`like"小%"
         List<StudentModel.Entity> entityList1 = studentModel.newQuery()
-                .havingMayLike("name", "小%")
-                .get()
-                .toObjectList();
+            .havingMayLike("name", "小%")
+            .get()
+            .toObjectList();
         Assert.assertEquals(5, entityList1.size());
 
         // select * from `student` having `name`="小"
         List<StudentModel.Entity> entityList2 = studentModel.newQuery()
-                .havingMayLike("name", "小")
-                .get()
-                .toObjectList();
+            .havingMayLike("name", "小")
+            .get()
+            .toObjectList();
         Assert.assertEquals(0, entityList2.size());
 
         Map<String, Object> likeMap = new HashMap<>();
@@ -1159,10 +1197,10 @@ abstract public class QueryBuilderTests extends BaseTests {
         Map<String, Object> likeMap2 = null;
         // select * from `student` having `name`like"%卡"
         List<StudentModel.Entity> entityList3 = studentModel.newQuery()
-                .havingMayLike(likeMap)
-                .havingMayLike(likeMap2)
-                .get()
-                .toObjectList();
+            .havingMayLike(likeMap)
+            .havingMayLike(likeMap2)
+            .get()
+            .toObjectList();
         Assert.assertEquals(3, entityList3.size());
 
 
@@ -1171,10 +1209,10 @@ abstract public class QueryBuilderTests extends BaseTests {
         StudentModel.Entity student2 = null;
         // select * from `student` having `name`like"%卡"
         List<StudentModel.Entity> entityList4 = studentModel.newQuery()
-                .havingMayLike(student)
-                .havingMayLike(student2)
-                .get()
-                .toObjectList();
+            .havingMayLike(student)
+            .havingMayLike(student2)
+            .get()
+            .toObjectList();
         Assert.assertEquals(3, entityList4.size());
 
         Map<String, Object> map = new HashMap<>();
@@ -1228,8 +1266,20 @@ abstract public class QueryBuilderTests extends BaseTests {
         StudentModel.Entity entity = studentModel.newQuery().whereRaw("id=3").firstOrFail().toObject();
         Assert.assertEquals(3, entity.getId().intValue());
 
-        StudentModel.Entity entity1 = studentModel.newQuery().whereRaw("id>3").whereRaw("id<5").firstOrFail().toObject();
+        StudentModel.Entity entity1 = studentModel.newQuery()
+            .whereRaw("id>3")
+            .whereRaw("id<5")
+            .firstOrFail()
+            .toObject();
         Assert.assertEquals(4, entity1.getId().intValue());
+
+        StudentModel.Entity entity2 = studentModel.newQuery()
+            .whereRaw("id> ?", Collections.singletonList(3))
+            .whereRaw("id<?",
+                Collections.singletonList(5))
+            .firstOrFail()
+            .toObject();
+        Assert.assertEquals(4, entity2.getId().intValue());
 
         Set<String> sqlList = new HashSet<>();
         sqlList.add("id >5");
@@ -1247,8 +1297,19 @@ abstract public class QueryBuilderTests extends BaseTests {
         StudentModel.Entity entity = studentModel.newQuery().havingRaw("id=3").firstOrFail().toObject();
         Assert.assertEquals(3, entity.getId().intValue());
 
-        StudentModel.Entity entity1 = studentModel.newQuery().havingRaw("id>3").havingRaw("id<5").firstOrFail().toObject();
+        StudentModel.Entity entity1 = studentModel.newQuery()
+            .havingRaw("id>3")
+            .havingRaw("id<5")
+            .firstOrFail()
+            .toObject();
         Assert.assertEquals(4, entity1.getId().intValue());
+
+        StudentModel.Entity entity2 = studentModel.newQuery()
+            .havingRaw("id> ?", Collections.singletonList(3))
+            .havingRaw("id< ?", Collections.singletonList(5))
+            .firstOrFail()
+            .toObject();
+        Assert.assertEquals(4, entity2.getId().intValue());
 
         Set<String> sqlList = new HashSet<>();
         sqlList.add("id >5");
@@ -1256,6 +1317,18 @@ abstract public class QueryBuilderTests extends BaseTests {
         sqlList.add(null);
         RecordList<StudentModel.Entity, Integer> records1 = studentModel.newQuery().havingRaw(sqlList).get();
         Assert.assertEquals(3, records1.count());
+    }
+
+    @Test
+    public void 条件_whereRaw_havingRaw() {
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
+            .havingRaw("id>?", Arrays.asList(1))
+            .whereRaw("name like ?", Arrays.asList("%腾"))
+            .havingRaw("id < ?", Arrays.asList(9))
+            .whereRaw("sex =?", Arrays.asList("1"))
+            .get();
+        Assert.assertEquals(1, records.size());
+        Assert.assertEquals(3, records.toObjectList().get(0).getId().intValue());
     }
 
     @Test
@@ -1647,7 +1720,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().select("o.*")
             .from("student as o")
             .join(JoinType.RIGHT, "student as s", builder -> builder.whereColumn("o.id", "=", "s.id")
-                .where("s.id", "!=", "3").whereNotIn("s.id", "4","5"))
+                .where("s.id", "!=", "3").whereNotIn("s.id", "4", "5"))
             .orderBy("o.id").get();
         List<Map<String, Object>> maps = records.toMapList();
         Assert.assertEquals(maps.size(), 10);
@@ -1668,19 +1741,22 @@ abstract public class QueryBuilderTests extends BaseTests {
     public void join_subQuery() {
         // 找出age最大的男生女生的信息
         // select `student`.* from `student` inner join (select `sex`,max(age) as 'max_age' from `student` group by `sex`)t on (`student`.`sex`=`t`.`sex` and `student`.`age`=`t`.`max_age`);
-        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().select("student.*").join(JoinType.INNER,
-            builder -> builder.select("sex").selectFunction("max", "age", "max_age").group("sex"),
-            "t", builder -> builder.whereColumn("student.sex", "t.sex").whereColumn("student.age", "t.max_age")).orderBy("id").get();
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
+            .select("student.*")
+            .join(JoinType.INNER,
+                builder -> builder.select("sex").selectFunction("max", "age", "max_age").group("sex"),
+                "t", builder -> builder.whereColumn("student.sex", "t.sex").whereColumn("student.age", "t.max_age"))
+            .orderBy("id")
+            .get();
         List<StudentModel.Entity> entities = records.toObjectList();
-        Assert.assertEquals(entities.size() , 6);
-        Assert.assertEquals(entities.get(0).getId().intValue() , 2);
-        Assert.assertEquals(entities.get(1).getId().intValue() , 4);
-        Assert.assertEquals(entities.get(2).getId().intValue() , 5);
-        Assert.assertEquals(entities.get(3).getId().intValue() , 7);
-        Assert.assertEquals(entities.get(4).getId().intValue() , 8);
-        Assert.assertEquals(entities.get(5).getId().intValue() , 9);
+        Assert.assertEquals(entities.size(), 6);
+        Assert.assertEquals(entities.get(0).getId().intValue(), 2);
+        Assert.assertEquals(entities.get(1).getId().intValue(), 4);
+        Assert.assertEquals(entities.get(2).getId().intValue(), 5);
+        Assert.assertEquals(entities.get(3).getId().intValue(), 7);
+        Assert.assertEquals(entities.get(4).getId().intValue(), 8);
+        Assert.assertEquals(entities.get(5).getId().intValue(), 9);
     }
-
 
 
     @Test
@@ -2114,7 +2190,8 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(records.get(0).toObject().getId().intValue(), 1);
 
         int execute = studentModel.newQuery()
-            .execute("insert into `student`(`id`,`name`,`age`,`sex`) values( ? , ? , ? , ? )", "134","testNAme","11","1");
+            .execute("insert into `student`(`id`,`name`,`age`,`sex`) values( ? , ? , ? , ? )", "134", "testNAme", "11",
+                "1");
         Assert.assertEquals(execute, 1);
 
         Record<StudentModel.Entity, Integer> query = studentModel.newQuery()
@@ -2127,10 +2204,13 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
-    public void 子查询_from(){
+    public void 子查询_from() {
         // select count(*) as 'ccc' from (select `sex` from `student` group by `sex`)t
-        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().selectFunction("count", "*", "ccc").from("t",
-            builder -> builder.group("sex").select("sex")).get();
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
+            .selectFunction("count", "*", "ccc")
+            .from("t",
+                builder -> builder.group("sex").select("sex"))
+            .get();
 
         Assert.assertEquals(records.size(), 1);
         Assert.assertEquals(records.toMapList().get(0).get("ccc").toString(), "2");
@@ -2141,15 +2221,60 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
-    public void 索引_forceAndIgnoreIndex(){
-        RecordList<StudentModel.Entity, Integer> records1 = studentModel.newQuery().whereRaw("1").forceIndex("PRI").get();
+    public void 索引_forceAndIgnoreIndex() {
+        RecordList<StudentModel.Entity, Integer> records1 = studentModel.newQuery()
+            .whereRaw("1")
+            .forceIndex("PRI")
+            .get();
         Assert.assertEquals(records1.size(), 10);
 
-        RecordList<StudentModel.Entity, Integer> records2 = studentModel.newQuery().whereRaw("1").ignoreIndex("PRI").get();
+        RecordList<StudentModel.Entity, Integer> records2 = studentModel.newQuery()
+            .whereRaw("1")
+            .ignoreIndex("PRI")
+            .get();
         Assert.assertEquals(records2.size(), 10);
 
-        RecordList<StudentModel.Entity, Integer> records3 = studentModel.newQuery().whereRaw("1").forceIndex("PRI").ignoreIndex("PRI").get();
+        RecordList<StudentModel.Entity, Integer> records3 = studentModel.newQuery()
+            .whereRaw("1")
+            .forceIndex("PRI")
+            .ignoreIndex("PRI")
+            .get();
         Assert.assertEquals(records3.size(), 10);
+    }
+
+    @Test
+    public void 条件子句_when() {
+        List<StudentModel.Entity> entities = studentModel.newQuery()
+            .where("id", " >", 1)
+            .when(true, builder -> builder.where("id", ">", 3))
+            .where("id", " <", 7)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(3, entities.size());
+
+        List<StudentModel.Entity> entities1 = studentModel.newQuery()
+            .where("id", " >", 1)
+            .when(false, builder -> builder.where("id", ">", 3))
+            .where("id", " <", 7)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(5, entities1.size());
+
+        List<StudentModel.Entity> entities2 = studentModel.newQuery()
+            .where("id", " >", 1)
+            .when(true, builder -> builder.where("id", ">", 3), builder -> builder.where("id", "<", 3))
+            .where("id", " <", 7)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(3, entities2.size());
+
+        List<StudentModel.Entity> entities3 = studentModel.newQuery()
+            .where("id", " >", 1)
+            .when(false, builder -> builder.where("id", ">", 3), builder -> builder.where("id", "<", 3))
+            .where("id", " <", 7)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(1, entities3.size());
     }
 
 }

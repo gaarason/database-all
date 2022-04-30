@@ -4,6 +4,7 @@ import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.ChunkFunctionalInterface;
+import gaarason.database.contract.function.ToSqlFunctionalInterface;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.InsertNotSuccessException;
 import gaarason.database.exception.SQLRuntimeException;
@@ -27,6 +28,14 @@ public interface Execute<T extends Serializable, K extends Serializable> {
      * @return 数据库查询语句
      */
     String toSql(SqlType sqlType);
+
+    /**
+     * 转化为数据库查询语句(不会执行)
+     * @param sqlType 查询/更新
+     * @param closure SQL生成的方式
+     * @return 数据库查询语句
+     */
+    String toSql(SqlType sqlType, ToSqlFunctionalInterface closure);
 
     /**
      * 单个查询

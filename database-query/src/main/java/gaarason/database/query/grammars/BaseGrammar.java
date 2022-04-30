@@ -7,6 +7,7 @@ import gaarason.database.contract.query.Grammar;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.GrammarException;
 import gaarason.database.exception.InvalidSqlTypeException;
+import gaarason.database.exception.OperationNotSupportedException;
 import gaarason.database.lang.Nullable;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
@@ -78,6 +79,8 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
     protected final ArrayList<String> whereParameterList;
 
+    protected final ArrayList<String> havingParameterList;
+
     protected final ArrayList<String> dataParameterList;
 
     protected BaseGrammar(String tableName) {
@@ -85,6 +88,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         withMap = new HashMap<>();
         valueList = new ArrayList<>();
         whereParameterList = new ArrayList<>();
+        havingParameterList = new ArrayList<>();
         dataParameterList = new ArrayList<>();
     }
 
@@ -281,14 +285,33 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         StringBuilder sqlBuilder = new StringBuilder();
         switch (sqlType) {
             case REPLACE:
-                return sqlBuilder.append("replace into ").append(dealFrom()).append(dealColumn()).append(" values").append(dealValue()).toString();
+                return sqlBuilder.append("replace into ")
+                    .append(dealFrom())
+                    .append(dealColumn())
+                    .append(" values")
+                    .append(dealValue())
+                    .toString();
             case INSERT:
-                return sqlBuilder.append("insert into ").append(dealFrom()).append(dealColumn()).append(" values").append(dealValue()).toString();
+                return sqlBuilder.append("insert into ")
+                    .append(dealFrom())
+                    .append(dealColumn())
+                    .append(" values")
+                    .append(dealValue())
+                    .toString();
             case SELECT:
-                sqlBuilder.append("select ").append(dealSelect()).append(dealFromSelect()).append(dealForceIndex()).append(dealIgnoreIndex());
+                sqlBuilder.append("select ")
+                    .append(dealSelect())
+                    .append(dealFromSelect())
+                    .append(dealForceIndex())
+                    .append(dealIgnoreIndex());
                 break;
             case UPDATE:
-                sqlBuilder.append("update ").append(dealFrom()).append(dealForceIndex()).append(dealIgnoreIndex()).append(" set").append(dealData());
+                sqlBuilder.append("update ")
+                    .append(dealFrom())
+                    .append(dealForceIndex())
+                    .append(dealIgnoreIndex())
+                    .append(" set")
+                    .append(dealData());
                 break;
             case DELETE:
                 sqlBuilder.append("delete from ").append(dealFrom()).append(dealForceIndex()).append(dealIgnoreIndex());
@@ -298,8 +321,14 @@ public abstract class BaseGrammar implements Grammar, Serializable {
             default:
                 throw new InvalidSqlTypeException();
         }
-        sqlBuilder.append(dealJoin()).append(dealWhere(sqlType)).append(dealGroup()).append(dealHaving(sqlType)).append(dealOrderBy()).append(
-            dealLimit()).append(dealLock());
+        sqlBuilder.append(dealJoin())
+            .append(dealWhere(sqlType))
+            .append(dealGroup())
+            .append(dealHaving(sqlType))
+            .append(dealOrderBy())
+            .append(
+                dealLimit())
+            .append(dealLock());
 
         if (union != null) {
             FormatUtils.bracket(sqlBuilder);
@@ -311,12 +340,39 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     }
 
     @Override
-    public List<String> getParameterList(SqlType sqlType) {
-        final ArrayList<String> list = new ArrayList<>(dataParameterList);
-        if (sqlType != SqlType.INSERT) {
+    public List<String> getAllParameterList(SqlType sqlType) {
+
+//        final ArrayList<String> list = new ArrayList<>(dataParameterList);
+//        if (sqlType != SqlType.INSERT) {
+//            list.addAll(whereParameterList);
+//        }
+//        return list;
+
+
+        if (SqlType.REPLACE.equals(sqlType) || SqlType.INSERT.equals(sqlType)) {
+            return new ArrayList<>(dataParameterList);
+        } else if(SqlType.UPDATE.equals(sqlType) || SqlType.DELETE.equals(sqlType)){
+            ArrayList<String> list = new ArrayList<>(dataParameterList);
             list.addAll(whereParameterList);
+            list.addAll(havingParameterList);
+            return list;
+        }else {
+            ArrayList<String> list = new ArrayList<>(whereParameterList);
+            list.addAll(havingParameterList);
+            return list;
         }
-        return list;
+    }
+
+    @Override
+    public void copyAllParameterTo(Grammar targetGrammar) {
+        if (targetGrammar instanceof BaseGrammar) {
+            BaseGrammar grammar = (BaseGrammar) targetGrammar;
+            grammar.dataParameterList.addAll(dataParameterList);
+            grammar.whereParameterList.addAll(whereParameterList);
+            grammar.havingParameterList.addAll(havingParameterList);
+        } else {
+            throw new OperationNotSupportedException();
+        }
     }
 
     @Override
@@ -358,19 +414,24 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     }
 
     @Override
+    public void pushHavingParameter(String value) {
+        havingParameterList.add(value);
+    }
+
+    @Override
     public void pushDataParameter(String value) {
         dataParameterList.add(value);
     }
 
     /**
      * 记录with信息
-     * @param column         所关联的Model(当前模块的属性名)
+     * @param column 所关联的Model(当前模块的属性名)
      * @param builderClosure 所关联的Model的查询构造器约束
-     * @param recordClosure  所关联的Model的再一级关联
+     * @param recordClosure 所关联的Model的再一级关联
      */
     @Override
     public void pushWith(String column, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
-        RelationshipRecordWithFunctionalInterface recordClosure) {
+                         RelationshipRecordWithFunctionalInterface recordClosure) {
         withMap.put(column, new Object[]{builderClosure, recordClosure});
     }
 

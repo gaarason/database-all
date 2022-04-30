@@ -28,4 +28,11 @@ public interface OrderBy<T extends Serializable, K extends Serializable> {
      */
     Builder<T, K> orderBy(@Nullable String column);
 
+    /**
+     * 排序
+     * @param sqlPart sql片段, 为null则忽略
+     * @return 查询构造器
+     */
+    Builder<T, K> orderByRaw(@Nullable String sqlPart);
+
 }

@@ -26,6 +26,7 @@ Eloquent ORM for Java
         * [sum](#sum)
     * [自增或自减](#自增或自减)
     * [select](#select)
+    * [when](#when)
     * [where](#where)
         * [字段与值的比较](#字段与值的比较)
         * [字段之间的比较](#字段之间的比较)
@@ -455,18 +456,40 @@ Assert.assertEquals(min4.toString(), "3");
 
 #### dataDecrement  dataIncrement
 ```java
+// update `student` set`age`= `age`-2  where id=4 
 int update = studentModel.newQuery().dataDecrement("age", 2).whereRaw("id=4").update();
 
+// update `student` set`age`= `age`+4  where id=4 
 int update2 = studentModel.newQuery().dataIncrement("age", 4).whereRaw("id=4").update();
 ```
 
 ## select
+确定查询时返回的列
 ```java
-Record<Student, Long> record = studentModel.newQuery().select("name").select("id").select("id").first();
+// select name,id,id from student limit 1;
+studentModel.newQuery().select("name").select("id").select("id").first();
 
-Record<Student, Long> record = studentModel.newQuery().select("name","id","created_at").first();
+// select name,id,created_at from student limit 1;
+studentModel.newQuery().select("name","id","created_at").first();
 
-Record<Student, Long> record = studentModel.newQuery().selectFunction("concat_ws", "\"-\",`name`,`id`", "newKey").first();
+// select concat_ws(name, id) as newkey from student limit 1;
+studentModel.newQuery().selectFunction("concat_ws", "\"-\",`name`,`id`", "newKey").first();
+```
+## when
+有时候你可能想要某些条件为 true 的时候才将条件子句应用到查询。例如，你可能只想给定值在请求中存在的情况下才应用 where 语句，这可以通过 when 方法实现
+```java
+// select * from student where id > 3
+studentModel.newQuery().when(true, builder -> builder.where("id", ">", 3)).get()
+
+// select * from student
+studentModel.newQuery().when(false, builder -> builder.where("id", ">", 3)).get()
+
+
+// select * from student where id > 3
+studentModel.newQuery().when(true, builder -> builder.where("id", ">", 3), builder -> builder.where("id", "<", 3)).get()
+
+// select * from student where id < 3
+studentModel.newQuery().when(false, builder -> builder.where("id", ">", 3), builder -> builder.where("id", "<", 3)).get()
 ```
 
 ## where
