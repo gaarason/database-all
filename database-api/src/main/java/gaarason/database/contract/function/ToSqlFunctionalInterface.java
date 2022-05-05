@@ -1,5 +1,6 @@
 package gaarason.database.contract.function;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -15,6 +16,6 @@ public interface ToSqlFunctionalInterface {
      * @param parameters 绑定的参数 eg: [3]
      * @return 可视的SQL语句 eg: select * from table where id = 3
      */
-    String execute(String sql, List<String> parameters);
+    String execute(String sql, Collection<String> parameters);
 
 }

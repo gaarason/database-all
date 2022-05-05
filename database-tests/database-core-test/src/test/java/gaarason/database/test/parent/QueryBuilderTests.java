@@ -52,7 +52,7 @@ abstract public class QueryBuilderTests extends BaseTests {
             valueList.add("11");
             valueList.add("1");
 
-            int insert = studentModel.newQuery().select(columnNameList).value(valueList).insert();
+            int insert = studentModel.newQuery().column(columnNameList).value(valueList).insert();
             Assert.assertEquals(insert, 1);
             StudentModel.Entity entityFirst = studentModel.newQuery()
                 .where("name", "testNAme134")
@@ -235,7 +235,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         }
 
 
-        List<Integer> integers = studentModel.newQuery().select(columnNameList).valueList(valuesList).insertGetIds();
+        List<Integer> integers = studentModel.newQuery().column(columnNameList).valueList(valuesList).insertGetIds();
         Assert.assertEquals(integers.size(), valuesList.size());
 
         List<StudentModel.Entity> entityList = studentModel.newQuery()
@@ -1369,7 +1369,7 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
-    public void 条件_子查询_闭包() {
+    public void 条件_whereSubQuery_闭包() {
         List<Object> ins = new ArrayList<>();
         ins.add("1");
         ins.add("2");
@@ -1382,12 +1382,26 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
-    public void 条件_子查询_字符串() {
+    public void 条件_whereSubQuery_字符串() {
         RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
             .where("age", "!=", "99")
             .whereSubQuery("id", "in", "select id from student where id = 3")
             .get();
         Assert.assertEquals(records.size(), 1);
+    }
+
+    @Test
+    public void 条件_whereSubQuery_混合() {
+        List<Object> ins = new ArrayList<>();
+        ins.add("1");
+        ins.add("2");
+        ins.add("3");
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
+            .where("age", "!=", "99")
+            .whereSubQuery("id", "in", builder -> builder.select("id").whereIn("id", ins).having("id", "!=", 2))
+            .where("age", "!=", "99")
+            .get();
+        Assert.assertEquals(2, records.size());
     }
 
     @Test

@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @param <K>
  * @author xt
  */
-public interface OrderBy<T extends Serializable, K extends Serializable> {
+public interface Order<T extends Serializable, K extends Serializable> {
 
     /**
      * 排序

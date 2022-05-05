@@ -1,9 +1,10 @@
 package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
+import gaarason.database.lang.Nullable;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * 值
@@ -15,16 +16,16 @@ public interface Value<T extends Serializable, K extends Serializable> {
 
     /**
      * 插入数据使用
-     * @param valueList 值列表
+     * @param values 值列表
      * @return 查询构造器
      */
-    Builder<T, K> value(List<Object> valueList);
+    Builder<T, K> value(@Nullable Collection<?> values);
 
     /**
      * 批量插入数据使用
-     * @param valueList 值列表的列表
+     * @param valuesList 值列表的列表
      * @return 查询构造器
      */
-    Builder<T, K> valueList(List<List<Object>> valueList);
+    Builder<T, K> valueList(Collection<? extends Collection<?>> valuesList);
 
 }

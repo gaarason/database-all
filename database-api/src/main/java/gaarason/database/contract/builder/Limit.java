@@ -18,14 +18,14 @@ public interface Limit<T extends Serializable, K extends Serializable> {
      * @param take   获取数量
      * @return 查询构造器
      */
-    Builder<T, K> limit(int offset, int take);
+    Builder<T, K> limit(Object offset, Object take);
 
     /**
      * 查询数量限制
      * @param take 获取数量
      * @return 查询构造器
      */
-    Builder<T, K> limit(int take);
+    Builder<T, K> limit(Object take);
 
 
 }

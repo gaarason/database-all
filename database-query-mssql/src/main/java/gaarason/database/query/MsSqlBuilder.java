@@ -14,21 +14,21 @@ import java.io.Serializable;
  * @param <K>
  * @author xt
  */
-public class MsSqlBuilder<T extends Serializable, K extends Serializable> extends CommonBuilder<T, K> {
+public class MsSqlBuilder<T extends Serializable, K extends Serializable> extends OtherBuilder<T, K> {
 
     public MsSqlBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model,  Grammar grammar) {
         super(gaarasonDataSource, model, grammar);
     }
 
     @Override
-    public Builder<T, K> limit(int offset, int take) {
-        String sqlPart = "offset " + offset + " rows fetch next " + take + " rows only";
-        grammar.pushLimit(sqlPart);
+    public Builder<T, K> limit(Object offset, Object take) {
+        String sqlPart = "offset " + conversionToString(offset) + " rows fetch next " + conversionToString(take) + " rows only";
+        grammar.set(Grammar.SQLPartType.LIMIT, sqlPart, null);
         return this;
     }
 
     @Override
-    public Builder<T, K> limit(int take) {
+    public Builder<T, K> limit(Object take) {
         return limit(0, take);
     }
 
@@ -38,7 +38,7 @@ public class MsSqlBuilder<T extends Serializable, K extends Serializable> extend
      * @return eg: sum(`order`.`amount`) AS `sum_price`
      */
     @Override
-    protected String column(String something) {
+    protected String backQuote(String something) {
         return FormatUtils.backQuote(something, "\"");
     }
 }

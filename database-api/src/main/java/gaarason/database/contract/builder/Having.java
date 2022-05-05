@@ -23,7 +23,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
      * @param parameters 参数绑定列表
      * @return 查询构造器
      */
-    Builder<T, K> havingRaw(@Nullable String sqlPart, @Nullable Collection<Object> parameters);
+    Builder<T, K> havingRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters);
 
     /**
      * 加入sql片段
@@ -212,6 +212,25 @@ public interface Having<T extends Serializable, K extends Serializable> {
      * @return 查询构造器
      */
     Builder<T, K> havingMayLikeIgnoreNull(@Nullable Map<String, Object> map);
+
+    /**
+     * 条件子查询
+     * @param column 列名
+     * @param symbol 关系符号
+     * @param completeSql 完整sql
+     * @return 查询构造器
+     */
+    Builder<T, K> havingSubQuery(String column, String symbol, String completeSql);
+
+    /**
+     * 条件子查询
+     * @param column 列名
+     * @param symbol 关系符号
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    Builder<T, K> havingSubQuery(String column, String symbol, GenerateSqlPartFunctionalInterface<T, K> closure);
+
 
     /**
      * 列值在范围内

@@ -19,7 +19,7 @@ public interface Data<T extends Serializable, K extends Serializable> {
      * @param sqlPart sql片段 eg: age=15,name="dd"
      * @return 查询构造器
      */
-    Builder<T, K> data(String sqlPart);
+    Builder<T, K> dataRaw(@Nullable String sqlPart);
 
     /**
      * 数据更新

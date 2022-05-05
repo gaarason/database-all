@@ -1,29 +1,20 @@
 package gaarason.database.query;
 
-import gaarason.database.appointment.AggregatesType;
 import gaarason.database.appointment.SqlType;
-import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
-import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
-import gaarason.database.contract.function.ToSqlFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.InsertNotSuccessException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
-import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.MapUtils;
-import gaarason.database.util.ObjectUtils;
-import gaarason.database.util.StringUtils;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -38,97 +29,6 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
         super(gaarasonDataSource, model, grammar);
     }
 
-    @Override
-    public <R> R aggregate(AggregatesType op, String column) {
-        String alias = StringUtils.getRandomString(6);
-        Builder<T, K> builder = this;
-        if (grammar.hasGroup()) {
-            if (!grammar.hasSelect()) {
-                this.selectRaw(grammar.getGroup());
-            }
-            builder = model.newQuery().from(alias + "sub", this.toSql(SqlType.SELECT));
-        }
-
-        Map<String, Object> resMap = builder.selectFunction(op.toString(), column, alias).firstOrFail().toMap();
-        return ObjectUtils.typeCast(resMap.get(alias));
-    }
-
-    @Override
-    public Long count() {
-        return count("*");
-    }
-
-    @Override
-    public Long count(String column) {
-        return aggregate(AggregatesType.count, column);
-    }
-
-    @Override
-    public String max(String column) {
-        Object aggregate = aggregate(AggregatesType.max, column);
-        return String.valueOf(aggregate);
-    }
-
-    @Override
-    public String min(String column) {
-        Object aggregate = aggregate(AggregatesType.min, column);
-        return String.valueOf(aggregate);
-    }
-
-    @Override
-    public BigDecimal avg(String column) {
-        return aggregate(AggregatesType.avg, column);
-    }
-
-    @Override
-    public BigDecimal sum(String column) {
-        return aggregate(AggregatesType.sum, column);
-    }
-
-    @Override
-    public Builder<T, K> forceIndex(String indexName) {
-        grammar.pushForceIndex(FormatUtils.column(indexName));
-        return this;
-    }
-
-    @Override
-    public Builder<T, K> ignoreIndex(String indexName) {
-        grammar.pushIgnoreIndex(FormatUtils.column(indexName));
-        return this;
-    }
-
-    @Override
-    public Builder<T, K> fromRaw(String sqlPart) {
-        grammar.pushFrom(sqlPart);
-        return this;
-    }
-
-    @Override
-    public Builder<T, K> from(String table) {
-        return fromRaw(FormatUtils.column(table));
-    }
-
-    @Override
-    public Builder<T, K> from(String alias, GenerateSqlPartFunctionalInterface<T, K> closure) {
-        return fromRaw(generateSql(closure) + alias);
-    }
-
-    @Override
-    public Builder<T, K> from(String alias, String sql) {
-        return fromRaw(FormatUtils.bracket(sql) + alias);
-    }
-
-    @Override
-    public String toSql(SqlType sqlType) {
-        return toSql(sqlType, ((sql, parameters) -> String.format(sql.replace(" ? ", "\"%s\""), parameters.toArray())));
-    }
-
-    @Override
-    public String toSql(SqlType sqlType, ToSqlFunctionalInterface closure) {
-        String sql = grammar.generateSql(sqlType);
-        List<String> parameterList = grammar.getAllParameterList(sqlType);
-        return closure.execute(sql, parameterList);
-    }
 
     @Override
     public Record<T, K> find(K id) throws SQLRuntimeException {
@@ -172,7 +72,7 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
         // 获取entity所有有效字段的值
         List<Object> valueList = ModelShadowProvider.valueList(entity, columnNameSet);
         // 字段加入grammar
-        select(columnNameSet);
+        column(columnNameSet);
         // 字段的值加入grammar
         value(valueList);
         // 执行
@@ -186,7 +86,7 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
         // 获取map所有有效字段的值
         List<Object> valueList = MapUtils.mapValueToList(entityMap);
         // 字段加入grammar
-        select(columnNameSet);
+        column(columnNameSet);
         // 字段的值加入grammar
         value(valueList);
         // 执行
@@ -211,9 +111,9 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public K insertGetId() throws SQLRuntimeException {
-        String sql = grammar.generateSql(SqlType.INSERT);
-        List<String> parameterList = grammar.getAllParameterList(SqlType.INSERT);
-        return executeGetId(sql, parameterList);
+        Grammar.SQLPartInfo sqlPartInfo = grammar.generateSql(SqlType.INSERT);
+        assert sqlPartInfo.getParameters() != null;
+        return executeGetId(sqlPartInfo.getSqlString(), sqlPartInfo.getParameters());
     }
 
     @Override
@@ -223,7 +123,7 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
         // 获取entity所有有效字段的值
         List<Object> valueList = ModelShadowProvider.valueList(entity, columnNameSet);
         // 字段加入grammar
-        select(columnNameSet);
+        column(columnNameSet);
         // 字段的值加入grammar
         value(valueList);
         // 执行, 并获取主键id
@@ -241,7 +141,7 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
         // 获取map所有有效字段的值
         List<Object> valueList = MapUtils.mapValueToList(entityMap);
         // 字段加入grammar
-        select(columnNameSet);
+        column(columnNameSet);
         // 字段的值加入grammar
         value(valueList);
         // 执行, 并获取主键id，返回主键
@@ -278,10 +178,9 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public List<K> insertGetIds() throws SQLRuntimeException {
-        // sql 组装
-        String sql = grammar.generateSql(SqlType.INSERT);
-        List<String> parameterList = grammar.getAllParameterList(SqlType.INSERT);
-        return executeGetIds(sql, parameterList);
+        Grammar.SQLPartInfo sqlPartInfo = grammar.generateSql(SqlType.INSERT);
+        assert sqlPartInfo.getParameters() != null;
+        return executeGetIds(sqlPartInfo.getSqlString(), sqlPartInfo.getParameters());
     }
 
     @Override
@@ -334,7 +233,7 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
             valueListList.add(valueList);
         }
         // 字段加入grammar
-        select(columnNameSet);
+        column(columnNameSet);
         // 字段的值加入grammar
         valueList(valueListList);
     }
@@ -352,58 +251,63 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
             valueListList.add(valueList);
         }
         // 字段加入grammar
-        select(columnNameSet);
+        column(columnNameSet);
         // 字段的值加入grammar
         valueList(valueListList);
     }
 
-    /**
-     * 格式化参数类型,到绑定参数
-     * @param value 参数
-     * @return 参数占位符?
-     */
-    protected String formatData(@Nullable Object value) {
-        return FormatUtils.data(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class),
-            grammar);
-    }
+//    /**
+//     * 格式化参数类型,到绑定参数
+//     * @param value 参数
+//     * @return 参数占位符?
+//     */
+//    @Deprecated
+//    protected String formatData(@Nullable Object value) {
+//        return FormatUtils.data(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class),
+//            grammar);
+//    }
 
-    /**
-     * 格式化参数类型,到绑定参数
-     * @param valueList 参数
-     * @return 参数占位符?
-     */
-    protected String formatWhere(Collection<?> valueList) {
-        return FormatUtils.where(valueList, grammar);
-    }
-
-    /**
-     * 格式化参数类型,到绑定参数
-     * @param value 参数
-     * @return 参数占位符?
-     */
-    protected String formatWhere(@Nullable Object value) {
-        return FormatUtils.where(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class),
-            grammar);
-    }
-
-    /**
-     * 格式化参数类型,到绑定参数
-     * @param valueList 参数
-     * @return 参数占位符?
-     */
-    protected String formatHaving(Collection<?> valueList) {
-        return FormatUtils.having(valueList, grammar);
-    }
-
-    /**
-     * 格式化参数类型,到绑定参数
-     * @param value 参数
-     * @return 参数占位符?
-     */
-    protected String formatHaving(@Nullable Object value) {
-        return FormatUtils.having(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class),
-            grammar);
-    }
+//    /**
+//     * 格式化参数类型,到绑定参数
+//     * @param valueList 参数
+//     * @return 参数占位符?
+//     */
+//    @Deprecated
+//    protected String formatWhere(Collection<?> valueList) {
+//        return FormatUtils.where(valueList, grammar);
+//    }
+//
+//    /**
+//     * 格式化参数类型,到绑定参数
+//     * @param value 参数
+//     * @return 参数占位符?
+//     */
+//    @Deprecated
+//    protected String formatWhere(@Nullable Object value) {
+//        return FormatUtils.where(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class),
+//            grammar);
+//    }
+//
+//    /**
+//     * 格式化参数类型,到绑定参数
+//     * @param valueList 参数
+//     * @return 参数占位符?
+//     */
+//    @Deprecated
+//    protected String formatHaving(Collection<?> valueList) {
+//        return FormatUtils.having(valueList, grammar);
+//    }
+//
+//    /**
+//     * 格式化参数类型,到绑定参数
+//     * @param value 参数
+//     * @return 参数占位符?
+//     */
+//    @Deprecated
+//    protected String formatHaving(@Nullable Object value) {
+//        return FormatUtils.having(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class),
+//            grammar);
+//    }
 
     /**
      * 返回数据库方法的拼接字符
@@ -422,5 +326,5 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
      * @param something 字段 eg: sum(order.amount) AS sum_price
      * @return eg: sum(`order`.`amount`) AS `sum_price`
      */
-    protected abstract String column(String something);
+    protected abstract String backQuote(String something);
 }

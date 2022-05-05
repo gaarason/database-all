@@ -1,6 +1,7 @@
 package gaarason.database.contract.model;
 
 import gaarason.database.contract.eloquent.Record;
+import gaarason.database.lang.Nullable;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -20,7 +21,7 @@ public interface Event<T extends Serializable, K extends Serializable> {
 
     /**
      * sql日志记录
-     * @param sql           带占位符的sql
+     * @param sql 带占位符的sql
      * @param parameterList 参数
      */
     default void log(String sql, Collection<String> parameterList) {

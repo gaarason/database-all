@@ -1,5 +1,7 @@
 package gaarason.database.query;
 
+import gaarason.database.appointment.SubQueryType;
+import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
@@ -12,6 +14,7 @@ import gaarason.database.appointment.Paginate;
 import gaarason.database.appointment.FinalVariable;
 import gaarason.database.appointment.SqlType;
 import gaarason.database.exception.*;
+import gaarason.database.provider.ContainerProvider;
 import gaarason.database.support.RecordFactory;
 import gaarason.database.util.ExceptionUtils;
 import gaarason.database.util.FormatUtils;
@@ -74,34 +77,23 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
         return model.newQuery();
     }
 
-    /**
-     * 执行闭包生成sqlPart
-     * @param closure 闭包
-     * @return sqlPart eg:(`id`="3" and `age` between "12" and "19")
-     */
-    protected String generateSqlPart(GenerateSqlPartFunctionalInterface<T, K> closure) {
-        return generateSql(closure, false);
-    }
-
-    /**
-     * 执行闭包生成完整sql
-     * @param closure 闭包
-     * @return sqlPart eg:(select * from `student` where `id`="3" and `age` between "12" and "19")
-     */
-    protected String generateSql(GenerateSqlPartFunctionalInterface<T, K> closure) {
-        return generateSql(closure, true);
-    }
-
-    /**
-     * 是否是空sql
-     * 用于检测 generateSql, generateSqlPart 的结果
-     * @param sql sql
-     * @return 是空sql
-     */
-    protected boolean isEmptySql(String sql) {
-        // () 的含义即是 generateSql(builder -> builder) 的结果;
-        return ObjectUtils.isEmpty(sql) || "()".equals(sql);
-    }
+//    /**
+//     * 执行闭包生成sqlPart
+//     * @param closure 闭包
+//     * @return sqlPart eg:(`id`="3" and `age` between "12" and "19")
+//     */
+//    protected String generateSqlPart(GenerateSqlPartFunctionalInterface<T, K> closure) {
+//        return generateSql(closure, false);
+//    }
+//
+//    /**
+//     * 执行闭包生成完整sql
+//     * @param closure 闭包
+//     * @return sqlPart eg:(select * from `student` where `id`="3" and `age` between "12" and "19")
+//     */
+//    protected String generateSql(GenerateSqlPartFunctionalInterface<T, K> closure) {
+//        return generateSql(closure, true);
+//    }
 
     /**
      * 克隆当前查询构造器
@@ -477,8 +469,12 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      */
     Record<T, K> querySql() throws SQLRuntimeException, EntityNotFoundException {
         // sql组装执行
-        String sql = grammar.generateSql(SqlType.SELECT);
-        List<String> parameterList = grammar.getAllParameterList(SqlType.SELECT);
+        Grammar.SQLPartInfo sqlPartInfo = grammar.generateSql(SqlType.SELECT);
+
+        String sql = sqlPartInfo.getSqlString();
+        Collection<String> parameterList = sqlPartInfo.getParameters();
+        assert parameterList != null;
+
         Map<String, Object[]> columnMap = grammar.pullWith();
         Record<T, K> theRecord = queryOrFail(sql, parameterList);
         for (Map.Entry<String, Object[]> stringEntry : columnMap.entrySet()) {
@@ -497,9 +493,11 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      */
     RecordList<T, K> querySqlList() throws SQLRuntimeException, EntityNotFoundException {
         // sql组装执行
-        String sql = grammar.generateSql(SqlType.SELECT);
-        List<String> parameterList = grammar.getAllParameterList(SqlType.SELECT);
+        Grammar.SQLPartInfo sqlPartInfo = grammar.generateSql(SqlType.SELECT);
+        String sql = sqlPartInfo.getSqlString();
+        Collection<String> parameterList = sqlPartInfo.getParameters();
         Map<String, Object[]> columnMap = grammar.pullWith();
+        assert parameterList != null;
         RecordList<T, K> records = queryList(sql, parameterList);
         for (Map.Entry<String, Object[]> stringEntry : columnMap.entrySet()) {
             records.with(stringEntry.getKey(), (GenerateSqlPartFunctionalInterface<?, ?>) stringEntry.getValue()[0],
@@ -515,8 +513,10 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
         do {
             Builder<T, K> cloneBuilder = clone();
             cloneBuilder.limit(offset, num);
-            String sql = cloneBuilder.getGrammar().generateSql(SqlType.SELECT);
-            List<String> parameterList = cloneBuilder.getGrammar().getAllParameterList(SqlType.SELECT);
+            Grammar.SQLPartInfo sqlPartInfo = cloneBuilder.getGrammar().generateSql(SqlType.SELECT);
+            String sql = sqlPartInfo.getSqlString();
+            Collection<String> parameterList = sqlPartInfo.getParameters();
+            assert parameterList != null;
             Map<String, Object[]> columnMap = grammar.pullWith();
             RecordList<T, K> records = queryList(sql, parameterList);
             for (Map.Entry<String, Object[]> stringEntry : columnMap.entrySet()) {
@@ -535,14 +535,16 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * @throws SQLRuntimeException 数据库异常
      */
     int updateSql(SqlType sqlType) throws SQLRuntimeException {
-        if (sqlType != SqlType.INSERT && !grammar.hasWhere()) {
+        if (sqlType != SqlType.INSERT && grammar.isEmpty(Grammar.SQLPartType.WHERE)) {
             throw new ConfirmOperationException(
                 "You made a risky operation without where conditions, use where(1) " + "for sure");
         }
         // sql组装执行
-        String sql = grammar.generateSql(sqlType);
-        List<String> parameterList = grammar.getAllParameterList(sqlType);
-        return execute(sql, parameterList);
+        Grammar.SQLPartInfo sqlPartInfo = grammar.generateSql(sqlType);
+        String sql = sqlPartInfo.getSqlString();
+        Collection<String> parameters = sqlPartInfo.getParameters();
+        assert parameters != null;
+        return execute(sql, parameters);
     }
 
     /**
@@ -569,16 +571,50 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
     }
 
     /**
-     * 执行闭包生成sql, 含绑定参数的合并
+     * 执行闭包生成完整sql, 含绑定参数的合并
      * @param closure 闭包
-     * @param wholeSql 是否生成完整sql
      * @return sql
      */
-    private String generateSql(GenerateSqlPartFunctionalInterface<T, K> closure, boolean wholeSql) {
+    protected Grammar.SQLPartInfo generateSql(GenerateSqlPartFunctionalInterface<T, K> closure) {
         Builder<T, K> subBuilder = closure.execute(getNewSelf());
-        subBuilder.getGrammar().copyAllParameterTo(grammar);
-        SqlType sqlType = wholeSql ? SqlType.SELECT : SqlType.SUB_QUERY;
-        return FormatUtils.bracket(subBuilder.getGrammar().generateSql(sqlType));
+        return subBuilder.getGrammar().generateSql(SqlType.SELECT);
     }
 
+    /**
+     * 执行闭包生成sql片段, 含绑定参数的合并
+     * @param closure 闭包
+     * @param sqlPartType 片段类型
+     * @return sql
+     */
+    protected Grammar.SQLPartInfo generateSql(GenerateSqlPartFunctionalInterface<T, K> closure, Grammar.SQLPartType sqlPartType) {
+        Builder<T, K> subBuilder = closure.execute(getNewSelf());
+        return subBuilder.getGrammar().get(sqlPartType);
+    }
+
+    /**
+     * 类型转化到 String集合
+     * @param value 参数
+     * @return String
+     */
+    @Nullable
+    protected String conversionToString(@Nullable Object value) {
+        return ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class);
+    }
+
+    /**
+     * 类型转化到 String集合
+     * @param value 参数
+     * @return String集合
+     */
+    @Nullable
+    protected Collection<String> conversionToStrings(@Nullable Collection<?> value) {
+        if (!ObjectUtils.isEmpty(value)) {
+            LinkedList<String> res = new LinkedList<>();
+            for (Object obj : value) {
+                res.add(conversionToString(obj));
+            }
+            return res;
+        }
+        return null;
+    }
 }

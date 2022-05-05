@@ -85,7 +85,7 @@ abstract public class IncrementTypeTests extends BaseTests {
 
         List<Object> vList = new ArrayList<>();
         vList.add("aaaccc");
-        Long qwww = peopleModel.newQuery().select("name").value(vList).insertGetId();
+        Long qwww = peopleModel.newQuery().column("name").value(vList).insertGetId();
         ;
         Assert.assertNotNull(qwww);
         Assert.assertEquals(21, qwww.intValue());

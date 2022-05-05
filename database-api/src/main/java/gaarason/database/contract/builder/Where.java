@@ -22,7 +22,7 @@ public interface Where<T extends Serializable, K extends Serializable> {
      * @param parameters 参数绑定列表
      * @return 查询构造器
      */
-    Builder<T, K> whereRaw(@Nullable String sqlPart, @Nullable Collection<Object> parameters);
+    Builder<T, K> whereRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters);
 
     /**
      * 加入sql片段

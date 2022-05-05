@@ -4,7 +4,6 @@ import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.query.Grammar;
-import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.query.MySqlBuilder;
 import gaarason.database.query.grammars.MySqlGrammar;
