@@ -19,8 +19,9 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
-### 2.23.0 (未发布)
+### 3.0.0 (未发布)
 
+- 重写了底层的语法构造器(`Grammar`), 使其可以在任意语句下, 完成参数绑定.
 - 在查询构造器(`Builder`)中增加`toSql(sqlType, closure)`/`whereRaw(sqlPart, parameters)`/`havingRaw(sqlPart, parameters)`/`orderByRaw(sqlPart)`
 - 在查询构造器(`Builder`)中增加`when(condition, closure)`/`when(condition, closure, closure)`
 - 在查询构造器(`Builder`)中增加`whereKeywords(value, column...)`/`whereKeywordsIgnoreNull(value, column...)`/`havingKeywords(value, column...)`/`havingKeywordsIgnoreNull(value, column...)`等方法

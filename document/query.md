@@ -194,7 +194,7 @@ valueList.add("testNAme134");
 valueList.add("11");
 valueList.add("1");
 
-int num = studentModel.newQuery().select(columnNameList).value(valueList).insert();
+int num = studentModel.newQuery().column(columnNameList).value(valueList).insert();
 
 // d. map赋值插入
 Map<String, Object> map = new HashMap<>();
@@ -617,13 +617,16 @@ Record<Student, Long> record = studentModel.newQuery().whereIgnoreNull(map).firs
 ### 字段之间的比较
 #### whereColumn
 ```java
+// select * from student where `id` > `sex` limit 1
 Record<Student, Long> record = studentModel.newQuery().whereColumn("id", ">", "sex").first();
 ```
 ### 字段(不)在两值之间
 #### whereBetween whereNotBetween
 ```java
+// select * from student where `id` between "3" and "5" 
 RecordList<Student, Long>> records = studentModel.newQuery().whereBetween("id", "3", "5").get();
 
+// select * from student where `id` not between "3" and "5" 
 RecordList<Student, Long>> records = studentModel.newQuery().whereNotBetween("id", "3", "5").get();
 ```
 ### 字段(不)在范围内
@@ -634,11 +637,15 @@ idList.add("4");
 idList.add("5");
 idList.add("6");
 idList.add("7");
-RecordList<Student, Long>> records = studentModel.newQuery().whereIn("id", idList).get();
 
-RecordList<Student, Long>> records = studentModel.newQuery().whereNotIn("id", idList).get();
+// select * from student where `id`in( "4" , "5" , "6" , "7" )
+RecordList<Student, Long> records = studentModel.newQuery().whereIn("id", idList).get();
 
-RecordList<Student, Long>> records = studentModel.newQuery().whereIn("id",
+// select * from student where `id`not in( "4" , "5" , "6" , "7" )
+RecordList<Student, Long> records = studentModel.newQuery().whereNotIn("id", idList).get();
+
+// select * from student where `id` in( select id from student where age>=11) and ( sex not in (select sex from student where sex=1) )
+RecordList<Student, Long> records = studentModel.newQuery().whereIn("id",
     builder -> builder.select("id").where("age", ">=", "11")
 ).andWhere(
     builder -> builder.whereNotIn("sex",
@@ -682,11 +689,14 @@ List<Object> ins = new ArrayList<>();
 ins.add("1");
 ins.add("2");
 ins.add("3");
+
+// select * from student where age != 99 and id in (select id from student where id in 1,2,3)
 RecordList<Student, Long>> records = studentModel.newQuery()
 .where("age", "!=", "99")
 .whereSubQuery("id", "in", builder -> builder.select("id").whereIn("id", ins))
 .get();
 
+// select * from student where age != 99 and id in (select id from student where id = 3)
 RecordList<Student, Long>> records = studentModel.newQuery()
 .where("age", "!=", "99")
 .whereSubQuery("id", "in", "select id from student where id = 3")
@@ -695,13 +705,15 @@ RecordList<Student, Long>> records = studentModel.newQuery()
 ### 且
 #### andWhere  andWhereIgnoreEmpty
 ```java
-RecordList<Student, Long>> records = studentModel.newQuery().where("id", "3").andWhere(
-    (builder) -> builder.whereRaw("id=4")
+// select * from student where id = 3 and (id=4)
+studentModel.newQuery().where("id", "3").andWhere(
+    builder -> builder.whereRaw("id=4")
 ).get();
 ```
 ### 或
 #### orWhere  orWhereIgnoreEmpty
 ```java
+// select * from student where id = 3 or (id=4)
 RecordList<Student, Long>> records = studentModel.newQuery().where("id", "3").orWhere(
     (builder) -> builder.whereRaw("id=4")
 ).get();
@@ -710,6 +722,9 @@ RecordList<Student, Long>> records = studentModel.newQuery().where("id", "3").or
 ### 条件为真(假)
 #### whereExists  whereNotExists
 ```java
+// select `id`,`name`,`age` from student group by `id`,`name`,`age` having `id`between "1" and "2"  
+// and exists (select `id`,`name`,`age` from student where `id`between "2" and "3" ) 
+// and not exists (select `id`,`name`,`age` from student where `id`between "2" and "4" )
 RecordList<Student, Long>> records = studentModel.newQuery()
 .select("id", "name", "age")
 .whereBetween("id", "1", "2")
