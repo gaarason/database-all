@@ -40,12 +40,12 @@ public class GaarasonDatabaseProperties implements Serializable {
     public static class SnowFlake implements Serializable {
 
         /**
-         * 雪花算法 工作ID
+         * 雪花算法 工作ID 0-1023
          */
         private int workerId;
 
         /**
-         * 雪花算法 数据源ID
+         * 雪花算法 数据源ID 只能是0
          */
         private int dataId;
 

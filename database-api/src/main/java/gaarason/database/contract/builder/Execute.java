@@ -23,21 +23,6 @@ import java.util.Map;
 public interface Execute<T extends Serializable, K extends Serializable> {
 
     /**
-     * 转化为数据库查询语句(不会执行)
-     * @param sqlType 查询/更新
-     * @return 数据库查询语句
-     */
-    String toSql(SqlType sqlType);
-
-    /**
-     * 转化为数据库查询语句(不会执行)
-     * @param sqlType 查询/更新
-     * @param closure SQL生成的方式
-     * @return 数据库查询语句
-     */
-    String toSql(SqlType sqlType, ToSqlFunctionalInterface closure);
-
-    /**
      * 单个查询
      * @param id 主键
      * @return 数剧记录|null
