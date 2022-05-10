@@ -10,6 +10,7 @@ import gaarason.database.appointment.OrderBy;
 import gaarason.database.exception.ConfirmOperationException;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.test.models.normal.StudentModel;
+import gaarason.database.test.models.relation.pojo.Student;
 import gaarason.database.test.parent.base.BaseTests;
 import gaarason.database.test.utils.MultiThreadUtil;
 import gaarason.database.util.LocalDateUtils;
@@ -775,6 +776,23 @@ abstract public class QueryBuilderTests extends BaseTests {
             LocalDateUtils.str2LocalDateTime("2009-03-14 15:15:23.0"));
         Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first2.getUpdatedAt()),
             LocalDateUtils.str2LocalDateTime("2010-04-24 22:11:03.0"));
+
+        Record<StudentModel.Entity, Integer> entityRecord3 =
+            studentModel.newQuery().whereColumn(StudentModel.Entity::getId, StudentModel.Entity::getSex).first();
+        Assert.assertNotNull(entityRecord3);
+        System.out.println(entityRecord3);
+        StudentModel.Entity first3 = entityRecord3.toObject();
+        Assert.assertEquals(first3.getId(), new Integer(2));
+        Assert.assertEquals(first3.getId().intValue(), 2);
+        Assert.assertEquals(first3.getName(), "小张");
+        Assert.assertEquals(first3.getAge().intValue(), 11);
+        Assert.assertEquals(first3.getTeacherId().intValue(), 6);
+        Assert.assertNotEquals(LocalDateUtils.date2LocalDateTime(first3.getCreatedAt()),
+            LocalDateUtils.str2LocalDateTime("2009-03-14 15:11:29.0"));
+        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first3.getCreatedAt()),
+            LocalDateUtils.str2LocalDateTime("2009-03-14 15:15:23.0"));
+        Assert.assertEquals(LocalDateUtils.date2LocalDateTime(first3.getUpdatedAt()),
+            LocalDateUtils.str2LocalDateTime("2010-04-24 22:11:03.0"));
     }
 
     @Test
@@ -819,6 +837,10 @@ abstract public class QueryBuilderTests extends BaseTests {
             .firstOrFail().toObject();
         Assert.assertEquals(entity3.getId().intValue(), 9);
 
+        StudentModel.Entity entity4 = studentModel.newQuery()
+            .where(StudentModel.Entity::getCreatedAt, ">=", "2009-03-15 22:15:23")
+            .firstOrFail().toObject();
+        Assert.assertEquals(entity4.getId().intValue(), 9);
     }
 
     @Test
@@ -836,6 +858,14 @@ abstract public class QueryBuilderTests extends BaseTests {
             .get()
             .toObjectList();
         Assert.assertEquals(entityList2.size(), 1);
+
+        List<StudentModel.Entity> entityList3 = studentModel.newQuery()
+            .whereBetween(StudentModel.Entity::getId, "3", "5")
+            .whereNotBetween(
+                StudentModel.Entity::getId, "3", "4")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(entityList3.size(), 1);
     }
 
     @Test
@@ -859,6 +889,10 @@ abstract public class QueryBuilderTests extends BaseTests {
         List<StudentModel.Entity> entityList2 = studentModel.newQuery().whereIn("id", idList).whereNotIn("id",
             idList2).get().toObjectList();
         Assert.assertEquals(entityList2.size(), 3);
+
+        List<StudentModel.Entity> entityList3 = studentModel.newQuery().whereIn(StudentModel.Entity::getId, idList).whereNotIn(StudentModel.Entity::getId,
+            idList2).get().toObjectList();
+        Assert.assertEquals(entityList3.size(), 3);
     }
 
     @Test
@@ -882,6 +916,10 @@ abstract public class QueryBuilderTests extends BaseTests {
         List<StudentModel.Entity> entityList2 = studentModel.newQuery().whereIn("id", idList).whereNotIn("id",
             idList2).whereNotInIgnoreEmpty("id", new ArrayList<>()).get().toObjectList();
         Assert.assertEquals(entityList2.size(), 3);
+
+        List<StudentModel.Entity> entityList3 = studentModel.newQuery().whereIn(StudentModel.Entity::getId, idList).whereNotIn(StudentModel.Entity::getId,
+            idList2).whereNotInIgnoreEmpty(StudentModel.Entity::getId, new ArrayList<>()).get().toObjectList();
+        Assert.assertEquals(entityList3.size(), 3);
     }
 
     @Test
@@ -907,6 +945,14 @@ abstract public class QueryBuilderTests extends BaseTests {
             .get()
             .toObjectList();
         Assert.assertEquals(entityList3.size(), 3);
+
+        List<StudentModel.Entity> entityList4 = studentModel.newQuery()
+            .whereIn(StudentModel.Entity::getId, 4, 5, "6", 7)
+            .whereNotIn(StudentModel.Entity::getId,
+                "10", 9, "7")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(entityList4.size(), 3);
     }
 
     @Test

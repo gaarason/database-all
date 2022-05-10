@@ -15,6 +15,7 @@ import gaarason.database.util.StringUtils;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 语法分析基类
@@ -61,12 +62,16 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     @Override
     public String replaceValuesAndFillParameters(Collection<?> values, Collection<String> parameters,
                                                  String separator) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (Object value : values) {
-            parameters.add(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class));
-            stringBuilder.append(" ? ").append(separator);
-        }
-        return StringUtils.rtrim(stringBuilder.toString(), separator);
+        return values.stream().map(e -> {
+            parameters.add(ContainerProvider.getBean(ConversionConfig.class).castNullable(e, String.class));
+            return " ? ";
+        }).collect(Collectors.joining(separator));
+//        StringBuilder stringBuilder = new StringBuilder();
+//        for (Object value : values) {
+//            parameters.add(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class));
+//            stringBuilder.append(" ? ").append(separator);
+//        }
+//        return StringUtils.rtrim(stringBuilder.toString(), separator);
     }
 
     @Override

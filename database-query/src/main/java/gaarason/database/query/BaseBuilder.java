@@ -15,14 +15,18 @@ import gaarason.database.appointment.FinalVariable;
 import gaarason.database.appointment.SqlType;
 import gaarason.database.exception.*;
 import gaarason.database.provider.ContainerProvider;
+import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.RecordFactory;
 import gaarason.database.util.ExceptionUtils;
 import gaarason.database.util.FormatUtils;
+import gaarason.database.util.LambdaUtils;
 import gaarason.database.util.ObjectUtils;
 
 import java.io.Serializable;
 import java.sql.*;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 基础查询构造器(sql生成器)
@@ -73,27 +77,20 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * 得到一个全新的查询构造器
      * @return 查询构造器
      */
-    private Builder<T, K> getNewSelf() {
+    @Override
+    public Builder<T, K> getNewSelf() {
         return model.newQuery();
     }
 
-//    /**
-//     * 执行闭包生成sqlPart
-//     * @param closure 闭包
-//     * @return sqlPart eg:(`id`="3" and `age` between "12" and "19")
-//     */
-//    protected String generateSqlPart(GenerateSqlPartFunctionalInterface<T, K> closure) {
-//        return generateSql(closure, false);
-//    }
-//
-//    /**
-//     * 执行闭包生成完整sql
-//     * @param closure 闭包
-//     * @return sqlPart eg:(select * from `student` where `id`="3" and `age` between "12" and "19")
-//     */
-//    protected String generateSql(GenerateSqlPartFunctionalInterface<T, K> closure) {
-//        return generateSql(closure, true);
-//    }
+    @Override
+    public Builder<T, K> getSelf() {
+        return this;
+    }
+
+    @Override
+    public String lambda2Column(ColumnFunctionalInterface<T> column) {
+        return ModelShadowProvider.getColumnNameByLambdaWithCache(column);
+    }
 
     /**
      * 克隆当前查询构造器
@@ -569,27 +566,27 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
         // 返回预执行对象
         return preparedStatement;
     }
-
-    /**
-     * 执行闭包生成完整sql, 含绑定参数的合并
-     * @param closure 闭包
-     * @return sql
-     */
-    protected Grammar.SQLPartInfo generateSql(GenerateSqlPartFunctionalInterface<T, K> closure) {
-        Builder<T, K> subBuilder = closure.execute(getNewSelf());
-        return subBuilder.getGrammar().generateSql(SqlType.SELECT);
-    }
-
-    /**
-     * 执行闭包生成sql片段, 含绑定参数的合并
-     * @param closure 闭包
-     * @param sqlPartType 片段类型
-     * @return sql
-     */
-    protected Grammar.SQLPartInfo generateSql(GenerateSqlPartFunctionalInterface<T, K> closure, Grammar.SQLPartType sqlPartType) {
-        Builder<T, K> subBuilder = closure.execute(getNewSelf());
-        return subBuilder.getGrammar().get(sqlPartType);
-    }
+//
+//    /**
+//     * 执行闭包生成完整sql, 含绑定参数的合并
+//     * @param closure 闭包
+//     * @return sql
+//     */
+//    protected Grammar.SQLPartInfo generateSql(GenerateSqlPartFunctionalInterface<T, K> closure) {
+//        Builder<T, K> subBuilder = closure.execute(getNewSelf());
+//        return subBuilder.getGrammar().generateSql(SqlType.SELECT);
+//    }
+//
+//    /**
+//     * 执行闭包生成sql片段, 含绑定参数的合并
+//     * @param closure 闭包
+//     * @param sqlPartType 片段类型
+//     * @return sql
+//     */
+//    protected Grammar.SQLPartInfo generateSql(GenerateSqlPartFunctionalInterface<T, K> closure, Grammar.SQLPartType sqlPartType) {
+//        Builder<T, K> subBuilder = closure.execute(getNewSelf());
+//        return subBuilder.getGrammar().get(sqlPartType);
+//    }
 
     /**
      * 类型转化到 String集合
@@ -597,24 +594,24 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * @return String
      */
     @Nullable
-    protected String conversionToString(@Nullable Object value) {
+    public String conversionToString(@Nullable Object value) {
         return ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class);
     }
-
-    /**
-     * 类型转化到 String集合
-     * @param value 参数
-     * @return String集合
-     */
-    @Nullable
-    protected Collection<String> conversionToStrings(@Nullable Collection<?> value) {
-        if (!ObjectUtils.isEmpty(value)) {
-            LinkedList<String> res = new LinkedList<>();
-            for (Object obj : value) {
-                res.add(conversionToString(obj));
-            }
-            return res;
-        }
-        return null;
-    }
+//
+//    /**
+//     * 类型转化到 String集合
+//     * @param value 参数
+//     * @return String集合
+//     */
+//    @Nullable
+//    public Collection<String> conversionToStrings(@Nullable Collection<?> value) {
+//        if (!ObjectUtils.isEmpty(value)) {
+//            LinkedList<String> res = new LinkedList<>();
+//            for (Object obj : value) {
+//                res.add(conversionToString(obj));
+//            }
+//            return res;
+//        }
+//        return null;
+//    }
 }

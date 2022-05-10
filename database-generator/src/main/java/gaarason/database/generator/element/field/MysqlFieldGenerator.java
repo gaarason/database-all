@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.regex.Matcher;
 
 /**
@@ -204,7 +205,7 @@ public class MysqlFieldGenerator extends BaseFieldGenerator {
         field.setVisibility(JavaVisibility.PRIVATE);
 
         // 数据类型
-        switch (dataType.toLowerCase()) {
+        switch (dataType.toLowerCase(Locale.ENGLISH)) {
             case "tinyint":
                 dataTypeTinyint(field);
                 break;

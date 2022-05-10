@@ -1,13 +1,7 @@
 package gaarason.database.util;
 
-import gaarason.database.appointment.FinalVariable;
-import gaarason.database.config.ConversionConfig;
-import gaarason.database.contract.query.Grammar;
-import gaarason.database.lang.Nullable;
-import gaarason.database.provider.ContainerProvider;
-
-import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * 格式化
@@ -150,12 +144,12 @@ public class FormatUtils {
     /**
      * 给字段加上反引号
      * @param something 字段 eg: sum(order.amount) AS sum_price
-     * @param symbol    符号 eg: `
+     * @param symbol 符号 eg: `
      * @return eg: sum(`order`.`amount`) AS `sum_price`
      */
     public static String backQuote(String something, String symbol) {
         something = something.trim();
-        int whereIsAs = something.toLowerCase().indexOf(" as ");
+        int whereIsAs = something.toLowerCase(Locale.ENGLISH).indexOf(" as ");
         String temp;
         String mayBeHasFunc = something;
         String alias = "";
@@ -172,7 +166,8 @@ public class FormatUtils {
             if (whereIsPoint != -1) {
                 String table = someElse.substring(0, whereIsPoint); // eg: order
                 String column = someElse.replace(table + '.', ""); // eg: amount
-                temp = column.equals("*") ? symbol + table + symbol + "." + column : symbol + table + symbol + "." + symbol + column + symbol;
+                temp = column.equals("*") ? symbol + table + symbol + "." + column :
+                    symbol + table + symbol + "." + symbol + column + symbol;
             } else if ("".equals(someElse)) {
                 temp = "";
             } else {
@@ -186,7 +181,8 @@ public class FormatUtils {
             } else {
                 String table = mayBeHasFunc.substring(0, whereIsPoint); // eg: order
                 String column = mayBeHasFunc.replace(table + '.', ""); // eg: amount
-                temp = column.equals("*") ? symbol + table + symbol + "." + column : symbol + table + symbol + "." + symbol + column + symbol;
+                temp = column.equals("*") ? symbol + table + symbol + "." + column :
+                    symbol + table + symbol + "." + symbol + column + symbol;
             }
         }
         return temp + alias;

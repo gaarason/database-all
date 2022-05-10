@@ -3,6 +3,7 @@ package gaarason.database.appointment;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Locale;
 
 /**
  * jdbc字段值对象
@@ -91,7 +92,7 @@ public class DBColumn implements Serializable {
         isAutoincrement = rs.getString("IS_AUTOINCREMENT");
 
         jdbcType = JdbcType.fromCode(dataType);
-        unsigned = typeName.toLowerCase().contains("unsigned");
+        unsigned = typeName.toLowerCase(Locale.ENGLISH).contains("unsigned");
         javaClassName = JdbcType.forClassName(jdbcType.TYPE_CODE);
     }
 

@@ -22,10 +22,10 @@ public abstract class GrammarBuilder<T extends Serializable, K extends Serializa
         super(gaarasonDataSource, model, grammar);
     }
 
-    protected Builder<T, K> whereGrammar(String sqlPart, @Nullable Collection<String> parameters, String separator) {
-        grammar.addSmartSeparator(Grammar.SQLPartType.WHERE, sqlPart, parameters, separator);
-        return this;
-    }
+//    protected Builder<T, K> whereGrammar(String sqlPart, @Nullable Collection<String> parameters, String separator) {
+//        grammar.addSmartSeparator(Grammar.SQLPartType.WHERE, sqlPart, parameters, separator);
+//        return this;
+//    }
 
 
 

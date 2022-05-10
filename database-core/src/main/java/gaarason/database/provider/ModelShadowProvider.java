@@ -2,9 +2,11 @@ package gaarason.database.provider;
 
 import gaarason.database.annotation.*;
 import gaarason.database.appointment.FinalVariable;
+import gaarason.database.appointment.LambdaInfo;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
+import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.contract.support.ReflectionScan;
 import gaarason.database.eloquent.relation.BelongsToManyQueryRelation;
@@ -13,7 +15,9 @@ import gaarason.database.eloquent.relation.HasOneOrManyQueryRelation;
 import gaarason.database.exception.*;
 import gaarason.database.lang.Nullable;
 import gaarason.database.util.EntityUtils;
+import gaarason.database.util.LambdaUtils;
 import gaarason.database.util.ObjectUtils;
+import sun.misc.SoftCache;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -50,6 +54,11 @@ public final class ModelShadowProvider {
      */
     private static final Map<String, ModelInfo<? extends Serializable, ? extends Serializable>> TABLE_NAME_INDEX_MAP = new ConcurrentHashMap<>();
 
+    /**
+     * 缓存lambda风格的列名, 与为String风格的列名的映射
+     */
+    private static final SoftCache LAMBDA_COLUMN_CACHE = new SoftCache();
+
     static {
         // 一轮初始化模型的基本信息(主键类型/实体类型/模型类型/表名等等), 并构建索引(实体索引/模型索引), 不存在依赖递归等复杂情况
         // 并过滤不需要的model, 比如抽象类等
@@ -71,8 +80,8 @@ public final class ModelShadowProvider {
     /**
      * 查询Model信息
      * @param model 模型
-     * @param <T>   实体类
-     * @param <K>   主键类型
+     * @param <T> 实体类
+     * @param <K> 主键类型
      * @return 格式化后的Model信息
      */
     public static <T extends Serializable, K extends Serializable> ModelInfo<T, K> get(Model<T, K> model) {
@@ -82,11 +91,12 @@ public final class ModelShadowProvider {
     /**
      * 查询Model信息
      * @param modelClass 模型类
-     * @param <T>        实体类
-     * @param <K>        主键类型
+     * @param <T> 实体类
+     * @param <K> 主键类型
      * @return 格式化后的Model信息
      */
-    public static <T extends Serializable, K extends Serializable> ModelInfo<T, K> getByModelClass(Class<? extends Model<T, K>> modelClass) {
+    public static <T extends Serializable, K extends Serializable> ModelInfo<T, K> getByModelClass(
+        Class<? extends Model<T, K>> modelClass) {
         ModelInfo<?, ?> result1 = MODEL_PROXY_INDEX_MAP.get(modelClass);
         if (null == result1) {
             ModelInfo<?, ?> result2 = MODEL_INDEX_MAP.get(modelClass);
@@ -125,15 +135,54 @@ public final class ModelShadowProvider {
     }
 
     /**
+     * 将lambda风格的列名, 解析为String类型
+     * 这个过程使用缓存进行加速, 5-10倍
+     * @param func lambda风格的列名
+     * @param <T> 实体类型
+     * @return 列名
+     */
+    public static <T extends Serializable> String getColumnNameByLambdaWithCache(ColumnFunctionalInterface<T> func) {
+        Class<?> clazz = func.getClass();
+        String column = (String) LAMBDA_COLUMN_CACHE.get(clazz);
+        if (column == null) {
+            synchronized (LAMBDA_COLUMN_CACHE) {
+                column = (String) LAMBDA_COLUMN_CACHE.get(clazz);
+                if (column == null) {
+                    // 解析 lambda
+                    LambdaInfo<T> lambdaInfo = LambdaUtils.parse(func);
+                    // 实例类
+                    Class<T> entityClass = lambdaInfo.getEntityCLass();
+                    // 属性名
+                    String fieldName = lambdaInfo.getFieldName();
+                    // Model信息
+                    ModelInfo<T, Serializable> modelInfo = getByEntityClass(entityClass);
+                    // 字段信息
+                    FieldInfo fieldInfo = modelInfo.javaFieldMap.get(fieldName);
+                    // 无效的参数,则抛出异常
+                    if (ObjectUtils.isEmpty(fieldInfo)) {
+                        throw new EntityAttributeInvalidException(fieldName, entityClass);
+                    }
+                    // 即为所求
+                    column = fieldInfo.columnName;
+                    // 常量化后, 加入缓存
+                    LAMBDA_COLUMN_CACHE.put(clazz, column.intern());
+                }
+            }
+        }
+        return column;
+
+    }
+
+    /**
      * 查询entity 中的指定字段信息
-     * @param clazz     实体类(可查找泛型)
+     * @param clazz 实体类(可查找泛型)
      * @param fieldName 实体中的属性
-     * @param <T>       实体类型
+     * @param <T> 实体类型
      * @return 字段信息
      * @throws EntityAttributeInvalidException 无效的字段
      */
-    public static <T extends Serializable> FieldInfo getFieldInfoByEntityClass(Class<T> clazz,
-        String fieldName) throws EntityAttributeInvalidException, EntityInvalidException {
+    public static <T extends Serializable> FieldInfo getFieldInfoByEntityClass(Class<T> clazz, String fieldName)
+        throws EntityAttributeInvalidException, EntityInvalidException {
         final ModelInfo<T, Serializable> modelInfo = getByEntityClass(clazz);
         final FieldInfo fieldInfo = modelInfo.getJavaFieldMap().get(fieldName);
         if (ObjectUtils.isEmpty(fieldInfo)) {
@@ -144,14 +193,14 @@ public final class ModelShadowProvider {
 
     /**
      * 通过entity解析对应的字段和值组成的map, 忽略不符合规则的字段
-     * @param entity     数据表实体对象
-     * @param <T>        数据表实体类
+     * @param entity 数据表实体对象
+     * @param <T> 数据表实体类
      * @return 字段对值的映射
      */
     public static <T extends Serializable> Map<String, Object> columnValueMap(@Nullable T entity) {
         // 结果集
         Map<String, Object> columnValueMap = new HashMap<>();
-        if(ObjectUtils.isNull(entity)){
+        if (ObjectUtils.isNull(entity)) {
             return columnValueMap;
         }
         // 属性信息集合
@@ -171,15 +220,15 @@ public final class ModelShadowProvider {
 
     /**
      * 通过entity解析对应的字段和值组成的map, 忽略不符合规则的字段
-     * @param entity     数据表实体对象
+     * @param entity 数据表实体对象
      * @param insertType 新增?
-     * @param <T>        数据表实体类
+     * @param <T> 数据表实体类
      * @return 字段对值的映射
      */
     public static <T extends Serializable> Map<String, Object> columnValueMap(@Nullable T entity, boolean insertType) {
         // 结果集
         Map<String, Object> columnValueMap = new HashMap<>();
-        if(ObjectUtils.isNull(entity)){
+        if (ObjectUtils.isNull(entity)) {
             return columnValueMap;
         }
         // 属性信息集合
@@ -200,8 +249,8 @@ public final class ModelShadowProvider {
     /**
      * 通过entity解析对应的字段组成的list
      * 忽略不符合规则的字段
-     * @param entity     数据表实体对象
-     * @param <T>        数据表实体类
+     * @param entity 数据表实体对象
+     * @param <T> 数据表实体类
      * @param insertType 新增?
      * @return 列名组成的list
      */
@@ -226,8 +275,8 @@ public final class ModelShadowProvider {
     /**
      * 通过entity解析对应的字段组成的set
      * 忽略不符合规则的字段
-     * @param entity     数据表实体对象
-     * @param <T>        数据表实体类
+     * @param entity 数据表实体对象
+     * @param <T> 数据表实体类
      * @param insertType 新增?
      * @return 列名组成的set
      */
@@ -238,8 +287,8 @@ public final class ModelShadowProvider {
 
     /**
      * 通过entity解析对应的字段的值组成的list, 忽略不符合规则的字段
-     * @param entity      数据表实体对象
-     * @param <T>         数据表实体类
+     * @param entity 数据表实体对象
+     * @param <T> 数据表实体类
      * @param columnNames 有效的属性名
      * @return 字段的值组成的list
      */
@@ -262,13 +311,15 @@ public final class ModelShadowProvider {
     /**
      * 将数据库查询结果赋值给entity的field
      * 需要 field.setAccessible(true)
-     * @param fieldInfo       字段信息
+     * @param fieldInfo 字段信息
      * @param stringColumnMap 元数据map
-     * @param entity          数据表实体对象
+     * @param entity 数据表实体对象
      */
     public static <T extends Serializable, K extends Serializable> void fieldAssignment(FieldInfo fieldInfo,
-        Map<String, gaarason.database.appointment.Column> stringColumnMap,
-        T entity, Record<T, K> theRecord) throws TypeNotSupportedException {
+                                                                                        Map<String, gaarason.database.appointment.Column> stringColumnMap,
+                                                                                        T entity,
+                                                                                        Record<T, K> theRecord)
+        throws TypeNotSupportedException {
         gaarason.database.appointment.Column column = stringColumnMap.get(fieldInfo.columnName);
         if (column != null) {
             try {
@@ -288,10 +339,10 @@ public final class ModelShadowProvider {
 
     /**
      * 设置 entity 对象的自增属性值
-     * @param <T>    数据表实体类
-     * @param <K>    数据表主键类型
+     * @param <T> 数据表实体类
+     * @param <K> 数据表主键类型
      * @param entity 数据表实体对象
-     * @param id     数据库生成的id
+     * @param id 数据库生成的id
      * @throws IllegalAccessRuntimeException 反射赋值异常
      */
     public static <T extends Serializable, K extends Serializable> void setPrimaryKeyValue(T entity, @Nullable K id) {
@@ -304,8 +355,8 @@ public final class ModelShadowProvider {
 
     /**
      * 获取 entity 对象的主键值
-     * @param <T>    数据表实体类
-     * @param <K>    数据表主键类型
+     * @param <T> 数据表实体类
+     * @param <K> 数据表主键类型
      * @param entity 数据表实体对象
      * @throws IllegalAccessRuntimeException 反射赋值异常
      */
@@ -325,7 +376,7 @@ public final class ModelShadowProvider {
     /**
      * 获取属性的值
      * @param fieldInfo 属性信息
-     * @param obj       对象
+     * @param obj 对象
      * @return 值
      * @throws IllegalAccessRuntimeException 反射取值异常
      */
@@ -341,8 +392,8 @@ public final class ModelShadowProvider {
     /**
      * 设置属性的值
      * @param fieldInfo 属性信息
-     * @param obj       对象
-     * @param value     值
+     * @param obj 对象
+     * @param value 值
      * @throws IllegalAccessRuntimeException 反射赋值异常
      */
     public static void fieldSet(FieldInfo fieldInfo, Object obj, @Nullable Object value) {
@@ -356,7 +407,7 @@ public final class ModelShadowProvider {
     /**
      * 简单实例化
      * @param clazz 类
-     * @param <U>   类型
+     * @param <U> 类型
      * @return 对象
      */
     public static <U> U newInstance(Class<U> clazz) {
@@ -369,8 +420,8 @@ public final class ModelShadowProvider {
 
     /**
      * 是否有效字段
-     * @param fieldInfo  字段
-     * @param value      字段值
+     * @param fieldInfo 字段
+     * @param value 字段值
      * @return 有效
      */
     private static boolean effectiveField(FieldInfo fieldInfo, @Nullable Object value) {
@@ -379,8 +430,8 @@ public final class ModelShadowProvider {
 
     /**
      * 是否有效字段
-     * @param fieldInfo  字段
-     * @param value      字段值
+     * @param fieldInfo 字段
+     * @param value 字段值
      * @param insertType 是否是新增,会通过字段上的注解column(insertable, updatable)进行忽略
      * @return 有效
      */
@@ -410,10 +461,11 @@ public final class ModelShadowProvider {
     /**
      * 初始化模型的基本信息, 并构建索引
      * @param modelClass 模型类
-     * @param <T>        实体类
-     * @param <K>        主键类型
+     * @param <T> 实体类
+     * @param <K> 主键类型
      */
-    private static <T extends Serializable, K extends Serializable> void initModelInformation(Class<? extends Model<T, K>> modelClass) {
+    private static <T extends Serializable, K extends Serializable> void initModelInformation(
+        Class<? extends Model<T, K>> modelClass) {
         // 模型信息 初始化
         ModelInfo<T, K> modelInfo = new ModelInfo<>();
         // 模型信息 设置 model 的 java类
@@ -436,8 +488,8 @@ public final class ModelShadowProvider {
     /**
      * 模型信息 设置详情信息
      * @param modelInfo Model信息
-     * @param <T>       实体类
-     * @param <K>       主键类型
+     * @param <T> 实体类
+     * @param <K> 主键类型
      */
     private static <T extends Serializable, K extends Serializable> void modelDeal(ModelInfo<T, K> modelInfo) {
         // 设置实体的java类
@@ -463,8 +515,8 @@ public final class ModelShadowProvider {
     /**
      * 补充基本字段信息
      * @param modelInfo Model信息
-     * @param <T>       实体类
-     * @param <K>       主键类型
+     * @param <T> 实体类
+     * @param <K> 主键类型
      */
     private static <T extends Serializable, K extends Serializable> void primitiveFieldDeal(ModelInfo<T, K> modelInfo) {
         // 实体类型
@@ -494,7 +546,8 @@ public final class ModelShadowProvider {
             fieldInfo.name = field.getName();
             fieldInfo.javaType = field.getType();
             // todo 应该优先使用数据库默认值 DatabaseShadowProvider , 当默认值不存在时, 再才使用如下方法
-            fieldInfo.defaultValue = ContainerProvider.getBean(ConversionConfig.class).getDefaultValueByJavaType(fieldInfo.javaType);
+            fieldInfo.defaultValue = ContainerProvider.getBean(ConversionConfig.class)
+                .getDefaultValueByJavaType(fieldInfo.javaType);
 
             // 数据库属性
             fieldInfo.column = field.isAnnotationPresent(Column.class) ? field.getAnnotation(Column.class) : null;
@@ -521,10 +574,11 @@ public final class ModelShadowProvider {
      * 处理主键@Primary信息
      * @param fieldInfo 字段信息
      * @param modelInfo 格式化后的Model信息
-     * @param <T>       实体类
-     * @param <K>       主键类型
+     * @param <T> 实体类
+     * @param <K> 主键类型
      */
-    private static <T extends Serializable, K extends Serializable> void dealPrimaryAnnotation(FieldInfo fieldInfo, ModelInfo<T, K> modelInfo) {
+    private static <T extends Serializable, K extends Serializable> void dealPrimaryAnnotation(FieldInfo fieldInfo,
+                                                                                               ModelInfo<T, K> modelInfo) {
         // 没有注解的就不是主键
         if (!fieldInfo.field.isAnnotationPresent(Primary.class)) {
             return;
@@ -549,19 +603,24 @@ public final class ModelShadowProvider {
         // 主键auto生成器选择
         if (primary.idGenerator().isAssignableFrom(IdGenerator.Auto.class)) {
             if (fieldInfo.javaType == Long.class) {
-                modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ContainerProvider.getBean(IdGenerator.SnowFlakesID.class));
+                modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(
+                    ContainerProvider.getBean(IdGenerator.SnowFlakesID.class));
             } else if (fieldInfo.javaType == String.class) {
                 if (fieldInfo.column != null) {
                     if (fieldInfo.column.length() >= 36) {
-                        modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ContainerProvider.getBean(IdGenerator.UUID36.class));
+                        modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(
+                            ContainerProvider.getBean(IdGenerator.UUID36.class));
                     } else if (fieldInfo.column.length() >= 32) {
-                        modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ContainerProvider.getBean(IdGenerator.UUID32.class));
+                        modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(
+                            ContainerProvider.getBean(IdGenerator.UUID32.class));
                     }
                 } else {
-                    modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ContainerProvider.getBean(IdGenerator.UUID32.class));
+                    modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(
+                        ContainerProvider.getBean(IdGenerator.UUID32.class));
                 }
             } else {
-                modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ContainerProvider.getBean(IdGenerator.Never.class));
+                modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(
+                    ContainerProvider.getBean(IdGenerator.Never.class));
             }
         } else {
             modelInfo.primaryKeyIdGenerator = ObjectUtils.typeCast(ContainerProvider.getBean(primary.idGenerator()));
@@ -572,10 +631,11 @@ public final class ModelShadowProvider {
      * 处理列@Column信息
      * @param fieldInfo 字段信息
      * @param modelInfo 格式化后的Model信息
-     * @param <T>       实体类
-     * @param <K>       主键类型
+     * @param <T> 实体类
+     * @param <K> 主键类型
      */
-    private static <T extends Serializable, K extends Serializable> void dealColumnAnnotation(FieldInfo fieldInfo, ModelInfo<T, K> modelInfo) {
+    private static <T extends Serializable, K extends Serializable> void dealColumnAnnotation(FieldInfo fieldInfo,
+                                                                                              ModelInfo<T, K> modelInfo) {
         Column column = fieldInfo.column;
 
         // 属性名 可新增的字段 索引键入
@@ -610,8 +670,8 @@ public final class ModelShadowProvider {
     /**
      * 补充关系字段信息
      * @param modelInfo Model信息
-     * @param <T>       实体类
-     * @param <K>       主键类型
+     * @param <T> 实体类
+     * @param <K> 主键类型
      */
     private static <T extends Serializable, K extends Serializable> void relationFieldDeal(ModelInfo<T, K> modelInfo) {
 
@@ -631,8 +691,8 @@ public final class ModelShadowProvider {
                 relationFieldInfo.javaType = field.getType();
                 relationFieldInfo.collection = ObjectUtils.isCollection(field.getType());
 
-                relationFieldInfo.javaRealType = relationFieldInfo.collection ? ObjectUtils.getGenerics((ParameterizedType) field.getGenericType(), 0)
-                    : relationFieldInfo.javaType;
+                relationFieldInfo.javaRealType = relationFieldInfo.collection ?
+                    ObjectUtils.getGenerics((ParameterizedType) field.getGenericType(), 0) : relationFieldInfo.javaType;
 
                 if (field.isAnnotationPresent(BelongsTo.class)) {
                     relationFieldInfo.relationSubQuery = new BelongsToQueryRelation(field);

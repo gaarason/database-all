@@ -1,14 +1,14 @@
 package gaarason.database.test;
 
+import gaarason.database.appointment.LambdaInfo;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.provider.ContainerProvider;
+import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.test.models.relation.pojo.Student;
 import gaarason.database.test.models.relation.pojo.Teacher;
 import gaarason.database.test.utils.MultiThreadUtil;
-import gaarason.database.util.ExceptionUtils;
-import gaarason.database.util.FormatUtils;
-import gaarason.database.util.ObjectUtils;
-import gaarason.database.util.StringUtils;
+import gaarason.database.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -181,6 +181,78 @@ public class DatabaseUtilsTests {
         e.add(0);
         System.out.println(e);
 
+    }
+
+    @Test
+    public void getColumnByMethodTest(){
+        MultiThreadUtil.run(100, 1000, () -> {
+            LambdaInfo<Student> name = LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaUtils.parse(Student::getName);
+            LambdaInfo<Student> sex = LambdaUtils.parse(Student::getSex);
+            Assert.assertEquals("name", name.getFieldName());
+            Assert.assertEquals("sex", sex.getFieldName());
+        });
+
+        ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+        MultiThreadUtil.run(100, 1000, () -> {
+            String column = ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            String Sex = ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getSex);
+            Assert.assertEquals("name", column);
+            Assert.assertEquals("sex", Sex);
+        });
     }
 
 }

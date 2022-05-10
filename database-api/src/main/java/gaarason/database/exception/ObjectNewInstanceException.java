@@ -8,6 +8,10 @@ import gaarason.database.exception.base.BaseException;
  */
 public class ObjectNewInstanceException extends BaseException {
 
+    public ObjectNewInstanceException(Class<?> clazz, Throwable e) {
+        super("Error instantiating object[" + clazz + "]", e);
+    }
+
     public ObjectNewInstanceException(Class<?> clazz, String message, Throwable e) {
         super("Error instantiating object[" + clazz + "] with message : " + message, e);
     }

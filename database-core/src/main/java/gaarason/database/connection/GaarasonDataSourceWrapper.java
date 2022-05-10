@@ -324,7 +324,7 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
         String databaseProductName;
         Connection connection = dataSource.getLocalConnection(true);
         try {
-            databaseProductName = connection.getMetaData().getDatabaseProductName().toLowerCase(Locale.ROOT);
+            databaseProductName = connection.getMetaData().getDatabaseProductName().toLowerCase(Locale.ENGLISH);
             for (QueryBuilderConfig queryBuilderConfig : list) {
                 if (!ObjectUtils.isEmpty(queryBuilderConfig) && queryBuilderConfig.support(databaseProductName)) {
                     return queryBuilderConfig;

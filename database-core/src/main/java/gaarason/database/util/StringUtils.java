@@ -49,7 +49,7 @@ public class StringUtils {
      * @return 处理后的字符
      */
     public static String lineToHump(String str, boolean... firstIsUpperCase) {
-        str = ltrim(rtrim(str.toLowerCase(), "_"), "_");
+        str = ltrim(rtrim(str.toLowerCase(Locale.ENGLISH), "_"), "_");
         if (firstIsUpperCase.length != 0 && firstIsUpperCase[0]) {
             str = "_" + str;
         }
@@ -71,7 +71,7 @@ public class StringUtils {
         Matcher matcher = HUMP_PATTERN.matcher(str);
         StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
-            matcher.appendReplacement(sb, "_" + matcher.group(0).toLowerCase());
+            matcher.appendReplacement(sb, "_" + matcher.group(0).toLowerCase(Locale.ENGLISH));
         }
         matcher.appendTail(sb);
         return ltrim(sb.toString(), "_");
