@@ -15,7 +15,7 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public interface WhereLambda<T extends Serializable, K extends Serializable> extends Where<T, K>, Support<T, K> {
+public interface HavingLambda<T extends Serializable, K extends Serializable> extends Having<T, K>, Support<T, K> {
 
     /**
      * 比较列与值
@@ -24,8 +24,8 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param value 值
      * @return 查询构造器
      */
-    default Builder<T, K> where(ColumnFunctionalInterface<T> column, String symbol, Object value) {
-        return where(lambda2ColumnName(column), symbol, value);
+    default Builder<T, K> having(ColumnFunctionalInterface<T> column, String symbol, Object value) {
+        return having(lambda2ColumnName(column), symbol, value);
     }
 
     /**
@@ -35,8 +35,8 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param value 值
      * @return 查询构造器
      */
-    default Builder<T, K> whereIgnoreNull(ColumnFunctionalInterface<T> column, String symbol, @Nullable Object value) {
-        return whereIgnoreNull(lambda2ColumnName(column), symbol, value);
+    default Builder<T, K> havingIgnoreNull(ColumnFunctionalInterface<T> column, String symbol, @Nullable Object value) {
+        return havingIgnoreNull(lambda2ColumnName(column), symbol, value);
     }
 
     /**
@@ -45,8 +45,8 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param value 值
      * @return 查询构造器
      */
-    default Builder<T, K> where(ColumnFunctionalInterface<T> column, @Nullable Object value) {
-        return where(lambda2ColumnName(column), value);
+    default Builder<T, K> having(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+        return having(lambda2ColumnName(column), value);
     }
 
     /**
@@ -55,8 +55,8 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param value 值
      * @return 查询构造器
      */
-    default Builder<T, K> whereIgnoreNull(ColumnFunctionalInterface<T> column, @Nullable Object value) {
-        return whereIgnoreNull(lambda2ColumnName(column), value);
+    default Builder<T, K> havingIgnoreNull(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+        return havingIgnoreNull(lambda2ColumnName(column), value);
     }
 
     /**
@@ -69,8 +69,8 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @return 查询构造器
      */
     @SuppressWarnings("unchecked")
-    default Builder<T, K> whereKeywords(@Nullable Object value, ColumnFunctionalInterface<T>... columns) {
-        return whereKeywords(value, lambda2ColumnName(Arrays.asList(columns)));
+    default Builder<T, K> havingKeywords(@Nullable Object value, ColumnFunctionalInterface<T>... columns) {
+        return havingKeywords(value, lambda2ColumnName(Arrays.asList(columns)));
     }
 
     /**
@@ -83,8 +83,8 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @return 查询构造器
      */
     @SuppressWarnings("unchecked")
-    default Builder<T, K> whereKeywordsIgnoreNull(@Nullable Object value, ColumnFunctionalInterface<T>... columns) {
-        return whereKeywordsIgnoreNull(value, lambda2ColumnName(Arrays.asList(columns)));
+    default Builder<T, K> havingKeywordsIgnoreNull(@Nullable Object value, ColumnFunctionalInterface<T>... columns) {
+        return havingKeywordsIgnoreNull(value, lambda2ColumnName(Arrays.asList(columns)));
     }
 
     /**
@@ -93,8 +93,8 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param value 值
      * @return 查询构造器
      */
-    default Builder<T, K> whereLike(ColumnFunctionalInterface<T> column, @Nullable Object value) {
-        return whereLike(lambda2ColumnName(column), value);
+    default Builder<T, K> havingLike(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+        return havingLike(lambda2ColumnName(column), value);
     }
 
     /**
@@ -106,8 +106,8 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param value 值
      * @return 查询构造器
      */
-    default Builder<T, K> whereMayLike(ColumnFunctionalInterface<T> column, @Nullable Object value) {
-        return whereMayLike(lambda2ColumnName(column), value);
+    default Builder<T, K> havingMayLike(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+        return havingMayLike(lambda2ColumnName(column), value);
     }
 
     /**
@@ -119,8 +119,8 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param value 值
      * @return 查询构造器
      */
-    default Builder<T, K> whereMayLikeIgnoreNull(ColumnFunctionalInterface<T> column, @Nullable Object value) {
-        return whereMayLikeIgnoreNull(lambda2ColumnName(column), value);
+    default Builder<T, K> havingMayLikeIgnoreNull(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+        return havingMayLikeIgnoreNull(lambda2ColumnName(column), value);
     }
 
     /**
@@ -130,8 +130,8 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param completeSql 完整sql
      * @return 查询构造器
      */
-    default Builder<T, K> whereSubQuery(ColumnFunctionalInterface<T> column, String symbol, String completeSql) {
-        return whereSubQuery(lambda2ColumnName(column), symbol, completeSql);
+    default Builder<T, K> havingSubQuery(ColumnFunctionalInterface<T> column, String symbol, String completeSql) {
+        return havingSubQuery(lambda2ColumnName(column), symbol, completeSql);
     }
 
     /**
@@ -141,9 +141,9 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param closure 闭包
      * @return 查询构造器
      */
-    default Builder<T, K> whereSubQuery(ColumnFunctionalInterface<T> column, String symbol,
+    default Builder<T, K> havingSubQuery(ColumnFunctionalInterface<T> column, String symbol,
                                         GenerateSqlPartFunctionalInterface<T, K> closure) {
-        return whereSubQuery(lambda2ColumnName(column), symbol, closure);
+        return havingSubQuery(lambda2ColumnName(column), symbol, closure);
     }
 
     /**
@@ -152,8 +152,8 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param valueList 值所在的list
      * @return 查询构造器
      */
-    default Builder<T, K> whereIn(ColumnFunctionalInterface<T> column, Collection<?> valueList) {
-        return whereIn(lambda2ColumnName(column), valueList);
+    default Builder<T, K> havingIn(ColumnFunctionalInterface<T> column, Collection<?> valueList) {
+        return havingIn(lambda2ColumnName(column), valueList);
     }
 
     /**
@@ -162,8 +162,8 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param valueList 值所在的list
      * @return 查询构造器
      */
-    default Builder<T, K> whereInIgnoreEmpty(ColumnFunctionalInterface<T> column, @Nullable Collection<?> valueList) {
-        return whereInIgnoreEmpty(lambda2ColumnName(column), valueList);
+    default Builder<T, K> havingInIgnoreEmpty(ColumnFunctionalInterface<T> column, @Nullable Collection<?> valueList) {
+        return havingInIgnoreEmpty(lambda2ColumnName(column), valueList);
     }
 
     /**
@@ -172,8 +172,8 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param valueArray 值所在的数组
      * @return 查询构造器
      */
-    default Builder<T, K> whereIn(ColumnFunctionalInterface<T> column, Object... valueArray) {
-        return whereIn(lambda2ColumnName(column), valueArray);
+    default Builder<T, K> havingIn(ColumnFunctionalInterface<T> column, Object... valueArray) {
+        return havingIn(lambda2ColumnName(column), valueArray);
     }
 
     /**
@@ -182,18 +182,18 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param valueArray 值所在的数组
      * @return 查询构造器
      */
-    default Builder<T, K> whereInIgnoreEmpty(ColumnFunctionalInterface<T> column, @Nullable Object... valueArray) {
-        return whereInIgnoreEmpty(lambda2ColumnName(column), valueArray);
+    default Builder<T, K> havingInIgnoreEmpty(ColumnFunctionalInterface<T> column, @Nullable Object... valueArray) {
+        return havingInIgnoreEmpty(lambda2ColumnName(column), valueArray);
     }
 
     /**
      * 列值在范围内(子查询)
      * @param column 列名表达式
-     * @param sql 完整sql eg:select id from student where age>10
+     * @param sql 完整sql eg:select id from student having age>10
      * @return 查询构造器
      */
-    default Builder<T, K> whereInRaw(ColumnFunctionalInterface<T> column, String sql) {
-        return whereInRaw(lambda2ColumnName(column), sql);
+    default Builder<T, K> havingInRaw(ColumnFunctionalInterface<T> column, String sql) {
+        return havingInRaw(lambda2ColumnName(column), sql);
     }
 
     /**
@@ -202,9 +202,9 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param closure 闭包
      * @return 查询构造器
      */
-    default Builder<T, K> whereIn(ColumnFunctionalInterface<T> column,
+    default Builder<T, K> havingIn(ColumnFunctionalInterface<T> column,
                                   GenerateSqlPartFunctionalInterface<T, K> closure) {
-        return whereIn(lambda2ColumnName(column), closure);
+        return havingIn(lambda2ColumnName(column), closure);
     }
 
     /**
@@ -213,8 +213,8 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param valueList 值所在的list
      * @return 查询构造器
      */
-    default Builder<T, K> whereNotIn(ColumnFunctionalInterface<T> column, Collection<?> valueList) {
-        return whereNotIn(lambda2ColumnName(column), valueList);
+    default Builder<T, K> havingNotIn(ColumnFunctionalInterface<T> column, Collection<?> valueList) {
+        return havingNotIn(lambda2ColumnName(column), valueList);
     }
 
     /**
@@ -223,9 +223,9 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param valueList 值所在的list
      * @return 查询构造器
      */
-    default Builder<T, K> whereNotInIgnoreEmpty(ColumnFunctionalInterface<T> column,
+    default Builder<T, K> havingNotInIgnoreEmpty(ColumnFunctionalInterface<T> column,
                                                 @Nullable Collection<?> valueList) {
-        return whereNotInIgnoreEmpty(lambda2ColumnName(column), valueList);
+        return havingNotInIgnoreEmpty(lambda2ColumnName(column), valueList);
     }
 
     /**
@@ -234,8 +234,8 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param valueArray 值所在的数组
      * @return 查询构造器
      */
-    default Builder<T, K> whereNotIn(ColumnFunctionalInterface<T> column, Object... valueArray) {
-        return whereNotIn(lambda2ColumnName(column), valueArray);
+    default Builder<T, K> havingNotIn(ColumnFunctionalInterface<T> column, Object... valueArray) {
+        return havingNotIn(lambda2ColumnName(column), valueArray);
     }
 
     /**
@@ -244,18 +244,18 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param valueArray 值所在的数组
      * @return 查询构造器
      */
-    default Builder<T, K> whereNotInIgnoreEmpty(ColumnFunctionalInterface<T> column, @Nullable Object... valueArray) {
-        return whereNotInIgnoreEmpty(lambda2ColumnName(column), valueArray);
+    default Builder<T, K> havingNotInIgnoreEmpty(ColumnFunctionalInterface<T> column, @Nullable Object... valueArray) {
+        return havingNotInIgnoreEmpty(lambda2ColumnName(column), valueArray);
     }
 
     /**
      * 列值不在范围内(子查询)
      * @param column 列名表达式
-     * @param sql 完整sql eg:select id from student where age>10
+     * @param sql 完整sql eg:select id from student having age>10
      * @return 查询构造器
      */
-    default Builder<T, K> whereNotInRaw(ColumnFunctionalInterface<T> column, String sql) {
-        return whereNotInRaw(lambda2ColumnName(column), sql);
+    default Builder<T, K> havingNotInRaw(ColumnFunctionalInterface<T> column, String sql) {
+        return havingNotInRaw(lambda2ColumnName(column), sql);
     }
 
     /**
@@ -264,9 +264,9 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param closure 闭包
      * @return 查询构造器
      */
-    default Builder<T, K> whereNotIn(ColumnFunctionalInterface<T> column,
+    default Builder<T, K> havingNotIn(ColumnFunctionalInterface<T> column,
                                      GenerateSqlPartFunctionalInterface<T, K> closure) {
-        return whereNotIn(lambda2ColumnName(column), closure);
+        return havingNotIn(lambda2ColumnName(column), closure);
     }
 
     /**
@@ -276,8 +276,8 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param max 值2
      * @return 查询构造器
      */
-    default Builder<T, K> whereBetween(ColumnFunctionalInterface<T> column, Object min, Object max) {
-        return whereBetween(lambda2ColumnName(column), min, max);
+    default Builder<T, K> havingBetween(ColumnFunctionalInterface<T> column, Object min, Object max) {
+        return havingBetween(lambda2ColumnName(column), min, max);
     }
 
     /**
@@ -287,8 +287,8 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param max 值2
      * @return 查询构造器
      */
-    default Builder<T, K> whereNotBetween(ColumnFunctionalInterface<T> column, Object min, Object max) {
-        return whereNotBetween(lambda2ColumnName(column), min, max);
+    default Builder<T, K> havingNotBetween(ColumnFunctionalInterface<T> column, Object min, Object max) {
+        return havingNotBetween(lambda2ColumnName(column), min, max);
     }
 
     /**
@@ -296,8 +296,8 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param column 列名表达式
      * @return 查询构造器
      */
-    default Builder<T, K> whereNull(ColumnFunctionalInterface<T> column) {
-        return whereNull(lambda2ColumnName(column));
+    default Builder<T, K> havingNull(ColumnFunctionalInterface<T> column) {
+        return havingNull(lambda2ColumnName(column));
     }
 
     /**
@@ -305,8 +305,8 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param column 列名表达式
      * @return 查询构造器
      */
-    default Builder<T, K> whereNotNull(ColumnFunctionalInterface<T> column) {
-        return whereNotNull(lambda2ColumnName(column));
+    default Builder<T, K> havingNotNull(ColumnFunctionalInterface<T> column) {
+        return havingNotNull(lambda2ColumnName(column));
     }
 
     /**
@@ -316,9 +316,9 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param column2 列2 表达式
      * @return 查询构造器
      */
-    default Builder<T, K> whereColumn(ColumnFunctionalInterface<T> column1, String symbol,
+    default Builder<T, K> havingColumn(ColumnFunctionalInterface<T> column1, String symbol,
                                       ColumnFunctionalInterface<T> column2) {
-        return whereColumn(lambda2ColumnName(column1), symbol, lambda2ColumnName(column2));
+        return havingColumn(lambda2ColumnName(column1), symbol, lambda2ColumnName(column2));
     }
 
     /**
@@ -327,8 +327,8 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @param column2 列2 表达式
      * @return 查询构造器
      */
-    default Builder<T, K> whereColumn(ColumnFunctionalInterface<T> column1, ColumnFunctionalInterface<T> column2) {
-        return whereColumn(lambda2ColumnName(column1), lambda2ColumnName(column2));
+    default Builder<T, K> havingColumn(ColumnFunctionalInterface<T> column1, ColumnFunctionalInterface<T> column2) {
+        return havingColumn(lambda2ColumnName(column1), lambda2ColumnName(column2));
     }
 
 }

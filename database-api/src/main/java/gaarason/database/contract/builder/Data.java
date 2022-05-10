@@ -57,7 +57,7 @@ public interface Data<T extends Serializable, K extends Serializable> {
      * @param steps  步长
      * @return 查询构造器
      */
-    Builder<T, K> dataIncrement(String column, int steps);
+    Builder<T, K> dataIncrement(String column, Object steps);
 
     /**
      * 字段自减
@@ -65,6 +65,6 @@ public interface Data<T extends Serializable, K extends Serializable> {
      * @param steps  步长
      * @return 查询构造器
      */
-    Builder<T, K> dataDecrement(String column, int steps);
+    Builder<T, K> dataDecrement(String column, Object steps);
 
 }

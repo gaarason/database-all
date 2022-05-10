@@ -68,14 +68,14 @@ public abstract class DataBuilder<T extends Serializable, K extends Serializable
     }
 
     @Override
-    public Builder<T, K> dataIncrement(String column, int steps) {
+    public Builder<T, K> dataIncrement(String column, Object steps) {
         ArrayList<String> parameters = new ArrayList<>();
         String sqlPart = backQuote(column) + '=' + backQuote(column) + '+' + grammar.replaceValueAndFillParameters(steps, parameters);
         return dataGrammar(sqlPart, parameters);
     }
 
     @Override
-    public Builder<T, K> dataDecrement(String column, int steps) {
+    public Builder<T, K> dataDecrement(String column, Object steps) {
         ArrayList<String> parameters = new ArrayList<>();
         String sqlPart = backQuote(column) + '=' + backQuote(column) + '-' + grammar.replaceValueAndFillParameters(steps, parameters);
         return dataGrammar(sqlPart, parameters);

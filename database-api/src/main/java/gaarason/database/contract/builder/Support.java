@@ -1,7 +1,6 @@
 package gaarason.database.contract.builder;
 
 import gaarason.database.appointment.SqlType;
-import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
@@ -11,7 +10,6 @@ import gaarason.database.lang.Nullable;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -29,25 +27,32 @@ public interface Support<T extends Serializable, K extends Serializable> {
         if(column instanceof String){
             return (String)column;
         }else if(column instanceof ColumnFunctionalInterface){
-            return lambda2Column((ColumnFunctionalInterface) column);
+            return lambda2ColumnName((ColumnFunctionalInterface) column);
         }
         throw new RuntimeException();
     }
+
+    /**
+     * 通过 表达式 推断属性名
+     * @param column Lambda表达式
+     * @return 列名
+     */
+    String lambda2FieldName(ColumnFunctionalInterface<T> column);
 
     /**
      * 通过 表达式 推断列名
      * @param column Lambda表达式
      * @return 列名
      */
-    String lambda2Column(ColumnFunctionalInterface<T> column);
+    String lambda2ColumnName(ColumnFunctionalInterface<T> column);
 
     /**
      * 通过 表达式 推断列名
      * @param columns Lambda表达式集合
      * @return 列名集合
      */
-    default Collection<String> lambda2Column(Collection<ColumnFunctionalInterface<T>> columns) {
-        return columns.stream().map(this::lambda2Column).collect(Collectors.toList());
+    default Collection<String> lambda2ColumnName(Collection<ColumnFunctionalInterface<T>> columns) {
+        return columns.stream().map(this::lambda2ColumnName).collect(Collectors.toList());
     }
 
     /**
@@ -102,6 +107,14 @@ public interface Support<T extends Serializable, K extends Serializable> {
      */
     @Nullable
     String conversionToString(@Nullable Object value);
+
+    /**
+     * 类型转化到 int
+     * null -> 0
+     * @param value 参数
+     * @return int
+     */
+    int conversionToInt(@Nullable Object value);
 
     /**
      * 类型转化到 String集合

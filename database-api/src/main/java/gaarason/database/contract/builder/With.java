@@ -16,27 +16,27 @@ public interface With<T extends Serializable, K extends Serializable> {
 
     /**
      * 渴求式关联
-     * @param column 所关联的Model(当前模块的属性名)
+     * @param fieldName 所关联的Model(当前模块的属性名)
      * @return 关联的Model的查询构造器
      */
-    Builder<T, K> with(String column);
+    Builder<T, K> with(String fieldName);
 
     /**
      * 渴求式关联
-     * @param column         所关联的Model(当前模块的属性名)
+     * @param fieldName 所关联的Model(当前模块的属性名)
      * @param builderClosure 所关联的Model的查询构造器约束
      * @return 关联的Model的查询构造器
      */
-    Builder<T, K> with(String column, GenerateSqlPartFunctionalInterface<?, ?> builderClosure);
+    Builder<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure);
 
     /**
      * 渴求式关联
-     * @param column         所关联的Model(当前模块的属性名)
+     * @param fieldName 所关联的Model(当前模块的属性名)
      * @param builderClosure 所关联的Model的查询构造器约束
-     * @param recordClosure  所关联的Model的再一级关联
+     * @param recordClosure 所关联的Model的再一级关联
      * @return 关联的Model的查询构造器
      */
-    Builder<T, K> with(String column, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
-        RelationshipRecordWithFunctionalInterface recordClosure);
+    Builder<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
+                       RelationshipRecordWithFunctionalInterface recordClosure);
 
 }

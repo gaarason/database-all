@@ -88,7 +88,12 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
     }
 
     @Override
-    public String lambda2Column(ColumnFunctionalInterface<T> column) {
+    public String lambda2FieldName(ColumnFunctionalInterface<T> column) {
+        return ModelShadowProvider.getFieldNameByLambdaWithCache(column);
+    }
+
+    @Override
+    public String lambda2ColumnName(ColumnFunctionalInterface<T> column) {
         return ModelShadowProvider.getColumnNameByLambdaWithCache(column);
     }
 
@@ -113,36 +118,36 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
 
     /**
      * 渴求式关联
-     * @param column 所关联的Model(当前模块的属性名)
+     * @param fieldName 所关联的Model(当前模块的属性名)
      * @return 关联的Model的查询构造器
      */
     @Override
-    public Builder<T, K> with(String column) {
-        return with(column, builder -> builder, theRecord -> theRecord);
+    public Builder<T, K> with(String fieldName) {
+        return with(fieldName, builder -> builder, theRecord -> theRecord);
     }
 
     /**
      * 渴求式关联
-     * @param column 所关联的Model(当前模块的属性名)
+     * @param fieldName 所关联的Model(当前模块的属性名)
      * @param builderClosure 所关联的Model的查询构造器约束
      * @return 关联的Model的查询构造器
      */
     @Override
-    public Builder<T, K> with(String column, GenerateSqlPartFunctionalInterface<?, ?> builderClosure) {
-        return with(column, builderClosure, theRecord -> theRecord);
+    public Builder<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure) {
+        return with(fieldName, builderClosure, theRecord -> theRecord);
     }
 
     /**
      * 渴求式关联
-     * @param column 所关联的Model(当前模块的属性名)
+     * @param fieldName 所关联的Model(当前模块的属性名)
      * @param builderClosure 所关联的Model的查询构造器约束
      * @param recordClosure 所关联的Model的再一级关联
      * @return 关联的Model的查询构造器
      */
     @Override
-    public Builder<T, K> with(String column, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
+    public Builder<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
                               RelationshipRecordWithFunctionalInterface recordClosure) {
-        grammar.pushWith(column, builderClosure, recordClosure);
+        grammar.pushWith(fieldName, builderClosure, recordClosure);
         return this;
     }
 
@@ -200,8 +205,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * @throws SQLRuntimeException 数据库异常
      */
     @Override
-    public Paginate<Map<String, Object>> simplePaginateMapStyle(int currentPage, int perPage)
-        throws SQLRuntimeException {
+    public Paginate<Map<String, Object>> simplePaginateMapStyle(int currentPage, int perPage) throws SQLRuntimeException {
         List<Map<String, Object>> list = limit((currentPage - 1) * perPage, perPage).get().toMapList();
         return new Paginate<>(list, currentPage, perPage);
     }
@@ -566,52 +570,17 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
         // 返回预执行对象
         return preparedStatement;
     }
-//
-//    /**
-//     * 执行闭包生成完整sql, 含绑定参数的合并
-//     * @param closure 闭包
-//     * @return sql
-//     */
-//    protected Grammar.SQLPartInfo generateSql(GenerateSqlPartFunctionalInterface<T, K> closure) {
-//        Builder<T, K> subBuilder = closure.execute(getNewSelf());
-//        return subBuilder.getGrammar().generateSql(SqlType.SELECT);
-//    }
-//
-//    /**
-//     * 执行闭包生成sql片段, 含绑定参数的合并
-//     * @param closure 闭包
-//     * @param sqlPartType 片段类型
-//     * @return sql
-//     */
-//    protected Grammar.SQLPartInfo generateSql(GenerateSqlPartFunctionalInterface<T, K> closure, Grammar.SQLPartType sqlPartType) {
-//        Builder<T, K> subBuilder = closure.execute(getNewSelf());
-//        return subBuilder.getGrammar().get(sqlPartType);
-//    }
 
-    /**
-     * 类型转化到 String集合
-     * @param value 参数
-     * @return String
-     */
+    @Override
     @Nullable
     public String conversionToString(@Nullable Object value) {
         return ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class);
     }
-//
-//    /**
-//     * 类型转化到 String集合
-//     * @param value 参数
-//     * @return String集合
-//     */
-//    @Nullable
-//    public Collection<String> conversionToStrings(@Nullable Collection<?> value) {
-//        if (!ObjectUtils.isEmpty(value)) {
-//            LinkedList<String> res = new LinkedList<>();
-//            for (Object obj : value) {
-//                res.add(conversionToString(obj));
-//            }
-//            return res;
-//        }
-//        return null;
-//    }
+
+    @Override
+    public int conversionToInt(@Nullable Object value) {
+        Integer integer = ContainerProvider.getBean(ConversionConfig.class).castNullable(value, int.class);
+        return integer == null ? 0 : integer;
+    }
+
 }

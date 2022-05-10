@@ -246,16 +246,21 @@ public abstract class OtherBuilder<T extends Serializable, K extends Serializabl
     }
 
     @Override
-    public Builder<T, K> inRandomOrder(String field) {
+    public Builder<T, K> inRandomOrder() {
+        return inRandomOrder(model.getPrimaryKeyColumnName());
+    }
+
+    @Override
+    public Builder<T, K> inRandomOrder(String column) {
         Builder<T, K> sameSubBuilder1 = model.newQuery();
         Builder<T, K> sameSubBuilder2 = model.newQuery();
-        String maxSql = sameSubBuilder1.selectFunction("max", field, null).toSql(SqlType.SELECT);
-        String minSql = sameSubBuilder2.selectFunction("min", field, null).toSql(SqlType.SELECT);
+        String maxSql = sameSubBuilder1.selectFunction("max", column, null).toSql(SqlType.SELECT);
+        String minSql = sameSubBuilder2.selectFunction("min", column, null).toSql(SqlType.SELECT);
         String floorSql = "rand()*((" + maxSql + ")-(" + minSql + "))+(" + minSql + ")";
         // select floor(rand()*((select max(`$key`) from $from)-(select min(`$key`) from $from))+(select min(`$key`) from $from))
         // select * from `student` where `id`in(select floor(rand()*((select max(`id`) from `student`)-(select min
         // (`id`) from `student`))+(select min(`id`) from `student`))) limit 5
-        return whereSubQuery(field, "in", builder -> builder.selectFunction("floor", floorSql, null));
+        return whereSubQuery(column, "in", builder -> builder.selectFunction("floor", floorSql, null));
     }
 
     @Override

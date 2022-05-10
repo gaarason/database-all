@@ -57,7 +57,12 @@ public final class ModelShadowProvider {
     /**
      * 缓存lambda风格的列名, 与为String风格的列名的映射
      */
-    private static final SoftCache LAMBDA_COLUMN_CACHE = new SoftCache();
+    private static final SoftCache LAMBDA_COLUMN_NAME_CACHE = new SoftCache();
+
+    /**
+     * 缓存lambda风格的属性名, 与为String风格的属性名的映射
+     */
+    private static final SoftCache LAMBDA_FIELD_NAME_CACHE = new SoftCache();
 
     static {
         // 一轮初始化模型的基本信息(主键类型/实体类型/模型类型/表名等等), 并构建索引(实体索引/模型索引), 不存在依赖递归等复杂情况
@@ -135,6 +140,32 @@ public final class ModelShadowProvider {
     }
 
     /**
+     * 将lambda风格的属性名, 解析为String类型
+     * 这个过程使用缓存进行加速, 5-10倍
+     * @param func lambda风格的属性名
+     * @param <T> 实体类型
+     * @return 列名
+     */
+    public static <T extends Serializable> String getFieldNameByLambdaWithCache(ColumnFunctionalInterface<T> func) {
+        Class<?> clazz = func.getClass();
+        String fieldName = (String) LAMBDA_FIELD_NAME_CACHE.get(clazz);
+        if (fieldName == null) {
+            synchronized (LAMBDA_FIELD_NAME_CACHE) {
+                fieldName = (String) LAMBDA_FIELD_NAME_CACHE.get(clazz);
+                if (fieldName == null) {
+                    // 解析 lambda
+                    FieldInfo fieldInfo = parseLambda(func);
+                    // 即为所求
+                    fieldName = fieldInfo.name;
+                    // 常量化后, 加入缓存
+                    LAMBDA_FIELD_NAME_CACHE.put(clazz, fieldName.intern());
+                }
+            }
+        }
+        return fieldName;
+    }
+
+    /**
      * 将lambda风格的列名, 解析为String类型
      * 这个过程使用缓存进行加速, 5-10倍
      * @param func lambda风格的列名
@@ -143,34 +174,45 @@ public final class ModelShadowProvider {
      */
     public static <T extends Serializable> String getColumnNameByLambdaWithCache(ColumnFunctionalInterface<T> func) {
         Class<?> clazz = func.getClass();
-        String column = (String) LAMBDA_COLUMN_CACHE.get(clazz);
-        if (column == null) {
-            synchronized (LAMBDA_COLUMN_CACHE) {
-                column = (String) LAMBDA_COLUMN_CACHE.get(clazz);
-                if (column == null) {
+        String columnName = (String) LAMBDA_COLUMN_NAME_CACHE.get(clazz);
+        if (columnName == null) {
+            synchronized (LAMBDA_COLUMN_NAME_CACHE) {
+                columnName = (String) LAMBDA_COLUMN_NAME_CACHE.get(clazz);
+                if (columnName == null) {
                     // 解析 lambda
-                    LambdaInfo<T> lambdaInfo = LambdaUtils.parse(func);
-                    // 实例类
-                    Class<T> entityClass = lambdaInfo.getEntityCLass();
-                    // 属性名
-                    String fieldName = lambdaInfo.getFieldName();
-                    // Model信息
-                    ModelInfo<T, Serializable> modelInfo = getByEntityClass(entityClass);
-                    // 字段信息
-                    FieldInfo fieldInfo = modelInfo.javaFieldMap.get(fieldName);
-                    // 无效的参数,则抛出异常
-                    if (ObjectUtils.isEmpty(fieldInfo)) {
-                        throw new EntityAttributeInvalidException(fieldName, entityClass);
-                    }
+                    FieldInfo fieldInfo = parseLambda(func);
                     // 即为所求
-                    column = fieldInfo.columnName;
+                    columnName = fieldInfo.columnName;
                     // 常量化后, 加入缓存
-                    LAMBDA_COLUMN_CACHE.put(clazz, column.intern());
+                    LAMBDA_COLUMN_NAME_CACHE.put(clazz, columnName.intern());
                 }
             }
         }
-        return column;
+        return columnName;
+    }
 
+    /**
+     * 解析lambda
+     * @param func lambda风格
+     * @return FieldInfo
+     * @param <T> 实体类型
+     */
+    private static <T extends Serializable> FieldInfo parseLambda(ColumnFunctionalInterface<T> func){
+        // 解析 lambda
+        LambdaInfo<T> lambdaInfo = LambdaUtils.parse(func);
+        // 实例类
+        Class<T> entityClass = lambdaInfo.getEntityCLass();
+        // 属性名
+        String fieldNameLocal = lambdaInfo.getFieldName();
+        // Model信息
+        ModelInfo<T, Serializable> modelInfo = getByEntityClass(entityClass);
+        // 字段信息
+        FieldInfo fieldInfo = modelInfo.javaFieldMap.get(fieldNameLocal);
+        // 无效的参数,则抛出异常
+        if (ObjectUtils.isEmpty(fieldInfo)) {
+            throw new EntityAttributeInvalidException(fieldNameLocal, entityClass);
+        }
+        return fieldInfo;
     }
 
     /**
