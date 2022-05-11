@@ -6,6 +6,7 @@ Eloquent ORM for Java
 * [数据模型](/document/model.md)
 * [查询结果集](/document/record.md)
 * [查询构造器](/document/query.md)
+    * [表达式风格](#表达式风格)
     * [原生语句](#原生语句)
         * [原生查询](#原生查询)
         * [原生更新](#原生更新)
@@ -61,7 +62,15 @@ Eloquent ORM for Java
 
 ## 总览
 
-一下以示例的方式说明, 均来自源码中的单元测试
+一下以示例的方式说明, 均来自源码中的单元测试   
+
+## 表达式风格
+
+目前支持表达式风格的列名与属性名   
+```java
+// select name,age from student where id in (1,2,3)
+studentModel.newQuery().whereIn(Student::getId, 1,2,3).select(Student::getName).select(Student::getAge).get();
+```
 
 ## 原生语句
 - 语句中使用 ? 做占位符, 注意问号(?)前后应该分别保留1个半角空格, 以便SQL日志记录

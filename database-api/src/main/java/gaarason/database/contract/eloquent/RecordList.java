@@ -1,9 +1,7 @@
 package gaarason.database.contract.eloquent;
 
 import gaarason.database.appointment.Column;
-import gaarason.database.contract.record.CollectionOperation;
-import gaarason.database.contract.record.FriendlyList;
-import gaarason.database.contract.record.RelationshipList;
+import gaarason.database.contract.record.*;
 
 import java.io.Serializable;
 import java.util.*;
@@ -12,8 +10,9 @@ import java.util.*;
  * 结果集集合
  * @author xt
  */
-public interface RecordList<T extends Serializable, K extends Serializable> extends FriendlyList<T, K>, RelationshipList<T, K>, List<Record<T, K>>,
-    CollectionOperation<Record<T, K>>, RandomAccess, Cloneable {
+public interface RecordList<T extends Serializable, K extends Serializable> extends FriendlyList<T, K>,
+    RelationshipListLambda<T, K>, List<Record<T, K>>,
+    CollectionOperationLambda<T, K>, RandomAccess, Cloneable {
 
     /**
      * 元数据

@@ -19,7 +19,13 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
-### 3.0.0 (未发布)
+### 3.1.0
+
+- 在查询构造器(`Builder`)中增加对于表达式风格的列名与属性名的支持
+- 在查询结果集(`Record`)中增加对于表达式风格的列名与属性名的支持
+- 在查询结果集合(`RecordList`)中增加对于表达式风格的列名与属性名的支持
+
+### 3.0.0
 
 - 重写了底层的语法构造器(`Grammar`), 使其可以在任意语句下, 完成参数绑定.
 - 在查询构造器(`Builder`)中增加`toSql(sqlType, closure)`/`whereRaw(sqlPart, parameters)`/`havingRaw(sqlPart, parameters)`/`orderByRaw(sqlPart)`

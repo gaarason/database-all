@@ -154,9 +154,9 @@ public final class ModelShadowProvider {
                 fieldName = (String) LAMBDA_FIELD_NAME_CACHE.get(clazz);
                 if (fieldName == null) {
                     // 解析 lambda
-                    FieldInfo fieldInfo = parseLambda(func);
-                    // 即为所求
-                    fieldName = fieldInfo.name;
+                    LambdaInfo<T> lambdaInfo = LambdaUtils.parse(func);
+                    // 属性名
+                    fieldName = lambdaInfo.getFieldName();
                     // 常量化后, 加入缓存
                     LAMBDA_FIELD_NAME_CACHE.put(clazz, fieldName.intern());
                 }
@@ -166,7 +166,7 @@ public final class ModelShadowProvider {
     }
 
     /**
-     * 将lambda风格的列名, 解析为String类型
+     * 将lambda风格的列名, 解析为String类型, 会检测是否是有效的列名
      * 这个过程使用缓存进行加速, 5-10倍
      * @param func lambda风格的列名
      * @param <T> 实体类型

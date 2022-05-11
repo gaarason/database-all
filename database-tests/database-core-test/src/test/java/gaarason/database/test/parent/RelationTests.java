@@ -59,10 +59,26 @@ abstract public class RelationTests extends BaseTests {
         Assert.assertEquals((long) student2.getTeacher().getId(), 6);
         Assert.assertNull(student2.getTeacher().getStudents());
         Assert.assertNull(student2.getTeacher().getStudent());
+
+        // 声明且使用
+        Student student3 = studentModel.newQuery().firstOrFail().with(Student::getTeacher).toObject();
+        System.out.println(student3);
+        Assert.assertNotNull(student3.getTeacher());
+        Assert.assertNull(student3.getRelationshipStudentTeachers());
+        Assert.assertEquals((long) student3.getTeacher().getId(), 6);
+        Assert.assertNull(student3.getTeacher().getStudents());
+        Assert.assertNull(student3.getTeacher().getStudent());
     }
 
     @Test
     public void 一对一关系_子关系不存在() {
+        // 声明且使用
+        Student student1 =
+            studentModel.newQuery().firstOrFail().with(Student::getTeacher, builder -> builder.where("id", "99"),
+                record -> record.with("students", builder -> builder, record1 -> record1.with("teacher"))).toObject();
+        System.out.println(student1);
+        Assert.assertNull(student1.getTeacher());
+
         // 声明且使用
         Student student2 =
             studentModel.newQuery().firstOrFail().with("teacher", builder -> builder.where("id", "99"),

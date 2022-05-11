@@ -5,6 +5,7 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.extra.Bind;
+import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.eloquent.record.BindBean;
@@ -102,6 +103,15 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
         init(new HashMap<>());
     }
 
+    @Override
+    public String lambda2FieldName(ColumnFunctionalInterface<T> column) {
+        return ModelShadowProvider.getFieldNameByLambdaWithCache(column);
+    }
+
+    @Override
+    public String lambda2ColumnName(ColumnFunctionalInterface<T> column) {
+        return ModelShadowProvider.getColumnNameByLambdaWithCache(column);
+    }
 
     @Override
     public Map<String, Column> getMetadataMap() {
@@ -261,34 +271,34 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
     }
 
     @Override
-    public Record<T, K> with(String column) {
-        return with(column, builder -> builder);
+    public Record<T, K> with(String fieldName) {
+        return with(fieldName, builder -> builder);
     }
 
     @Override
-    public Record<T, K> with(String column, GenerateSqlPartFunctionalInterface<T, K> builderClosure) {
-        return with(column, builderClosure, theRecord -> theRecord);
+    public Record<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<T, K> builderClosure) {
+        return with(fieldName, builderClosure, theRecord -> theRecord);
     }
 
     @Override
-    public Record<T, K> with(String column, GenerateSqlPartFunctionalInterface<T, K> builderClosure,
-        RelationshipRecordWithFunctionalInterface recordClosure) {
+    public Record<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<T, K> builderClosure,
+                             RelationshipRecordWithFunctionalInterface recordClosure) {
         // 效验参数
-        if (!ObjectUtils.checkProperties(entityClass, column)) {
-            throw new RelationNotFoundException(entityClass + " 不存在关联属性 : " + column);
+        if (!ObjectUtils.checkProperties(entityClass, fieldName)) {
+            throw new RelationNotFoundException(entityClass + " 不存在关联属性 : " + fieldName);
         }
 
-        String[] columnArr = column.split("\\.");
+        String[] columnArr = fieldName.split("\\.");
         // 快捷类型
         if (columnArr.length > 1) {
             String lastLevelColumn = columnArr[columnArr.length - 1];
-            String otherLevelColumn = StringUtils.rtrim(column, "." + lastLevelColumn);
+            String otherLevelColumn = StringUtils.rtrim(fieldName, "." + lastLevelColumn);
             return with(otherLevelColumn, builder -> builder,
                 thrRecord -> thrRecord.with(lastLevelColumn, ObjectUtils.typeCast(builderClosure), recordClosure));
         }
 
-        relationBuilderMap.put(column, builderClosure);
-        relationRecordMap.put(column, recordClosure);
+        relationBuilderMap.put(fieldName, builderClosure);
+        relationRecordMap.put(fieldName, recordClosure);
         return this;
     }
 

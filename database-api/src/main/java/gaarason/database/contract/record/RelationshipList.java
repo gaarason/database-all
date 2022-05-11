@@ -17,26 +17,26 @@ public interface RelationshipList<T extends Serializable, K extends Serializable
 
     /**
      * 渴求式关联
-     * @param column 所关联的Model(当前模块的属性名)
+     * @param fieldName 所关联的Model(当前模块的属性名)
      * @return 关联的Model的查询构造器
      */
-    RecordList<T, K> with(String column);
+    RecordList<T, K> with(String fieldName);
 
     /**
      * 渴求式关联
-     * @param column         所关联的Model(当前模块的属性名)
+     * @param fieldName         所关联的Model(当前模块的属性名)
      * @param builderClosure 所关联的Model的查询构造器约束
      * @return 关联的Model的查询构造器
      */
-    RecordList<T, K> with(String column, GenerateSqlPartFunctionalInterface<? extends Serializable, ? extends Serializable> builderClosure);
+    RecordList<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<? extends Serializable, ? extends Serializable> builderClosure);
 
     /**
      * 渴求式关联
-     * @param column         所关联的Model(当前模块的属性名)
+     * @param fieldName         所关联的Model(当前模块的属性名)
      * @param builderClosure 所关联的Model的查询构造器约束
      * @param recordClosure  所关联的Model的再一级关联
      * @return 关联的Model的查询构造器
      */
-    RecordList<T, K> with(String column, GenerateSqlPartFunctionalInterface<? extends Serializable, ? extends Serializable> builderClosure,
+    RecordList<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<? extends Serializable, ? extends Serializable> builderClosure,
         RelationshipRecordWithFunctionalInterface recordClosure);
 }

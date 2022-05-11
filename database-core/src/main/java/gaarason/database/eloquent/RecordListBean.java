@@ -4,6 +4,7 @@ import gaarason.database.appointment.Column;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.FilterRecordAttributeFunctionalInterface;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
@@ -114,6 +115,15 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
         return entityList;
     }
 
+    @Override
+    public String lambda2FieldName(ColumnFunctionalInterface<T> column) {
+        return ModelShadowProvider.getFieldNameByLambdaWithCache(column);
+    }
+
+    @Override
+    public String lambda2ColumnName(ColumnFunctionalInterface<T> column) {
+        return ModelShadowProvider.getColumnNameByLambdaWithCache(column);
+    }
 
     /**
      * 转化为map list
@@ -169,30 +179,30 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
     }
 
     @Override
-    public RecordListBean<T, K> with(String column) {
-        return with(column, builder -> builder);
+    public RecordListBean<T, K> with(String fieldName) {
+        return with(fieldName, builder -> builder);
     }
 
     @Override
-    public RecordListBean<T, K> with(String column, GenerateSqlPartFunctionalInterface builderClosure) {
-        return with(column, builderClosure, theRecord -> theRecord);
+    public RecordListBean<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface builderClosure) {
+        return with(fieldName, builderClosure, theRecord -> theRecord);
     }
 
     @Override
-    public RecordListBean<T, K> with(String column, GenerateSqlPartFunctionalInterface builderClosure,
-        RelationshipRecordWithFunctionalInterface recordClosure) {
-        String[] columnArr = column.split("\\.");
+    public RecordListBean<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface builderClosure,
+                                     RelationshipRecordWithFunctionalInterface recordClosure) {
+        String[] columnArr = fieldName.split("\\.");
         // 快捷类型
         if (columnArr.length > 1) {
             String lastLevelColumn = columnArr[columnArr.length - 1];
-            String otherLevelColumn = StringUtils.rtrim(column, "." + lastLevelColumn);
+            String otherLevelColumn = StringUtils.rtrim(fieldName, "." + lastLevelColumn);
             return with(otherLevelColumn, builder -> builder, theRecord -> theRecord.with(lastLevelColumn, builderClosure, recordClosure));
         }
         for (Record<T, K> tkRecord : this) {
             // 赋值关联关系过滤
             // 保持引用
-            tkRecord.getRelationBuilderMap().put(column, builderClosure);
-            tkRecord.getRelationRecordMap().put(column, recordClosure);
+            tkRecord.getRelationBuilderMap().put(fieldName, builderClosure);
+            tkRecord.getRelationRecordMap().put(fieldName, recordClosure);
         }
         return this;
     }
@@ -231,7 +241,7 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
     }
 
     @Override
-    public boolean contains(String fieldName, Object value) {
+    public boolean contains(String fieldName, @Nullable Object value) {
         for (Record<T, K> e : this) {
             if (ObjectUtils.nullSafeEquals(elementGetValueByFieldName(e, fieldName), value)) {
                 return true;

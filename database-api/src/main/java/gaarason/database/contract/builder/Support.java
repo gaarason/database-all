@@ -2,58 +2,20 @@ package gaarason.database.contract.builder;
 
 import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
+import gaarason.database.contract.support.LambdaStyle;
 import gaarason.database.lang.Nullable;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.stream.Collectors;
 
 /**
  * 支持
  * @author xt
  */
-public interface Support<T extends Serializable, K extends Serializable> {
-
-    /**
-     * 通过 表达式 推断列名
-     * @param column Lambda表达式 | string列名
-     * @return 列名
-     */
-    default String lambda2ColumnCompatible(Object column) {
-        if(column instanceof String){
-            return (String)column;
-        }else if(column instanceof ColumnFunctionalInterface){
-            return lambda2ColumnName((ColumnFunctionalInterface) column);
-        }
-        throw new RuntimeException();
-    }
-
-    /**
-     * 通过 表达式 推断属性名
-     * @param column Lambda表达式
-     * @return 列名
-     */
-    String lambda2FieldName(ColumnFunctionalInterface<T> column);
-
-    /**
-     * 通过 表达式 推断列名
-     * @param column Lambda表达式
-     * @return 列名
-     */
-    String lambda2ColumnName(ColumnFunctionalInterface<T> column);
-
-    /**
-     * 通过 表达式 推断列名
-     * @param columns Lambda表达式集合
-     * @return 列名集合
-     */
-    default Collection<String> lambda2ColumnName(Collection<ColumnFunctionalInterface<T>> columns) {
-        return columns.stream().map(this::lambda2ColumnName).collect(Collectors.toList());
-    }
+public interface Support<T extends Serializable, K extends Serializable> extends LambdaStyle<T, K> {
 
     /**
      * sql生成器
@@ -95,7 +57,8 @@ public interface Support<T extends Serializable, K extends Serializable> {
      * @param sqlPartType 片段类型
      * @return sql
      */
-    default Grammar.SQLPartInfo generateSql(GenerateSqlPartFunctionalInterface<T, K> closure, Grammar.SQLPartType sqlPartType) {
+    default Grammar.SQLPartInfo generateSql(GenerateSqlPartFunctionalInterface<T, K> closure,
+                                            Grammar.SQLPartType sqlPartType) {
         Builder<T, K> subBuilder = closure.execute(getNewSelf());
         return subBuilder.getGrammar().get(sqlPartType);
     }

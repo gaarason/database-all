@@ -24,33 +24,33 @@ public interface Relationship<T extends Serializable, K extends Serializable> {
 
     /**
      * 渴求式关联
-     * @param column 所关联的Model(当前模块的属性名)
+     * @param fieldName 所关联的Model(当前模块的属性名)
      * @return 关联的Model的查询构造器
      */
-    Record<T, K> with(String column);
+    Record<T, K> with(String fieldName);
 
     /**
      * 渴求式关联
-     * @param column         所关联的Model(当前模块的属性名)
+     * @param fieldName 所关联的Model(当前模块的属性名)
      * @param builderClosure 所关联的Model的查询构造器约束
      * @return 关联的Model的查询构造器
      */
-    Record<T, K> with(String column, GenerateSqlPartFunctionalInterface<T, K> builderClosure);
+    Record<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<T, K> builderClosure);
 
     /**
      * 渴求式关联
-     * @param column         所关联的Model(当前模块的属性名)
+     * @param fieldName 所关联的Model(当前模块的属性名)
      * @param builderClosure 所关联的Model的查询构造器约束
-     * @param recordClosure  所关联的Model的再一级关联
+     * @param recordClosure 所关联的Model的再一级关联
      * @return 关联的Model的查询构造器
      */
-    Record<T, K> with(String column, GenerateSqlPartFunctionalInterface<T, K> builderClosure,
+    Record<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<T, K> builderClosure,
                       RelationshipRecordWithFunctionalInterface recordClosure);
 
     /**
      * 关系绑定操作对象
-     * @param column 关系操作的字段(当前模块的属性名)
+     * @param fieldName 关系操作的字段(当前模块的属性名)
      * @return 关系绑定操作对象
      */
-    Bind bind(String column);
+    Bind bind(String fieldName);
 }

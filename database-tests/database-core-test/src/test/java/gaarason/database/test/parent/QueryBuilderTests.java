@@ -890,8 +890,12 @@ abstract public class QueryBuilderTests extends BaseTests {
             idList2).get().toObjectList();
         Assert.assertEquals(entityList2.size(), 3);
 
-        List<StudentModel.Entity> entityList3 = studentModel.newQuery().whereIn(StudentModel.Entity::getId, idList).whereNotIn(StudentModel.Entity::getId,
-            idList2).get().toObjectList();
+        List<StudentModel.Entity> entityList3 = studentModel.newQuery()
+            .whereIn(StudentModel.Entity::getId, idList)
+            .whereNotIn(StudentModel.Entity::getId,
+                idList2)
+            .get()
+            .toObjectList();
         Assert.assertEquals(entityList3.size(), 3);
     }
 
@@ -917,8 +921,13 @@ abstract public class QueryBuilderTests extends BaseTests {
             idList2).whereNotInIgnoreEmpty("id", new ArrayList<>()).get().toObjectList();
         Assert.assertEquals(entityList2.size(), 3);
 
-        List<StudentModel.Entity> entityList3 = studentModel.newQuery().whereIn(StudentModel.Entity::getId, idList).whereNotIn(StudentModel.Entity::getId,
-            idList2).whereNotInIgnoreEmpty(StudentModel.Entity::getId, new ArrayList<>()).get().toObjectList();
+        List<StudentModel.Entity> entityList3 = studentModel.newQuery()
+            .whereIn(StudentModel.Entity::getId, idList)
+            .whereNotIn(StudentModel.Entity::getId,
+                idList2)
+            .whereNotInIgnoreEmpty(StudentModel.Entity::getId, new ArrayList<>())
+            .get()
+            .toObjectList();
         Assert.assertEquals(entityList3.size(), 3);
     }
 
@@ -1032,6 +1041,12 @@ abstract public class QueryBuilderTests extends BaseTests {
     @Test
     public void 条件_whereKeywords() {
 
+        List<StudentModel.Entity> list0 = studentModel.newQuery()
+            .whereKeywords("小", StudentModel.Entity::getName, StudentModel.Entity::getAge, StudentModel.Entity::getId)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(0, list0.size());
+
         List<StudentModel.Entity> list = studentModel.newQuery()
             .whereKeywords("小", "name", "age", "id")
             .get()
@@ -1094,10 +1109,25 @@ abstract public class QueryBuilderTests extends BaseTests {
             .get()
             .toObjectList();
         Assert.assertEquals(10, list9.size());
+
+        List<StudentModel.Entity> list10 = studentModel.newQuery()
+            .whereKeywordsIgnoreNull(null, StudentModel.Entity::getName, StudentModel.Entity::getAge,
+                StudentModel.Entity::getId)
+            .whereKeywordsIgnoreNull(null, StudentModel.Entity::getName, StudentModel.Entity::getAge,
+                StudentModel.Entity::getId)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(10, list10.size());
     }
 
     @Test
     public void 条件_havingKeywords() {
+
+        List<StudentModel.Entity> list0 = studentModel.newQuery()
+            .havingKeywords("小", StudentModel.Entity::getName, StudentModel.Entity::getAge, StudentModel.Entity::getId)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(0, list0.size());
 
         List<StudentModel.Entity> list = studentModel.newQuery()
             .havingKeywords("小", "name", "age", "id")
@@ -1161,11 +1191,27 @@ abstract public class QueryBuilderTests extends BaseTests {
             .get()
             .toObjectList();
         Assert.assertEquals(10, list9.size());
+
+        List<StudentModel.Entity> list10 = studentModel.newQuery()
+            .havingKeywordsIgnoreNull(null, StudentModel.Entity::getName, StudentModel.Entity::getAge,
+                StudentModel.Entity::getId)
+            .havingKeywordsIgnoreNull(null, StudentModel.Entity::getName, StudentModel.Entity::getAge,
+                StudentModel.Entity::getId)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(10, list10.size());
     }
 
 
     @Test
     public void 条件_whereMayLike() {
+        // select * from `student` where `name`like"小%"
+        List<StudentModel.Entity> entityList0 = studentModel.newQuery()
+            .whereMayLike(StudentModel.Entity::getName, "小%")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(5, entityList0.size());
+
         // select * from `student` where `name`like"小%"
         List<StudentModel.Entity> entityList1 = studentModel.newQuery().whereMayLike("name", "小%").get().toObjectList();
         Assert.assertEquals(5, entityList1.size());
@@ -1224,6 +1270,13 @@ abstract public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 条件_havingMayLike() {
+        // select * from `student` having `name`like"小%"
+        List<StudentModel.Entity> entityList0 = studentModel.newQuery()
+            .havingMayLike(StudentModel.Entity::getName, "小%")
+            .get()
+            .toObjectList();
+        Assert.assertEquals(5, entityList0.size());
+
         // select * from `student` having `name`like"小%"
         List<StudentModel.Entity> entityList1 = studentModel.newQuery()
             .havingMayLike("name", "小%")
@@ -1284,6 +1337,16 @@ abstract public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 条件_whereIn_closure() {
+        List<StudentModel.Entity> entityList0 = studentModel.newQuery().whereIn(StudentModel.Entity::getId,
+            builder -> builder.select(StudentModel.Entity::getId).where(StudentModel.Entity::getAge, ">=", "11")
+        ).andWhere(
+            builder -> builder.whereNotIn(StudentModel.Entity::getSex,
+                builder1 -> builder1.select(StudentModel.Entity::getSex).where(StudentModel.Entity::getSex, "1")
+            )
+        ).get().toObjectList();
+        Assert.assertEquals(entityList0.size(), 3);
+        System.out.println(entityList0);
+
         List<StudentModel.Entity> entityList1 = studentModel.newQuery().whereIn("id",
             builder -> builder.select("id").where("age", ">=", "11")
         ).andWhere(
@@ -1297,6 +1360,18 @@ abstract public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 条件_whereNull() {
+        List<StudentModel.Entity> entityList0 = studentModel.newQuery()
+            .whereNotNull(StudentModel.Entity::getId)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(entityList0.size(), 10);
+
+        List<StudentModel.Entity> entityList00 = studentModel.newQuery()
+            .whereNull(StudentModel.Entity::getAge)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(entityList00.size(), 0);
+
         List<StudentModel.Entity> entityList1 = studentModel.newQuery().whereNotNull("id").get().toObjectList();
         Assert.assertEquals(entityList1.size(), 10);
 
@@ -1379,6 +1454,11 @@ abstract public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 条件_orWhere() {
+        List<StudentModel.Entity> entityList0 = studentModel.newQuery().where(StudentModel.Entity::getId, "3").orWhere(
+            (builder) -> builder.whereRaw("id=4")
+        ).get().toObjectList();
+        Assert.assertEquals(entityList0.size(), 2);
+
         List<StudentModel.Entity> entityList1 = studentModel.newQuery().where("id", "3").orWhere(
             (builder) -> builder.whereRaw("id=4")
         ).get().toObjectList();
@@ -1392,6 +1472,11 @@ abstract public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 条件_andWhere() {
+        List<StudentModel.Entity> entityList0 = studentModel.newQuery().where(StudentModel.Entity::getId, "3").andWhere(
+            (builder) -> builder.whereRaw("id=4")
+        ).get().toObjectList();
+        Assert.assertEquals(entityList0.size(), 0);
+
         List<StudentModel.Entity> entityList1 = studentModel.newQuery().where("id", "3").andWhere(
             (builder) -> builder.whereRaw("id=4")
         ).get().toObjectList();
@@ -1420,6 +1505,13 @@ abstract public class QueryBuilderTests extends BaseTests {
         ins.add("1");
         ins.add("2");
         ins.add("3");
+        RecordList<StudentModel.Entity, Integer> records0 = studentModel.newQuery()
+            .where(StudentModel.Entity::getAge, "!=", "99")
+            .whereSubQuery(StudentModel.Entity::getId, "in",
+                builder -> builder.select(StudentModel.Entity::getId).whereIn(StudentModel.Entity::getId, ins))
+            .get();
+        Assert.assertEquals(records0.size(), 3);
+
         RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
             .where("age", "!=", "99")
             .whereSubQuery("id", "in", builder -> builder.select("id").whereIn("id", ins))
@@ -1429,6 +1521,12 @@ abstract public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 条件_whereSubQuery_字符串() {
+        RecordList<StudentModel.Entity, Integer> records0 = studentModel.newQuery()
+            .where(StudentModel.Entity::getAge, "!=", "99")
+            .whereSubQuery(StudentModel.Entity::getId, "in", "select id from student where id = 3")
+            .get();
+        Assert.assertEquals(records0.size(), 1);
+
         RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
             .where("age", "!=", "99")
             .whereSubQuery("id", "in", "select id from student where id = 3")
@@ -1461,7 +1559,12 @@ abstract public class QueryBuilderTests extends BaseTests {
         studentModel.newQuery().where("sex", "1").orderBy("RAND()").limit(5).get().toObjectList();
         System.out.println("RAND()耗时 : " + (System.currentTimeMillis() - l1));
         long l2 = System.currentTimeMillis();
-        studentModel.newQuery().where("sex", "1").inRandomOrder("id").limit(5).get().toObjectList();
+        studentModel.newQuery()
+            .where("sex", "1")
+            .inRandomOrder(StudentModel.Entity::getId)
+            .limit(5)
+            .get()
+            .toObjectList();
         System.out.println("inRandomOrder()耗时 : " + (System.currentTimeMillis() - l2));
     }
 
@@ -1474,7 +1577,8 @@ abstract public class QueryBuilderTests extends BaseTests {
             .select("id", "name", "age")
             .whereBetween("id", "1", "2")
             .whereExists(
-                builder -> builder.select("id", "name", "age").whereBetween("id", "2", "3")
+                builder -> builder.select(StudentModel.Entity::getId, StudentModel.Entity::getName,
+                    StudentModel.Entity::getAge).whereBetween(StudentModel.Entity::getId, "2", "3")
             )
             .whereExists(
                 builder -> builder.select("id", "name", "age").whereBetween("id", "1", "4")
@@ -1500,6 +1604,20 @@ abstract public class QueryBuilderTests extends BaseTests {
         List<String> groupList = new ArrayList<>();
         groupList.add("id");
         groupList.add("age");
+        List<StudentModel.Entity> entities0 = studentModel.newQuery()
+            .select("id", "age")
+            .where("id", "&", "1")
+            .orderBy("id", OrderBy.DESC)
+            .group(StudentModel.Entity::getSex, StudentModel.Entity::getId, StudentModel.Entity::getAge)
+            .group(groupList)
+            .get()
+            .toObjectList();
+        System.out.println(entities0);
+        Assert.assertEquals(entities0.size(), 5);
+        Assert.assertEquals(entities0.get(0).getId().intValue(), 9);
+        Assert.assertEquals(entities0.get(1).getId().intValue(), 7);
+
+
         List<StudentModel.Entity> entities = studentModel.newQuery()
             .select("id", "age")
             .where("id", "&", "1")
@@ -1512,6 +1630,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(entities.size(), 5);
         Assert.assertEquals(entities.get(0).getId().intValue(), 9);
         Assert.assertEquals(entities.get(1).getId().intValue(), 7);
+
 
         // 严格模式 todo
 //        Assert.assertThrows(SQLRuntimeException.class, () -> {
@@ -1542,6 +1661,11 @@ abstract public class QueryBuilderTests extends BaseTests {
             .havingColumn("age", "<", "sex").group("age", "sex").select("age", "sex")
             .get();
         Assert.assertTrue(records2.isEmpty());
+
+        RecordList<StudentModel.Entity, Integer> records3 = studentModel.newQuery()
+            .havingColumn(StudentModel.Entity::getAge, "<", StudentModel.Entity::getSex).group("age", "sex").select("age", "sex")
+            .get();
+        Assert.assertTrue(records3.isEmpty());
     }
 
     @Test
