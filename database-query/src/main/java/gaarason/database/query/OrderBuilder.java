@@ -23,7 +23,7 @@ public abstract class OrderBuilder<T extends Serializable, K extends Serializabl
         super(gaarasonDataSource, model, grammar);
     }
 
-    protected Builder<T, K> orderGrammar(String sqlPart, @Nullable Collection<String> parameters) {
+    protected Builder<T, K> orderGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
         grammar.addSmartSeparator(Grammar.SQLPartType.ORDER, sqlPart, parameters, ",");
         return this;
     }

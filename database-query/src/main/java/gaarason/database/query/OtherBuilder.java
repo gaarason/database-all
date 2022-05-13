@@ -16,7 +16,9 @@ import gaarason.database.util.StringUtils;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * 公用查询构造器
@@ -103,8 +105,8 @@ public abstract class OtherBuilder<T extends Serializable, K extends Serializabl
     @Override
     public Builder<T, K> fromRaw(@Nullable String sqlPart, Collection<?> parameters) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
-            grammar.set(Grammar.SQLPartType.FROM, sqlPart, conversionToStrings(parameters));
-            grammar.set(Grammar.SQLPartType.TABLE, sqlPart, conversionToStrings(parameters));
+            grammar.set(Grammar.SQLPartType.FROM, sqlPart, ObjectUtils.typeCast(parameters));
+            grammar.set(Grammar.SQLPartType.TABLE, sqlPart, ObjectUtils.typeCast(parameters));
         }
         return this;
     }
@@ -146,7 +148,7 @@ public abstract class OtherBuilder<T extends Serializable, K extends Serializabl
             grammar.addSmartSeparator(Grammar.SQLPartType.VALUE, "()", null);
             return this;
         }
-        Collection<String> parameters = new ArrayList<>();
+        Collection<Object> parameters = new ArrayList<>();
         String sqlPart = FormatUtils.bracket(grammar.replaceValuesAndFillParameters(values, parameters, ","));
         grammar.addSmartSeparator(Grammar.SQLPartType.VALUE, sqlPart, parameters);
         return this;
@@ -200,7 +202,8 @@ public abstract class OtherBuilder<T extends Serializable, K extends Serializabl
     @Override
     public Builder<T, K> joinRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
-            grammar.add(Grammar.SQLPartType.JOIN, sqlPart, conversionToStrings(parameters));
+            grammar.add(Grammar.SQLPartType.JOIN, sqlPart,
+                ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters));
         }
         return this;
     }
@@ -225,7 +228,7 @@ public abstract class OtherBuilder<T extends Serializable, K extends Serializabl
         String sqlPart = FormatUtils.spaces(joinType.getOperation()) + "join " + table + FormatUtils.spaces("on") +
             FormatUtils.bracket(conditions.getSqlString());
 
-        Collection<String> parameters = tableInfo.getParameters();
+        Collection<Object> parameters = tableInfo.getParameters();
         assert parameters != null;
         assert conditions.getParameters() != null;
         parameters.addAll(conditions.getParameters());
@@ -275,7 +278,7 @@ public abstract class OtherBuilder<T extends Serializable, K extends Serializabl
     }
 
 
-    protected Builder<T, K> columnGrammar(String sqlPart, @Nullable Collection<String> parameters) {
+    protected Builder<T, K> columnGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
         grammar.addSmartSeparator(Grammar.SQLPartType.COLUMN, sqlPart, parameters, ",");
         return this;
     }
@@ -297,7 +300,7 @@ public abstract class OtherBuilder<T extends Serializable, K extends Serializabl
     @Override
     public Builder<T, K> columnRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
-            columnGrammar(sqlPart, conversionToStrings(parameters));
+            columnGrammar(sqlPart, ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters));
         }
         return this;
     }
@@ -311,7 +314,7 @@ public abstract class OtherBuilder<T extends Serializable, K extends Serializabl
     }
 
     @Override
-    public Builder<T, K> column(Collection<String> columnList){
+    public Builder<T, K> column(Collection<String> columnList) {
         for (String column : columnList) {
             column(column);
         }

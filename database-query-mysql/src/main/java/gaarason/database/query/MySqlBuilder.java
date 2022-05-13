@@ -8,6 +8,8 @@ import gaarason.database.provider.ContainerProvider;
 import gaarason.database.util.FormatUtils;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Mysql sql生成器
@@ -23,16 +25,18 @@ public class MySqlBuilder<T extends Serializable, K extends Serializable> extend
 
     @Override
     public Builder<T, K> limit(Object offset, Object take) {
-        String sqlPart = conversionToString(offset) + ',' + conversionToString(take);
-        grammar.set(Grammar.SQLPartType.LIMIT, sqlPart, null);
+        Collection<Object> parameters = new ArrayList<>(2);
+        String sqlPart = grammar.replaceValueAndFillParameters(offset, parameters) + "," +
+            grammar.replaceValueAndFillParameters(take, parameters);
+        grammar.set(Grammar.SQLPartType.LIMIT, sqlPart, parameters);
         return this;
     }
 
     @Override
     public Builder<T, K> limit(Object take) {
-        String sqlPart = conversionToString(take);
-        assert sqlPart != null;
-        grammar.set(Grammar.SQLPartType.LIMIT, sqlPart, null);
+        Collection<Object> parameters = new ArrayList<>(1);
+        String sqlPart = grammar.replaceValueAndFillParameters(take, parameters);
+        grammar.set(Grammar.SQLPartType.LIMIT, sqlPart, parameters);
         return this;
     }
 

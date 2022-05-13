@@ -31,7 +31,7 @@ public abstract class BaseModel<T extends Serializable, K extends Serializable> 
      * @param parameterList 参数
      */
     @Override
-    public void log(String sql, Collection<String> parameterList) {
+    public void log(String sql, Collection<?> parameterList) {
         String format = String.format(sql.replace(" ? ", "\"%s\""), parameterList.toArray());
         log.info("SQL complete : {}", format);
     }

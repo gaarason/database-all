@@ -1,6 +1,8 @@
 package gaarason.database.query;
 
-import gaarason.database.appointment.SubQueryType;
+import gaarason.database.appointment.FinalVariable;
+import gaarason.database.appointment.Paginate;
+import gaarason.database.appointment.SqlType;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
@@ -9,24 +11,17 @@ import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.*;
 import gaarason.database.contract.query.Grammar;
-import gaarason.database.lang.Nullable;
-import gaarason.database.appointment.Paginate;
-import gaarason.database.appointment.FinalVariable;
-import gaarason.database.appointment.SqlType;
 import gaarason.database.exception.*;
+import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.RecordFactory;
 import gaarason.database.util.ExceptionUtils;
-import gaarason.database.util.FormatUtils;
-import gaarason.database.util.LambdaUtils;
 import gaarason.database.util.ObjectUtils;
 
 import java.io.Serializable;
 import java.sql.*;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * 基础查询构造器(sql生成器)
@@ -176,8 +171,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * @throws CloneNotSupportedRuntimeException 克隆异常
      */
     @Override
-    public Paginate<Map<String, Object>> paginateMapStyle(int currentPage,
-                                                          int perPage)
+    public Paginate<Map<String, Object>> paginateMapStyle(int currentPage, int perPage)
         throws SQLRuntimeException, CloneNotSupportedRuntimeException {
         Long count = clone().count("*");
         List<Map<String, Object>> list = limit((currentPage - 1) * perPage, perPage).get().toMapList();
@@ -205,7 +199,8 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * @throws SQLRuntimeException 数据库异常
      */
     @Override
-    public Paginate<Map<String, Object>> simplePaginateMapStyle(int currentPage, int perPage) throws SQLRuntimeException {
+    public Paginate<Map<String, Object>> simplePaginateMapStyle(int currentPage, int perPage)
+        throws SQLRuntimeException {
         List<Map<String, Object>> list = limit((currentPage - 1) * perPage, perPage).get().toMapList();
         return new Paginate<>(list, currentPage, perPage);
     }
@@ -310,7 +305,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
 
     @Nullable
     @Override
-    public Record<T, K> query(String sql, Collection<String> parameters) throws SQLRuntimeException {
+    public Record<T, K> query(String sql, @Nullable Collection<?> parameters) throws SQLRuntimeException {
         try {
             return queryOrFail(sql, parameters);
         } catch (EntityNotFoundException e) {
@@ -320,12 +315,12 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
 
     @Nullable
     @Override
-    public Record<T, K> query(String sql, String... parameters) throws SQLRuntimeException {
+    public Record<T, K> query(String sql, Object... parameters) throws SQLRuntimeException {
         return query(sql, Arrays.asList(parameters));
     }
 
     @Override
-    public Record<T, K> queryOrFail(String sql, Collection<String> parameters)
+    public Record<T, K> queryOrFail(String sql, @Nullable Collection<?> parameters)
         throws SQLRuntimeException, EntityNotFoundException {
         return doSomethingInConnection(preparedStatement -> {
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -334,13 +329,13 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
     }
 
     @Override
-    public Record<T, K> queryOrFail(String sql, String... parameters)
+    public Record<T, K> queryOrFail(String sql, Object... parameters)
         throws SQLRuntimeException, EntityNotFoundException {
         return queryOrFail(sql, Arrays.asList(parameters));
     }
 
     @Override
-    public RecordList<T, K> queryList(String sql, Collection<String> parameters) throws SQLRuntimeException {
+    public RecordList<T, K> queryList(String sql, @Nullable Collection<?> parameters) throws SQLRuntimeException {
         return doSomethingInConnection(preparedStatement -> {
             ResultSet resultSet = preparedStatement.executeQuery();
             return RecordFactory.newRecordList(entityClass, model, resultSet, sql);
@@ -348,22 +343,22 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
     }
 
     @Override
-    public RecordList<T, K> queryList(String sql, String... parameters) throws SQLRuntimeException {
+    public RecordList<T, K> queryList(String sql, Object... parameters) throws SQLRuntimeException {
         return queryList(sql, Arrays.asList(parameters));
     }
 
     @Override
-    public int execute(String sql, Collection<String> parameters) throws SQLRuntimeException {
+    public int execute(String sql, @Nullable Collection<?> parameters) throws SQLRuntimeException {
         return doSomethingInConnection(PreparedStatement::executeUpdate, sql, parameters, true);
     }
 
     @Override
-    public int execute(String sql, String... parameters) throws SQLRuntimeException {
+    public int execute(String sql, Object... parameters) throws SQLRuntimeException {
         return execute(sql, Arrays.asList(parameters));
     }
 
     @Override
-    public List<K> executeGetIds(String sql, Collection<String> parameters) throws SQLRuntimeException {
+    public List<K> executeGetIds(String sql, @Nullable Collection<?> parameters) throws SQLRuntimeException {
         return doSomethingInConnection(preparedStatement -> {
             List<K> ids = new ArrayList<>();
             // 执行
@@ -379,13 +374,13 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
     }
 
     @Override
-    public List<K> executeGetIds(String sql, String... parameters) throws SQLRuntimeException {
+    public List<K> executeGetIds(String sql, Object... parameters) throws SQLRuntimeException {
         return executeGetIds(sql, Arrays.asList(parameters));
     }
 
     @Override
     @Nullable
-    public K executeGetId(String sql, Collection<String> parameters) throws SQLRuntimeException {
+    public K executeGetId(String sql, @Nullable Collection<?> parameters) throws SQLRuntimeException {
         return doSomethingInConnection(preparedStatement -> {
             // 执行
             int affectedRows = preparedStatement.executeUpdate();
@@ -404,7 +399,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
 
     @Override
     @Nullable
-    public K executeGetId(String sql, String... parameters) throws SQLRuntimeException {
+    public K executeGetId(String sql, Object... parameters) throws SQLRuntimeException {
         return executeGetId(sql, Arrays.asList(parameters));
     }
 
@@ -419,19 +414,20 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * @throws SQLRuntimeException 数据库异常
      */
     protected <U> U doSomethingInConnection(ExecSqlWithinConnectionFunctionalInterface<U> closure, String sql,
-                                            Collection<String> parameters,
-                                            boolean isWrite) throws SQLRuntimeException {
+                                            @Nullable Collection<?> parameters, boolean isWrite)
+        throws SQLRuntimeException {
+        Collection<?> localParameters = parameters == null ? Collections.EMPTY_LIST : parameters;
         // 获取连接
         Connection connection = gaarasonDataSource.getLocalConnection(isWrite);
         try {
             // 参数准备
-            PreparedStatement preparedStatement = executeSql(connection, sql, parameters);
+            PreparedStatement preparedStatement = executeSql(connection, sql, localParameters);
             // 执行
             return closure.execute(preparedStatement);
         } catch (EntityNotFoundException e) {
-            throw new EntityNotFoundException(String.format(sql.replace(" ? ", "\"%s\""), parameters.toArray()));
+            throw new EntityNotFoundException(String.format(sql.replace(" ? ", "\"%s\""), localParameters.toArray()));
         } catch (Throwable e) {
-            throw new SQLRuntimeException(sql, parameters, e.getMessage(),
+            throw new SQLRuntimeException(sql, localParameters, e.getMessage(),
                 gaarasonDataSource.getQueryBuilder().getValueSymbol(), e);
         } finally {
             // 关闭连接
@@ -473,8 +469,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
         Grammar.SQLPartInfo sqlPartInfo = grammar.generateSql(SqlType.SELECT);
 
         String sql = sqlPartInfo.getSqlString();
-        Collection<String> parameterList = sqlPartInfo.getParameters();
-        assert parameterList != null;
+        Collection<Object> parameterList = sqlPartInfo.getParameters();
 
         Map<String, Object[]> columnMap = grammar.pullWith();
         Record<T, K> theRecord = queryOrFail(sql, parameterList);
@@ -496,9 +491,8 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
         // sql组装执行
         Grammar.SQLPartInfo sqlPartInfo = grammar.generateSql(SqlType.SELECT);
         String sql = sqlPartInfo.getSqlString();
-        Collection<String> parameterList = sqlPartInfo.getParameters();
+        Collection<Object> parameterList = sqlPartInfo.getParameters();
         Map<String, Object[]> columnMap = grammar.pullWith();
-        assert parameterList != null;
         RecordList<T, K> records = queryList(sql, parameterList);
         for (Map.Entry<String, Object[]> stringEntry : columnMap.entrySet()) {
             records.with(stringEntry.getKey(), (GenerateSqlPartFunctionalInterface<?, ?>) stringEntry.getValue()[0],
@@ -516,8 +510,8 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
             cloneBuilder.limit(offset, num);
             Grammar.SQLPartInfo sqlPartInfo = cloneBuilder.getGrammar().generateSql(SqlType.SELECT);
             String sql = sqlPartInfo.getSqlString();
-            Collection<String> parameterList = sqlPartInfo.getParameters();
-            assert parameterList != null;
+            Collection<Object> parameterList = sqlPartInfo.getParameters();
+
             Map<String, Object[]> columnMap = grammar.pullWith();
             RecordList<T, K> records = queryList(sql, parameterList);
             for (Map.Entry<String, Object[]> stringEntry : columnMap.entrySet()) {
@@ -543,8 +537,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
         // sql组装执行
         Grammar.SQLPartInfo sqlPartInfo = grammar.generateSql(sqlType);
         String sql = sqlPartInfo.getSqlString();
-        Collection<String> parameters = sqlPartInfo.getParameters();
-        assert parameters != null;
+        Collection<Object> parameters = sqlPartInfo.getParameters();
         return execute(sql, parameters);
     }
 
@@ -556,7 +549,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * @return 预执行对象
      * @throws SQLException sql错误
      */
-    private PreparedStatement executeSql(Connection connection, String sql, Collection<String> parameterList)
+    protected PreparedStatement executeSql(Connection connection, String sql, Collection<?> parameterList)
         throws SQLException {
         // 日志记录
         model.log(sql, parameterList);
@@ -564,11 +557,21 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
         PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         // 参数绑定
         int i = 1;
-        for (String parameter : parameterList) {
-            preparedStatement.setString(i++, parameter);
+        for (Object parameter : parameterList) {
+            setParameter(preparedStatement, i++, parameter);
         }
         // 返回预执行对象
         return preparedStatement;
+    }
+
+    /**
+     * 单个参数绑定
+     * @param preparedStatement 预执行对象
+     * @param index 参数索引
+     * @param parameter 参数对象
+     */
+    protected void setParameter(PreparedStatement preparedStatement, int index, Object parameter) throws SQLException {
+        preparedStatement.setObject(index, parameter);
     }
 
     @Override

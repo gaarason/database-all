@@ -420,7 +420,7 @@ public class ConverterUtils {
 
 
         // 返回的字段值为null, 且目标类型可以接受null
-        if (resultSet.getObject(column) == null && EntityUtils.isFieldCanBeNull(fieldInfo.getField())) {
+        if (EntityUtils.isFieldCanBeNull(fieldInfo.getField()) && resultSet.getObject(column) == null) {
             return null;
         }
 

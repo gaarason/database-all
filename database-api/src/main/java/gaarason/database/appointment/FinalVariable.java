@@ -25,16 +25,18 @@ public class FinalVariable {
     /**
      * 实体中普通属性支持的包装类型
      */
-    public static final List<Class<?>> ALLOW_FIELD_TYPES = Arrays.asList(Boolean.class, boolean.class, Byte.class, byte.class, Character.class,
-        char.class, Short.class, short.class, Integer.class, int.class, Long.class, long.class, Float.class, float.class, Double.class, double.class,
-        BigInteger.class, BigDecimal.class, Number.class, java.sql.Date.class, Time.class, Year.class, YearMonth.class, Month.class, MonthDay.class,
-        Timestamp.class, Date.class, LocalDate.class, LocalTime.class, LocalDateTime.class, String.class, Blob.class, Clob.class);
+    public static final List<Class<?>> ALLOW_FIELD_TYPES = Arrays.asList(Boolean.class, boolean.class, Byte.class,
+        byte.class, Character.class, char.class, Short.class, short.class, Integer.class, int.class, Long.class,
+        long.class, Float.class, float.class, Double.class, double.class, BigInteger.class, BigDecimal.class,
+        Number.class, java.sql.Date.class, Time.class, Year.class, YearMonth.class, Month.class, MonthDay.class,
+        Timestamp.class, Date.class, LocalDate.class, LocalTime.class, LocalDateTime.class, String.class, Blob.class,
+        Clob.class);
 
     /**
      * 不可以接受null的类型
      */
-    public static final List<Class<?>> NOT_ACCEPT_NULL_TYPES = Arrays.asList(boolean.class, byte.class, char.class, short.class, int.class,
-        long.class,  float.class, double.class);
+    public static final List<Class<?>> NOT_ACCEPT_NULL_TYPES = Arrays.asList(boolean.class, byte.class, char.class,
+        short.class, int.class, long.class, float.class, double.class);
 
     /**
      * 关联关系声明注解
@@ -50,10 +52,11 @@ public class FinalVariable {
     /**
      * 链接中的元数据字段
      */
-    public static final List<String> metaDataLabel = Arrays.asList("TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "COLUMN_NAME",
-        "DATA_TYPE", "COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS", "NUM_PREC_RADIX", "NULLABLE", "REMARKS", "COLUMN_DEF",
-        "SQL_DATA_TYPE", "SQL_DATETIME_SUB", "CHAR_OCTET_LENGTH", "ORDINAL_POSITION", "IS_NULLABLE", "SCOPE_CATALOG",
-        "SCOPE_SCHEMA", "SCOPE_TABLE", "SOURCE_DATA_TYPE", "IS_AUTOINCREMENT", "IS_GENERATEDCOLUMN");
+    public static final List<String> metaDataLabel = Arrays.asList("TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
+        "COLUMN_NAME", "DATA_TYPE", "COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS", "NUM_PREC_RADIX", "NULLABLE",
+        "REMARKS", "COLUMN_DEF", "SQL_DATA_TYPE", "SQL_DATETIME_SUB", "CHAR_OCTET_LENGTH", "ORDINAL_POSITION",
+        "IS_NULLABLE", "SCOPE_CATALOG", "SCOPE_SCHEMA", "SCOPE_TABLE", "SOURCE_DATA_TYPE", "IS_AUTOINCREMENT",
+        "IS_GENERATEDCOLUMN");
 
     /**
      * 数据库中的 null

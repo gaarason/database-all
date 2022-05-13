@@ -24,7 +24,7 @@ public abstract class SelectBuilder<T extends Serializable, K extends Serializab
         super(gaarasonDataSource, model, grammar);
     }
 
-    protected Builder<T, K> selectGrammar(String sqlPart, @Nullable Collection<String> parameters) {
+    protected Builder<T, K> selectGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
         grammar.addSmartSeparator(Grammar.SQLPartType.SELECT, sqlPart, parameters, ",");
         return this;
     }
@@ -46,7 +46,7 @@ public abstract class SelectBuilder<T extends Serializable, K extends Serializab
     @Override
     public Builder<T, K> selectRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
-            selectGrammar(sqlPart, conversionToStrings(parameters));
+            selectGrammar(sqlPart, ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters));
         }
         return this;
     }

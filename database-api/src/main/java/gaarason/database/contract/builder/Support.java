@@ -8,8 +8,6 @@ import gaarason.database.contract.support.LambdaStyle;
 import gaarason.database.lang.Nullable;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.LinkedList;
 
 /**
  * 支持
@@ -84,15 +82,15 @@ public interface Support<T extends Serializable, K extends Serializable> extends
      * @param value 参数
      * @return String集合
      */
-    @Nullable
-    default Collection<String> conversionToStrings(@Nullable Collection<?> value) {
-        if (value != null && !value.isEmpty()) {
-            LinkedList<String> res = new LinkedList<>();
-            for (Object obj : value) {
-                res.add(conversionToString(obj));
-            }
-            return res;
-        }
-        return null;
-    }
+//    @Nullable
+//    default Collection<String> conversionToStrings(@Nullable Collection<?> value) {
+//        if (value != null && !value.isEmpty()) {
+//            LinkedList<String> res = new LinkedList<>();
+//            for (Object obj : value) {
+//                res.add(conversionToString(obj));
+//            }
+//            return res;
+//        }
+//        return null;
+//    }
 }

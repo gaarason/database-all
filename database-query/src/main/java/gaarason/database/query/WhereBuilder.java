@@ -30,7 +30,7 @@ public abstract class WhereBuilder<T extends Serializable, K extends Serializabl
         super(gaarasonDataSource, model, grammar);
     }
 
-    protected Builder<T, K> whereGrammar(String sqlPart, @Nullable Collection<String> parameters, String separator) {
+    protected Builder<T, K> whereGrammar(String sqlPart, @Nullable Collection<Object> parameters, String separator) {
         grammar.addSmartSeparator(Grammar.SQLPartType.WHERE, sqlPart, parameters, separator);
         return this;
     }
@@ -38,7 +38,7 @@ public abstract class WhereBuilder<T extends Serializable, K extends Serializabl
     @Override
     public Builder<T, K> whereRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
-            whereGrammar(sqlPart, conversionToStrings(parameters), " and ");
+            whereGrammar(sqlPart, ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters), " and ");
         }
         return this;
     }
@@ -63,7 +63,7 @@ public abstract class WhereBuilder<T extends Serializable, K extends Serializabl
 
     @Override
     public Builder<T, K> where(String column, String symbol, Object value) {
-        ArrayList<String> parameters = new ArrayList<>();
+        ArrayList<Object> parameters = new ArrayList<>();
         String sqlPart = backQuote(column) + symbol + grammar.replaceValueAndFillParameters(value, parameters);
         whereGrammar(sqlPart, parameters, " and ");
         return this;
@@ -225,16 +225,16 @@ public abstract class WhereBuilder<T extends Serializable, K extends Serializabl
 
     @Override
     public Builder<T, K> whereIn(String column, Collection<?> valueList) {
-        Collection<String> parameters = new ArrayList<>();
-        String valueStr = grammar.replaceValuesAndFillParameters(conversionToStrings(valueList), parameters, ",");
+        Collection<Object> parameters = new ArrayList<>();
+        String valueStr = grammar.replaceValuesAndFillParameters(ObjectUtils.typeCast(valueList), parameters, ",");
         String sqlPart = backQuote(column) + "in" + FormatUtils.bracket(valueStr);
         return whereGrammar(sqlPart, parameters, " and ");
     }
 
     @Override
     public Builder<T, K> whereNotIn(String column, Collection<?> valueList) {
-        Collection<String> parameters = new ArrayList<>();
-        String valueStr = grammar.replaceValuesAndFillParameters(conversionToStrings(valueList), parameters, ",");
+        Collection<Object> parameters = new ArrayList<>();
+        String valueStr = grammar.replaceValuesAndFillParameters(ObjectUtils.typeCast(valueList), parameters, ",");
         String sqlPart = backQuote(column) + "not in" + FormatUtils.bracket(valueStr);
         return whereGrammar(sqlPart, parameters, " and ");
     }
@@ -297,7 +297,7 @@ public abstract class WhereBuilder<T extends Serializable, K extends Serializabl
 
     @Override
     public Builder<T, K> whereBetween(String column, Object min, Object max) {
-        Collection<String> parameters = new ArrayList<>();
+        Collection<Object> parameters = new ArrayList<>();
         String sqlPart = backQuote(column) + "between" +
             grammar.replaceValueAndFillParameters(min, parameters) + "and" +
             grammar.replaceValueAndFillParameters(max, parameters);
@@ -306,7 +306,7 @@ public abstract class WhereBuilder<T extends Serializable, K extends Serializabl
 
     @Override
     public Builder<T, K> whereNotBetween(String column, Object min, Object max) {
-        Collection<String> parameters = new ArrayList<>();
+        Collection<Object> parameters = new ArrayList<>();
         String sqlPart = backQuote(column) + "not between" +
             grammar.replaceValueAndFillParameters(min, parameters) + "and" +
             grammar.replaceValueAndFillParameters(max, parameters);

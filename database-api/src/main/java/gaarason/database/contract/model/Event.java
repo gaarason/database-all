@@ -24,7 +24,7 @@ public interface Event<T extends Serializable, K extends Serializable> {
      * @param sql 带占位符的sql
      * @param parameterList 参数
      */
-    default void log(String sql, Collection<String> parameterList) {
+    default void log(String sql, Collection<?> parameterList) {
 //        log.debug("SQL with placeholder : {}", sql);
 //        log.debug("SQL parameterList    : {}", parameterList);
 //        String format = String.format(sql.replace(" ? ", "\"%s\""), parameterList.toArray());

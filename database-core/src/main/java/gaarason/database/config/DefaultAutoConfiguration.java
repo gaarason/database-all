@@ -12,6 +12,7 @@ import gaarason.database.logging.LogFactory;
 import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.FieldInfo;
 import gaarason.database.support.SnowFlakeIdGenerator;
+import gaarason.database.util.ClassUtils;
 import gaarason.database.util.ConverterUtils;
 import gaarason.database.util.ObjectUtils;
 import org.reflections.Reflections;
@@ -109,7 +110,7 @@ public class DefaultAutoConfiguration {
             GaarasonAutoconfiguration.class);
         for (Class<? extends GaarasonAutoconfiguration> gaarasonAutoconfiguration : gaarasonAutoconfigurations) {
             try {
-                gaarasonAutoconfiguration.newInstance().init();
+                ClassUtils.newInstance(gaarasonAutoconfiguration).init();
                 log.debug("Auto configuration [" + gaarasonAutoconfiguration.getName() + "] executed successfully .");
             } catch (Throwable e) {
                 log.error(

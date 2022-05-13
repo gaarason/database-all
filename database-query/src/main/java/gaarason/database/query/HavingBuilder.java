@@ -30,7 +30,7 @@ public abstract class HavingBuilder<T extends Serializable, K extends Serializab
         super(gaarasonDataSource, model, grammar);
     }
 
-    protected Builder<T, K> havingGrammar(String sqlPart, @Nullable Collection<String> parameters, String separator) {
+    protected Builder<T, K> havingGrammar(String sqlPart, @Nullable Collection<Object> parameters, String separator) {
         grammar.addSmartSeparator(Grammar.SQLPartType.HAVING, sqlPart, parameters, separator);
         return this;
     }
@@ -38,7 +38,7 @@ public abstract class HavingBuilder<T extends Serializable, K extends Serializab
     @Override
     public Builder<T, K> havingRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
-            havingGrammar(sqlPart, conversionToStrings(parameters), " and ");
+            havingGrammar(sqlPart, ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters), " and ");
         }
         return this;
     }
@@ -63,7 +63,7 @@ public abstract class HavingBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> having(String column, String symbol, Object value) {
-        ArrayList<String> parameters = new ArrayList<>();
+        ArrayList<Object> parameters = new ArrayList<>();
         String sqlPart = backQuote(column) + symbol + grammar.replaceValueAndFillParameters(value, parameters);
         havingGrammar(sqlPart, parameters, " and ");
         return this;
@@ -226,16 +226,16 @@ public abstract class HavingBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> havingIn(String column, Collection<?> valueList) {
-        Collection<String> parameters = new ArrayList<>();
-        String valueStr = grammar.replaceValuesAndFillParameters(conversionToStrings(valueList), parameters, ",");
+        Collection<Object> parameters = new ArrayList<>();
+        String valueStr = grammar.replaceValuesAndFillParameters(ObjectUtils.typeCast(valueList), parameters, ",");
         String sqlPart = backQuote(column) + "in" + FormatUtils.bracket(valueStr);
         return havingGrammar(sqlPart, parameters, " and ");
     }
 
     @Override
     public Builder<T, K> havingNotIn(String column, Collection<?> valueList) {
-        Collection<String> parameters = new ArrayList<>();
-        String valueStr = grammar.replaceValuesAndFillParameters(conversionToStrings(valueList), parameters, ",");
+        Collection<Object> parameters = new ArrayList<>();
+        String valueStr = grammar.replaceValuesAndFillParameters(ObjectUtils.typeCast(valueList), parameters, ",");
         String sqlPart = backQuote(column) + "not in" + FormatUtils.bracket(valueStr);
         return havingGrammar(sqlPart, parameters, " and ");
     }
@@ -298,7 +298,7 @@ public abstract class HavingBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> havingBetween(String column, Object min, Object max) {
-        Collection<String> parameters = new ArrayList<>();
+        Collection<Object> parameters = new ArrayList<>();
         String sqlPart = backQuote(column) + "between" +
             grammar.replaceValueAndFillParameters(min, parameters) + "and" +
             grammar.replaceValueAndFillParameters(max, parameters);
@@ -307,7 +307,7 @@ public abstract class HavingBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> havingNotBetween(String column, Object min, Object max) {
-        Collection<String> parameters = new ArrayList<>();
+        Collection<Object> parameters = new ArrayList<>();
         String sqlPart = backQuote(column) + "not between" +
             grammar.replaceValueAndFillParameters(min, parameters) + "and" +
             grammar.replaceValueAndFillParameters(max, parameters);

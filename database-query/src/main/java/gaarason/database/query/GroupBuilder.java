@@ -22,7 +22,7 @@ public abstract class GroupBuilder<T extends Serializable, K extends Serializabl
         super(gaarasonDataSource, model, grammar);
     }
 
-    protected Builder<T, K> groupGrammar(String sqlPart, @Nullable Collection<String> parameters) {
+    protected Builder<T, K> groupGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
         grammar.addSmartSeparator(Grammar.SQLPartType.GROUP, sqlPart, parameters, ",");
         return this;
     }

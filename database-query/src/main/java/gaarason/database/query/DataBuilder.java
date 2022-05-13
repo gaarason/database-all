@@ -24,7 +24,7 @@ public abstract class DataBuilder<T extends Serializable, K extends Serializable
         super(gaarasonDataSource, model, grammar);
     }
 
-    protected Builder<T, K> dataGrammar(String sqlPart, @Nullable Collection<String> parameters) {
+    protected Builder<T, K> dataGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
         grammar.addSmartSeparator(Grammar.SQLPartType.DATA, sqlPart, parameters, ",");
         return this;
     }
@@ -39,7 +39,7 @@ public abstract class DataBuilder<T extends Serializable, K extends Serializable
 
     @Override
     public Builder<T, K> data(String column, @Nullable Object value) {
-        ArrayList<String> parameters = new ArrayList<>();
+        ArrayList<Object> parameters = new ArrayList<>();
         String sqlPart = backQuote(column) + '=' + grammar.replaceValueAndFillParameters(value, parameters);
         return dataGrammar(sqlPart, parameters);
     }
@@ -69,14 +69,14 @@ public abstract class DataBuilder<T extends Serializable, K extends Serializable
 
     @Override
     public Builder<T, K> dataIncrement(String column, Object steps) {
-        ArrayList<String> parameters = new ArrayList<>();
+        ArrayList<Object> parameters = new ArrayList<>();
         String sqlPart = backQuote(column) + '=' + backQuote(column) + '+' + grammar.replaceValueAndFillParameters(steps, parameters);
         return dataGrammar(sqlPart, parameters);
     }
 
     @Override
     public Builder<T, K> dataDecrement(String column, Object steps) {
-        ArrayList<String> parameters = new ArrayList<>();
+        ArrayList<Object> parameters = new ArrayList<>();
         String sqlPart = backQuote(column) + '=' + backQuote(column) + '-' + grammar.replaceValueAndFillParameters(steps, parameters);
         return dataGrammar(sqlPart, parameters);
     }

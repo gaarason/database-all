@@ -1,17 +1,14 @@
 package gaarason.database.query.grammars;
 
 import gaarason.database.appointment.SqlType;
-import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.InvalidSqlTypeException;
 import gaarason.database.lang.Nullable;
-import gaarason.database.provider.ContainerProvider;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
-import gaarason.database.util.StringUtils;
 
 import java.io.Serializable;
 import java.util.*;
@@ -53,30 +50,25 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     }
 
     @Override
-    public String replaceValueAndFillParameters(@Nullable Object value, Collection<String> parameters) {
-        String strValue = ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class);
-        parameters.add(strValue);
+    public String replaceValueAndFillParameters(@Nullable Object value, Collection<Object> parameters) {
+//        String strValue = ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class);
+        parameters.add(value);
         return " ? ";
     }
 
     @Override
-    public String replaceValuesAndFillParameters(Collection<?> values, Collection<String> parameters,
+    public String replaceValuesAndFillParameters(Collection<?> values, Collection<Object> parameters,
                                                  String separator) {
         return values.stream().map(e -> {
-            parameters.add(ContainerProvider.getBean(ConversionConfig.class).castNullable(e, String.class));
+            parameters.add(e);
+//            parameters.add(ContainerProvider.getBean(ConversionConfig.class).castNullable(e, String.class));
             return " ? ";
         }).collect(Collectors.joining(separator));
-//        StringBuilder stringBuilder = new StringBuilder();
-//        for (Object value : values) {
-//            parameters.add(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class));
-//            stringBuilder.append(" ? ").append(separator);
-//        }
-//        return StringUtils.rtrim(stringBuilder.toString(), separator);
     }
 
     @Override
     public void addSmartSeparator(SQLPartType sqlPartType, String sqlPartString,
-                                  @Nullable Collection<String> parameters) {
+                                  @Nullable Collection<Object> parameters) {
         if (isEmpty(sqlPartType)) {
             add(sqlPartType, sqlPartString, parameters);
         } else {
@@ -86,7 +78,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
     @Override
     public void addSmartSeparator(SQLPartType sqlPartType, String sqlPartString,
-                                  @Nullable Collection<String> parameters,
+                                  @Nullable Collection<Object> parameters,
                                   String separator) {
         if (isEmpty(sqlPartType)) {
             add(sqlPartType, sqlPartString, parameters);
@@ -96,7 +88,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     }
 
     @Override
-    public void add(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<String> parameters) {
+    public void add(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters) {
         // init list
         List<SQLPartInfo> sqlParts = SQLPartMap.computeIfAbsent(sqlPartType, k -> new LinkedList<>());
         // construct
@@ -107,7 +99,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     }
 
     @Override
-    public void set(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<String> parameters) {
+    public void set(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters) {
         // construct
         SQLPartInfo sqlPart = new SQLPartInfo(sqlPartString, parameters);
         // put
@@ -123,13 +115,13 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     @Override
     public SQLPartInfo get(SQLPartType sqlPartType) {
         StringBuilder sqlBuilder = new StringBuilder();
-        Collection<String> allParameters = new LinkedList<>();
+        Collection<Object> allParameters = new LinkedList<>();
 
         List<SQLPartInfo> sqlParts = SQLPartMap.computeIfAbsent(sqlPartType, k -> new ArrayList<>());
         // sql part
         for (SQLPartInfo sqlPart : sqlParts) {
             sqlBuilder.append(sqlPart.getSqlString());
-            Collection<String> parameters = sqlPart.getParameters();
+            Collection<Object> parameters = sqlPart.getParameters();
             if (!ObjectUtils.isEmpty(parameters)) {
                 allParameters.addAll(parameters);
             }
@@ -139,7 +131,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
     @Override
     public void concatenate(SqlType sqlType, SQLPartType sqlPartType, StringBuilder sqlBuilder,
-                            Collection<String> allParameters) {
+                            Collection<Object> allParameters) {
         List<SQLPartInfo> sqlParts = SQLPartMap.get(sqlPartType);
         if (ObjectUtils.isEmpty(sqlParts)) {
             return;
@@ -157,7 +149,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         for (SQLPartInfo sqlPart : sqlParts) {
             sqlBuilder.append(sqlPart.getSqlString());
 
-            Collection<String> parameters = sqlPart.getParameters();
+            Collection<Object> parameters = sqlPart.getParameters();
             if (!ObjectUtils.isEmpty(parameters)) {
                 allParameters.addAll(parameters);
             }
@@ -170,7 +162,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
     }
 
-    void choreography(SqlType sqlType, StringBuilder sqlBuilder, Collection<String> allParameters,
+    void choreography(SqlType sqlType, StringBuilder sqlBuilder, Collection<Object> allParameters,
                       SQLPartType... sqlPartTypes) {
         for (SQLPartType sqlPartType : sqlPartTypes) {
             concatenate(sqlType, sqlPartType, sqlBuilder, allParameters);
@@ -180,7 +172,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     @Override
     public SQLPartInfo generateSql(SqlType sqlType) {
         StringBuilder sqlBuilder = new StringBuilder();
-        Collection<String> allParameters = new LinkedList<>();
+        Collection<Object> allParameters = new LinkedList<>();
 
         // 默认值处理
         setDefault();
