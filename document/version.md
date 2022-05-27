@@ -19,10 +19,12 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
-### 3.2.0 (未发布)
+### 3.2.0 
 
 - 在查询构造器(`Builder`)中,将原生查询的绑定参数类型由`Collection<String>`更改为`Collection<?>`
 - 在模型(`Model`)中, 将事件方法`log(String sql, Collection<String> parameterList)`更改为`log(String sql, Collection<?> parameterList)`
+- 在模型(`GeneralModel`)中, 实现`log.debug`
+- 底层实现"SoftCache", 以替代"sun.misc.SoftCache", 增加对于高版本jdk的兼容性
 
 ### 3.1.0
 

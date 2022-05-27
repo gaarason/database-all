@@ -14,10 +14,10 @@ import gaarason.database.eloquent.relation.BelongsToQueryRelation;
 import gaarason.database.eloquent.relation.HasOneOrManyQueryRelation;
 import gaarason.database.exception.*;
 import gaarason.database.lang.Nullable;
+import gaarason.database.support.SoftCache;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.LambdaUtils;
 import gaarason.database.util.ObjectUtils;
-import sun.misc.SoftCache;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -57,12 +57,12 @@ public final class ModelShadowProvider {
     /**
      * 缓存lambda风格的列名, 与为String风格的列名的映射
      */
-    private static final SoftCache LAMBDA_COLUMN_NAME_CACHE = new SoftCache();
+    private static final SoftCache<Class<?>, String> LAMBDA_COLUMN_NAME_CACHE = new SoftCache<>();
 
     /**
      * 缓存lambda风格的属性名, 与为String风格的属性名的映射
      */
-    private static final SoftCache LAMBDA_FIELD_NAME_CACHE = new SoftCache();
+    private static final SoftCache<Class<?>, String> LAMBDA_FIELD_NAME_CACHE = new SoftCache<>();
 
     static {
         // 一轮初始化模型的基本信息(主键类型/实体类型/模型类型/表名等等), 并构建索引(实体索引/模型索引), 不存在依赖递归等复杂情况
@@ -148,10 +148,10 @@ public final class ModelShadowProvider {
      */
     public static <T extends Serializable> String getFieldNameByLambdaWithCache(ColumnFunctionalInterface<T> func) {
         Class<?> clazz = func.getClass();
-        String fieldName = (String) LAMBDA_FIELD_NAME_CACHE.get(clazz);
+        String fieldName =  LAMBDA_FIELD_NAME_CACHE.get(clazz);
         if (fieldName == null) {
             synchronized (LAMBDA_FIELD_NAME_CACHE) {
-                fieldName = (String) LAMBDA_FIELD_NAME_CACHE.get(clazz);
+                fieldName =  LAMBDA_FIELD_NAME_CACHE.get(clazz);
                 if (fieldName == null) {
                     // 解析 lambda
                     LambdaInfo<T> lambdaInfo = LambdaUtils.parse(func);
@@ -174,10 +174,10 @@ public final class ModelShadowProvider {
      */
     public static <T extends Serializable> String getColumnNameByLambdaWithCache(ColumnFunctionalInterface<T> func) {
         Class<?> clazz = func.getClass();
-        String columnName = (String) LAMBDA_COLUMN_NAME_CACHE.get(clazz);
+        String columnName =LAMBDA_COLUMN_NAME_CACHE.get(clazz);
         if (columnName == null) {
             synchronized (LAMBDA_COLUMN_NAME_CACHE) {
-                columnName = (String) LAMBDA_COLUMN_NAME_CACHE.get(clazz);
+                columnName = LAMBDA_COLUMN_NAME_CACHE.get(clazz);
                 if (columnName == null) {
                     // 解析 lambda
                     FieldInfo fieldInfo = parseLambda(func);
@@ -194,10 +194,10 @@ public final class ModelShadowProvider {
     /**
      * 解析lambda
      * @param func lambda风格
-     * @return FieldInfo
      * @param <T> 实体类型
+     * @return FieldInfo
      */
-    private static <T extends Serializable> FieldInfo parseLambda(ColumnFunctionalInterface<T> func){
+    private static <T extends Serializable> FieldInfo parseLambda(ColumnFunctionalInterface<T> func) {
         // 解析 lambda
         LambdaInfo<T> lambdaInfo = LambdaUtils.parse(func);
         // 实例类
@@ -443,20 +443,6 @@ public final class ModelShadowProvider {
             fieldInfo.getField().set(obj, value);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessRuntimeException(e);
-        }
-    }
-
-    /**
-     * 简单实例化
-     * @param clazz 类
-     * @param <U> 类型
-     * @return 对象
-     */
-    public static <U> U newInstance(Class<U> clazz) {
-        try {
-            return clazz.newInstance();
-        } catch (IllegalAccessException | InstantiationException e) {
-            throw new EntityNewInstanceException(e);
         }
     }
 

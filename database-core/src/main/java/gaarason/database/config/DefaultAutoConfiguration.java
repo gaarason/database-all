@@ -31,7 +31,7 @@ public class DefaultAutoConfiguration {
 
     private static final Log log = LogFactory.getLog(DefaultAutoConfiguration.class);
 
-    private static final Reflections reflections = new Reflections();
+    private static Reflections reflections = new Reflections();
 
     static {
 
@@ -49,7 +49,12 @@ public class DefaultAutoConfiguration {
          * 包扫描 - model
          */
         ContainerProvider.register(ReflectionScan.class,
-            clazz -> () -> ObjectUtils.typeCast(reflections.getSubTypesOf(Model.class)));
+            clazz -> () -> {
+                Set<Class<? extends Model<?, ?>>>  models = ObjectUtils.typeCast(reflections.getSubTypesOf(Model.class));
+                // 清除 以释放内存
+                reflections = null;
+                return models;
+            });
 
         // 数据源
         ContainerProvider.register(GaarasonDataSourceConfig.class, clazz -> new GaarasonDataSourceConfig() {
