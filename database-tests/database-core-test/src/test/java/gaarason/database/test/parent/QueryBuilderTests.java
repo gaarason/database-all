@@ -532,6 +532,14 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
+    public void 查询_多条记录_分块_为空时不再执行() {
+        studentModel.newQuery().where("id", "12321").dealChunk(10, records -> {
+            Assert.assertFalse(true);
+            return true;
+        });
+    }
+
+    @Test
     public void 查询_调用mysql中的其他函数() {
         Record<StudentModel.Entity, Integer> entityRecord = studentModel.newQuery()
             .selectFunction("concat_ws", "\"-\",`name`,`id`", "newKey")

@@ -6,10 +6,16 @@ package gaarason.database.appointment;
  */
 public class LambdaInfo<T> {
     private final String fieldName;
+    /**
+     * 不要优先使用
+     * 优先使用 ModelShadowProvider 中的信息
+     */
+    private final String columnName;
     private final Class<T> entityCLass;
 
-    public LambdaInfo(String fieldName, Class<T> entityCLass) {
+    public LambdaInfo(String fieldName, String columnName, Class<T> entityCLass) {
         this.fieldName = fieldName;
+        this.columnName = columnName;
         this.entityCLass = entityCLass;
     }
 
@@ -17,8 +23,11 @@ public class LambdaInfo<T> {
         return fieldName;
     }
 
+    public String getColumnName() {
+        return columnName;
+    }
+
     public Class<T> getEntityCLass() {
         return entityCLass;
     }
-
 }

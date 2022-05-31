@@ -19,7 +19,12 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
-### 3.2.0 
+### 3.3.0
+
+- 在查询构造器(`Builder`)中, 使`dealChunk()`当结果集为空时, 不再进行回调
+- 在查询构造器(`Builder`)中, 表达式风格的列名与属性名, 现在支持父类实体
+
+### 3.2.0
 
 - 在查询构造器(`Builder`)中,将原生查询的绑定参数类型由`Collection<String>`更改为`Collection<?>`
 - 在模型(`Model`)中, 将事件方法`log(String sql, Collection<String> parameterList)`更改为`log(String sql, Collection<?> parameterList)`

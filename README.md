@@ -30,7 +30,7 @@ Eloquent ORM for Java
 - 查询 model.newQuery().select().where().get().toObject();
 - 更新 model.newQuery().data().where().update();
 - 删除 model.newQuery().where().delete();
-- 新增 model.newQuery().select().value().insert();
+- 新增 model.newQuery().column().value().insert();
 
 ```java
 // 查询id为4的一条数据 select * from student where id = 4 limit 1
