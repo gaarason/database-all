@@ -7,7 +7,6 @@ import gaarason.database.lang.Nullable;
 import gaarason.database.logging.Log;
 import gaarason.database.logging.LogFactory;
 import gaarason.database.provider.ModelShadowProvider;
-import sun.misc.SoftCache;
 
 import java.io.Serializable;
 import java.lang.invoke.SerializedLambda;
@@ -64,7 +63,11 @@ public class LambdaUtils {
                 (propertyName.length() > 1 && !Character.isUpperCase(propertyName.charAt(1)))) {
                 propertyName = propertyName.substring(0, 1).toLowerCase(Locale.ENGLISH) + propertyName.substring(1);
             }
-            return new LambdaInfo<>(propertyName, ObjectUtils.typeCast(instantiatedMethodTypeClass));
+
+            String columnName = EntityUtils.columnName(
+                EntityUtils.getDeclaredFieldContainParent(instantiatedMethodTypeClass, propertyName));
+
+            return new LambdaInfo<>(propertyName, columnName, ObjectUtils.typeCast(instantiatedMethodTypeClass));
         } catch (Throwable e) {
             throw new LambdaColumnException(e);
         }

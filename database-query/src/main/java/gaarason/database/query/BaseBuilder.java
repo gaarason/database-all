@@ -519,7 +519,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
                     (RelationshipRecordWithFunctionalInterface) stringEntry.getValue()[1]);
             }
 
-            flag = chunkFunctionalInterface.execute(records) && (records.size() == num);
+            flag = !records.isEmpty() && chunkFunctionalInterface.execute(records) && (records.size() == num);
             offset += num;
         } while (flag);
     }

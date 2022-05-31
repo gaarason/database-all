@@ -180,9 +180,7 @@ public final class ModelShadowProvider {
                 columnName = LAMBDA_COLUMN_NAME_CACHE.get(clazz);
                 if (columnName == null) {
                     // 解析 lambda
-                    FieldInfo fieldInfo = parseLambda(func);
-                    // 即为所求
-                    columnName = fieldInfo.columnName;
+                    columnName = parseLambda(func);
                     // 常量化后, 加入缓存
                     LAMBDA_COLUMN_NAME_CACHE.put(clazz, columnName.intern());
                 }
@@ -197,7 +195,7 @@ public final class ModelShadowProvider {
      * @param <T> 实体类型
      * @return FieldInfo
      */
-    private static <T extends Serializable> FieldInfo parseLambda(ColumnFunctionalInterface<T> func) {
+    private static <T extends Serializable> String parseLambda(ColumnFunctionalInterface<T> func) {
         // 解析 lambda
         LambdaInfo<T> lambdaInfo = LambdaUtils.parse(func);
         // 实例类
@@ -205,14 +203,15 @@ public final class ModelShadowProvider {
         // 属性名
         String fieldNameLocal = lambdaInfo.getFieldName();
         // Model信息
-        ModelInfo<T, Serializable> modelInfo = getByEntityClass(entityClass);
+        ModelInfo<? extends Serializable, ? extends Serializable> modelInfo = ENTITY_INDEX_MAP.get(entityClass);
+
+        if(ObjectUtils.isEmpty(modelInfo)){
+            return lambdaInfo.getColumnName();
+        }
         // 字段信息
         FieldInfo fieldInfo = modelInfo.javaFieldMap.get(fieldNameLocal);
-        // 无效的参数,则抛出异常
-        if (ObjectUtils.isEmpty(fieldInfo)) {
-            throw new EntityAttributeInvalidException(fieldNameLocal, entityClass);
-        }
-        return fieldInfo;
+        // 优先使用缓存的字段信息
+        return ObjectUtils.isEmpty(fieldInfo) ? lambdaInfo.getColumnName() : fieldInfo.columnName;
     }
 
     /**
