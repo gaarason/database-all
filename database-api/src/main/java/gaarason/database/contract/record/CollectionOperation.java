@@ -472,7 +472,6 @@ public interface CollectionOperation<E> extends List<E> {
      * 返回最后个元素
      * @return 最后个元素
      */
-    @Nullable
     default E last() {
         return get(size() - 1);
     }

@@ -19,6 +19,11 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 3.4.0
+
+- 在查询构造器(`Builder`)中, 增加`dealChunk(num, column, chunkFunctionalInterface)`支持是用索引条件的分块查询
+- 在查询构造器(`Builder`)中, 增加`firstOrderBy(closure)`支持将闭包中的排序字段添加到首部
+
 ### 3.3.1
 
 - 在查询构造器(`Builder`)中, 使`dealChunk()`当结果集为空时, 不再进行回调

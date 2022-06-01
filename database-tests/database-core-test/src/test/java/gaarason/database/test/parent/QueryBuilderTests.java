@@ -43,7 +43,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(10L, beforeCount.longValue());
 
         // 插入多次
-        MultiThreadUtil.run(10, 10, () -> {
+        MultiThreadUtil.run(10, 100, () -> {
             List<String> columnNameList = new ArrayList<>();
             columnNameList.add("name");
             columnNameList.add("age");
@@ -70,7 +70,7 @@ abstract public class QueryBuilderTests extends BaseTests {
 
         // 现在数据量
         Long afterCount = studentModel.newQuery().count("id");
-        Assert.assertEquals(110L, afterCount.longValue());
+        Assert.assertEquals(1010L, afterCount.longValue());
     }
 
     @Test
@@ -501,7 +501,7 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
-    public void 查询_多条记录_分块() throws InterruptedException {
+    public void 查询_多条记录_分块_兼容模式() throws InterruptedException {
         Runtime r = Runtime.getRuntime();
         r.gc();
         long startMem = r.totalMemory(); // 开始时内存
@@ -510,12 +510,10 @@ abstract public class QueryBuilderTests extends BaseTests {
         新增_多线程_循环_非entity方式();
         System.out.println("插入数据后的内存: " + r.totalMemory());
         Builder<StudentModel.Entity, Integer> queryBuilder = studentModel.newQuery();
-        for (int i = 0; i < 100; i++) {
-            queryBuilder.unionAll((builder -> builder));
-        }
+
         System.out.println("构造sql后的内存: " + r.totalMemory());
         StringBuilder temp = new StringBuilder();
-        queryBuilder.dealChunk(2000, records -> {
+        queryBuilder.dealChunk(20, records -> {
             // do something
             for (Record<StudentModel.Entity, Integer> record : records) {
                 // do something
@@ -524,7 +522,36 @@ abstract public class QueryBuilderTests extends BaseTests {
             return true;
         });
         System.out.println("执行sql后的内存: " + r.totalMemory());
-        System.out.println(temp.toString());
+        //System.out.println(temp.toString());
+
+        long orz = r.totalMemory() - startMem; // 剩余内存 现在
+        System.out.println("最后的内存: " + r.totalMemory());
+        System.out.println("执行消耗的内存差: " + orz);
+    }
+
+    @Test
+    public void 查询_多条记录_分块_性能模式() throws InterruptedException {
+        Runtime r = Runtime.getRuntime();
+        r.gc();
+        long startMem = r.totalMemory(); // 开始时内存
+        System.out.println("开始时内存: " + startMem);
+        // 数据库数据有限,此处模拟大数据
+        新增_多线程_循环_非entity方式();
+        System.out.println("插入数据后的内存: " + r.totalMemory());
+        Builder<StudentModel.Entity, Integer> queryBuilder = studentModel.newQuery();
+
+        System.out.println("构造sql后的内存: " + r.totalMemory());
+        StringBuilder temp = new StringBuilder();
+        queryBuilder.dealChunk(20, StudentModel.Entity::getId, records -> {
+            // do something
+            for (Record<StudentModel.Entity, Integer> record : records) {
+                // do something
+                temp.append(record.toSearch());
+            }
+            return true;
+        });
+        System.out.println("执行sql后的内存: " + r.totalMemory());
+        //System.out.println(temp.toString());
 
         long orz = r.totalMemory() - startMem; // 剩余内存 现在
         System.out.println("最后的内存: " + r.totalMemory());
@@ -1605,6 +1632,28 @@ abstract public class QueryBuilderTests extends BaseTests {
             )
             .get().toObjectList();
         Assert.assertEquals(entityList2.size(), 0);
+    }
+
+    @Test
+    public void 排序_orderBy(){
+        List<StudentModel.Entity> entities = studentModel.newQuery()
+            .orderBy(StudentModel.Entity::getAge)
+            .orderBy(StudentModel.Entity::getId, OrderBy.DESC)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(10, entities.size());
+        Assert.assertEquals(6, entities.get(0).getAge().intValue());
+        Assert.assertEquals(17, entities.get(9).getAge().intValue());
+        Assert.assertEquals(7, entities.get(9).getId().intValue());
+
+        List<StudentModel.Entity> entities1 = studentModel.newQuery()
+            .orderBy(StudentModel.Entity::getId, OrderBy.DESC)
+            .firstOrderBy(builder -> builder.orderBy(StudentModel.Entity::getAge))
+            .get().toObjectList();
+        Assert.assertEquals(10, entities1.size());
+        Assert.assertEquals(6, entities1.get(0).getAge().intValue());
+        Assert.assertEquals(17, entities1.get(9).getAge().intValue());
+        Assert.assertEquals(7, entities1.get(9).getId().intValue());
     }
 
     @Test

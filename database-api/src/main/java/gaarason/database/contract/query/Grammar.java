@@ -77,7 +77,7 @@ public interface Grammar {
     String replaceValuesAndFillParameters(Collection<?> values, Collection<Object> parameters, String separator);
 
     /**
-     * 加入sql片段, 自动处理首个的情况
+     * 加入sql片段(片段尾部), 自动处理首个的情况
      * @param sqlPartType SQL片段类型
      * @param sqlPartString SQL片段
      * @param parameters 绑定参数集合
@@ -85,7 +85,15 @@ public interface Grammar {
     void addSmartSeparator(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters);
 
     /**
-     * 加入sql片段, 自动处理首个的情况
+     * 加入sql片段(片段首部), 自动处理首个的情况
+     * @param sqlPartType SQL片段类型
+     * @param sqlPartString SQL片段
+     * @param parameters 绑定参数集合
+     */
+    void addFirstSmartSeparator(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters);
+
+    /**
+     * 加入sql片段(片段尾部), 自动处理首个的情况
      * @param sqlPartType SQL片段类型
      * @param sqlPartString SQL片段
      * @param parameters 绑定参数集合
@@ -95,12 +103,30 @@ public interface Grammar {
                            String separator);
 
     /**
-     * 加入sql片段
+     * 加入sql片段(片段首部), 自动处理首个的情况
+     * @param sqlPartType SQL片段类型
+     * @param sqlPartString SQL片段
+     * @param parameters 绑定参数集合
+     * @param separator 分割符号
+     */
+    void addFirstSmartSeparator(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters,
+                           String separator);
+
+    /**
+     * 加入sql片段(片段尾部)
      * @param sqlPartType SQL片段类型
      * @param sqlPartString SQL片段
      * @param parameters 绑定参数集合
      */
     void add(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters);
+
+    /**
+     * 加入sql片段(片段首部)
+     * @param sqlPartType SQL片段类型
+     * @param sqlPartString SQL片段
+     * @param parameters 绑定参数集合
+     */
+    void addFirst(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters);
 
     /**
      * 设置sql片段

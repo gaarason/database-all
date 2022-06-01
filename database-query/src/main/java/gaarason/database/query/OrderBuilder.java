@@ -4,8 +4,10 @@ import gaarason.database.appointment.OrderBy;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
+import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
+import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 
 import java.io.Serializable;
@@ -25,6 +27,11 @@ public abstract class OrderBuilder<T extends Serializable, K extends Serializabl
 
     protected Builder<T, K> orderGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
         grammar.addSmartSeparator(Grammar.SQLPartType.ORDER, sqlPart, parameters, ",");
+        return this;
+    }
+
+    protected Builder<T, K> orderFirstGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
+        grammar.addFirstSmartSeparator(Grammar.SQLPartType.ORDER, sqlPart, parameters, ",");
         return this;
     }
 
@@ -48,5 +55,11 @@ public abstract class OrderBuilder<T extends Serializable, K extends Serializabl
             orderGrammar(sqlPart, null);
         }
         return this;
+    }
+
+    @Override
+    public Builder<T, K> firstOrderBy(GenerateSqlPartFunctionalInterface<T, K> closure) {
+        Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.ORDER);
+        return orderFirstGrammar(sqlPartInfo.getSqlString(), sqlPartInfo.getParameters());
     }
 }

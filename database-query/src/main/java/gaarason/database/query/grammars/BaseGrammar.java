@@ -51,7 +51,6 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
     @Override
     public String replaceValueAndFillParameters(@Nullable Object value, Collection<Object> parameters) {
-//        String strValue = ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class);
         parameters.add(value);
         return " ? ";
     }
@@ -61,7 +60,6 @@ public abstract class BaseGrammar implements Grammar, Serializable {
                                                  String separator) {
         return values.stream().map(e -> {
             parameters.add(e);
-//            parameters.add(ContainerProvider.getBean(ConversionConfig.class).castNullable(e, String.class));
             return " ? ";
         }).collect(Collectors.joining(separator));
     }
@@ -77,6 +75,16 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     }
 
     @Override
+    public void addFirstSmartSeparator(SQLPartType sqlPartType, String sqlPartString,
+                                  @Nullable Collection<Object> parameters) {
+        if (isEmpty(sqlPartType)) {
+            addFirst(sqlPartType, sqlPartString, parameters);
+        } else {
+            addFirst(sqlPartType, sqlPartString + ',', parameters);
+        }
+    }
+
+    @Override
     public void addSmartSeparator(SQLPartType sqlPartType, String sqlPartString,
                                   @Nullable Collection<Object> parameters,
                                   String separator) {
@@ -88,6 +96,17 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     }
 
     @Override
+    public void addFirstSmartSeparator(SQLPartType sqlPartType, String sqlPartString,
+                                  @Nullable Collection<Object> parameters,
+                                  String separator) {
+        if (isEmpty(sqlPartType)) {
+            addFirst(sqlPartType, sqlPartString, parameters);
+        } else {
+            addFirst(sqlPartType, sqlPartString + separator, parameters);
+        }
+    }
+
+    @Override
     public void add(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters) {
         // init list
         List<SQLPartInfo> sqlParts = SQLPartMap.computeIfAbsent(sqlPartType, k -> new LinkedList<>());
@@ -95,7 +114,16 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         SQLPartInfo sqlPart = new SQLPartInfo(sqlPartString, parameters);
         // add
         sqlParts.add(sqlPart);
+    }
 
+    @Override
+    public void addFirst(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters) {
+        // init list
+        List<SQLPartInfo> sqlParts = SQLPartMap.computeIfAbsent(sqlPartType, k -> new LinkedList<>());
+        // construct
+        SQLPartInfo sqlPart = new SQLPartInfo(sqlPartString, parameters);
+        // add
+        sqlParts.add(0, sqlPart);
     }
 
     @Override

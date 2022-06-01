@@ -524,6 +524,33 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
         } while (flag);
     }
 
+    @Override
+    public void dealChunk(int num, String column, ChunkFunctionalInterface<T, K> chunkFunctionalInterface) throws SQLRuntimeException {
+        boolean flag;
+        Object columnValue = null;
+        do {
+            Builder<T, K> cloneBuilder = clone();
+            cloneBuilder.whereIgnoreNull(column, ">", columnValue).firstOrderBy(builder -> builder.orderBy(column)).limit(num);
+
+            Grammar.SQLPartInfo sqlPartInfo = cloneBuilder.getGrammar().generateSql(SqlType.SELECT);
+            String sql = sqlPartInfo.getSqlString();
+            Collection<Object> parameterList = sqlPartInfo.getParameters();
+
+            Map<String, Object[]> columnMap = grammar.pullWith();
+            RecordList<T, K> records = queryList(sql, parameterList);
+            for (Map.Entry<String, Object[]> stringEntry : columnMap.entrySet()) {
+                records.with(stringEntry.getKey(), (GenerateSqlPartFunctionalInterface<?, ?>) stringEntry.getValue()[0],
+                    (RelationshipRecordWithFunctionalInterface) stringEntry.getValue()[1]);
+            }
+
+            if(!records.isEmpty()){
+                columnValue = records.last().getMetadataMap().get(column).getValue();
+            }
+
+            flag = !records.isEmpty() && chunkFunctionalInterface.execute(records) && (records.size() == num);
+        } while (flag);
+    }
+
     /**
      * 执行sql, 返回收影响的行数
      * @return 影响的行数

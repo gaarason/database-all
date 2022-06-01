@@ -139,15 +139,27 @@ Record<Student, Long> record = studentModel.findOrFail("9")
 RecordList<Student, Long>> records = studentModel.where("age","<","9").get();
 ```
 ### 分块处理
+当要进行大量数据查询时,可以使用分块, 在闭包中返回`boolean`表示是否进行下一次迭代  
+因为分块查询, 并发的数据更改一定会伴随数据不准确的问题, 如同redis中的`keys`与`scan`
 #### dealChunk
-当要进行大量数据查询时,可以使用分块,他将自动拼接`limit`字段,在闭包中返回`boolean`表示是否进行下一次迭代  
-因为分块查询,并发的数据更改一定会伴随数据不准确的问题,如同redis中的`keys`与`scan`
+##### 使用limit分页
 ```java
+// 使用 limit 分页
 studentModel.where("age","<","9").dealChunk(2000, records -> {
     // do something
     records.toObjectList();
     return true;
+    });
+```
+##### 使用索引分页
+```java
+// 使用 索引 分页
+studentModel.where("age","<","9").dealChunk(2000, Student::getId, records -> {
+    // do something
+    records.toObjectList();
+    return true;
 });
+
 ```
 
 ## 插入
@@ -751,7 +763,15 @@ RecordList<Student, Long>> records = studentModel.newQuery()
 
 ## order
 ```java
-RecordList<Student, Long>> records = studentModel.newQuery().orderBy("id", OrderBy.DESC).get();
+// select * from student order by id desc
+studentModel.newQuery().orderBy("id", OrderBy.DESC).get();
+
+// select * from student order by id desc, name asc
+studentModel.newQuery().orderBy("id", OrderBy.DESC).orderBy("name", OrderBy.ASC).get();
+
+// 使用firstOrderBy将排序片段增加到首位
+// select * from student order by name asc, id desc
+studentModel.newQuery().orderBy("id", OrderBy.DESC).firstOrderBy(builder -> builder.orderBy("name", OrderBy.ASC)).get();
 ```
 
 ## group
