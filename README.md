@@ -81,10 +81,14 @@ spring.datasource.url=jdbc:mysql://mysql.local/test_master_0?useUnicode=true&cha
 spring.datasource.username=root
 spring.datasource.password=root
 spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-# choose the type as u like
+
+# 使用你喜欢的 datasource, 这边增加了 DruidDataSource 的支持, 使其符合 Spring 的指定风格
 spring.datasource.type=com.alibaba.druid.pool.DruidDataSource
 
+# 雪花算法工作id, 默认是0
 gaarason.database.snow-flake.worker-id=1
+
+# 包扫描路径, 默认是`@SpringBootApplication`所在的包
 gaarason.database.scan.packages=you.package1,you.package2
 ```
 4.快速开始  
