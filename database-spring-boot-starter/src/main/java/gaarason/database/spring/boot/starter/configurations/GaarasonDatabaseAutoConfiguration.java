@@ -12,7 +12,6 @@ import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.ModelInstanceProvider;
 import gaarason.database.spring.boot.starter.annotation.GaarasonDatabaseScan;
 import gaarason.database.spring.boot.starter.annotation.GaarasonDatabaseScanRegistrar;
-import gaarason.database.spring.boot.starter.properties.GaarasonDatabaseSpringProperties;
 import gaarason.database.spring.boot.starter.provider.GaarasonTransactionManager;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
@@ -20,7 +19,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,38 +34,48 @@ import java.util.Collections;
  * 自动配置
  * @author xt
  */
-@GaarasonDatabaseScan(GaarasonDatabaseProperties.PREFIX)
 @Configuration
 @AutoConfigureAfter({DruidDataSourceAutoConfigure.class, DataSourceAutoConfiguration.class})
-@EnableConfigurationProperties({GaarasonDatabaseSpringProperties.class})
 @Import({GeneralModel.class, GeneralGenerator.class})
 public class GaarasonDatabaseAutoConfiguration {
 
     private static final Log LOGGER = LogFactory.getLog(GaarasonDatabaseAutoConfiguration.class);
 
     /**
-     * 指定 model 扫描范围
+     * Spring配置GaarasonDatabaseProperties
      */
-    GaarasonDatabaseAutoConfiguration(ApplicationContext applicationContext,
-                                      GaarasonDatabaseSpringProperties gaarasonDatabaseSpringProperties) {
-        /*
-         * GaarasonDatabaseProperties 配置
-         * 认定 GaarasonDatabaseScan 的解析一定在此之前完成了.
-         */
-        ContainerProvider.register(GaarasonDatabaseProperties.class,
-            (clazz -> gaarasonDatabaseSpringProperties.buildFromThisAndWithAnnotation(
-                GaarasonDatabaseScanRegistrar.getScan())));
+    @Bean
+    @ConfigurationProperties(prefix = GaarasonDatabaseProperties.PREFIX)
+    public GaarasonDatabaseProperties gaarasonDatabaseProperties() {
+        return new GaarasonDatabaseProperties();
+    }
 
-        // 注册 model实例获取方式
-        ModelInstanceProvider.register(modelClass -> {
-            try {
-                return ObjectUtils.typeCast(applicationContext.getBean(modelClass));
-            } catch (BeansException e) {
-                return ObjectUtils.typeCast(
-                    applicationContext.getBean(StringUtils.lowerFirstChar(modelClass.getSimpleName())));
-            }
-        });
-        LOGGER.info("Model instance provider has been registered success.");
+
+    @Configuration
+    public static class GaarasonConfigAutoconfigure {
+        /**
+         * 指定 model 扫描范围
+         */
+        GaarasonConfigAutoconfigure(ApplicationContext applicationContext,
+                                    GaarasonDatabaseProperties gaarasonDatabaseProperties) {
+            /*
+             * GaarasonDatabaseProperties 配置注册到 ContainerProvider
+             * 认定 GaarasonDatabaseScan 的解析一定在此之前完成了.
+             */
+            ContainerProvider.register(GaarasonDatabaseProperties.class,
+                (clazz -> gaarasonDatabaseProperties.mergeScan(GaarasonDatabaseScanRegistrar.getScan())));
+
+            // 注册 model实例获取方式
+            ModelInstanceProvider.register(modelClass -> {
+                try {
+                    return ObjectUtils.typeCast(applicationContext.getBean(modelClass));
+                } catch (BeansException e) {
+                    return ObjectUtils.typeCast(
+                        applicationContext.getBean(StringUtils.lowerFirstChar(modelClass.getSimpleName())));
+                }
+            });
+            LOGGER.info("Model instance provider has been registered success.");
+        }
     }
 
     @Configuration

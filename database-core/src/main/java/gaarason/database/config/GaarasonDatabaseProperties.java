@@ -167,7 +167,7 @@ public class GaarasonDatabaseProperties implements Serializable {
     public GaarasonDatabaseProperties fillAndVerify() {
         if (!ObjectUtils.isEmpty(this.getScan().getPackages())) {
             // 固定扫描 gaarason.database
-            if(!this.getScan().getPackages().contains(GaarasonDatabaseProperties.PREFIX)){
+            if (!this.getScan().getPackages().contains(GaarasonDatabaseProperties.PREFIX)) {
                 this.getScan().getPackages().add(GaarasonDatabaseProperties.PREFIX);
             }
         } else {
@@ -225,6 +225,20 @@ public class GaarasonDatabaseProperties implements Serializable {
         }
 
         return gaarasonDatabaseProperties.fillAndVerify();
+    }
+
+    /**
+     * 将自身合并其他来源的Scan配置
+     * @param scan 来自包扫描注解的配置
+     * @return GaarasonDatabaseProperties
+     * @see gaarason.database.spring.boot.starter.annotation.GaarasonDatabaseScan
+     */
+    public GaarasonDatabaseProperties mergeScan(GaarasonDatabaseProperties.Scan scan) {
+        this.getScan().getPackages().addAll(scan.getPackages());
+        this.getScan().getFilterExcludePackages().addAll(scan.getFilterExcludePackages());
+        this.getScan().getFilterIncludePatterns().addAll(scan.getFilterIncludePatterns());
+        this.getScan().getFilterExcludePatterns().addAll(scan.getFilterExcludePatterns());
+        return fillAndVerify();
     }
 
 }

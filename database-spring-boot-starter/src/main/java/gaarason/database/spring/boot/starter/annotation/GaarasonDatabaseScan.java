@@ -8,7 +8,7 @@ import java.lang.annotation.*;
 /**
  * 包扫描注解配置
  * 哟绿玉扫描所有的Model以及
- * @see gaarason.database.spring.boot.starter.properties.GaarasonDatabaseSpringProperties.Scan
+ * @see gaarason.database.config.GaarasonDatabaseProperties.Scan
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

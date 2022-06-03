@@ -1,7 +1,6 @@
 package gaarason.database.spring.boot.starter.annotation;
 
 import gaarason.database.config.GaarasonDatabaseProperties;
-import gaarason.database.spring.boot.starter.properties.GaarasonDatabaseSpringProperties;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.annotation.AnnotationAttributes;
@@ -15,7 +14,7 @@ import java.util.Arrays;
  */
 public class GaarasonDatabaseScanRegistrar implements ImportBeanDefinitionRegistrar {
 
-    private static final GaarasonDatabaseSpringProperties.Scan SCAN = new GaarasonDatabaseSpringProperties.Scan();
+    private static final GaarasonDatabaseProperties.Scan SCAN = new GaarasonDatabaseProperties.Scan();
 
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
@@ -33,7 +32,7 @@ public class GaarasonDatabaseScanRegistrar implements ImportBeanDefinitionRegist
         }
     }
 
-    public static GaarasonDatabaseSpringProperties.Scan getScan(){
+    public static GaarasonDatabaseProperties.Scan getScan(){
         return SCAN;
     }
 

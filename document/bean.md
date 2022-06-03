@@ -46,26 +46,40 @@ public class GaarasonDatabaseAutoConfiguration {
     private static final Log LOGGER = LogFactory.getLog(GaarasonDatabaseAutoConfiguration.class);
 
     /**
-     * 指定 model 扫描范围
+     * Spring配置GaarasonDatabaseProperties
      */
-    GaarasonDatabaseAutoConfiguration(ApplicationContext applicationContext, GaarasonDatabaseProperties gaarasonDatabaseSpringProperties) {
-        // 注册 model实例获取方式
-        ModelInstanceProvider.register(modelClass -> {
-            try {
-                return ObjectUtils.typeCast(applicationContext.getBean(modelClass));
-            } catch (BeansException e) {
-                return ObjectUtils.typeCast(applicationContext.getBean(StringUtils.lowerFirstChar(modelClass.getSimpleName())));
-            }
-        });
-        LOGGER.info("Model instance provider has been registered success.");
+    @Bean
+    @ConfigurationProperties(prefix = GaarasonDatabaseProperties.PREFIX)
+    public GaarasonDatabaseProperties gaarasonDatabaseProperties() {
+        return new GaarasonDatabaseProperties();
+    }
 
-        // 注册 雪花id实现
-        final int workerId = gaarasonDatabaseSpringProperties.getSnowFlake().getWorkerId();
-        final int dataId = gaarasonDatabaseSpringProperties.getSnowFlake().getDataId();
-        ContainerProvider.register(IdGenerator.SnowFlakesID.class, clazz -> new SnowFlakeIdGenerator(workerId, dataId));
 
-        LOGGER.info("SnowFlakesID[ workId: " + workerId + ", dataId: " + dataId + "] instance has been registered success.");
+    @Configuration
+    public static class GaarasonConfigAutoconfigure {
+        /**
+         * 指定 model 扫描范围
+         */
+        GaarasonConfigAutoconfigure(ApplicationContext applicationContext,
+                                    GaarasonDatabaseProperties gaarasonDatabaseProperties) {
+            /*
+             * GaarasonDatabaseProperties 配置注册到 ContainerProvider
+             * 认定 GaarasonDatabaseScan 的解析一定在此之前完成了.
+             */
+            ContainerProvider.register(GaarasonDatabaseProperties.class,
+                (clazz -> gaarasonDatabaseProperties.mergeScan(GaarasonDatabaseScanRegistrar.getScan())));
 
+            // 注册 model实例获取方式
+            ModelInstanceProvider.register(modelClass -> {
+                try {
+                    return ObjectUtils.typeCast(applicationContext.getBean(modelClass));
+                } catch (BeansException e) {
+                    return ObjectUtils.typeCast(
+                        applicationContext.getBean(StringUtils.lowerFirstChar(modelClass.getSimpleName())));
+                }
+            });
+            LOGGER.info("Model instance provider has been registered success.");
+        }
     }
 
     @Configuration
@@ -119,27 +133,42 @@ public class GaarasonDatabaseAutoConfiguration {
 public class GaarasonDatabaseAutoConfiguration {
 
     private static final Log LOGGER = LogFactory.getLog(GaarasonDatabaseAutoConfiguration.class);
-
+    
     /**
-     * 指定 model 扫描范围
+     * Spring配置GaarasonDatabaseProperties
      */
-    GaarasonDatabaseAutoConfiguration(ApplicationContext applicationContext, GaarasonDatabaseProperties gaarasonDatabaseSpringProperties) {
-        // 注册 model实例获取方式
-        ModelInstanceProvider.register(modelClass -> {
-            try {
-                return ObjectUtils.typeCast(applicationContext.getBean(modelClass));
-            } catch (BeansException e) {
-                return ObjectUtils.typeCast(applicationContext.getBean(StringUtils.lowerFirstChar(modelClass.getSimpleName())));
-            }
-        });
-        LOGGER.info("Model instance provider has been registered success.");
+    @Bean
+    @ConfigurationProperties(prefix = GaarasonDatabaseProperties.PREFIX)
+    public GaarasonDatabaseProperties gaarasonDatabaseProperties() {
+        return new GaarasonDatabaseProperties();
+    }
 
-        // 注册 雪花id实现
-        final int workerId = gaarasonDatabaseSpringProperties.getSnowFlake().getWorkerId();
-        final int dataId = gaarasonDatabaseSpringProperties.getSnowFlake().getDataId();
-        ContainerProvider.register(IdGenerator.SnowFlakesID.class, clazz -> new SnowFlakeIdGenerator(workerId, dataId));
 
-        LOGGER.info("SnowFlakesID[ workId: " + workerId + ", dataId: " + dataId + "] instance has been registered success.");
+    @Configuration
+    public static class GaarasonConfigAutoconfigure {
+        /**
+         * 指定 model 扫描范围
+         */
+        GaarasonConfigAutoconfigure(ApplicationContext applicationContext,
+                                    GaarasonDatabaseProperties gaarasonDatabaseProperties) {
+            /*
+             * GaarasonDatabaseProperties 配置注册到 ContainerProvider
+             * 认定 GaarasonDatabaseScan 的解析一定在此之前完成了.
+             */
+            ContainerProvider.register(GaarasonDatabaseProperties.class,
+                (clazz -> gaarasonDatabaseProperties.mergeScan(GaarasonDatabaseScanRegistrar.getScan())));
+
+            // 注册 model实例获取方式
+            ModelInstanceProvider.register(modelClass -> {
+                try {
+                    return ObjectUtils.typeCast(applicationContext.getBean(modelClass));
+                } catch (BeansException e) {
+                    return ObjectUtils.typeCast(
+                        applicationContext.getBean(StringUtils.lowerFirstChar(modelClass.getSimpleName())));
+                }
+            });
+            LOGGER.info("Model instance provider has been registered success.");
+        }
     }
 
     @Configuration
