@@ -84,7 +84,8 @@ spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 # choose the type as u like
 spring.datasource.type=com.alibaba.druid.pool.DruidDataSource
 
-gaarason.database.snow-flake.worker-id=2
+gaarason.database.snow-flake.worker-id=1
+gaarason.database.scan.packages=you.package1,you.package2
 ```
 4.快速开始  
 ```java
