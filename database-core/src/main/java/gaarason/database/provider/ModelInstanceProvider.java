@@ -39,7 +39,7 @@ public final class ModelInstanceProvider {
         });
     }
 
-    private ModelInstanceProvider(){
+    private ModelInstanceProvider() {
 
     }
 
@@ -58,11 +58,12 @@ public final class ModelInstanceProvider {
      * 返回一个模型(是否是单例, 仅取决于Model实例化工厂)
      * 当存在多个工厂时, 后加入的先执行, 只要执行正确则直接返回
      * @param modelClass 模型类
-     * @param <T>        实体类
-     * @param <K>        主键类
+     * @param <T> 实体类
+     * @param <K> 主键类
      * @return 模型对象
      */
-    public static <T extends Serializable, K extends Serializable> Model<T, K> getModel(Class<? extends Model<T, K>> modelClass) {
+    public static <T extends Serializable, K extends Serializable> Model<T, K> getModel(
+        Class<? extends Model<T, K>> modelClass) {
         executed = true;
         List<Throwable> throwableList = new ArrayList<>();
         for (InstantiationModelFunctionalInterface<?, ?> instantiation : INSTANTIATIONS) {

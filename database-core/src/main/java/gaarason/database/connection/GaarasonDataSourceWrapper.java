@@ -1,5 +1,6 @@
 package gaarason.database.connection;
 
+import gaarason.database.config.DefaultAutoConfiguration;
 import gaarason.database.config.QueryBuilderConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.exception.*;
@@ -34,7 +35,8 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
      * 事物中的 savepoint 列表
      * 事物嵌套是才会使用
      */
-    protected final ThreadLocal<LinkedList<Savepoint>> localThreadTransactionSavepointLinkedList = ThreadLocal.withInitial(LinkedList::new);
+    protected final ThreadLocal<LinkedList<Savepoint>> localThreadTransactionSavepointLinkedList = ThreadLocal.withInitial(
+        LinkedList::new);
 
     /**
      * 写连接
@@ -60,7 +62,7 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
     /**
      * 构造
      * @param masterDataSourceList (主)写数据源集合
-     * @param slaveDataSourceList  (从)读数据源集合
+     * @param slaveDataSourceList (从)读数据源集合
      */
     GaarasonDataSourceWrapper(List<DataSource> masterDataSourceList, List<DataSource> slaveDataSourceList) {
         if (masterDataSourceList.isEmpty() || slaveDataSourceList.isEmpty()) {
@@ -320,6 +322,9 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
      * @return 数据库类型
      */
     protected QueryBuilderConfig getQueryBuilder(GaarasonDataSource dataSource) {
+        // 扫描自动配置类
+        DefaultAutoConfiguration.initOnAllGaarasonAutoconfiguration();
+
         List<QueryBuilderConfig> list = ContainerProvider.getBeans(QueryBuilderConfig.class);
         String databaseProductName;
         Connection connection = dataSource.getLocalConnection(true);

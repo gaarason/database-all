@@ -65,21 +65,63 @@ public final class ModelShadowProvider {
     private static final SoftCache<Class<?>, String> LAMBDA_FIELD_NAME_CACHE = new SoftCache<>();
 
     static {
-        // 一轮初始化模型的基本信息(主键类型/实体类型/模型类型/表名等等), 并构建索引(实体索引/模型索引), 不存在依赖递归等复杂情况
-        // 并过滤不需要的model, 比如抽象类等
-        initModelInformation();
+        // 通过静态扫描, 获取所有 Model 的子类 (含抽象类等)
+        Set<Class<? extends Model<?, ?>>> modelClasses = ContainerProvider.getBean(ReflectionScan.class).scanModels();
 
-        // 二轮补充基础字段信息
-        // Model实例化存储
-        primitiveFieldDeal();
-
-        // 三轮补充关联关系字段信息
-        // RelationSubQuery实例化存储, 依赖第二轮结果
-        relationFieldDeal();
+        // 加载Model信息
+        loadModels(modelClasses);
     }
 
     private ModelShadowProvider() {
 
+    }
+
+    /**
+     * 通过反射等手段, 得到model信息
+     * @param modelClasses model类型的集合
+     */
+    public static void loadModels(Set<Class<? extends Model<?, ?>>> modelClasses) {
+        /*
+         * Model Class做为索引
+         */
+        Map<Class<? extends Model<? extends Serializable, ? extends Serializable>>, ModelInfo<? extends Serializable, ? extends Serializable>> localModelIndexMap = new ConcurrentHashMap<>();
+
+        /*
+         * Model proxy Class做为索引
+         */
+        Map<Class<?>, ModelInfo<? extends Serializable, ? extends Serializable>> localModelProxyIndexMap = new ConcurrentHashMap<>();
+
+        /*
+         * Entity Class作为索引
+         */
+        Map<Class<? extends Serializable>, ModelInfo<? extends Serializable, ? extends Serializable>> localEntityIndexMap = new ConcurrentHashMap<>();
+
+        /*
+         * table name 作为索引
+         */
+        Map<String, ModelInfo<? extends Serializable, ? extends Serializable>> localTableNameIndexMap = new ConcurrentHashMap<>();
+
+
+        // 所有 Model 的子类 (含抽象类等)进行初始化分析
+        //  一轮初始化模型的基本信息(主键类型/实体类型/模型类型/表名等等), 并构建索引(实体索引/模型索引), 不存在依赖递归等复杂情况
+        for (Class<? extends Model<?, ?>> modelClass : modelClasses) {
+            // 初始化模型的基本信息, 并构建索引
+            initModelInformation(ObjectUtils.typeCast(modelClass), localEntityIndexMap, localModelIndexMap, localTableNameIndexMap);
+        }
+
+        // 二轮补充基础字段信息
+        // Model实例化存储
+        primitiveFieldDeal(localModelIndexMap, localModelProxyIndexMap);
+
+        // 合并到静态属性
+        MODEL_INDEX_MAP.putAll(localModelIndexMap);
+        MODEL_PROXY_INDEX_MAP.putAll(localModelProxyIndexMap);
+        ENTITY_INDEX_MAP.putAll(localEntityIndexMap);
+        TABLE_NAME_INDEX_MAP.putAll(localTableNameIndexMap);
+
+        // 三轮补充关联关系字段信息
+        // RelationSubQuery实例化存储, 依赖第二轮结果
+        relationFieldDeal(localModelIndexMap);
     }
 
     /**
@@ -148,10 +190,10 @@ public final class ModelShadowProvider {
      */
     public static <T extends Serializable> String getFieldNameByLambdaWithCache(ColumnFunctionalInterface<T> func) {
         Class<?> clazz = func.getClass();
-        String fieldName =  LAMBDA_FIELD_NAME_CACHE.get(clazz);
+        String fieldName = LAMBDA_FIELD_NAME_CACHE.get(clazz);
         if (fieldName == null) {
             synchronized (LAMBDA_FIELD_NAME_CACHE) {
-                fieldName =  LAMBDA_FIELD_NAME_CACHE.get(clazz);
+                fieldName = LAMBDA_FIELD_NAME_CACHE.get(clazz);
                 if (fieldName == null) {
                     // 解析 lambda
                     LambdaInfo<T> lambdaInfo = LambdaUtils.parse(func);
@@ -174,7 +216,7 @@ public final class ModelShadowProvider {
      */
     public static <T extends Serializable> String getColumnNameByLambdaWithCache(ColumnFunctionalInterface<T> func) {
         Class<?> clazz = func.getClass();
-        String columnName =LAMBDA_COLUMN_NAME_CACHE.get(clazz);
+        String columnName = LAMBDA_COLUMN_NAME_CACHE.get(clazz);
         if (columnName == null) {
             synchronized (LAMBDA_COLUMN_NAME_CACHE) {
                 columnName = LAMBDA_COLUMN_NAME_CACHE.get(clazz);
@@ -205,7 +247,7 @@ public final class ModelShadowProvider {
         // Model信息
         ModelInfo<? extends Serializable, ? extends Serializable> modelInfo = ENTITY_INDEX_MAP.get(entityClass);
 
-        if(ObjectUtils.isEmpty(modelInfo)){
+        if (ObjectUtils.isEmpty(modelInfo)) {
             return lambdaInfo.getColumnName();
         }
         // 字段信息
@@ -472,27 +514,19 @@ public final class ModelShadowProvider {
     }
 
     /**
-     * 初始化模型的基本信息(主键类型/实体类型/模型类型/表名等等), 并构建索引(实体索引/模型索引)
-     */
-    private static void initModelInformation() {
-        // 通过静态扫描, 获取所有 Model 的子类 (含抽象类等)
-        Set<Class<? extends Model<?, ?>>> modelClasses = ContainerProvider.getBean(ReflectionScan.class).scanModels();
-
-        // 所有 Model 的子类 (含抽象类等)进行初始化分析
-        for (Class<? extends Model<?, ?>> modelClass : modelClasses) {
-            // 初始化模型的基本信息, 并构建索引
-            initModelInformation(ObjectUtils.typeCast(modelClass));
-        }
-    }
-
-    /**
      * 初始化模型的基本信息, 并构建索引
      * @param modelClass 模型类
+     * @param localEntityIndexMap Entity Class作为索引
+     * @param localModelIndexMap Model Class做为索引
+     * @param localTableNameIndexMap  table name 作为索引
      * @param <T> 实体类
      * @param <K> 主键类型
      */
     private static <T extends Serializable, K extends Serializable> void initModelInformation(
-        Class<? extends Model<T, K>> modelClass) {
+        Class<? extends Model<T, K>> modelClass,
+        Map<Class<? extends Serializable>, ModelInfo<? extends Serializable, ? extends Serializable>> localEntityIndexMap,
+        Map<Class<? extends Model<? extends Serializable, ? extends Serializable>>, ModelInfo<? extends Serializable, ? extends Serializable>> localModelIndexMap,
+        Map<String, ModelInfo<? extends Serializable, ? extends Serializable>> localTableNameIndexMap) {
         // 模型信息 初始化
         ModelInfo<T, K> modelInfo = new ModelInfo<>();
         // 模型信息 设置 model 的 java类
@@ -505,11 +539,11 @@ public final class ModelShadowProvider {
             return;
         }
         // 建立实体类索引 (建立后, 可支持通过entity查询)
-        ENTITY_INDEX_MAP.put(modelInfo.entityClass, modelInfo);
+        localEntityIndexMap.put(modelInfo.entityClass, modelInfo);
         // 建立模型类索引 (建立后, 可支持通过model查询)
-        MODEL_INDEX_MAP.put(modelClass, modelInfo);
+        localModelIndexMap.put(modelClass, modelInfo);
         // 建立表名索引 (建立后, 可支持通过tableName查询)
-        TABLE_NAME_INDEX_MAP.put(modelInfo.tableName, modelInfo);
+        localTableNameIndexMap.put(modelInfo.tableName, modelInfo);
     }
 
     /**
@@ -529,13 +563,15 @@ public final class ModelShadowProvider {
 
     /**
      * 补充基本字段信息
+     * @param localModelIndexMap Model Class做为索引
      */
-    private static void primitiveFieldDeal() {
+    private static void primitiveFieldDeal(Map<Class<? extends Model<? extends Serializable, ? extends Serializable>>, ModelInfo<? extends Serializable, ? extends Serializable>> localModelIndexMap,
+                                           Map<Class<?>, ModelInfo<? extends Serializable, ? extends Serializable>> localModelProxyIndexMap ) {
         // 处理所有模型
-        for (Map.Entry<Class<? extends Model<?, ?>>, ModelInfo<?, ?>> entry : MODEL_INDEX_MAP.entrySet()) {
+        for (Map.Entry<Class<? extends Model<?, ?>>, ModelInfo<?, ?>> entry : localModelIndexMap.entrySet()) {
             ModelInfo<?, ?> modelInfo = entry.getValue();
             // 单个模型处理
-            primitiveFieldDeal(modelInfo);
+            primitiveFieldDeal(modelInfo, localModelProxyIndexMap);
         }
     }
 
@@ -545,7 +581,8 @@ public final class ModelShadowProvider {
      * @param <T> 实体类
      * @param <K> 主键类型
      */
-    private static <T extends Serializable, K extends Serializable> void primitiveFieldDeal(ModelInfo<T, K> modelInfo) {
+    private static <T extends Serializable, K extends Serializable> void primitiveFieldDeal(ModelInfo<T, K> modelInfo,
+                                                                                            Map<Class<?>, ModelInfo<? extends Serializable, ? extends Serializable>> localModelProxyIndexMap ) {
         // 实体类型
         Class<T> entityClass = modelInfo.entityClass;
 
@@ -553,7 +590,7 @@ public final class ModelShadowProvider {
         modelInfo.model = ModelInstanceProvider.getModel(modelInfo.modelClass);
 
         // 模型代理索引建立
-        MODEL_PROXY_INDEX_MAP.put(modelInfo.model.getClass(), modelInfo);
+        localModelProxyIndexMap.put(modelInfo.model.getClass(), modelInfo);
 
         // 返回 实体 中的所有属性(public/protected/private)包含父类的
         List<Field> fields = EntityUtils.getDeclaredFieldsContainParent(entityClass);
@@ -687,9 +724,10 @@ public final class ModelShadowProvider {
 
     /**
      * 补充关系字段信息
+     * @param localModelIndexMap Model Class做为索引
      */
-    private static void relationFieldDeal() {
-        for (Map.Entry<Class<? extends Model<?, ?>>, ModelInfo<?, ?>> entry : MODEL_INDEX_MAP.entrySet()) {
+    private static void relationFieldDeal(Map<Class<? extends Model<? extends Serializable, ? extends Serializable>>, ModelInfo<? extends Serializable, ? extends Serializable>> localModelIndexMap) {
+        for (Map.Entry<Class<? extends Model<?, ?>>, ModelInfo<?, ?>> entry : localModelIndexMap.entrySet()) {
             relationFieldDeal(entry.getValue());
         }
     }

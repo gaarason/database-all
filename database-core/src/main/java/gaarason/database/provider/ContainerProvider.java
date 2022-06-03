@@ -33,7 +33,7 @@ public final class ContainerProvider {
         /*
          * 默认配置初始化, 自动配置类扫描并初始化
          */
-        DefaultAutoConfiguration.init();
+        DefaultAutoConfiguration.touch();
     }
 
 

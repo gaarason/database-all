@@ -1,5 +1,6 @@
 package gaarason.database.contract.support;
 
+import gaarason.database.config.GaarasonAutoconfiguration;
 import gaarason.database.contract.eloquent.Model;
 
 import java.util.Set;
@@ -15,5 +16,11 @@ public interface ReflectionScan {
      * @return model的集合
      */
     Set<Class<? extends Model<?, ?>>> scanModels();
+
+    /**
+     * 扫描所有自动配置类
+     * @return GaarasonAutoconfiguration 的集合
+     */
+    Set<Class<? extends GaarasonAutoconfiguration>> scanAutoconfiguration();
 
 }

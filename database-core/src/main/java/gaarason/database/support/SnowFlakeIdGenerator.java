@@ -2,12 +2,16 @@ package gaarason.database.support;
 
 import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.exception.SnowFlakeIdGeneratorException;
+import gaarason.database.logging.Log;
+import gaarason.database.logging.LogFactory;
 
 /**
  * 雪花id工具类
  * @author xt
  */
 public class SnowFlakeIdGenerator implements IdGenerator.SnowFlakesID {
+
+    private static final Log log = LogFactory.getLog(SnowFlakeIdGenerator.class);
 
     /**
      * 初始时间截 (2020-02-02)
@@ -104,7 +108,7 @@ public class SnowFlakeIdGenerator implements IdGenerator.SnowFlakesID {
     private void informationReport() {
         long effectiveAge =
             ((1L << (64 - 1 - SEQUENCE_BITS - WORKER_ID_BITS - DATA_CENTER_ID_BITS)) - (getSystemCurrentTimeMillis() - INITIAL_TIME_STAMP)) / (1000L * 3600 * 24 * 365);
-        System.out.println(
+        log.info(
             "雪花算法信息 : 尚可使用 " + effectiveAge + " 年, 当前 workerID " + workerId + " (最大 : " + MAX_WORKER_ID + ") , 当前 dataCenterID " + dataCenterId);
     }
 

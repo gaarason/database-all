@@ -19,6 +19,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 3.5.0
+
+- 增加对于包扫描配置的支持, 如`System.setProperty("gaarason.database.scan.packages", "you.package1,you.package2")`或者在springboot下使用注解`@GaarasonDatabaseScan("you.package1,you.package2")`
+
 ### 3.4.0
 
 - 在查询构造器(`Builder`)中, 增加`dealChunk(num, column, chunkFunctionalInterface)`支持是用索引条件的分块查询

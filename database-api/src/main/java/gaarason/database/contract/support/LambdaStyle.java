@@ -12,19 +12,6 @@ import java.util.stream.Collectors;
  * @param <K>
  */
 public interface LambdaStyle<T extends Serializable, K extends Serializable> {
-    /**
-     * 通过 表达式 推断列名
-     * @param column Lambda表达式 | string列名
-     * @return 列名
-     */
-    default String lambda2ColumnCompatible(Object column) {
-        if (column instanceof String) {
-            return (String) column;
-        } else if (column instanceof ColumnFunctionalInterface) {
-            return lambda2ColumnName((ColumnFunctionalInterface) column);
-        }
-        throw new RuntimeException();
-    }
 
     /**
      * 通过 表达式 推断属性名

@@ -2,22 +2,20 @@ package gaarason.database.spring.boot.starter.configurations;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
 import gaarason.database.config.GaarasonDataSourceConfig;
+import gaarason.database.config.GaarasonDatabaseProperties;
 import gaarason.database.contract.connection.GaarasonDataSource;
-import gaarason.database.contract.function.InstanceCreatorFunctionalInterface;
-import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.generator.GeneralGenerator;
 import gaarason.database.logging.Log;
 import gaarason.database.logging.LogFactory;
 import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.ModelInstanceProvider;
-import gaarason.database.spring.boot.starter.properties.GaarasonDatabaseProperties;
+import gaarason.database.spring.boot.starter.annotation.GaarasonDatabaseScan;
+import gaarason.database.spring.boot.starter.annotation.GaarasonDatabaseScanRegistrar;
+import gaarason.database.spring.boot.starter.properties.GaarasonDatabaseSpringProperties;
 import gaarason.database.spring.boot.starter.provider.GaarasonTransactionManager;
-import gaarason.database.support.SnowFlakeIdGenerator;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -37,9 +35,10 @@ import java.util.Collections;
  * 自动配置
  * @author xt
  */
+@GaarasonDatabaseScan(GaarasonDatabaseProperties.PREFIX)
 @Configuration
 @AutoConfigureAfter({DruidDataSourceAutoConfigure.class, DataSourceAutoConfiguration.class})
-@EnableConfigurationProperties({GaarasonDatabaseProperties.class})
+@EnableConfigurationProperties({GaarasonDatabaseSpringProperties.class})
 @Import({GeneralModel.class, GeneralGenerator.class})
 public class GaarasonDatabaseAutoConfiguration {
 
@@ -48,24 +47,26 @@ public class GaarasonDatabaseAutoConfiguration {
     /**
      * 指定 model 扫描范围
      */
-    GaarasonDatabaseAutoConfiguration(ApplicationContext applicationContext, GaarasonDatabaseProperties gaarasonDatabaseProperties) {
+    GaarasonDatabaseAutoConfiguration(ApplicationContext applicationContext,
+                                      GaarasonDatabaseSpringProperties gaarasonDatabaseSpringProperties) {
+        /*
+         * GaarasonDatabaseProperties 配置
+         * 认定 GaarasonDatabaseScan 的解析一定在此之前完成了.
+         */
+        ContainerProvider.register(GaarasonDatabaseProperties.class,
+            (clazz -> gaarasonDatabaseSpringProperties.buildFromThisAndWithAnnotation(
+                GaarasonDatabaseScanRegistrar.getScan())));
+
         // 注册 model实例获取方式
         ModelInstanceProvider.register(modelClass -> {
             try {
                 return ObjectUtils.typeCast(applicationContext.getBean(modelClass));
             } catch (BeansException e) {
-                return ObjectUtils.typeCast(applicationContext.getBean(StringUtils.lowerFirstChar(modelClass.getSimpleName())));
+                return ObjectUtils.typeCast(
+                    applicationContext.getBean(StringUtils.lowerFirstChar(modelClass.getSimpleName())));
             }
         });
         LOGGER.info("Model instance provider has been registered success.");
-
-        // 注册 雪花id实现
-        final int workerId = gaarasonDatabaseProperties.getSnowFlake().getWorkerId();
-        final int dataId = gaarasonDatabaseProperties.getSnowFlake().getDataId();
-        ContainerProvider.register(IdGenerator.SnowFlakesID.class, clazz -> new SnowFlakeIdGenerator(workerId, dataId));
-
-        LOGGER.info("SnowFlakesID[ workId: " + workerId + ", dataId: " + dataId + "] instance has been registered success.");
-
     }
 
     @Configuration
@@ -82,8 +83,9 @@ public class GaarasonDatabaseAutoConfiguration {
         @Bean(autowireCandidate = false)
         @ConditionalOnMissingBean(GaarasonDataSource.class)
         public GaarasonDataSource gaarasonDataSource() {
-            LOGGER.info("-------------------- GaarasonDataSource init with " + dataSource.getClass().getName() + "--------------------------");
-            return ContainerProvider.getBean(GaarasonDataSourceConfig.class).build(Collections.singletonList(dataSource));
+            LOGGER.info("GaarasonDataSource init with " + dataSource.getClass().getName());
+            return ContainerProvider.getBean(GaarasonDataSourceConfig.class)
+                .build(Collections.singletonList(dataSource));
         }
 
         /**
@@ -94,7 +96,7 @@ public class GaarasonDatabaseAutoConfiguration {
         @Bean
         @ConditionalOnMissingBean(GaarasonTransactionManager.class)
         public GaarasonTransactionManager gaarasonTransactionManager() {
-            LOGGER.info("-------------------- GaarasonTransactionManager init ------------------");
+            LOGGER.info("GaarasonTransactionManager init");
             return new GaarasonTransactionManager(gaarasonDataSource());
         }
     }

@@ -10,6 +10,7 @@ Eloquent ORM for Java
         * [使用GaarasonDataSource](#使用GaarasonDataSource)
     * [非spring boot](#非spring)
     * [拓展配置](#拓展配置)
+        * [包扫描](#包扫描)
         * [新增支持的数据库](#新增支持的数据库)
         * [自定义查询构造器方法](#自定义查询构造器方法)
 * [数据映射](/document/mapping.md)
@@ -47,7 +48,7 @@ public class GaarasonDatabaseAutoConfiguration {
     /**
      * 指定 model 扫描范围
      */
-    GaarasonDatabaseAutoConfiguration(ApplicationContext applicationContext, GaarasonDatabaseProperties gaarasonDatabaseProperties) {
+    GaarasonDatabaseAutoConfiguration(ApplicationContext applicationContext, GaarasonDatabaseProperties gaarasonDatabaseSpringProperties) {
         // 注册 model实例获取方式
         ModelInstanceProvider.register(modelClass -> {
             try {
@@ -59,8 +60,8 @@ public class GaarasonDatabaseAutoConfiguration {
         LOGGER.info("Model instance provider has been registered success.");
 
         // 注册 雪花id实现
-        final int workerId = gaarasonDatabaseProperties.getSnowFlake().getWorkerId();
-        final int dataId = gaarasonDatabaseProperties.getSnowFlake().getDataId();
+        final int workerId = gaarasonDatabaseSpringProperties.getSnowFlake().getWorkerId();
+        final int dataId = gaarasonDatabaseSpringProperties.getSnowFlake().getDataId();
         ContainerProvider.register(IdGenerator.SnowFlakesID.class, clazz -> new SnowFlakeIdGenerator(workerId, dataId));
 
         LOGGER.info("SnowFlakesID[ workId: " + workerId + ", dataId: " + dataId + "] instance has been registered success.");
@@ -122,7 +123,7 @@ public class GaarasonDatabaseAutoConfiguration {
     /**
      * 指定 model 扫描范围
      */
-    GaarasonDatabaseAutoConfiguration(ApplicationContext applicationContext, GaarasonDatabaseProperties gaarasonDatabaseProperties) {
+    GaarasonDatabaseAutoConfiguration(ApplicationContext applicationContext, GaarasonDatabaseProperties gaarasonDatabaseSpringProperties) {
         // 注册 model实例获取方式
         ModelInstanceProvider.register(modelClass -> {
             try {
@@ -134,8 +135,8 @@ public class GaarasonDatabaseAutoConfiguration {
         LOGGER.info("Model instance provider has been registered success.");
 
         // 注册 雪花id实现
-        final int workerId = gaarasonDatabaseProperties.getSnowFlake().getWorkerId();
-        final int dataId = gaarasonDatabaseProperties.getSnowFlake().getDataId();
+        final int workerId = gaarasonDatabaseSpringProperties.getSnowFlake().getWorkerId();
+        final int dataId = gaarasonDatabaseSpringProperties.getSnowFlake().getDataId();
         ContainerProvider.register(IdGenerator.SnowFlakesID.class, clazz -> new SnowFlakeIdGenerator(workerId, dataId));
 
         LOGGER.info("SnowFlakesID[ workId: " + workerId + ", dataId: " + dataId + "] instance has been registered success.");
@@ -458,6 +459,15 @@ public class TestModel extends Model<TestModel.Inner, Integer> {
 
 - 目前的主要是在做了mysql的适配, 
 - 而各个数据库的功能的本质和逻辑比较类似, 但是api差异确比较大
+
+### 包扫描
+程序中, 会扫描`Model`类型, 并解析其信息; 会扫描`GaarasonAutoconfiguration`类型, 完成自动自定义配置
+
+由于`java8` 与`其他8以上java版本`的`ClassLoader`在实现上的差别, 使得当`packages`不指定时, `java8`会扫描所有包, 而`其他8以上java版本`则完全不扫描  
+因此, `java8`以上的版本, 必须配置本项; `java8`为了更快的启动 (更高效/准确的扫描), 也建议配置本项  
+- Java代码中指定`System.setProperty("gaarason.database.scan.packages", "you.package1,you.package2")`  
+- Jvm启动时指定`-Dgaarason.database.scan.packages=you.package1,you.package2`
+- SpringBoot下使用 `@GaarasonDatabaseScan("you.package1,you.package2")`
 
 ### 新增支持的数据库
 - 参考 `database-query-mysql`模块
