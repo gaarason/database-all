@@ -41,7 +41,7 @@ public class DefaultAutoConfiguration {
     static {
         // GaarasonDatabaseProperties 配置
         ContainerProvider.register(GaarasonDatabaseProperties.class,
-            (clazz -> GaarasonDatabaseProperties.buildFromSystemProperties()));
+            (clazz -> GaarasonDatabaseProperties.buildFromSystemProperties().fillAndVerify()));
 
         // ID生成 雪花算法
         ContainerProvider.register(IdGenerator.SnowFlakesID.class, (clazz -> new SnowFlakeIdGenerator(

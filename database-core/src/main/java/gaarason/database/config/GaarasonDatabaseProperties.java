@@ -224,7 +224,7 @@ public class GaarasonDatabaseProperties implements Serializable {
                 .addAll(Arrays.asList(filterExcludePatterns.split(symbol)));
         }
 
-        return gaarasonDatabaseProperties.fillAndVerify();
+        return gaarasonDatabaseProperties;
     }
 
     /**
@@ -238,7 +238,19 @@ public class GaarasonDatabaseProperties implements Serializable {
         this.getScan().getFilterExcludePackages().addAll(scan.getFilterExcludePackages());
         this.getScan().getFilterIncludePatterns().addAll(scan.getFilterIncludePatterns());
         this.getScan().getFilterExcludePatterns().addAll(scan.getFilterExcludePatterns());
-        return fillAndVerify();
+        return this;
+    }
+
+    /**
+     * 如果Packages为空, 则填充默认值
+     * @param defaultPackage 默认值
+     * @return GaarasonDatabaseProperties
+     */
+    public GaarasonDatabaseProperties fillPackageWhenIsEmpty(String defaultPackage){
+        if(this.getScan().getPackages().isEmpty()){
+            this.getScan().getPackages().add(defaultPackage);
+        }
+        return this;
     }
 
 }

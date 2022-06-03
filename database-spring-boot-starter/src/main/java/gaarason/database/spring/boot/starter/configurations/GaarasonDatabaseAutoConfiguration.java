@@ -17,6 +17,7 @@ import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -58,12 +59,25 @@ public class GaarasonDatabaseAutoConfiguration {
          */
         GaarasonConfigAutoconfigure(ApplicationContext applicationContext,
                                     GaarasonDatabaseProperties gaarasonDatabaseProperties) {
+
+            final String springBootApplicationPackage = applicationContext.getBeansWithAnnotation(
+                    SpringBootApplication.class)
+                .entrySet()
+                .iterator()
+                .next()
+                .getValue()
+                .getClass()
+                .getPackage().getName();
+
             /*
              * GaarasonDatabaseProperties 配置注册到 ContainerProvider
              * 认定 GaarasonDatabaseScan 的解析一定在此之前完成了.
+             * 默认使用 @SpringBootApplication 所在的包路径
              */
             ContainerProvider.register(GaarasonDatabaseProperties.class,
-                (clazz -> gaarasonDatabaseProperties.mergeScan(GaarasonDatabaseScanRegistrar.getScan())));
+                (clazz -> gaarasonDatabaseProperties.mergeScan(GaarasonDatabaseScanRegistrar.getScan())
+                    .fillPackageWhenIsEmpty(springBootApplicationPackage)
+                    .fillAndVerify()));
 
             // 注册 model实例获取方式
             ModelInstanceProvider.register(modelClass -> {

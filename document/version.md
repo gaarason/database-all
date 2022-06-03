@@ -19,6 +19,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 3.5.1
+
+- 对于包扫描配置, 在`springboot`下默认是`@SpringBootApplication`所在的包
+
 ### 3.5.0
 
 - 增加对于包扫描配置的支持, 如`System.setProperty("gaarason.database.scan.packages", "you.package1,you.package2")`或者在springboot下使用注解`@GaarasonDatabaseScan("you.package1,you.package2")`
