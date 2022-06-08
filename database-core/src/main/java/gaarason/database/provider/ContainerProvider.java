@@ -6,6 +6,7 @@ import gaarason.database.exception.InvalidConfigException;
 import gaarason.database.exception.ObjectNewInstanceException;
 import gaarason.database.logging.Log;
 import gaarason.database.logging.LogFactory;
+import gaarason.database.util.ClassUtils;
 import gaarason.database.util.ObjectUtils;
 
 import java.util.*;
@@ -89,7 +90,7 @@ public final class ContainerProvider {
          * 以上的2种情况, 都需要进行实例化 ( 不重复的进行实例化 )
          */
         if (objects.isEmpty() || (!fastReturn && objects.size() < instanceCreators.size())) {
-            synchronized (interfaceClass) {
+            synchronized (interfaceClass.getName()) {
                 objects = INSTANCE_MAP.getOrDefault(interfaceClass, new LinkedList<>());
                 instanceCreators = INSTANCE_CREATOR_MAP.getOrDefault(interfaceClass, new LinkedList<>());
                 // 串行检查
@@ -133,12 +134,8 @@ public final class ContainerProvider {
      */
     private static <T> InstanceCreatorFunctionalInterface<T> defaultNewInstance(Class<T> clazz) {
         return c -> {
-            try {
-                log.info("Instantiate unregistered objects[" + clazz.getName() + "] by default.");
-                return clazz.newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
-                throw new ObjectNewInstanceException(clazz, e.getMessage(), e);
-            }
+            log.info("Instantiate unregistered objects[" + clazz.getName() + "] by default.");
+            return ClassUtils.newInstance(clazz);
         };
     }
 
