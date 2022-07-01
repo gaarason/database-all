@@ -82,7 +82,8 @@ public class LambdaUtils {
     private static Class<?> getInstantiatedMethodTypeClass(SerializedLambda lambda) throws IllegalAccessException {
         String instantiatedMethodType = lambda.getInstantiatedMethodType();
         String className = instantiatedMethodType.substring(2, instantiatedMethodType.indexOf(";")).replace("/", ".");
-        ClassLoader classLoader = FIELD_CAPTURING_CLASS != null ? ((Class<?>)FIELD_CAPTURING_CLASS.get(lambda)).getClassLoader() : null;
+        ClassLoader classLoader =
+            FIELD_CAPTURING_CLASS != null ? ((Class<?>) FIELD_CAPTURING_CLASS.get(lambda)).getClassLoader() : null;
         return ClassUtils.forName(className, classLoader);
     }
 }

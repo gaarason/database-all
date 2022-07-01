@@ -3,6 +3,7 @@ package gaarason.database.contract.connection;
 import gaarason.database.config.QueryBuilderConfig;
 import gaarason.database.contract.transaction.SavepointManager;
 import gaarason.database.contract.transaction.TransactionManager;
+import gaarason.database.core.Container;
 import gaarason.database.exception.SQLRuntimeException;
 
 import javax.sql.DataSource;
@@ -12,7 +13,7 @@ import java.util.List;
  * DataSource接口
  * @author xt
  */
-public interface GaarasonDataSource extends DataSource, SavepointManager, TransactionManager {
+public interface GaarasonDataSource extends DataSource, SavepointManager, TransactionManager, Container.Keeper {
 
     /**
      * 获取主要连接(写)

@@ -80,13 +80,12 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
 
     /**
      * 根据查询结果集生成
-     * @param entityClass     数据实体类
-     * @param model           数据模型
+     * @param model 数据模型
      * @param stringColumnMap 元数据
      */
-    public RecordBean(Class<T> entityClass, Model<T, K> model, Map<String, Column> stringColumnMap,
+    public RecordBean(Model<T, K> model, Map<String, Column> stringColumnMap,
         String originalSql) {
-        this.entityClass = entityClass;
+        this.entityClass = model.getEntityClass();
         this.model = model;
         this.originalSql = originalSql;
         init(stringColumnMap);
@@ -94,23 +93,30 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
 
     /**
      * 凭空生成
-     * @param entityClass 数据实体类
-     * @param model       数据模型
+     * @param model 数据模型
      */
-    public RecordBean(Class<T> entityClass, Model<T, K> model) {
-        this.entityClass = entityClass;
+    public RecordBean(Model<T, K> model) {
+        this.entityClass = model.getEntityClass();
         this.model = model;
         init(new HashMap<>());
     }
 
+    /**
+     * 获取Model信息
+     * @return ModelShadow
+     */
+    protected ModelShadowProvider getModelShadow() {
+        return model.getGaarasonDataSource().getContainer().getBean(ModelShadowProvider.class);
+    }
+
     @Override
     public String lambda2FieldName(ColumnFunctionalInterface<T> column) {
-        return ModelShadowProvider.getFieldNameByLambdaWithCache(column);
+        return getModelShadow().getFieldNameByLambdaWithCache(column);
     }
 
     @Override
     public String lambda2ColumnName(ColumnFunctionalInterface<T> column) {
-        return ModelShadowProvider.getColumnNameByLambdaWithCache(column);
+        return getModelShadow().getColumnNameByLambdaWithCache(column);
     }
 
     @Override
@@ -231,7 +237,8 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
      */
     @Override
     public T toObject() {
-        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(this, true);
+        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(
+            model.getGaarasonDataSource().getContainer(), this, true);
         return tkRelationGetSupport.toObject();
 
     }
@@ -242,7 +249,8 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
      */
     @Override
     public T toObject(Map<String, RecordList<?, ?>> cacheRelationRecordList) {
-        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(this, true);
+        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(
+            model.getGaarasonDataSource().getContainer(), this, true);
         return tkRelationGetSupport.toObject(cacheRelationRecordList);
 
     }
@@ -254,7 +262,8 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
      */
     @Override
     public T toObjectWithoutRelationship() {
-        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(this, false);
+        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(
+            model.getGaarasonDataSource().getContainer(), this, false);
         return tkRelationGetSupport.toObject();
     }
 
@@ -282,7 +291,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
 
     @Override
     public Record<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<T, K> builderClosure,
-                             RelationshipRecordWithFunctionalInterface recordClosure) {
+        RelationshipRecordWithFunctionalInterface recordClosure) {
         // 效验参数
         if (!ObjectUtils.checkProperties(entityClass, fieldName)) {
             throw new RelationNotFoundException(entityClass + " 不存在关联属性 : " + fieldName);
@@ -343,9 +352,8 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
             return false;
         }
         // 执行
-        boolean success = model.newQuery()
-            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-            .delete() > 0;
+        boolean success =
+            model.newQuery().where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString()).delete() > 0;
         // 成功删除后后,刷新自身属性
         if (success) {
             this.metadataMap.clear();
@@ -385,9 +393,9 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
             return false;
         }
         // 执行
-        boolean success = model.onlyTrashed()
-            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-            .restore() > 0;
+        boolean success =
+            model.onlyTrashed().where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString()).restore() >
+                0;
         // 成功恢复后,刷新自身属性
         if (success && refresh) {
             refresh();
@@ -409,7 +417,8 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
         }
         Map<String, Column> theMetadataMap = model.withTrashed()
             .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-            .firstOrFail().getMetadataMap();
+            .firstOrFail()
+            .getMetadataMap();
 
         // 刷新自身属性
         return refresh(theMetadataMap);
@@ -428,7 +437,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
 
     @Override
     public T getDirty() {
-        final Class<T> entityClazz = ModelShadowProvider.get(model).getEntityClass();
+        final Class<T> entityClazz = getModelShadow().get(model).getEntityClass();
         // 获取 map
         final Map<String, Object> dirtyMap = getDirtyMap();
         // 将map赋值到实体对象
@@ -437,11 +446,12 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
 
     @Override
     public Map<String, Object> getDirtyMap() {
-        final ModelInfo<T, K> modelInfo = ModelShadowProvider.get(model);
+        final ModelInfo<T, K> modelInfo = getModelShadow().get(model);
 
         Map<String, Object> theMap = new HashMap<>(16);
         // 新增与修改的有效字段区别处理
-        final Map<String, FieldInfo> fieldInfoMap = isHasBind() ? modelInfo.getJavaFieldUpdateMap() : modelInfo.getJavaFieldInsertMap();
+        final Map<String, FieldInfo> fieldInfoMap =
+            isHasBind() ? modelInfo.getJavaFieldUpdateMap() : modelInfo.getJavaFieldInsertMap();
         // 逐个比较, 注意null的处理
         for (Map.Entry<String, FieldInfo> entry : fieldInfoMap.entrySet()) {
             final String columnName = entry.getValue().getColumnName();
@@ -461,7 +471,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
 
     @Override
     public boolean isDirty(String fieldName) {
-        final FieldInfo fieldInfo = ModelShadowProvider.getFieldInfoByEntityClass(model.getEntityClass(), fieldName);
+        final FieldInfo fieldInfo = getModelShadow().getFieldInfoByEntityClass(model.getEntityClass(), fieldName);
         // 获取所有变更属性组成的map
         final Map<String, Object> dirtyMap = getDirtyMap();
         return dirtyMap.containsKey(fieldInfo.getColumnName());
@@ -485,7 +495,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
     @Override
     @Nullable
     public Object getOriginal(String fieldName) throws EntityAttributeInvalidException {
-        final FieldInfo fieldInfo = ModelShadowProvider.get(model).getJavaFieldMap().get(fieldName);
+        final FieldInfo fieldInfo = getModelShadow().get(model).getJavaFieldMap().get(fieldName);
         // 无效的参数,则抛出异常
         if (ObjectUtils.isEmpty(fieldInfo)) {
             throw new EntityAttributeInvalidException(fieldName, model.getEntityClass());
@@ -534,9 +544,9 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
             return false;
         }
         // 执行
-        boolean success = model.newQuery()
-            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-            .update(entity) > 0;
+        boolean success =
+            model.newQuery().where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString()).update(entity) >
+                0;
         // 成功更新后,刷新自身属性
         if (success) {
             selfUpdate(entity, false);
@@ -565,13 +575,13 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
             K k = model.getPrimaryKeyIdGenerator().nextId();
 
             // 生成后赋值 ModelShadowProvider.setPrimaryKeyValue 将忽略 null 的赋值
-            ModelShadowProvider.setPrimaryKeyValue(entity, k);
+            getModelShadow().setPrimaryKeyValue(entity, k);
         }
     }
 
     /**
      * 更新自身数据
-     * @param entity     新的实体
+     * @param entity 新的实体
      * @param insertType 是否新增
      */
     protected void selfUpdate(T entity, boolean insertType) {
@@ -584,14 +594,15 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
 
     /**
      * 更新元数据
-     * @param entity     数据实体
+     * @param entity 数据实体
      * @param insertType 是否为更新操作
      */
     protected void selfUpdateMetadataMap(T entity, boolean insertType) {
         // 模型信息
-        ModelInfo<T, Serializable> modelInfo = ModelShadowProvider.getByEntityClass(entityClass);
+        ModelInfo<T, K> modelInfo = getModelShadow().get(model);
         // 字段信息集合
-        Map<String, FieldInfo> fieldInfoMap = insertType ? modelInfo.getJavaFieldInsertMap() : modelInfo.getJavaFieldUpdateMap();
+        Map<String, FieldInfo> fieldInfoMap =
+            insertType ? modelInfo.getJavaFieldInsertMap() : modelInfo.getJavaFieldUpdateMap();
 
         for (Map.Entry<String, FieldInfo> entry : fieldInfoMap.entrySet()) {
             // 字段信息

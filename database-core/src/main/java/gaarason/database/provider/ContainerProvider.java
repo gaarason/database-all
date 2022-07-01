@@ -1,7 +1,7 @@
 package gaarason.database.provider;
 
-import gaarason.database.config.DefaultAutoConfiguration;
 import gaarason.database.contract.function.InstanceCreatorFunctionalInterface;
+import gaarason.database.core.Container;
 import gaarason.database.exception.InvalidConfigException;
 import gaarason.database.exception.ObjectNewInstanceException;
 import gaarason.database.logging.Log;
@@ -13,47 +13,37 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 容器化对象实例
+ * 容器
  * @author xt
  */
-public final class ContainerProvider {
+public class ContainerProvider implements Container {
 
-    private static final Log log = LogFactory.getLog(ContainerProvider.class);
+    private static final Log LOGGER = LogFactory.getLog(ContainerProvider.class);
 
     /**
      * 实例化工厂 MAP
      */
-    private static final ConcurrentHashMap<Class<?>, List<InstanceCreatorFunctionalInterface<?>>> INSTANCE_CREATOR_MAP = new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<Class<?>, LinkedList<InstanceCreatorFunctionalInterface<?>>> INSTANCE_CREATOR_MAP = new ConcurrentHashMap<>();
 
     /**
      * 实例对象 MAP
      */
-    private static final ConcurrentHashMap<Class<?>, List<Object>> INSTANCE_MAP = new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<Class<?>, LinkedList<Object>> INSTANCE_MAP = new ConcurrentHashMap<>();
 
-    static {
-        /*
-         * 默认配置初始化, 自动配置类扫描并初始化
-         */
-        DefaultAutoConfiguration.touch();
-    }
-
-
-    private ContainerProvider() {
-
-    }
 
     /**
      * 注册 实例化工厂
      * 只要没有实例化, 那么可以重复注册, 且后注册的优先级更高
      * @param closure 实例化工厂
      */
-    public static synchronized <T> void register(Class<T> interfaceClass, InstanceCreatorFunctionalInterface<T> closure) {
+    @Override
+    public synchronized <T> void register(Class<T> interfaceClass, InstanceCreatorFunctionalInterface<T> closure) {
         if (INSTANCE_MAP.get(interfaceClass) != null) {
             throw new InvalidConfigException(interfaceClass + " should be registered before get bean.");
         }
         // 添加到头部
-        List<InstanceCreatorFunctionalInterface<?>> instanceCreators = INSTANCE_CREATOR_MAP.computeIfAbsent(interfaceClass, k -> new LinkedList<>());
-        instanceCreators.add(0, closure);
+        LinkedList<InstanceCreatorFunctionalInterface<?>> instanceCreators = INSTANCE_CREATOR_MAP.computeIfAbsent(interfaceClass, k -> new LinkedList<>());
+        instanceCreators.push(closure);
         instanceCreators.sort(Comparator.comparing(InstanceCreatorFunctionalInterface::getOrder));
     }
 
@@ -62,7 +52,8 @@ public final class ContainerProvider {
      * @param interfaceClass 接口类型
      * @return 对象列表
      */
-    public static <T> List<T> getBeans(Class<T> interfaceClass) {
+    @Override
+    public <T> List<T> getBeans(Class<T> interfaceClass) {
         return getBeansInside(interfaceClass, false);
     }
 
@@ -71,7 +62,8 @@ public final class ContainerProvider {
      * @param interfaceClass 接口类型
      * @return 对象
      */
-    public static <T> T getBean(Class<T> interfaceClass) {
+    @Override
+    public <T> T getBean(Class<T> interfaceClass) {
         return getBeansInside(interfaceClass, true).get(0);
     }
 
@@ -82,8 +74,8 @@ public final class ContainerProvider {
      * @param <T>            类型
      * @return 对象
      */
-    private static <T> List<T> getBeansInside(Class<T> interfaceClass, boolean fastReturn) {
-        List<Object> objects = INSTANCE_MAP.getOrDefault(interfaceClass, new LinkedList<>());
+    protected <T> List<T> getBeansInside(Class<T> interfaceClass, boolean fastReturn) {
+        LinkedList<Object> objects = INSTANCE_MAP.getOrDefault(interfaceClass, new LinkedList<>());
         List<InstanceCreatorFunctionalInterface<?>> instanceCreators = INSTANCE_CREATOR_MAP.getOrDefault(interfaceClass, new LinkedList<>());
         /*
          * 对象列表没有值 || 在非快速返回的情况下, 对象列表没有足够的对象
@@ -132,9 +124,9 @@ public final class ContainerProvider {
      * @param clazz 类
      * @param <T>   类型
      */
-    private static <T> InstanceCreatorFunctionalInterface<T> defaultNewInstance(Class<T> clazz) {
+    protected  <T> InstanceCreatorFunctionalInterface<T> defaultNewInstance(Class<T> clazz) {
         return c -> {
-            log.info("Instantiate unregistered objects[" + clazz.getName() + "] by default.");
+            LOGGER.info("Instantiate unregistered objects[" + clazz.getName() + "] by default.");
             return ClassUtils.newInstance(clazz);
         };
     }

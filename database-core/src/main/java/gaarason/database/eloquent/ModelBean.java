@@ -6,11 +6,13 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.support.IdGenerator;
+import gaarason.database.core.Container;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.FieldInfo;
+import gaarason.database.provider.ModelInfo;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
@@ -35,7 +37,7 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
     /**
      * @return dataSource代理
      */
-    protected abstract GaarasonDataSource getGaarasonDataSource();
+    public abstract GaarasonDataSource getGaarasonDataSource();
 
     @Override
     public int delete(Builder<T, K> builder) {
@@ -45,6 +47,14 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
     @Override
     public int restore(Builder<T, K> builder) {
         return softDeleteRestore(builder);
+    }
+
+    /**
+     * Model信息
+     * @return ModelShadow
+     */
+    protected ModelShadowProvider getModelShadow() {
+        return getGaarasonDataSource().getContainer().getBean(ModelShadowProvider.class);
     }
 
     /**
@@ -140,7 +150,7 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
 
     @Override
     public Record<T, K> newRecord() {
-        return new RecordBean<>(getEntityClass(), this);
+        return new RecordBean<>(this);
     }
 
     @Override
@@ -196,7 +206,7 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
     @Override
     public Record<T, K> findByPrimaryKeyOrNew(T entity) {
         // 获取 entity 中的主键的值
-        final Serializable primaryKeyValue = ModelShadowProvider.getPrimaryKeyValue(entity);
+        final Serializable primaryKeyValue = getModelShadow().getPrimaryKeyValue(entity);
         if (primaryKeyValue == null) {
             throw new PrimaryKeyNotFoundException();
         }
@@ -271,7 +281,7 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
     @Override
     public Record<T, K> updateByPrimaryKeyOrCreate(T entity) {
         // 获取 entity 中的主键的值
-        final Serializable primaryKeyValue = ModelShadowProvider.getPrimaryKeyValue(entity);
+        final Serializable primaryKeyValue = getModelShadow().getPrimaryKeyValue(entity);
         if (primaryKeyValue == null) {
             throw new PrimaryKeyNotFoundException();
         }
@@ -304,12 +314,12 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
 
     @Override
     public boolean isPrimaryKeyDefinition() {
-        return ModelShadowProvider.get(this).isPrimaryKeyDefinition();
+        return getModelInfo().isPrimaryKeyDefinition();
     }
 
     @Override
     public String getPrimaryKeyColumnName() throws PrimaryKeyNotFoundException {
-        String primaryKeyColumnName = ModelShadowProvider.get(this).getPrimaryKeyColumnName();
+        String primaryKeyColumnName = getModelInfo().getPrimaryKeyColumnName();
         if (null == primaryKeyColumnName) {
             throw new PrimaryKeyNotFoundException();
         }
@@ -318,7 +328,7 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
 
     @Override
     public String getPrimaryKeyName() throws PrimaryKeyNotFoundException {
-        String primaryKeyName = ModelShadowProvider.get(this).getPrimaryKeyName();
+        String primaryKeyName = getModelInfo().getPrimaryKeyName();
         if (null == primaryKeyName) {
             throw new PrimaryKeyNotFoundException();
         }
@@ -327,7 +337,7 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
 
     @Override
     public boolean isPrimaryKeyIncrement() throws PrimaryKeyNotFoundException {
-        Boolean primaryKeyIncrement = ModelShadowProvider.get(this).getPrimaryKeyIncrement();
+        Boolean primaryKeyIncrement = getModelInfo().getPrimaryKeyIncrement();
         if (null == primaryKeyIncrement) {
             throw new PrimaryKeyNotFoundException();
         }
@@ -336,7 +346,7 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
 
     @Override
     public FieldInfo getPrimaryKeyFieldInfo() throws PrimaryKeyNotFoundException {
-        FieldInfo primaryKeyFieldInfo = ModelShadowProvider.get(this).getPrimaryKeyFieldInfo();
+        FieldInfo primaryKeyFieldInfo = getModelInfo().getPrimaryKeyFieldInfo();
         if (null == primaryKeyFieldInfo) {
             throw new PrimaryKeyNotFoundException();
         }
@@ -345,7 +355,7 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
 
     @Override
     public IdGenerator<K> getPrimaryKeyIdGenerator() throws PrimaryKeyNotFoundException {
-        IdGenerator<K> primaryKeyIdGenerator = ModelShadowProvider.get(this).getPrimaryKeyIdGenerator();
+        IdGenerator<K> primaryKeyIdGenerator = getModelInfo().getPrimaryKeyIdGenerator();
         if (null == primaryKeyIdGenerator) {
             throw new PrimaryKeyNotFoundException();
         }
@@ -354,16 +364,26 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
 
     @Override
     public Class<K> getPrimaryKeyClass() {
-        return ModelShadowProvider.get(this).getPrimaryKeyClass();
+        return getModelInfo().getPrimaryKeyClass();
     }
 
     @Override
     public String getTableName() {
-        return ModelShadowProvider.get(this).getTableName();
+        return getModelInfo().getTableName();
     }
 
     @Override
     public Class<T> getEntityClass() {
-        return ModelShadowProvider.get(this).getEntityClass();
+        return getModelInfo().getEntityClass();
+    }
+
+    @Override
+    public Container getContainer() {
+        return getGaarasonDataSource().getContainer();
+    }
+
+    @Override
+    public ModelInfo<T, K> getModelInfo() {
+        return getModelShadow().get(this);
     }
 }

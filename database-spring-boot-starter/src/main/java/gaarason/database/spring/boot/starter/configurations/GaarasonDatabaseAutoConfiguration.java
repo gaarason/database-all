@@ -1,7 +1,7 @@
 package gaarason.database.spring.boot.starter.configurations;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
-import gaarason.database.config.GaarasonDataSourceConfig;
+import gaarason.database.config.GaarasonDataSourceBuilder;
 import gaarason.database.config.GaarasonDatabaseProperties;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.eloquent.GeneralModel;
@@ -10,7 +10,6 @@ import gaarason.database.logging.Log;
 import gaarason.database.logging.LogFactory;
 import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.ModelInstanceProvider;
-import gaarason.database.spring.boot.starter.annotation.GaarasonDatabaseScan;
 import gaarason.database.spring.boot.starter.annotation.GaarasonDatabaseScanRegistrar;
 import gaarason.database.spring.boot.starter.provider.GaarasonTransactionManager;
 import gaarason.database.util.ObjectUtils;
@@ -107,7 +106,7 @@ public class GaarasonDatabaseAutoConfiguration {
         @ConditionalOnMissingBean(GaarasonDataSource.class)
         public GaarasonDataSource gaarasonDataSource() {
             LOGGER.info("GaarasonDataSource init with " + dataSource.getClass().getName());
-            return ContainerProvider.getBean(GaarasonDataSourceConfig.class)
+            return ContainerProvider.getBean(GaarasonDataSourceBuilder.class)
                 .build(Collections.singletonList(dataSource));
         }
 

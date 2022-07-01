@@ -1,5 +1,6 @@
 package gaarason.database.test.parent;
 
+import gaarason.database.bootstrap.ContainerBootstrap;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.provider.ModelInfo;
@@ -28,7 +29,7 @@ abstract public class LocalDateTests extends BaseTests {
 
     protected static DatetimeTestModel datetimeTestModel = new DatetimeTestModel();
 
-    protected GaarasonDataSource getGaarasonDataSource(){
+    protected GaarasonDataSource getGaarasonDataSource() {
         return datetimeTestModel.getGaarasonDataSource();
     }
 
@@ -44,8 +45,10 @@ abstract public class LocalDateTests extends BaseTests {
 
         final DatetimeTestModel.Entity entity = datetimeTestModel.findOrFail(1).toObject();
         log.info(entity.toString());
-        Assert.assertEquals(entity.getTimeColumn(), LocalTime.parse("17:15:23", DateTimeFormatter.ofPattern("HH:mm:ss")));
-        Assert.assertEquals(entity.getDateColumn(), LocalDate.parse("2010-04-24", DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        Assert.assertEquals(entity.getTimeColumn(),
+            LocalTime.parse("17:15:23", DateTimeFormatter.ofPattern("HH:mm:ss")));
+        Assert.assertEquals(entity.getDateColumn(),
+            LocalDate.parse("2010-04-24", DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         Assert.assertTrue(entity.getDatetimeColumn().isEqual(LocalDateUtils.str2LocalDateTime("2009-03-14 17:15:23")));
         Assert.assertEquals(entity.getTimestampColumn().getTime(),
             LocalDateUtils.localDateTime2date(LocalDateUtils.str2LocalDateTime("2010-04-24 22:11:03")).getTime());
@@ -77,12 +80,14 @@ abstract public class LocalDateTests extends BaseTests {
         Assert.assertEquals(stu.getDateColumn(), localDateTime.toLocalDate());
         Assert.assertEquals(stu.getTimeColumn(), localDateTime.toLocalTime());
         Assert.assertEquals(stu.getDatetimeColumn(), localDateTime);
-        Assert.assertEquals(stu.getTimestampColumn().getTime(), LocalDateUtils.localDateTime2date(localDateTime).getTime());
+        Assert.assertEquals(stu.getTimestampColumn().getTime(),
+            LocalDateUtils.localDateTime2date(localDateTime).getTime());
     }
 
     @Test
-    public void t(){
-        ModelInfo<Serializable, Serializable> datetimeTest = ModelShadowProvider.getByTableName("datetime_test");
+    public void t() {
+        ModelShadowProvider modelShadowProvider = ContainerBootstrap.build().bootstrap().getBean(ModelShadowProvider.class);
+        ModelInfo<Serializable, Serializable> datetimeTest = modelShadowProvider.getByTableName("datetime_test");
         Set<String> strings = datetimeTest.getColumnFieldMap().keySet();
         Assert.assertTrue(strings.contains("time_column"));
         Assert.assertTrue(strings.contains("date_column"));

@@ -37,12 +37,4 @@ public interface QueryBuilderConfig {
      */
     <T extends Serializable, K extends Serializable> Builder<T, K> newBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model);
 
-    /**
-     * 获取全新的语法构造器
-     * @param entityClass 实体类
-     * @param <T>         实体类型
-     * @return 语法构造器
-     */
-    <T extends Serializable> Grammar newGrammar(Class<T> entityClass);
-
 }

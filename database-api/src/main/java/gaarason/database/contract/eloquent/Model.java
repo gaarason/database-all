@@ -1,11 +1,14 @@
 package gaarason.database.contract.eloquent;
 
+import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.model.Event;
 import gaarason.database.contract.model.Query;
 import gaarason.database.contract.model.SoftDelete;
 import gaarason.database.contract.support.IdGenerator;
+import gaarason.database.core.Container;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.provider.FieldInfo;
+import gaarason.database.provider.ModelInfo;
 
 import java.io.Serializable;
 
@@ -14,6 +17,12 @@ import java.io.Serializable;
  * @author xt
  */
 public interface Model<T extends Serializable, K extends Serializable> extends Query<T, K>, Event<T, K>, SoftDelete<T, K> {
+
+    /**
+     * Gaarason数据源
+     * @return Gaarason数据源
+     */
+    GaarasonDataSource getGaarasonDataSource();
 
     /**
      * 主键是否存在定义 (约等于数据表中主键是否可以存在)
@@ -73,4 +82,16 @@ public interface Model<T extends Serializable, K extends Serializable> extends Q
      * @return 实体类型
      */
     Class<T> getEntityClass();
+
+    /**
+     * 获取容器
+     * @return 容器
+     */
+    Container getContainer();
+
+    /**
+     * Model信息
+     * @return Model信息
+     */
+    ModelInfo<T, K> getModelInfo();
 }

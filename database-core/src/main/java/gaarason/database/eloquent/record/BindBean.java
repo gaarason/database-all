@@ -29,12 +29,17 @@ public class BindBean<T extends Serializable, K extends Serializable> implements
     public BindBean(Record<T, K> tkRecord, String fieldName) {
         this.tkRecord = tkRecord;
         // 模型信息
-        ModelInfo<?, ?> modelInfo = ModelShadowProvider.get(tkRecord.getModel());
+        ModelInfo<?, ?> modelInfo = tkRecord.getModel()
+            .getGaarasonDataSource()
+            .getContainer()
+            .getBean(ModelShadowProvider.class)
+            .get(tkRecord.getModel());
         // 关系信息
         RelationFieldInfo relationFieldInfo = modelInfo.getRelationFieldMap().get(fieldName);
         if (relationFieldInfo == null) {
             throw new RelationNotFoundException(
-                "No associations were found for property[" + fieldName + "] in the entity[" + modelInfo.getEntityClass() + "].");
+                "No associations were found for property[" + fieldName + "] in the entity[" +
+                    modelInfo.getEntityClass() + "].");
         }
         relationSubQuery = relationFieldInfo.getRelationSubQuery();
     }

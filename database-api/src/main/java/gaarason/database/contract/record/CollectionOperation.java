@@ -1,10 +1,9 @@
 package gaarason.database.contract.record;
 
 import gaarason.database.config.ConversionConfig;
-import gaarason.database.lang.Nullable;
-import gaarason.database.exception.AbnormalParameterException;
 import gaarason.database.exception.NoSuchAlgorithmException;
 import gaarason.database.exception.OperationNotSupportedException;
+import gaarason.database.lang.Nullable;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -17,11 +16,11 @@ import java.util.stream.Collectors;
  * @author xt
  * @since 2021/11/8 7:04 下午
  */
-public interface CollectionOperation<E> extends List<E> {
+public interface CollectionOperation<E> extends List<E>, Deque<E> {
 
     /**
      * 根据元素中的属性名获取值
-     * @param element   元素
+     * @param element 元素
      * @param fieldName 属性名
      * @return 值
      */
@@ -43,6 +42,7 @@ public interface CollectionOperation<E> extends List<E> {
     ConversionConfig getConversionWorkerFromContainer();
 
     boolean isEmpty(@Nullable Object obj);
+
     boolean isEmpty(@Nullable Object[] obj);
 
     /**
@@ -75,8 +75,8 @@ public interface CollectionOperation<E> extends List<E> {
         BigDecimal bigDecimal = BigDecimal.ZERO;
         for (E e : this) {
             Object value = elementGetValueByFieldName(e, fieldName);
-            bigDecimal = bigDecimal.add(
-                isEmpty(value) ? BigDecimal.ZERO : getConversionWorkerFromContainer().castNullable(value, BigDecimal.class));
+            bigDecimal = bigDecimal.add(isEmpty(value) ? BigDecimal.ZERO :
+                getConversionWorkerFromContainer().castNullable(value, BigDecimal.class));
         }
         return bigDecimal.divide(new BigDecimal(size()), RoundingMode.HALF_UP);
     }
@@ -90,8 +90,8 @@ public interface CollectionOperation<E> extends List<E> {
         BigDecimal sum = null;
         for (E e : this) {
             Object valueObj = elementGetValueByFieldName(e, fieldName);
-            BigDecimal value = isEmpty(valueObj) ? BigDecimal.ZERO : getConversionWorkerFromContainer().castNullable(valueObj,
-                BigDecimal.class);
+            BigDecimal value = isEmpty(valueObj) ? BigDecimal.ZERO :
+                getConversionWorkerFromContainer().castNullable(valueObj, BigDecimal.class);
             sum = sum == null ? value : sum.add(value);
         }
         return sum == null ? BigDecimal.ZERO : sum;
@@ -122,8 +122,8 @@ public interface CollectionOperation<E> extends List<E> {
         BigDecimal minValue = null;
         for (E e : this) {
             Object valueObj = elementGetValueByFieldName(e, fieldName);
-            BigDecimal value = isEmpty(valueObj) ? BigDecimal.ZERO : getConversionWorkerFromContainer().castNullable(valueObj,
-                BigDecimal.class);
+            BigDecimal value = isEmpty(valueObj) ? BigDecimal.ZERO :
+                getConversionWorkerFromContainer().castNullable(valueObj, BigDecimal.class);
             minValue = minValue == null ? value : minValue.min(value);
         }
         return minValue == null ? BigDecimal.ZERO : minValue;
@@ -141,7 +141,8 @@ public interface CollectionOperation<E> extends List<E> {
         int maxCount = 0;
         for (E e : this) {
             W valueObj = elementGetValueByFieldName(e, fieldName);
-            Integer count = countMap.computeIfAbsent(getConversionWorkerFromContainer().castNullable(valueObj, String.class), k -> 0);
+            Integer count = countMap.computeIfAbsent(
+                getConversionWorkerFromContainer().castNullable(valueObj, String.class), k -> 0);
             count++;
             countMap.put(getConversionWorkerFromContainer().castNullable(valueObj, String.class), count);
 
@@ -172,8 +173,8 @@ public interface CollectionOperation<E> extends List<E> {
 
         for (E e : this) {
             Object valueObj = elementGetValueByFieldName(e, fieldName);
-            BigDecimal value = isEmpty(valueObj) ? BigDecimal.ZERO : getConversionWorkerFromContainer().castNullable(valueObj,
-                BigDecimal.class);
+            BigDecimal value = isEmpty(valueObj) ? BigDecimal.ZERO :
+                getConversionWorkerFromContainer().castNullable(valueObj, BigDecimal.class);
 
             minHeap.add(value);
             if (minHeap.size() > count) {
@@ -193,7 +194,7 @@ public interface CollectionOperation<E> extends List<E> {
      * 将一个集合中的匀速分割成多个小尺寸的小集合, 小集合中类型是自定义的
      * @param closure 闭包
      * @param newSize 每个小集合的尺寸
-     * @param <W>     小集合中的类型
+     * @param <W> 小集合中的类型
      * @return 包含多个小集合的集合
      */
     default <W> List<List<W>> chunk(ReturnTwo<Integer, E, W> closure, int newSize) {
@@ -234,7 +235,7 @@ public interface CollectionOperation<E> extends List<E> {
     /**
      * 判断集合是否存在任何一个元素的属性的值等于给定值
      * @param fieldName 属性名
-     * @param value     给定值
+     * @param value 给定值
      * @return bool
      */
     boolean contains(String fieldName, Object value);
@@ -418,13 +419,14 @@ public interface CollectionOperation<E> extends List<E> {
 
     /**
      * 连接集合中的元素
-     * @param closure   闭包
+     * @param closure 闭包
      * @param delimiter 分隔符
      * @return 连接后的字符串
      */
     default String implode(ReturnOne<E, String> closure, CharSequence delimiter) {
-        return this.stream().map(e -> getConversionWorkerFromContainer().castNullable(closure.get(e), String.class)).collect(
-            Collectors.joining(delimiter));
+        return this.stream()
+            .map(e -> getConversionWorkerFromContainer().castNullable(closure.get(e), String.class))
+            .collect(Collectors.joining(delimiter));
     }
 
 
@@ -478,11 +480,12 @@ public interface CollectionOperation<E> extends List<E> {
 
     /**
      * 通过给定回调对集合中的元素进行分组
-     * @param closureKey   闭包生成key
+     * @param closureKey 闭包生成key
      * @param closureValue 闭包生成value
      * @return 新的集合
      */
-    default <W, Y> Map<W, List<Y>> mapToGroups(ReturnTwo<Integer, E, W> closureKey, ReturnTwo<Integer, E, Y> closureValue) {
+    default <W, Y> Map<W, List<Y>> mapToGroups(ReturnTwo<Integer, E, W> closureKey,
+                                               ReturnTwo<Integer, E, Y> closureValue) {
         int index = 0;
         Map<W, List<Y>> outsideMap = new HashMap<>(16);
 
@@ -498,7 +501,7 @@ public interface CollectionOperation<E> extends List<E> {
 
     /**
      * 通过给定回调对集合元素进行索引
-     * @param closureKey   闭包生成key
+     * @param closureKey 闭包生成key
      * @param closureValue 闭包生成value
      * @return 新的集合
      */
@@ -530,7 +533,7 @@ public interface CollectionOperation<E> extends List<E> {
     /**
      * 将集合中的每个元素的指定属性value的值, 使用给定的属性key的值进行索引, 如果存在重复索引，最后一个匹配的元素将会插入集合
      * @param fieldNameForValue 属性名
-     * @param fieldNameForKey   属性名
+     * @param fieldNameForKey 属性名
      * @return 值的集合
      */
     default <W, Y> Map<W, Y> pluck(String fieldNameForValue, String fieldNameForKey) {
@@ -552,37 +555,9 @@ public interface CollectionOperation<E> extends List<E> {
     }
 
     /**
-     * 移除并返回集合中最后的元素, 集合为空时返回null
-     * 改变自身
-     * @return 元素
-     */
-    @Nullable
-    default E pop() {
-        return isEmpty() ? null : this.remove(size() - 1);
-    }
-
-    /**
-     * 添加元素到集合开头, 其他元素后移
-     * 改变自身
-     * @param element 元素
-     */
-    default void prepend(E element) {
-        add(0, element);
-    }
-
-    /**
-     * 添加元素到集合结尾
-     * 改变自身
-     * @param element 元素
-     */
-    default void push(E element) {
-        add(element);
-    }
-
-    /**
      * 在集合中设置给定键和值, 原值将被替换
      * 改变自身
-     * @param index   索引
+     * @param index 索引
      * @param element 元素
      * @throws IndexOutOfBoundsException 数组越界
      */
@@ -639,11 +614,12 @@ public interface CollectionOperation<E> extends List<E> {
     /**
      * 通过给定回调对集合进行排序
      * @param closure 闭包
-     * @param ase     正序
+     * @param ase 正序
      * @return 新的集合
      */
     default List<E> sortBy(ReturnTwo<Integer, E, BigDecimal> closure, boolean ase) {
-        PriorityQueue<BigDecimal> heap = new PriorityQueue<>(size(), (o1, o2) -> ase ? o1.compareTo(o2) : o2.compareTo(o1));
+        PriorityQueue<BigDecimal> heap = new PriorityQueue<>(size(),
+            (o1, o2) -> ase ? o1.compareTo(o2) : o2.compareTo(o1));
         List<E> list = new ArrayList<>(size());
         Map<BigDecimal, List<E>> map = new HashMap<>();
         int index = 0;
@@ -684,7 +660,8 @@ public interface CollectionOperation<E> extends List<E> {
      */
     default List<E> sortBy(String fieldName) {
         return sortBy((index, e) -> {
-            final BigDecimal decimal = getConversionWorkerFromContainer().castNullable(elementGetValueByFieldName(e, fieldName), BigDecimal.class);
+            final BigDecimal decimal = getConversionWorkerFromContainer().castNullable(
+                elementGetValueByFieldName(e, fieldName), BigDecimal.class);
             return decimal == null ? BigDecimal.ZERO : decimal;
         });
     }
@@ -696,7 +673,8 @@ public interface CollectionOperation<E> extends List<E> {
      */
     default List<E> sortByDesc(String fieldName) {
         return sortByDesc((index, e) -> {
-            final BigDecimal decimal = getConversionWorkerFromContainer().castNullable(elementGetValueByFieldName(e, fieldName), BigDecimal.class);
+            final BigDecimal decimal = getConversionWorkerFromContainer().castNullable(
+                elementGetValueByFieldName(e, fieldName), BigDecimal.class);
             return decimal == null ? BigDecimal.ZERO : decimal;
         });
     }
@@ -724,7 +702,7 @@ public interface CollectionOperation<E> extends List<E> {
      * 从给定位置开始移除指定数据大小并返回元素切片
      * 影响自身
      * @param offset 偏移量
-     * @param taken  数据大小
+     * @param taken 数据大小
      * @return 新的集合
      */
     default List<E> splice(int offset, int taken) {

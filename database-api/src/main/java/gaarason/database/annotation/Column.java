@@ -92,4 +92,14 @@ public @interface Column {
      * 数据库中的数据类型
      */
     JdbcType jdbcType() default JdbcType.UNDEFINED;
+
+    /**
+     * java对象序列化到数据库
+     */
+    Class<?> serializer() default Object.class;
+
+    /**
+     * 从数据库反序列化到java对象
+     */
+    Class<?> deserializer() default Object.class;
 }

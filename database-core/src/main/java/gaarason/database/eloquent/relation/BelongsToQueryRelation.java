@@ -6,6 +6,7 @@ import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.annotation.BelongsTo;
 import gaarason.database.appointment.SqlType;
+import gaarason.database.core.Container;
 import gaarason.database.exception.RelationAttachException;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.appointment.Column;
@@ -28,10 +29,11 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
      */
     private final Object defaultLocalModelForeignKeyValue;
 
-    public BelongsToQueryRelation(Field field) {
+    public BelongsToQueryRelation(Field field,  ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
+        super(modelShadowProvider, model);
         belongsToTemplate = new BelongsToTemplate(field);
 
-        defaultLocalModelForeignKeyValue = ModelShadowProvider.getByEntityClass(ObjectUtils.typeCast(field.getDeclaringClass()))
+        defaultLocalModelForeignKeyValue = modelShadowProvider.getByEntityClass(ObjectUtils.typeCast(field.getDeclaringClass()))
             .getColumnFieldMap().get(belongsToTemplate.localModelForeignKey).getDefaultValue();
     }
 
@@ -244,7 +246,12 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
         return successNum;
     }
 
-    static class BelongsToTemplate {
+    @Override
+    protected Container getContainer() {
+        return belongsToTemplate.parentModel.getGaarasonDataSource().getContainer();
+    }
+
+    class BelongsToTemplate {
 
         final Model<?, ?> parentModel;
 
@@ -257,7 +264,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
             parentModel = getModelInstance(field);
             localModelForeignKey = belongsTo.localModelForeignKey();
             parentModelLocalKey = "".equals(belongsTo.parentModelLocalKey())
-                ? parentModel.getPrimaryKeyColumnName()
+                ? getPrimaryKeyColumnName(parentModel)
                 : belongsTo.parentModelLocalKey();
         }
     }

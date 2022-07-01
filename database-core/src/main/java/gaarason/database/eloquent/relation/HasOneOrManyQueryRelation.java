@@ -1,13 +1,14 @@
 package gaarason.database.eloquent.relation;
 
+import gaarason.database.annotation.HasOneOrMany;
+import gaarason.database.appointment.Column;
+import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
-import gaarason.database.annotation.HasOneOrMany;
-import gaarason.database.appointment.SqlType;
+import gaarason.database.core.Container;
 import gaarason.database.provider.ModelShadowProvider;
-import gaarason.database.appointment.Column;
 import gaarason.database.util.ObjectUtils;
 
 import java.io.Serializable;
@@ -30,10 +31,11 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
      */
     private final Object defaultSonModelForeignKeyValue;
 
-    public HasOneOrManyQueryRelation(Field field) {
+    public HasOneOrManyQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
+        super(modelShadowProvider, model);
         hasOneOrManyTemplate = new HasOneOrManyTemplate(field);
 
-        defaultSonModelForeignKeyValue = ModelShadowProvider.get(hasOneOrManyTemplate.sonModel)
+        defaultSonModelForeignKeyValue = modelShadowProvider.get(hasOneOrManyTemplate.sonModel)
             .getColumnFieldMap().get(hasOneOrManyTemplate.sonModelForeignKey).getDefaultValue();
     }
 
@@ -68,7 +70,8 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public int attach(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, Object> relationDataMap) {
+    public int attach(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues,
+        Map<String, Object> relationDataMap) {
         if (targetPrimaryKeyValues.isEmpty()) {
             return 0;
         }
@@ -126,7 +129,8 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public int sync(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, Object> relationDataMap) {
+    public int sync(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues,
+        Map<String, Object> relationDataMap) {
         // 关联键值(当前表关系键(默认当前表主键))(子表外键)
         Object relationKeyValue = theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue();
 
@@ -153,7 +157,8 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public int toggle(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, Object> relationDataMap) {
+    public int toggle(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues,
+        Map<String, Object> relationDataMap) {
         if (targetPrimaryKeyValues.isEmpty()) {
             return 0;
         }
@@ -176,7 +181,8 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
                 .data(hasOneOrManyTemplate.sonModelForeignKey, defaultSonModelForeignKeyValue).update();
 
             // 需要增加的关系 主键值集合
-            Collection<Object> compatibleTargetPrimaryKeyValues = compatibleCollection(targetPrimaryKeyValues, hasOneOrManyTemplate.sonModel);
+            Collection<Object> compatibleTargetPrimaryKeyValues = compatibleCollection(targetPrimaryKeyValues,
+                hasOneOrManyTemplate.sonModel);
             compatibleTargetPrimaryKeyValues.removeAll(alreadyExistSonModelPrimaryKeyValues);
 
             // 不存在的关系, 新增关系
@@ -188,7 +194,12 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
         });
     }
 
-    static class HasOneOrManyTemplate {
+    @Override
+    protected Container getContainer() {
+        return hasOneOrManyTemplate.sonModel.getGaarasonDataSource().getContainer();
+    }
+
+    class HasOneOrManyTemplate {
 
         final Model<?, ?> sonModel;
 
@@ -201,7 +212,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
             sonModel = getModelInstance(field);
             sonModelForeignKey = hasOneOrMany.sonModelForeignKey();
             localModelLocalKey = "".equals(hasOneOrMany.localModelLocalKey())
-                ? sonModel.getPrimaryKeyColumnName()
+                ? getPrimaryKeyColumnName(sonModel)
                 : hasOneOrMany.localModelLocalKey();
 
         }

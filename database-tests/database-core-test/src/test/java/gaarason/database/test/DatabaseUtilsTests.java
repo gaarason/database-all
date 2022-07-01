@@ -1,9 +1,9 @@
 package gaarason.database.test;
 
 import gaarason.database.appointment.LambdaInfo;
+import gaarason.database.bootstrap.ContainerBootstrap;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.support.IdGenerator;
-import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.test.models.relation.pojo.Student;
 import gaarason.database.test.models.relation.pojo.Teacher;
@@ -91,7 +91,7 @@ public class DatabaseUtilsTests {
 
         int a = 100;
         int b = 30000;
-        IdGenerator.SnowFlakesID snowFlakesID = ContainerProvider.getBean(IdGenerator.SnowFlakesID.class);
+        IdGenerator.SnowFlakesID snowFlakesID = ContainerBootstrap.buildAndBootstrap().getBean(IdGenerator.SnowFlakesID.class);
         MultiThreadUtil.run(a, b, () -> {
             long id = snowFlakesID.nextId();
             synchronized (ids) {
@@ -184,7 +184,7 @@ public class DatabaseUtilsTests {
     }
 
     @Test
-    public void getColumnByMethodTest(){
+    public void getColumnByMethodTest() {
         MultiThreadUtil.run(100, 1000, () -> {
             LambdaInfo<Student> name = LambdaUtils.parse(Student::getName);
             LambdaUtils.parse(Student::getName);
@@ -218,38 +218,38 @@ public class DatabaseUtilsTests {
             Assert.assertEquals("name", name.getFieldName());
             Assert.assertEquals("sex", sex.getFieldName());
         });
-
-        ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+        ModelShadowProvider modelShadowProvider = ContainerBootstrap.build().bootstrap().getBean(ModelShadowProvider.class);
+        modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
         MultiThreadUtil.run(100, 1000, () -> {
-            String column = ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
-            String Sex = ModelShadowProvider.getColumnNameByLambdaWithCache(Student::getSex);
+            String column = modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            modelShadowProvider.getColumnNameByLambdaWithCache(Student::getName);
+            String Sex = modelShadowProvider.getColumnNameByLambdaWithCache(Student::getSex);
             Assert.assertEquals("name", column);
             Assert.assertEquals("sex", Sex);
         });

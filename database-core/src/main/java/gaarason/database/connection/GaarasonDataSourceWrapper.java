@@ -1,11 +1,10 @@
 package gaarason.database.connection;
 
-import gaarason.database.config.DefaultAutoConfiguration;
 import gaarason.database.config.QueryBuilderConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
+import gaarason.database.core.Container;
 import gaarason.database.exception.*;
 import gaarason.database.lang.Nullable;
-import gaarason.database.provider.ContainerProvider;
 import gaarason.database.util.ObjectUtils;
 
 import javax.sql.DataSource;
@@ -24,7 +23,7 @@ import java.util.logging.Logger;
  * 嵌套事务如果不发生异常，则继续执行，不提交。由外层事务的逻辑继续执行，若外层事务后续发生异常，则回滚包括嵌套事务在内的所有事务。
  * @author xt
  */
-public class GaarasonDataSourceWrapper implements GaarasonDataSource {
+public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements GaarasonDataSource {
 
     /**
      * 事物中的 Connection
@@ -63,8 +62,10 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
      * 构造
      * @param masterDataSourceList (主)写数据源集合
      * @param slaveDataSourceList (从)读数据源集合
+     * @param container 容器
      */
-    GaarasonDataSourceWrapper(List<DataSource> masterDataSourceList, List<DataSource> slaveDataSourceList) {
+    GaarasonDataSourceWrapper(List<DataSource> masterDataSourceList, List<DataSource> slaveDataSourceList, Container container) {
+        super(container);
         if (masterDataSourceList.isEmpty() || slaveDataSourceList.isEmpty()) {
             throw new AbnormalParameterException("The two list of data source should not be empty.");
         }
@@ -76,8 +77,10 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
     /**
      * 构造
      * @param masterDataSourceList (主)写数据源集合
+     * @param container 容器
      */
-    GaarasonDataSourceWrapper(List<DataSource> masterDataSourceList) {
+    GaarasonDataSourceWrapper(List<DataSource> masterDataSourceList, Container container) {
+        super(container);
         if (masterDataSourceList.isEmpty()) {
             throw new AbnormalParameterException("The list of data source should not be empty.");
         }
@@ -322,10 +325,7 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
      * @return 数据库类型
      */
     protected QueryBuilderConfig getQueryBuilder(GaarasonDataSource dataSource) {
-        // 扫描自动配置类
-        DefaultAutoConfiguration.initOnAllGaarasonAutoconfiguration();
-
-        List<QueryBuilderConfig> list = ContainerProvider.getBeans(QueryBuilderConfig.class);
+        List<QueryBuilderConfig> list = container.getBeans(QueryBuilderConfig.class);
         String databaseProductName;
         Connection connection = dataSource.getLocalConnection(true);
         try {
@@ -351,5 +351,10 @@ public class GaarasonDataSourceWrapper implements GaarasonDataSource {
     @Override
     public List<DataSource> getSlaveDataSourceList() {
         return slaveDataSourceList;
+    }
+
+    @Override
+    public Container getContainer() {
+        return container;
     }
 }

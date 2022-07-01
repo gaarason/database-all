@@ -8,11 +8,11 @@ import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.FilterRecordAttributeFunctionalInterface;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
+import gaarason.database.core.Container;
 import gaarason.database.exception.AbnormalParameterException;
 import gaarason.database.exception.NoSuchAlgorithmException;
 import gaarason.database.exception.OperationNotSupportedException;
 import gaarason.database.lang.Nullable;
-import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.FieldInfo;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.RelationGetSupport;
@@ -29,7 +29,8 @@ import java.util.*;
  * @param <K>
  * @author xt
  */
-public class RecordListBean<T extends Serializable, K extends Serializable> extends ArrayList<Record<T, K>> implements RecordList<T, K> {
+public class RecordListBean<T extends Serializable, K extends Serializable> extends LinkedList<Record<T, K>>
+    implements RecordList<T, K> {
 
     /**
      * 原始sql
@@ -41,17 +42,30 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
      */
     protected transient HashMap<Object, Set<Object>> cacheMap = new HashMap<>();
 
-    public RecordListBean() {
+    /**
+     * 容器
+     */
+    protected final transient Container container;
 
+    /**
+     * Model信息
+     */
+    protected final transient ModelShadowProvider modelShadowProvider;
+
+    public RecordListBean(Container container) {
+        this.container = container;
+        this.modelShadowProvider = container.getBean(ModelShadowProvider.class);
     }
 
-    public RecordListBean(String originalSql) {
+    public RecordListBean(String originalSql, Container container) {
+        this(container);
         this.originalSql = originalSql;
     }
 
     @Override
     public boolean equals(Object o) {
-        return super.equals(o) && (o instanceof RecordList) && originalSql.equals(((RecordList<?, ?>) o).getOriginalSql());
+        return super.equals(o) && (o instanceof RecordList) &&
+            originalSql.equals(((RecordList<?, ?>) o).getOriginalSql());
     }
 
     @Override
@@ -89,19 +103,19 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
      */
     @Override
     public List<T> toObjectList() {
-        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(this, true);
+        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(getContainer(), this, true);
         return tkRelationGetSupport.toObjectList();
     }
 
     @Override
     public List<T> toObjectListWithoutRelationship() {
-        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(this, false);
+        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(getContainer(), this, false);
         return tkRelationGetSupport.toObjectList();
     }
 
     @Override
     public List<T> toObjectList(Map<String, RecordList<?, ?>> cacheRelationRecordList) {
-        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(this, true);
+        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(getContainer(), this, true);
         return tkRelationGetSupport.toObjectList(cacheRelationRecordList);
     }
 
@@ -117,12 +131,12 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
 
     @Override
     public String lambda2FieldName(ColumnFunctionalInterface<T> column) {
-        return ModelShadowProvider.getFieldNameByLambdaWithCache(column);
+        return modelShadowProvider.getFieldNameByLambdaWithCache(column);
     }
 
     @Override
     public String lambda2ColumnName(ColumnFunctionalInterface<T> column) {
-        return ModelShadowProvider.getColumnNameByLambdaWithCache(column);
+        return modelShadowProvider.getColumnNameByLambdaWithCache(column);
     }
 
     /**
@@ -155,7 +169,8 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
      * @return 单个字段列表
      */
     @Override
-    public <V> List<V> toList(FilterRecordAttributeFunctionalInterface<T, K, V> filterRecordAttributeFunctionalInterface) {
+    public <V> List<V> toList(
+        FilterRecordAttributeFunctionalInterface<T, K, V> filterRecordAttributeFunctionalInterface) {
         List<V> list = new ArrayList<>();
         for (Record<T, K> theRecord : this) {
             V result = filterRecordAttributeFunctionalInterface.execute(theRecord);
@@ -190,13 +205,14 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
 
     @Override
     public RecordListBean<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface builderClosure,
-                                     RelationshipRecordWithFunctionalInterface recordClosure) {
+        RelationshipRecordWithFunctionalInterface recordClosure) {
         String[] columnArr = fieldName.split("\\.");
         // 快捷类型
         if (columnArr.length > 1) {
             String lastLevelColumn = columnArr[columnArr.length - 1];
             String otherLevelColumn = StringUtils.rtrim(fieldName, "." + lastLevelColumn);
-            return with(otherLevelColumn, builder -> builder, theRecord -> theRecord.with(lastLevelColumn, builderClosure, recordClosure));
+            return with(otherLevelColumn, builder -> builder,
+                theRecord -> theRecord.with(lastLevelColumn, builderClosure, recordClosure));
         }
         for (Record<T, K> tkRecord : this) {
             // 赋值关联关系过滤
@@ -215,7 +231,8 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
     @Override
     @Nullable
     public <W> W elementGetValueByFieldName(Record<T, K> theRecord, String fieldName) {
-        final FieldInfo fieldInfo = ModelShadowProvider.getFieldInfoByEntityClass(theRecord.getModel().getEntityClass(), fieldName);
+        final FieldInfo fieldInfo = modelShadowProvider.getFieldInfoByEntityClass(theRecord.getModel().getEntityClass(),
+            fieldName);
         final Column column = theRecord.getMetadataMap().get(fieldInfo.getColumnName());
         return column != null ? ObjectUtils.typeCast(column.getValue()) : null;
     }
@@ -227,7 +244,7 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
 
     @Override
     public ConversionConfig getConversionWorkerFromContainer() {
-        return ContainerProvider.getBean(ConversionConfig.class);
+        return container.getBean(ConversionConfig.class);
     }
 
     @Override
@@ -254,7 +271,8 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
     public List<Record<T, K>> random(int count) throws NoSuchAlgorithmException {
         if (count > size()) {
             throw new AbnormalParameterException(
-                "The parameter count [" + count + "] of the random method should not be less than size [" + size() + "]");
+                "The parameter count [" + count + "] of the random method should not be less than size [" + size() +
+                    "]");
         }
         if (isEmpty()) {
             return new ArrayList<>();
@@ -271,4 +289,8 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
     }
 
 
+    @Override
+    public Container getContainer() {
+        return container;
+    }
 }

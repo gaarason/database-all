@@ -1,5 +1,6 @@
 package gaarason.database.test.parent;
 
+import gaarason.database.annotation.Primary;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
@@ -49,6 +50,14 @@ abstract public class NullTests extends BaseTests {
         forQuery.setId(id);
         List<NullTestModel.Entity> list = nullTestModel.newQuery().where(forQuery).get().toObjectList();
         Assert.assertEquals(list.size(), 1);
+
+        NullTestModel.Entity entitySon = new NullTestModel.Entity() {
+
+            @Primary
+            public Integer id;
+        };
+        List<NullTestModel.Entity> list2 = nullTestModel.newQuery().where(entitySon).get().toObjectList();
+        Assert.assertEquals(list2.size(), 1);
     }
 
     @Test

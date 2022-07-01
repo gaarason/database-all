@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * 实体处理工具
  * @author xt
  */
-public class EntityUtils {
+public final class EntityUtils {
 
     private EntityUtils() {
     }
@@ -169,7 +169,7 @@ public class EntityUtils {
     /**
      * 将 complementEntity 中的属性赋值到 baseEntity 上
      * 1. 针对于非静态属性 2. complementEntity中所有的null属性都会跳过 (所以一定要使用包装类型来声明 entity)
-     * @param baseEntity       基本实体对象(不会呗修改)
+     * @param baseEntity       基本实体对象(不会被修改)
      * @param complementEntity 合并实体对象
      * @param <T>              实体类型
      * @return 合并后的对象
@@ -202,22 +202,22 @@ public class EntityUtils {
         }
     }
 
-    /**
-     * 格式化值到字符串
-     * 关键
-     * @param value 原值 (实体的属性)
-     * @return 字符串
-     */
-    @Nullable
-    public static String valueFormat(@Nullable Object value) {
-        if (value instanceof Date) {
-            return LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(value);
-        } else if (value instanceof Boolean) {
-            return (boolean) value ? "1" : "0";
-        } else {
-            return ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class);
-        }
-    }
+//    /**
+//     * 格式化值到字符串
+//     * 关键
+//     * @param value 原值 (实体的属性)
+//     * @return 字符串
+//     */
+//    @Nullable
+//    public static String valueFormat(@Nullable Object value) {
+//        if (value instanceof Date) {
+//            return LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(value);
+//        } else if (value instanceof Boolean) {
+//            return (boolean) value ? "1" : "0";
+//        } else {
+//            return ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class);
+//        }
+//    }
 
     /**
      * 返回 clazz 中的所有属性(public/protected/private/default),含static, 含父类, 不含接口的
@@ -227,7 +227,7 @@ public class EntityUtils {
     public static List<Field> getDeclaredFieldsContainParent(Class<?> clazz) {
         List<Field> fields = new ArrayList<>(Arrays.asList(clazz.getDeclaredFields()));
         Class<?> superclass = clazz.getSuperclass();
-        if (!superclass.equals(Object.class)) {
+        if (superclass != null && !superclass.equals(Object.class)) {
             fields.addAll(getDeclaredFieldsContainParent(superclass));
         }
         return fields;
@@ -262,5 +262,7 @@ public class EntityUtils {
             throw e;
         }
     }
+
+
 
 }

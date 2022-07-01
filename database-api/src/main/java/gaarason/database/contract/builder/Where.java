@@ -80,6 +80,13 @@ public interface Where<T extends Serializable, K extends Serializable> {
     Builder<T, K> where(T entity);
 
     /**
+     * 将对象的属性转化为, 列与值相等的查询条件
+     * @param entity 非预定义的实体对象
+     * @return 查询构造器
+     */
+    Builder<T, K> where(Object entity);
+
+    /**
      * 列与值相等的查询条件
      * @param map 条件map
      * @return 查询构造器

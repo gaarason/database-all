@@ -10,7 +10,7 @@ import java.util.List;
  * @author xt
  * @since 2021/11/30 6:05 下午
  */
-public interface GaarasonDataSourceConfig {
+public interface GaarasonDataSourceBuilder {
 
     /**
      * 单个主库的数据源

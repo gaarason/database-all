@@ -2,6 +2,7 @@ package gaarason.database.query;
 
 import gaarason.database.appointment.FinalVariable;
 import gaarason.database.appointment.Paginate;
+import gaarason.database.appointment.ParameterAndType;
 import gaarason.database.appointment.SqlType;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
@@ -11,9 +12,9 @@ import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.*;
 import gaarason.database.contract.query.Grammar;
+import gaarason.database.core.Container;
 import gaarason.database.exception.*;
 import gaarason.database.lang.Nullable;
-import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.RecordFactory;
 import gaarason.database.util.ExceptionUtils;
@@ -42,6 +43,21 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
     protected final Model<T, K> model;
 
     /**
+     * 容器
+     */
+    protected final Container container;
+
+    /**
+     * Model信息大全
+     */
+    protected final ModelShadowProvider modelShadowProvider;
+
+    /**
+     * 类型转化
+     */
+    protected final ConversionConfig conversion;
+
+    /**
      * 数据实体类
      */
     final Class<T> entityClass;
@@ -53,6 +69,9 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
 
     protected BaseBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
         this.gaarasonDataSource = gaarasonDataSource;
+        this.container = gaarasonDataSource.getContainer();
+        this.modelShadowProvider = container.getBean(ModelShadowProvider.class);
+        this.conversion = container.getBean(ConversionConfig.class);
         this.model = model;
         this.entityClass = model.getEntityClass();
         this.grammar = grammar;
@@ -84,12 +103,12 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
 
     @Override
     public String lambda2FieldName(ColumnFunctionalInterface<T> column) {
-        return ModelShadowProvider.getFieldNameByLambdaWithCache(column);
+        return modelShadowProvider.getFieldNameByLambdaWithCache(column);
     }
 
     @Override
     public String lambda2ColumnName(ColumnFunctionalInterface<T> column) {
-        return ModelShadowProvider.getColumnNameByLambdaWithCache(column);
+        return modelShadowProvider.getColumnNameByLambdaWithCache(column);
     }
 
     /**
@@ -141,7 +160,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      */
     @Override
     public Builder<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
-                              RelationshipRecordWithFunctionalInterface recordClosure) {
+        RelationshipRecordWithFunctionalInterface recordClosure) {
         grammar.pushWith(fieldName, builderClosure, recordClosure);
         return this;
     }
@@ -324,7 +343,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
         throws SQLRuntimeException, EntityNotFoundException {
         return doSomethingInConnection(preparedStatement -> {
             ResultSet resultSet = preparedStatement.executeQuery();
-            return RecordFactory.newRecord(entityClass, model, resultSet, sql);
+            return RecordFactory.newRecord(model, resultSet, sql);
         }, sql, parameters, false);
     }
 
@@ -338,7 +357,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
     public RecordList<T, K> queryList(String sql, @Nullable Collection<?> parameters) throws SQLRuntimeException {
         return doSomethingInConnection(preparedStatement -> {
             ResultSet resultSet = preparedStatement.executeQuery();
-            return RecordFactory.newRecordList(entityClass, model, resultSet, sql);
+            return RecordFactory.newRecordList(model, resultSet, sql);
         }, sql, parameters, false);
     }
 
@@ -414,8 +433,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * @throws SQLRuntimeException 数据库异常
      */
     protected <U> U doSomethingInConnection(ExecSqlWithinConnectionFunctionalInterface<U> closure, String sql,
-                                            @Nullable Collection<?> parameters, boolean isWrite)
-        throws SQLRuntimeException {
+        @Nullable Collection<?> parameters, boolean isWrite) throws SQLRuntimeException {
         Collection<?> localParameters = parameters == null ? Collections.EMPTY_LIST : parameters;
         // 获取连接
         Connection connection = gaarasonDataSource.getLocalConnection(isWrite);
@@ -525,12 +543,15 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
     }
 
     @Override
-    public void dealChunk(int num, String column, ChunkFunctionalInterface<T, K> chunkFunctionalInterface) throws SQLRuntimeException {
+    public void dealChunk(int num, String column, ChunkFunctionalInterface<T, K> chunkFunctionalInterface)
+        throws SQLRuntimeException {
         boolean flag;
         Object columnValue = null;
         do {
             Builder<T, K> cloneBuilder = clone();
-            cloneBuilder.whereIgnoreNull(column, ">", columnValue).firstOrderBy(builder -> builder.orderBy(column)).limit(num);
+            cloneBuilder.whereIgnoreNull(column, ">", columnValue)
+                .firstOrderBy(builder -> builder.orderBy(column))
+                .limit(num);
 
             Grammar.SQLPartInfo sqlPartInfo = cloneBuilder.getGrammar().generateSql(SqlType.SELECT);
             String sql = sqlPartInfo.getSqlString();
@@ -543,7 +564,7 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
                     (RelationshipRecordWithFunctionalInterface) stringEntry.getValue()[1]);
             }
 
-            if(!records.isEmpty()){
+            if (!records.isEmpty()) {
                 columnValue = records.last().getMetadataMap().get(column).getValue();
             }
 
@@ -598,18 +619,25 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * @param parameter 参数对象
      */
     protected void setParameter(PreparedStatement preparedStatement, int index, Object parameter) throws SQLException {
-        preparedStatement.setObject(index, parameter);
+        if (parameter instanceof ParameterAndType) {
+            // 精确类型
+            preparedStatement.setObject(index, ((ParameterAndType) parameter).getValue(),
+                ((ParameterAndType) parameter).getType());
+        } else {
+            // 全凭运气
+            preparedStatement.setObject(index, parameter);
+        }
     }
 
     @Override
     @Nullable
     public String conversionToString(@Nullable Object value) {
-        return ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class);
+        return conversion.castNullable(value, String.class);
     }
 
     @Override
     public int conversionToInt(@Nullable Object value) {
-        Integer integer = ContainerProvider.getBean(ConversionConfig.class).castNullable(value, int.class);
+        Integer integer = conversion.castNullable(value, int.class);
         return integer == null ? 0 : integer;
     }
 

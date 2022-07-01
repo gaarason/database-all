@@ -19,6 +19,12 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 3.6.0
+
+- 查询结果集(`RecordList`) 现在是`LinkedList`的子类, 而非之前的的`ArrayList`, 同时更改了`pop()`/`push(element)`的行为, 并移除了`prepend(element)`
+- 现在`Container`不再是全局静态, 而是使用对象生命周期管理, 便于同个进程下多个容器之间进行隔离
+- 现在`ModelShadow`不再是全局静态的, 而是使用`Container`进行管理
+
 ### 3.5.1
 
 - 对于包扫描配置, 在`springboot`下默认是`@SpringBootApplication`所在的包

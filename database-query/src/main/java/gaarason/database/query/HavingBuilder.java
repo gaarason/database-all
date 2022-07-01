@@ -1,14 +1,11 @@
 package gaarason.database.query;
 
-import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
-import gaarason.database.provider.ContainerProvider;
-import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 
@@ -86,7 +83,7 @@ public abstract class HavingBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> having(T entity) {
-        final Map<String, Object> columnValueMap = ModelShadowProvider.columnValueMap(entity);
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity);
         return having(columnValueMap);
     }
 
@@ -147,7 +144,7 @@ public abstract class HavingBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> havingLike(@Nullable T entity) {
-        final Map<String, Object> columnValueMap = ModelShadowProvider.columnValueMap(entity);
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity);
         return havingLike(columnValueMap);
     }
 
@@ -164,7 +161,7 @@ public abstract class HavingBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> havingMayLike(String column, @Nullable Object value) {
-        String s = ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class);
+        String s = conversion.castNullable(value, String.class);
         if (!ObjectUtils.isNull(s) && (s.endsWith("%") || s.startsWith("%"))) {
             return havingLike(column, value);
         } else {
@@ -182,7 +179,7 @@ public abstract class HavingBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> havingMayLike(@Nullable T entity) {
-        final Map<String, Object> columnValueMap = ModelShadowProvider.columnValueMap(entity);
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity);
         return havingMayLike(columnValueMap);
     }
 
@@ -217,7 +214,7 @@ public abstract class HavingBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> havingSubQuery(String column, String symbol,
-                                        GenerateSqlPartFunctionalInterface<T, K> closure) {
+        GenerateSqlPartFunctionalInterface<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String completeSql = FormatUtils.bracket(sqlPartInfo.getSqlString());
         String sqlPart = backQuote(column) + symbol + completeSql;
@@ -299,18 +296,18 @@ public abstract class HavingBuilder<T extends Serializable, K extends Serializab
     @Override
     public Builder<T, K> havingBetween(String column, Object min, Object max) {
         Collection<Object> parameters = new ArrayList<>();
-        String sqlPart = backQuote(column) + "between" +
-            grammar.replaceValueAndFillParameters(min, parameters) + "and" +
-            grammar.replaceValueAndFillParameters(max, parameters);
+        String sqlPart =
+            backQuote(column) + "between" + grammar.replaceValueAndFillParameters(min, parameters) + "and" +
+                grammar.replaceValueAndFillParameters(max, parameters);
         return havingGrammar(sqlPart, parameters, " and ");
     }
 
     @Override
     public Builder<T, K> havingNotBetween(String column, Object min, Object max) {
         Collection<Object> parameters = new ArrayList<>();
-        String sqlPart = backQuote(column) + "not between" +
-            grammar.replaceValueAndFillParameters(min, parameters) + "and" +
-            grammar.replaceValueAndFillParameters(max, parameters);
+        String sqlPart =
+            backQuote(column) + "not between" + grammar.replaceValueAndFillParameters(min, parameters) + "and" +
+                grammar.replaceValueAndFillParameters(max, parameters);
         return havingGrammar(sqlPart, parameters, " and ");
     }
 

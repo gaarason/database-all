@@ -10,7 +10,6 @@ import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.InsertNotSuccessException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
-import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.MapUtils;
 
@@ -68,9 +67,9 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     @Override
     public int insert(T entity) throws SQLRuntimeException {
         // 获取entity所有有效sql字段
-        Set<String> columnNameSet = ModelShadowProvider.columnNameSet(entity, true);
+        Set<String> columnNameSet = modelShadowProvider.columnNameSet(entity, true);
         // 获取entity所有有效字段的值
-        List<Object> valueList = ModelShadowProvider.valueList(entity, columnNameSet);
+        List<Object> valueList = modelShadowProvider.valueList(entity, columnNameSet);
         // 字段加入grammar
         column(columnNameSet);
         // 字段的值加入grammar
@@ -119,9 +118,9 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     @Override
     public K insertGetId(T entity) throws SQLRuntimeException {
         // 获取entity所有有效sql字段
-        Set<String> columnNameSet = ModelShadowProvider.columnNameSet(entity, true);
+        Set<String> columnNameSet = modelShadowProvider.columnNameSet(entity, true);
         // 获取entity所有有效字段的值
-        List<Object> valueList = ModelShadowProvider.valueList(entity, columnNameSet);
+        List<Object> valueList = modelShadowProvider.valueList(entity, columnNameSet);
         // 字段加入grammar
         column(columnNameSet);
         // 字段的值加入grammar
@@ -129,7 +128,7 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
         // 执行, 并获取主键id
         K primaryId = insertGetId();
         // 赋值主键
-        ModelShadowProvider.setPrimaryKeyValue(entity, primaryId);
+        modelShadowProvider.setPrimaryKeyValue(entity, primaryId);
         // 返回主键
         return primaryId;
     }
@@ -205,7 +204,7 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     @Override
     public int update(T entity) throws SQLRuntimeException {
         // 获取entity所有有效字段对其值得映射
-        Map<String, Object> stringStringMap = ModelShadowProvider.columnValueMap(entity, false);
+        Map<String, Object> stringStringMap = modelShadowProvider.columnValueMap(entity, false);
 
         data(stringStringMap);
         // 执行
@@ -225,11 +224,11 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
      */
     protected void beforeBatchInsert(List<T> entityList) {
         // 获取entity所有有效字段
-        Set<String> columnNameSet = ModelShadowProvider.columnNameSet(entityList.get(0), true);
+        Set<String> columnNameSet = modelShadowProvider.columnNameSet(entityList.get(0), true);
         List<List<Object>> valueListList = new ArrayList<>();
         for (T entity : entityList) {
             // 获取entity所有有效字段的值
-            List<Object> valueList = ModelShadowProvider.valueList(entity, columnNameSet);
+            List<Object> valueList = modelShadowProvider.valueList(entity, columnNameSet);
             valueListList.add(valueList);
         }
         // 字段加入grammar
@@ -255,59 +254,6 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
         // 字段的值加入grammar
         valueList(valueListList);
     }
-
-//    /**
-//     * 格式化参数类型,到绑定参数
-//     * @param value 参数
-//     * @return 参数占位符?
-//     */
-//    @Deprecated
-//    protected String formatData(@Nullable Object value) {
-//        return FormatUtils.data(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class),
-//            grammar);
-//    }
-
-//    /**
-//     * 格式化参数类型,到绑定参数
-//     * @param valueList 参数
-//     * @return 参数占位符?
-//     */
-//    @Deprecated
-//    protected String formatWhere(Collection<?> valueList) {
-//        return FormatUtils.where(valueList, grammar);
-//    }
-//
-//    /**
-//     * 格式化参数类型,到绑定参数
-//     * @param value 参数
-//     * @return 参数占位符?
-//     */
-//    @Deprecated
-//    protected String formatWhere(@Nullable Object value) {
-//        return FormatUtils.where(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class),
-//            grammar);
-//    }
-//
-//    /**
-//     * 格式化参数类型,到绑定参数
-//     * @param valueList 参数
-//     * @return 参数占位符?
-//     */
-//    @Deprecated
-//    protected String formatHaving(Collection<?> valueList) {
-//        return FormatUtils.having(valueList, grammar);
-//    }
-//
-//    /**
-//     * 格式化参数类型,到绑定参数
-//     * @param value 参数
-//     * @return 参数占位符?
-//     */
-//    @Deprecated
-//    protected String formatHaving(@Nullable Object value) {
-//        return FormatUtils.having(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class),
-//            grammar);
-//    }
 
     /**
      * 返回数据库方法的拼接字符

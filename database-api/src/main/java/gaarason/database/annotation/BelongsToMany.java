@@ -22,10 +22,10 @@ public @interface BelongsToMany {
     Class<? extends Model<? extends Serializable, ? extends Serializable>> relationModel();
 
     /**
-     * `本表`中的`关联键`
+     * `本表`中的`关联键`, 默认值为`本表`的主键(`@Primary()`修饰的键)
      * @return `本表`中的`关联键`
      */
-    String localModelLocalKey();
+    String localModelLocalKey() default "";;
 
     /**
      * `关系表`中的`关联本表的外键`
@@ -40,8 +40,8 @@ public @interface BelongsToMany {
     String foreignKeyForTargetModel();
 
     /**
-     * `目标表`中的`关联键`
+     * `目标表`中的`关联键`, 默认值为`目标表`的主键(`@Primary()`修饰的键)
      * @return `目标表`中的`关联键`
      */
-    String targetModelLocalKey();
+    String targetModelLocalKey() default "";;
 }

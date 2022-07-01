@@ -348,34 +348,22 @@ abstract public class CollectionTests extends BaseTests {
     @Test
     public void pop(){
         final Record<StudentModel.Entity, Integer> record1 = records.pop();
-        Assert.assertEquals(10, record1.toObject().getId().intValue());
+        Assert.assertEquals(1, record1.toObject().getId().intValue());
         final Record<StudentModel.Entity, Integer> record2 = records.pop();
-        Assert.assertEquals(9, record2.toObject().getId().intValue());
+        Assert.assertEquals(2, record2.toObject().getId().intValue());
         final Record<StudentModel.Entity, Integer> record3 = records.pop();
-        Assert.assertEquals(8, record3.toObject().getId().intValue());
+        Assert.assertEquals(3, record3.toObject().getId().intValue());
 
         Assert.assertEquals(7, records.size());
     }
 
     @Test
-    public void prepend(){
-        final Record<StudentModel.Entity, Integer> element = records.pop();
-        Assert.assertEquals(10, element.toObject().getId().intValue());
-
-        // 等价 add(0, element)
-        records.prepend(element);
-        Assert.assertEquals(10, records.size());
-        Assert.assertEquals(10, records.get(0).toObject().getId().intValue());
-        Assert.assertEquals(1, records.get(1).toObject().getId().intValue());
-    }
-
-    @Test
     public void push(){
         final Record<StudentModel.Entity, Integer> element = records.get(0);
-        // 等价 add(element)
+        // 等价 add(0, element)
         records.push(element);
         Assert.assertEquals(11, records.size());
-        final Record<StudentModel.Entity, Integer> record1 = records.get(10);
+        final Record<StudentModel.Entity, Integer> record1 = records.get(0);
         Assert.assertSame(element, record1);
     }
 

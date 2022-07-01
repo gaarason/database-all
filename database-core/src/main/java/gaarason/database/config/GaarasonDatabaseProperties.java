@@ -17,7 +17,7 @@ public class GaarasonDatabaseProperties implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private static final Log LOGGER = LogFactory.getLog(DefaultAutoConfiguration.class);
+    private static final Log LOGGER = LogFactory.getLog(GaarasonDatabaseProperties.class);
 
     public static final String PREFIX = "gaarason.database";
 

@@ -1,15 +1,16 @@
 package gaarason.database.generator;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import gaarason.database.bootstrap.ContainerBootstrap;
 import gaarason.database.connection.GaarasonDataSourceBuilder;
-import gaarason.database.connection.GaarasonDataSourceWrapper;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Model;
-import gaarason.database.lang.Nullable;
+import gaarason.database.core.Container;
 import gaarason.database.eloquent.ModelBean;
 import gaarason.database.generator.element.field.Field;
 import gaarason.database.generator.element.field.MysqlFieldGenerator;
 import gaarason.database.generator.exception.GeneratorException;
+import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.StringUtils;
 
@@ -195,7 +196,7 @@ public class Generator {
     /**
      * 有参构造
      * 默认使用 com.mysql.cj.jdbc.Driver 与 com.alibaba.druid.pool.DruidDataSource
-     * @param jdbcUrl  数据库连接地址
+     * @param jdbcUrl 数据库连接地址
      * @param username 数据库用户名
      * @param password 数据库密码
      */
@@ -211,24 +212,67 @@ public class Generator {
         druidDataSource.setLoginTimeout(3);
         druidDataSource.setQueryTimeout(3);
 
-        List<DataSource> dataSources = new ArrayList<>();
-        dataSources.add(druidDataSource);
+        ToolModel.gaarasonDataSource = GaarasonDataSourceBuilder.build(druidDataSource);
 
-        ToolModel.gaarasonDataSource = GaarasonDataSourceBuilder.build(dataSources);
-
-        this.model = ModelShadowProvider.getByModelClass(ToolModel.class).getModel();
+        this.model = ToolModel.gaarasonDataSource.getContainer()
+            .getBean(ModelShadowProvider.class)
+            .getByModelClass(ToolModel.class)
+            .getModel();
     }
 
     /**
      * 有参构造
-     * @param dataSource  数据源
+     * @param dataSource 数据源
      */
     public Generator(DataSource dataSource) {
-
-        ToolModel.gaarasonDataSource = GaarasonDataSourceBuilder.build(dataSource);
-
-        this.model = ModelShadowProvider.getByModelClass(ToolModel.class).getModel();
+        ToolModel.gaarasonDataSource = GaarasonDataSourceBuilder.build(dataSource,
+            ContainerBootstrap.build().bootstrap());
+        this.model = ToolModel.gaarasonDataSource.getContainer()
+            .getBean(ModelShadowProvider.class)
+            .getByModelClass(ToolModel.class)
+            .getModel();
     }
+
+    /**
+     * 有参构造
+     * 默认使用 com.mysql.cj.jdbc.Driver 与 com.alibaba.druid.pool.DruidDataSource
+     * @param jdbcUrl 数据库连接地址
+     * @param username 数据库用户名
+     * @param password 数据库密码
+     * @param container 容器
+     */
+    public Generator(String jdbcUrl, String username, String password, Container container) {
+        DruidDataSource druidDataSource = new DruidDataSource();
+        druidDataSource.setUrl(jdbcUrl);
+        druidDataSource.setUsername(username);
+        druidDataSource.setPassword(password);
+        druidDataSource.setDbType("com.alibaba.druid.pool.DruidDataSource");
+        druidDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        druidDataSource.setInitialSize(20);
+        druidDataSource.setMaxActive(20);
+        druidDataSource.setLoginTimeout(3);
+        druidDataSource.setQueryTimeout(3);
+
+        ToolModel.gaarasonDataSource = GaarasonDataSourceBuilder.build(druidDataSource, container);
+
+        this.model = ToolModel.gaarasonDataSource.getContainer()
+            .getBean(ModelShadowProvider.class)
+            .getByModelClass(ToolModel.class)
+            .getModel();
+    }
+
+    /**
+     * 有参构造
+     * @param dataSource 数据源
+     */
+    public Generator(DataSource dataSource, Container container) {
+        ToolModel.gaarasonDataSource = GaarasonDataSourceBuilder.build(dataSource, container);
+        this.model = ToolModel.gaarasonDataSource.getContainer()
+            .getBean(ModelShadowProvider.class)
+            .getByModelClass(ToolModel.class)
+            .getModel();
+    }
+
 
     /**
      * 将类的命名空间转化为对应的目录
@@ -241,7 +285,7 @@ public class Generator {
 
     /**
      * 填充模板
-     * @param template     模板内容
+     * @param template 模板内容
      * @param parameterMap 参数
      * @return 填充后的内容
      */
@@ -284,9 +328,9 @@ public class Generator {
 
     /**
      * 写入文件内容
-     * @param path     文件路径
+     * @param path 文件路径
      * @param fileName 文件名
-     * @param content  文件内容
+     * @param content 文件内容
      */
     private static void filePutContent(String path, String fileName, String content) {
         try {
@@ -373,7 +417,8 @@ public class Generator {
         // baseModel 写入文件
         filePutContent(getAbsoluteWriteFilePath(baseModelNamespace), baseModelName, baseDaoTemplateStrReplace);
         // baseEntity 文件内容
-        String baseEntityTemplateStrReplace = fillBaseEntityTemplate(tables.get(0).entrySet().stream().findFirst().get().getValue().toString());
+        String baseEntityTemplateStrReplace = fillBaseEntityTemplate(
+            tables.get(0).entrySet().stream().findFirst().get().getValue().toString());
         // baseEntity 写入文件
         filePutContent(getAbsoluteWriteFilePath(baseEntityNamespace), baseEntityName, baseEntityTemplateStrReplace);
 
@@ -463,8 +508,8 @@ public class Generator {
 
     /**
      * 填充model模板内容
-     * @param tableName  表名
-     * @param modelName  dao对象名
+     * @param tableName 表名
+     * @param modelName dao对象名
      * @param entityName pojo对象名
      * @return 内容
      */
@@ -485,9 +530,9 @@ public class Generator {
 
     /**
      * 填充entity模板内容
-     * @param tableName  表名
+     * @param tableName 表名
      * @param entityName 对象名
-     * @param comment    表注释
+     * @param comment 表注释
      * @return 内容
      */
     private String fillPojoTemplate(String tableName, String entityName, String comment) {
@@ -514,7 +559,7 @@ public class Generator {
 
     /**
      * 填充所有字段
-     * @param tableName       表名
+     * @param tableName 表名
      * @param isForBaseEntity entity父类使用
      * @return 内容
      */
@@ -536,7 +581,7 @@ public class Generator {
 
     /**
      * 静态字段填充
-     * @param tableName       表名
+     * @param tableName 表名
      * @param isForBaseEntity entity父类使用
      * @return 内容
      */
@@ -576,11 +621,12 @@ public class Generator {
     /**
      * 填充单个字段
      * @param fieldStringObjectMap 字段属性
-     * @param tableName            表名
-     * @param isForBaseEntity      用于entity父类使用
+     * @param tableName 表名
+     * @param isForBaseEntity 用于entity父类使用
      * @return 内容
      */
-    private String fillFieldTemplate(Map<String, Object> fieldStringObjectMap, String tableName, boolean isForBaseEntity) {
+    private String fillFieldTemplate(Map<String, Object> fieldStringObjectMap, String tableName,
+        boolean isForBaseEntity) {
 
         System.out.println(fieldStringObjectMap);
         // 判断数据源类型 目前仅支持mysql
@@ -695,7 +741,8 @@ public class Generator {
         parameters.add(DBName());
         parameters.add(tableName);
         return getModel().newQuery()
-            .queryList("select * from information_schema.`columns` where table_schema = ? and table_name = ? order by ordinal_position",
+            .queryList(
+                "select * from information_schema.`columns` where table_schema = ? and table_name = ? order by ordinal_position",
                 parameters)
             .toMapList();
     }

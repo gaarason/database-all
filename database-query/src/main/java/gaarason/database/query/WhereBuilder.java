@@ -1,14 +1,11 @@
 package gaarason.database.query;
 
-import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
-import gaarason.database.provider.ContainerProvider;
-import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 
@@ -86,9 +83,18 @@ public abstract class WhereBuilder<T extends Serializable, K extends Serializabl
 
     @Override
     public Builder<T, K> where(T entity) {
-        final Map<String, Object> columnValueMap = ModelShadowProvider.columnValueMap(entity);
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity);
         return where(columnValueMap);
     }
+
+    @Override
+    public Builder<T, K> where(Object entity) {
+        // todo
+//        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity);
+//        return where(columnValueMap);
+        return null;
+    }
+
 
     @Override
     public Builder<T, K> where(Map<String, Object> map) {
@@ -147,7 +153,7 @@ public abstract class WhereBuilder<T extends Serializable, K extends Serializabl
 
     @Override
     public Builder<T, K> whereLike(@Nullable T entity) {
-        final Map<String, Object> columnValueMap = ModelShadowProvider.columnValueMap(entity);
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity);
         return whereLike(columnValueMap);
     }
 
@@ -164,7 +170,7 @@ public abstract class WhereBuilder<T extends Serializable, K extends Serializabl
 
     @Override
     public Builder<T, K> whereMayLike(String column, @Nullable Object value) {
-        String s = ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class);
+        String s = conversion.castNullable(value, String.class);
         if (!ObjectUtils.isNull(s) && (s.endsWith("%") || s.startsWith("%"))) {
             return whereLike(column, value);
         } else {
@@ -182,7 +188,7 @@ public abstract class WhereBuilder<T extends Serializable, K extends Serializabl
 
     @Override
     public Builder<T, K> whereMayLike(@Nullable T entity) {
-        final Map<String, Object> columnValueMap = ModelShadowProvider.columnValueMap(entity);
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity);
         return whereMayLike(columnValueMap);
     }
 

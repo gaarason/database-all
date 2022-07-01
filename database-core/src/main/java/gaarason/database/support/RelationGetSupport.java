@@ -7,6 +7,7 @@ import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.contract.function.GenerateRecordListFunctionalInterface;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
+import gaarason.database.core.Container;
 import gaarason.database.exception.EntityNewInstanceException;
 import gaarason.database.provider.FieldInfo;
 import gaarason.database.provider.ModelInfo;
@@ -20,7 +21,7 @@ import java.util.*;
  * 关联关系获取
  * @author xt
  */
-public class RelationGetSupport<T extends Serializable, K extends Serializable> {
+public class RelationGetSupport<T extends Serializable, K extends Serializable> extends Container.SimpleKeeper {
 
     /**
      * 当前结果集
@@ -34,25 +35,28 @@ public class RelationGetSupport<T extends Serializable, K extends Serializable> 
      */
     protected final boolean attachedRelationship;
 
-
     /**
      * 基本对象转化
-     * @param tkRecord               结果集
+     * @param container 容器
+     * @param tkRecord 结果集
      * @param attachedRelationship 是否启用关联关系
      */
-    public RelationGetSupport(Record<T, K> tkRecord, boolean attachedRelationship) {
+    public RelationGetSupport(Container container, Record<T, K> tkRecord, boolean attachedRelationship) {
+        super(container);
         List<Record<T, K>> recordList = new ArrayList<>();
         recordList.add(tkRecord);
         this.attachedRelationship = attachedRelationship;
-        this.records = RecordFactory.newRecordList(recordList);
+        this.records = RecordFactory.newRecordList(getContainer(), recordList);
     }
 
-    public RelationGetSupport(List<Record<T, K>> records, boolean attachedRelationship) {
+    public RelationGetSupport(Container container, List<Record<T, K>> records, boolean attachedRelationship) {
+        super(container);
         this.attachedRelationship = attachedRelationship;
-        this.records = RecordFactory.newRecordList(records);
+        this.records = RecordFactory.newRecordList(getContainer(), records);
     }
 
-    public RelationGetSupport(RecordList<T, K> records, boolean attachedRelationship) {
+    public RelationGetSupport(Container container, RecordList<T, K> records, boolean attachedRelationship) {
+        super(container);
         this.attachedRelationship = attachedRelationship;
         this.records = records;
     }
@@ -83,7 +87,7 @@ public class RelationGetSupport<T extends Serializable, K extends Serializable> 
         // 关联关系的临时性缓存
         for (Record<T, K> theRecord : records) {
             // 模型信息
-            ModelInfo<T, K> modelInfo = ModelShadowProvider.get(records.get(0).getModel());
+            ModelInfo<T, K> modelInfo = getModelShadow().get(records.get(0).getModel());
             try {
                 // 实体类的对象
                 T entity = modelInfo.getEntityClass().newInstance();
@@ -151,12 +155,12 @@ public class RelationGetSupport<T extends Serializable, K extends Serializable> 
     /**
      * 在内存缓存中优先查找目标值
      * @param cacheRecords 缓存map
-     * @param sql          sql
-     * @param closure      真实业务逻辑实现
+     * @param sql sql
+     * @param closure 真实业务逻辑实现
      * @return 批量结果集
      */
     protected RecordList<?, ?> getRelationRecordsInCache(Map<String, RecordList<?, ?>> cacheRecords,
-                                                         String sql, GenerateRecordListFunctionalInterface closure) {
+        String sql, GenerateRecordListFunctionalInterface closure) {
         // 有缓存有直接返回, 没有就执行后返回
         // 因为没有更新操作, 所以直接返回原对象
         // new String[]{sql, ""} 很关键
@@ -166,16 +170,16 @@ public class RelationGetSupport<T extends Serializable, K extends Serializable> 
 
     /**
      * 在内存缓存中优先查找目标值
-     * @param cacheRecords           缓存map
-     * @param sqlArr                 sql数组
+     * @param cacheRecords 缓存map
+     * @param sqlArr sql数组
      * @param relationshipRecordWith record 实现
-     * @param closure                真实业务逻辑实现
+     * @param closure 真实业务逻辑实现
      * @return 批量结果集
      */
     protected RecordList<?, ?> getTargetRecordsInCache(Map<String, RecordList<?, ?>> cacheRecords,
-                                                       String[] sqlArr,
-                                                       RelationshipRecordWithFunctionalInterface relationshipRecordWith,
-                                                       GenerateRecordListFunctionalInterface closure) {
+        String[] sqlArr,
+        RelationshipRecordWithFunctionalInterface relationshipRecordWith,
+        GenerateRecordListFunctionalInterface closure) {
         // 有缓存有直接返回, 没有就执行后返回
         RecordList<?, ?> recordList = getRecordsInCache(cacheRecords, sqlArr, closure);
         // 使用复制结果
@@ -191,17 +195,25 @@ public class RelationGetSupport<T extends Serializable, K extends Serializable> 
     /**
      * 在内存缓存中优先查找目标值
      * @param cacheRecords 缓存map
-     * @param sqlArr       sql数组
-     * @param closure      真实业务逻辑实现
+     * @param sqlArr sql数组
+     * @param closure 真实业务逻辑实现
      * @return 批量结果集
      */
     protected RecordList<?, ?> getRecordsInCache(Map<String, RecordList<?, ?>> cacheRecords, String[] sqlArr,
-                                                 GenerateRecordListFunctionalInterface closure) {
+        GenerateRecordListFunctionalInterface closure) {
         // 缓存keyName
         String cacheKeyName = Arrays.toString(sqlArr);
         // 有缓存有直接返回, 没有就执行后返回
         return cacheRecords.computeIfAbsent(cacheKeyName,
             theKey -> closure.execute());
+    }
+
+    /**
+     * Model 信息
+     * @return ModelShadow
+     */
+    protected ModelShadowProvider getModelShadow() {
+        return container.getBean(ModelShadowProvider.class);
     }
 
 }
