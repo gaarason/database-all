@@ -1,5 +1,6 @@
 package gaarason.database.query;
 
+import gaarason.database.appointment.EntityUseType;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
@@ -83,7 +84,7 @@ public abstract class WhereBuilder<T extends Serializable, K extends Serializabl
 
     @Override
     public Builder<T, K> where(T entity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity);
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity, EntityUseType.CONDITION);
         return where(columnValueMap);
     }
 
@@ -153,7 +154,7 @@ public abstract class WhereBuilder<T extends Serializable, K extends Serializabl
 
     @Override
     public Builder<T, K> whereLike(@Nullable T entity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity);
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity, EntityUseType.CONDITION);
         return whereLike(columnValueMap);
     }
 
@@ -188,7 +189,7 @@ public abstract class WhereBuilder<T extends Serializable, K extends Serializabl
 
     @Override
     public Builder<T, K> whereMayLike(@Nullable T entity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity);
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity, EntityUseType.CONDITION);
         return whereMayLike(columnValueMap);
     }
 

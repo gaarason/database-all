@@ -8,7 +8,7 @@ import java.util.function.Function;
  * @author xt
  */
 @FunctionalInterface
-public interface ColumnFunctionalInterface<T extends Serializable> extends Function<T, Object>,Serializable {
+public interface ColumnFunctionalInterface<T extends Serializable> extends Function<T, Object>, Serializable {
 
 
 }

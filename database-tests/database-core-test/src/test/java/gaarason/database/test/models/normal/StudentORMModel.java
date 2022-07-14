@@ -1,5 +1,6 @@
 package gaarason.database.test.models.normal;
 
+import gaarason.database.appointment.FieldStrategy;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.annotation.Column;
 import gaarason.database.annotation.Primary;
@@ -58,10 +59,10 @@ public class StudentORMModel extends SingleModel<StudentORMModel.Entity, Integer
         @Column(name = "teacher_id")
         private Integer teacherId;
 
-        @Column(name = "created_at", insertable = false, updatable = false)
+        @Column(name = "created_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
         private Date createdAt;
 
-        @Column(name = "updated_at", insertable = false, updatable = false)
+        @Column(name = "updated_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
         private Date updatedAt;
 
         private Boolean isDeleted;

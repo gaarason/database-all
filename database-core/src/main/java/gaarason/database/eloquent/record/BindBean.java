@@ -8,6 +8,7 @@ import gaarason.database.exception.RelationNotFoundException;
 import gaarason.database.provider.ModelInfo;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.provider.RelationFieldInfo;
+import gaarason.database.support.ModelMember;
 import gaarason.database.support.RecordFactory;
 
 import java.io.Serializable;
@@ -29,19 +30,13 @@ public class BindBean<T extends Serializable, K extends Serializable> implements
     public BindBean(Record<T, K> tkRecord, String fieldName) {
         this.tkRecord = tkRecord;
         // 模型信息
-        ModelInfo<?, ?> modelInfo = tkRecord.getModel()
+        ModelMember<T, K> modelMember = tkRecord.getModel()
             .getGaarasonDataSource()
             .getContainer()
             .getBean(ModelShadowProvider.class)
             .get(tkRecord.getModel());
         // 关系信息
-        RelationFieldInfo relationFieldInfo = modelInfo.getRelationFieldMap().get(fieldName);
-        if (relationFieldInfo == null) {
-            throw new RelationNotFoundException(
-                "No associations were found for property[" + fieldName + "] in the entity[" +
-                    modelInfo.getEntityClass() + "].");
-        }
-        relationSubQuery = relationFieldInfo.getRelationSubQuery();
+        relationSubQuery = modelMember.getEntityMember().getFieldRelationMemberByFieldName(fieldName).getRelationSubQuery();
     }
 
     @Override

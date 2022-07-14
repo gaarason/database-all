@@ -3,6 +3,7 @@ package gaarason.database.test.models.normal;
 import gaarason.database.annotation.Column;
 import gaarason.database.annotation.Primary;
 import gaarason.database.annotation.Table;
+import gaarason.database.appointment.FieldStrategy;
 import gaarason.database.test.models.normal.base.SingleModel;
 import lombok.Data;
 
@@ -35,10 +36,10 @@ public class StudentSoftDeleteModel extends SingleModel<StudentSoftDeleteModel.E
         @Column(name = "teacher_id")
         private Integer teacherId;
 
-        @Column(name = "created_at", insertable = false, updatable = false)
+        @Column(name = "created_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
         private Date createdAt;
 
-        @Column(name = "updated_at", insertable = false, updatable = false)
+        @Column(name = "updated_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
         private Date updatedAt;
 
         private boolean isDeleted;

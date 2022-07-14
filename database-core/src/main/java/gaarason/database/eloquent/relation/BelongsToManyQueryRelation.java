@@ -8,9 +8,9 @@ import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.core.Container;
-import gaarason.database.provider.FieldInfo;
-import gaarason.database.provider.ModelInfo;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.support.EntityMember;
+import gaarason.database.support.FieldMember;
 import gaarason.database.support.RecordFactory;
 import gaarason.database.util.ObjectUtils;
 
@@ -114,14 +114,15 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         List<? extends Serializable> objects = targetRecordList.toObjectList(cacheRelationRecordList);
 
         if (!objects.isEmpty()) {
-            // 模型信息
-            ModelInfo<?, ?> modelInfo = modelShadowProvider.get(targetRecordList.get(0).getModel());
+            // 实体信息
+            EntityMember<?> entityMember = modelShadowProvider.get(targetRecordList.get(0).getModel())
+                .getEntityMember();
             // 字段信息
-            FieldInfo fieldInfo = modelInfo.getColumnFieldMap().get(targetModelLocalKey);
+            FieldMember fieldMember = entityMember.getFieldMemberByColumnName(targetModelLocalKey);
 
             for (Serializable obj : objects) {
                 // 目标值
-                Object targetModelLocalKeyValue = modelShadowProvider.fieldGet(fieldInfo, obj);
+                Object targetModelLocalKeyValue = fieldMember.fieldGet(obj);
                 // 满足则加入
                 if (targetModelLocalKayValueSet != null &&
                     targetModelLocalKayValueSet.contains(targetModelLocalKeyValue)) {

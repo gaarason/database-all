@@ -1,15 +1,16 @@
 package gaarason.database.eloquent.relation;
 
+import gaarason.database.annotation.BelongsTo;
+import gaarason.database.appointment.Column;
+import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
-import gaarason.database.annotation.BelongsTo;
-import gaarason.database.appointment.SqlType;
 import gaarason.database.core.Container;
 import gaarason.database.exception.RelationAttachException;
+import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
-import gaarason.database.appointment.Column;
 import gaarason.database.util.ObjectUtils;
 
 import java.io.Serializable;
@@ -27,14 +28,15 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     /**
      * 关系键的默认值, 仅在解除关系时使用
      */
+    @Nullable
     private final Object defaultLocalModelForeignKeyValue;
 
-    public BelongsToQueryRelation(Field field,  ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
+    public BelongsToQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
         super(modelShadowProvider, model);
         belongsToTemplate = new BelongsToTemplate(field);
 
-        defaultLocalModelForeignKeyValue = modelShadowProvider.getByEntityClass(ObjectUtils.typeCast(field.getDeclaringClass()))
-            .getColumnFieldMap().get(belongsToTemplate.localModelForeignKey).getDefaultValue();
+        defaultLocalModelForeignKeyValue = modelShadowProvider.parseAnyEntityWithCache(field.getDeclaringClass())
+            .getFieldMemberByColumnName(belongsToTemplate.localModelForeignKey).getDefaultValue();
     }
 
     @Override
@@ -59,6 +61,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
         // 本表的关系键值
         Object value = theRecord.getMetadataMap().get(belongsToTemplate.localModelForeignKey).getValue();
 
+        assert value != null;
         return findObjList(targetRecordList.toObjectList(cacheRelationRecordList), column, value);
     }
 
@@ -76,7 +79,8 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public int attach(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, Object> relationDataMap) {
+    public int attach(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues,
+        Map<String, Object> relationDataMap) {
         if (targetPrimaryKeyValues.isEmpty()) {
             return 0;
         } else if (targetPrimaryKeyValues.size() > 1) {
@@ -85,7 +89,8 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
         }
 
         // 集合兼容处理
-        final Collection<Object> compatibleTargetPrimaryKeyValues = compatibleCollection(targetPrimaryKeyValues, belongsToTemplate.parentModel);
+        final Collection<Object> compatibleTargetPrimaryKeyValues = compatibleCollection(targetPrimaryKeyValues,
+            belongsToTemplate.parentModel);
 
         // 目标表(父表)model的主键
         Object targetPrimaryKeyValue = compatibleTargetPrimaryKeyValues.toArray()[0];
@@ -98,6 +103,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
                 .firstOrFail().getMetadataMap().get(belongsToTemplate.parentModelLocalKey).getValue();
 
             // 执行更新, 自我更新需要手动刷新属性
+            assert parentModelLocalKeyValue != null;
             return attachAndRefresh(theRecord, parentModelLocalKeyValue);
         });
     }
@@ -105,7 +111,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     @Override
     public int detach(Record<?, ?> theRecord) {
         return detach(theRecord, Collections.singletonList(
-            theRecord.getMetadataMap().get(belongsToTemplate.localModelForeignKey).getValue().toString()));
+            Objects.requireNonNull(theRecord.getMetadataMap().get(belongsToTemplate.localModelForeignKey).getValue()).toString()));
     }
 
     @Override
@@ -123,17 +129,20 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
         }
 
         // 集合兼容处理
-        final Collection<Object> compatibleTargetPrimaryKeyValues = compatibleCollection(targetPrimaryKeyValues, belongsToTemplate.parentModel);
+        final Collection<Object> compatibleTargetPrimaryKeyValues = compatibleCollection(targetPrimaryKeyValues,
+            belongsToTemplate.parentModel);
 
         // 执行更新, 自我更新需要手动刷新属性
         // 目标,必须是关联关系, 才解除
         // 解除可以多个
         int successNum = theRecord.getModel().newQuery()
-            .where(theRecord.getModel().getPrimaryKeyColumnName(), String.valueOf(theRecord.getOriginalPrimaryKeyValue()))
+            .where(theRecord.getModel().getPrimaryKeyColumnName(),
+                String.valueOf(theRecord.getOriginalPrimaryKeyValue()))
             .whereIn(belongsToTemplate.localModelForeignKey,
                 (builder -> builder.select(belongsToTemplate.parentModelLocalKey)
                     .from(belongsToTemplate.parentModel.getTableName())
-                    .whereIn(belongsToTemplate.parentModel.getPrimaryKeyColumnName(), compatibleTargetPrimaryKeyValues)))
+                    .whereIn(belongsToTemplate.parentModel.getPrimaryKeyColumnName(),
+                        compatibleTargetPrimaryKeyValues)))
             .data(belongsToTemplate.localModelForeignKey, defaultLocalModelForeignKeyValue).update();
         if (successNum > 0) {
             Map<String, Column> metadataMap = theRecord.getMetadataMap();
@@ -149,24 +158,27 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public int sync(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, Object> relationDataMap) {
+    public int sync(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues,
+        Map<String, Object> relationDataMap) {
         return attach(theRecord, targetPrimaryKeyValues, relationDataMap);
     }
 
     @Override
     public int toggle(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap) {
-        if (targetRecords.isEmpty()){
+        if (targetRecords.isEmpty()) {
             return 0;
         }
 
         // 目标表(父表)model的关联键值
         Object parentModelLocalKeyValue = parentModelLocalKeyValue(targetRecords);
 
-        // 关系已经存在, 切换即是解除
-        if (theRecord.getMetadataMap().get(belongsToTemplate.localModelForeignKey).getValue().equals(parentModelLocalKeyValue)) {
+        // 关系已经存在, 切换就是解除
+        if (Objects.equals(theRecord.getMetadataMap()
+            .get(belongsToTemplate.localModelForeignKey)
+            .getValue(), parentModelLocalKeyValue)) {
             return detach(theRecord, Collections.singletonList(parentModelLocalKeyValue));
         }
-        // 关系不存在, 切换即是增加
+        // 关系不存在, 切换就是增加
         else {
             return attachAndRefresh(theRecord, parentModelLocalKeyValue);
         }
@@ -174,7 +186,8 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public int toggle(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues, Map<String, Object> relationDataMap) {
+    public int toggle(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues,
+        Map<String, Object> relationDataMap) {
         if (targetPrimaryKeyValues.isEmpty()) {
             return 0;
         } else if (targetPrimaryKeyValues.size() > 1) {
@@ -183,7 +196,8 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
         }
 
         // 集合兼容处理
-        final Collection<Object> compatibleTargetPrimaryKeyValues = compatibleCollection(targetPrimaryKeyValues, belongsToTemplate.parentModel);
+        final Collection<Object> compatibleTargetPrimaryKeyValues = compatibleCollection(targetPrimaryKeyValues,
+            belongsToTemplate.parentModel);
 
         // 目标表(父表)model的主键
         Object targetPrimaryKeyValue = compatibleTargetPrimaryKeyValues.toArray()[0];
@@ -196,12 +210,15 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
                 .where(belongsToTemplate.parentModel.getPrimaryKeyColumnName(), targetPrimaryKeyValue)
                 .firstOrFail().getMetadataMap().get(belongsToTemplate.parentModelLocalKey).getValue();
 
-            // 关系已经存在, 切换即是解除
-            if (theRecord.getMetadataMap().get(belongsToTemplate.localModelForeignKey).getValue().equals(parentModelLocalKeyValue)) {
+            // 关系已经存在, 切换就是解除
+            if (Objects.equals(theRecord.getMetadataMap()
+                .get(belongsToTemplate.localModelForeignKey)
+                .getValue(), parentModelLocalKeyValue)) {
                 return detach(theRecord, compatibleTargetPrimaryKeyValues);
             }
-            // 关系不存在, 切换即是增加
+            // 关系不存在, 切换就是增加
             else {
+                assert parentModelLocalKeyValue != null;
                 return attachAndRefresh(theRecord, parentModelLocalKeyValue);
             }
         });
@@ -209,8 +226,9 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
     protected Object parentModelLocalKeyValue(RecordList<?, ?> targetRecords) {
         if (targetRecords.size() > 1) {
-            throw new RelationAttachException("The relationship \"@BelongsTo\" could only attach/toggle/sync a relationship with " +
-                "one, but now more than one.");
+            throw new RelationAttachException(
+                "The relationship \"@BelongsTo\" could only attach/toggle/sync a relationship with " +
+                    "one, but now more than one.");
         }
         Column column = targetRecords.get(0).getMetadataMap().get(belongsToTemplate.parentModelLocalKey);
         if (null == column) {
@@ -229,14 +247,15 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
     /**
      * 增加关系并刷新自身
-     * @param theRecord                 本模型
+     * @param theRecord 本模型
      * @param localModelForeignKeyValue 父模型的关系键(本模型外键)
      * @return 受影响的行数
      */
     protected int attachAndRefresh(Record<?, ?> theRecord, Object localModelForeignKeyValue) {
         // 执行更新, 自我更新需要手动刷新属性
         int successNum = theRecord.getModel().newQuery()
-            .where(theRecord.getModel().getPrimaryKeyColumnName(), String.valueOf(theRecord.getOriginalPrimaryKeyValue()))
+            .where(theRecord.getModel().getPrimaryKeyColumnName(),
+                String.valueOf(theRecord.getOriginalPrimaryKeyValue()))
             .data(belongsToTemplate.localModelForeignKey, localModelForeignKeyValue).update();
         if (successNum > 0) {
             Map<String, Column> metadataMap = theRecord.getMetadataMap();

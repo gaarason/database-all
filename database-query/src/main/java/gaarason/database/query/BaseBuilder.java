@@ -2,7 +2,7 @@ package gaarason.database.query;
 
 import gaarason.database.appointment.FinalVariable;
 import gaarason.database.appointment.Paginate;
-import gaarason.database.appointment.ParameterAndType;
+import gaarason.database.appointment.ValueWrapper;
 import gaarason.database.appointment.SqlType;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
@@ -103,12 +103,12 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
 
     @Override
     public String lambda2FieldName(ColumnFunctionalInterface<T> column) {
-        return modelShadowProvider.getFieldNameByLambdaWithCache(column);
+        return modelShadowProvider.parseFieldNameByLambdaWithCache(column);
     }
 
     @Override
     public String lambda2ColumnName(ColumnFunctionalInterface<T> column) {
-        return modelShadowProvider.getColumnNameByLambdaWithCache(column);
+        return modelShadowProvider.parseColumnNameByLambdaWithCache(column);
     }
 
     /**
@@ -619,10 +619,10 @@ public abstract class BaseBuilder<T extends Serializable, K extends Serializable
      * @param parameter 参数对象
      */
     protected void setParameter(PreparedStatement preparedStatement, int index, Object parameter) throws SQLException {
-        if (parameter instanceof ParameterAndType) {
+        if (parameter instanceof ValueWrapper) {
             // 精确类型
-            preparedStatement.setObject(index, ((ParameterAndType) parameter).getValue(),
-                ((ParameterAndType) parameter).getType());
+            preparedStatement.setObject(index, ((ValueWrapper) parameter).getValue(),
+                ((ValueWrapper) parameter).getType());
         } else {
             // 全凭运气
             preparedStatement.setObject(index, parameter);

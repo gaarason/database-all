@@ -66,13 +66,6 @@ public interface Operation<T extends Serializable, K extends Serializable> {
     boolean isDirty();
 
     /**
-     * 获取所有变更属性组成的实体对象
-     * 不会包含关联关系检测
-     * @return 实体对象
-     */
-    T getDirty();
-
-    /**
      * 获取所有变更属性组成的map
      * 不会包含关联关系检测
      * @return map<列名, 值>

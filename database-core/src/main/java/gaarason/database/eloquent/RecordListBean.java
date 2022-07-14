@@ -13,8 +13,8 @@ import gaarason.database.exception.AbnormalParameterException;
 import gaarason.database.exception.NoSuchAlgorithmException;
 import gaarason.database.exception.OperationNotSupportedException;
 import gaarason.database.lang.Nullable;
-import gaarason.database.provider.FieldInfo;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.support.EntityMember;
 import gaarason.database.support.RelationGetSupport;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
@@ -131,12 +131,12 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
 
     @Override
     public String lambda2FieldName(ColumnFunctionalInterface<T> column) {
-        return modelShadowProvider.getFieldNameByLambdaWithCache(column);
+        return modelShadowProvider.parseFieldNameByLambdaWithCache(column);
     }
 
     @Override
     public String lambda2ColumnName(ColumnFunctionalInterface<T> column) {
-        return modelShadowProvider.getColumnNameByLambdaWithCache(column);
+        return modelShadowProvider.parseColumnNameByLambdaWithCache(column);
     }
 
     /**
@@ -231,10 +231,17 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
     @Override
     @Nullable
     public <W> W elementGetValueByFieldName(Record<T, K> theRecord, String fieldName) {
-        final FieldInfo fieldInfo = modelShadowProvider.getFieldInfoByEntityClass(theRecord.getModel().getEntityClass(),
-            fieldName);
-        final Column column = theRecord.getMetadataMap().get(fieldInfo.getColumnName());
-        return column != null ? ObjectUtils.typeCast(column.getValue()) : null;
+        EntityMember<T> entityMember = modelShadowProvider.parseAnyEntityWithCache(
+            theRecord.getModel().getEntityClass());
+
+        final Column column = theRecord.getMetadataMap()
+            .get(entityMember.getFieldMemberByFieldName(fieldName).getColumnName());
+        if (column != null) {
+            assert column.getValue() != null;
+            return ObjectUtils.typeCast(column.getValue());
+        } else {
+            return null;
+        }
     }
 
     @Override

@@ -1,5 +1,6 @@
 package gaarason.database.query;
 
+import gaarason.database.appointment.EntityUseType;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
@@ -83,7 +84,7 @@ public abstract class HavingBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> having(T entity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity);
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity, EntityUseType.CONDITION);
         return having(columnValueMap);
     }
 
@@ -144,7 +145,7 @@ public abstract class HavingBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> havingLike(@Nullable T entity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity);
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity, EntityUseType.CONDITION);
         return havingLike(columnValueMap);
     }
 
@@ -179,7 +180,7 @@ public abstract class HavingBuilder<T extends Serializable, K extends Serializab
 
     @Override
     public Builder<T, K> havingMayLike(@Nullable T entity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity);
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity, EntityUseType.CONDITION);
         return havingMayLike(columnValueMap);
     }
 

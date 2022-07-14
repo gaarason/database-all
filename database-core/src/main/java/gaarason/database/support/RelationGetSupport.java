@@ -8,11 +8,7 @@ import gaarason.database.contract.function.GenerateRecordListFunctionalInterface
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.core.Container;
-import gaarason.database.exception.EntityNewInstanceException;
-import gaarason.database.provider.FieldInfo;
-import gaarason.database.provider.ModelInfo;
 import gaarason.database.provider.ModelShadowProvider;
-import gaarason.database.provider.RelationFieldInfo;
 
 import java.io.Serializable;
 import java.util.*;
@@ -82,72 +78,64 @@ public class RelationGetSupport<T extends Serializable, K extends Serializable> 
     public List<T> toObjectList(Map<String, RecordList<?, ?>> cacheRecords) {
         // 同级数据源
         List<Map<String, Column>> originalMetadataMapList = records.getOriginalMetadataMapList();
+        ModelShadowProvider modelShadow = getModelShadow();
 
         List<T> list = new ArrayList<>();
         // 关联关系的临时性缓存
         for (Record<T, K> theRecord : records) {
             // 模型信息
-            ModelInfo<T, K> modelInfo = getModelShadow().get(records.get(0).getModel());
-            try {
-                // 实体类的对象
-                T entity = modelInfo.getEntityClass().newInstance();
-                // 普通属性集合
-                Map<String, FieldInfo> javaFieldMap = modelInfo.getJavaFieldMap();
-                for (Map.Entry<String, FieldInfo> entry : javaFieldMap.entrySet()) {
-                    // 普通属性信息
-                    FieldInfo fieldInfo = entry.getValue();
-                    // 普通属性赋值
-                    ModelShadowProvider.fieldAssignment(fieldInfo, theRecord.getMetadataMap(), entity, theRecord);
+            ModelMember<T, K> modelMember = modelShadow.get(records.get(0).getModel());
+            EntityMember<T> entityMember = modelMember.getEntityMember();
+
+            // 实体类的对象
+            T entity = entityMember.newInstance();
+            // 普通属性集合
+            modelShadow.entityAssignment(entity, theRecord);
+
+            // 关系属性集合
+            Map<String, FieldRelationMember> relationFieldMap = entityMember.getRelationFieldMap();
+            for (Map.Entry<String, FieldRelationMember> entry : relationFieldMap.entrySet()) {
+                // 关系属性信息
+                FieldRelationMember fieldRelationMember = entry.getValue();
+
+                // 获取关系的预处理
+                GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart = theRecord.getRelationBuilderMap()
+                    .get(fieldRelationMember.getName());
+                RelationshipRecordWithFunctionalInterface relationshipRecordWith = theRecord.getRelationRecordMap()
+                    .get(fieldRelationMember.getName());
+
+                if (generateSqlPart == null || relationshipRecordWith == null || !attachedRelationship) {
+                    continue;
                 }
 
-                // 关系属性集合
-                Map<String, RelationFieldInfo> relationFieldMap = modelInfo.getRelationFieldMap();
-                for (Map.Entry<String, RelationFieldInfo> entry : relationFieldMap.entrySet()) {
-                    // 关系属性信息
-                    RelationFieldInfo relationFieldInfo = entry.getValue();
+                // 关联关系字段处理
+                RelationSubQuery relationSubQuery = fieldRelationMember.getRelationSubQuery();
 
-                    // 获取关系的预处理
-                    GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart = theRecord.getRelationBuilderMap()
-                        .get(relationFieldInfo.getName());
-                    RelationshipRecordWithFunctionalInterface relationshipRecordWith = theRecord.getRelationRecordMap()
-                        .get(relationFieldInfo.getName());
+                // sql数组
+                String[] sqlArr = relationSubQuery.prepareSqlArr(originalMetadataMapList, generateSqlPart);
 
-                    if (generateSqlPart == null || relationshipRecordWith == null || !attachedRelationship) {
-                        continue;
-                    }
+                // 中间表数据
+                RecordList<?, ?> relationRecords = getRelationRecordsInCache(cacheRecords, sqlArr[1],
+                    () -> relationSubQuery.dealBatchPrepare(sqlArr[1]));
 
-                    // 关联关系字段处理
-                    RelationSubQuery relationSubQuery = relationFieldInfo.getRelationSubQuery();
+                // 本级关系查询
+                RecordList<?, ?> targetRecordList = getTargetRecordsInCache(cacheRecords, sqlArr,
+                    relationshipRecordWith, () -> relationSubQuery.dealBatch(sqlArr[0], relationRecords));
 
-                    // sql数组
-                    String[] sqlArr = relationSubQuery.prepareSqlArr(originalMetadataMapList, generateSqlPart);
+                // 递归处理下级关系, 并筛选当前 record 所需要的属性
+                List<?> objects = relationSubQuery.filterBatchRecord(theRecord, targetRecordList,
+                    cacheRecords);
 
-                    // 中间表数据
-                    RecordList<?, ?> relationRecords = getRelationRecordsInCache(cacheRecords, sqlArr[1],
-                        () -> relationSubQuery.dealBatchPrepare(sqlArr[1]));
-
-                    // 本级关系查询
-                    RecordList<?, ?> targetRecordList = getTargetRecordsInCache(cacheRecords, sqlArr,
-                        relationshipRecordWith, () -> relationSubQuery.dealBatch(sqlArr[0], relationRecords));
-
-                    // 递归处理下级关系, 并筛选当前 record 所需要的属性
-                    List<?> objects = relationSubQuery.filterBatchRecord(theRecord, targetRecordList,
-                        cacheRecords);
-
-                    // 是否是集合
-                    if (relationFieldInfo.isCollection()) {
-                        // 关系属性赋值
-                        relationFieldInfo.getField().set(entity, objects);
-                    } else {
-                        // 关系属性赋值
-                        relationFieldInfo.getField().set(entity, objects.size() == 0 ? null : objects.get(0));
-                    }
+                // 是否是集合
+                if (fieldRelationMember.isCollection()) {
+                    // 关系属性赋值
+                    fieldRelationMember.fieldSet(entity, objects);
+                } else {
+                    // 关系属性赋值
+                    fieldRelationMember.fieldSet(entity, objects.size() == 0 ? null : objects.get(0));
                 }
-                list.add(entity);
-            } catch (InstantiationException | IllegalAccessException e) {
-                throw new EntityNewInstanceException(e.getMessage(), e);
             }
-
+            list.add(entity);
         }
         return list;
     }

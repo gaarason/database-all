@@ -5,15 +5,14 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.core.Container;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
-import gaarason.database.provider.FieldInfo;
-import gaarason.database.provider.ModelInfo;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.support.ModelMember;
+import gaarason.database.support.PrimaryKeyMember;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
 
@@ -35,6 +34,13 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
     private static final String DEFAULT_SOFT_DELETED_VALUE_NO = "0";
 
     /**
+     * Model信息大全
+     * 注:不需要volatile修饰
+     */
+    @Nullable
+    protected ModelShadowProvider modelShadow;
+
+    /**
      * @return dataSource代理
      */
     public abstract GaarasonDataSource getGaarasonDataSource();
@@ -54,7 +60,17 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
      * @return ModelShadow
      */
     protected ModelShadowProvider getModelShadow() {
-        return getGaarasonDataSource().getContainer().getBean(ModelShadowProvider.class);
+        ModelShadowProvider localModelShadow = modelShadow;
+        if (localModelShadow == null) {
+            synchronized (this) {
+                localModelShadow = modelShadow;
+                if (localModelShadow == null) {
+                    modelShadow = localModelShadow = getGaarasonDataSource().getContainer()
+                        .getBean(ModelShadowProvider.class);
+                }
+            }
+        }
+        return localModelShadow;
     }
 
     /**
@@ -313,68 +329,27 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
     }
 
     @Override
-    public boolean isPrimaryKeyDefinition() {
-        return getModelInfo().isPrimaryKeyDefinition();
-    }
-
-    @Override
     public String getPrimaryKeyColumnName() throws PrimaryKeyNotFoundException {
-        String primaryKeyColumnName = getModelInfo().getPrimaryKeyColumnName();
-        if (null == primaryKeyColumnName) {
+        PrimaryKeyMember primaryKeyMember = getModelMember().getEntityMember().getPrimaryKeyMember();
+        if (null == primaryKeyMember) {
             throw new PrimaryKeyNotFoundException();
         }
-        return primaryKeyColumnName;
-    }
-
-    @Override
-    public String getPrimaryKeyName() throws PrimaryKeyNotFoundException {
-        String primaryKeyName = getModelInfo().getPrimaryKeyName();
-        if (null == primaryKeyName) {
-            throw new PrimaryKeyNotFoundException();
-        }
-        return primaryKeyName;
-    }
-
-    @Override
-    public boolean isPrimaryKeyIncrement() throws PrimaryKeyNotFoundException {
-        Boolean primaryKeyIncrement = getModelInfo().getPrimaryKeyIncrement();
-        if (null == primaryKeyIncrement) {
-            throw new PrimaryKeyNotFoundException();
-        }
-        return primaryKeyIncrement;
-    }
-
-    @Override
-    public FieldInfo getPrimaryKeyFieldInfo() throws PrimaryKeyNotFoundException {
-        FieldInfo primaryKeyFieldInfo = getModelInfo().getPrimaryKeyFieldInfo();
-        if (null == primaryKeyFieldInfo) {
-            throw new PrimaryKeyNotFoundException();
-        }
-        return primaryKeyFieldInfo;
-    }
-
-    @Override
-    public IdGenerator<K> getPrimaryKeyIdGenerator() throws PrimaryKeyNotFoundException {
-        IdGenerator<K> primaryKeyIdGenerator = getModelInfo().getPrimaryKeyIdGenerator();
-        if (null == primaryKeyIdGenerator) {
-            throw new PrimaryKeyNotFoundException();
-        }
-        return primaryKeyIdGenerator;
+        return primaryKeyMember.getFieldMember().getColumnName();
     }
 
     @Override
     public Class<K> getPrimaryKeyClass() {
-        return getModelInfo().getPrimaryKeyClass();
+        return getModelMember().getPrimaryKeyClass();
     }
 
     @Override
     public String getTableName() {
-        return getModelInfo().getTableName();
+        return getModelMember().getEntityMember().getTableName();
     }
 
     @Override
     public Class<T> getEntityClass() {
-        return getModelInfo().getEntityClass();
+        return getModelMember().getEntityClass();
     }
 
     @Override
@@ -382,8 +357,11 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
         return getGaarasonDataSource().getContainer();
     }
 
-    @Override
-    public ModelInfo<T, K> getModelInfo() {
+    /**
+     * 获取模型信息
+     * @return 模型信息
+     */
+    protected ModelMember<T, K> getModelMember() {
         return getModelShadow().get(this);
     }
 }

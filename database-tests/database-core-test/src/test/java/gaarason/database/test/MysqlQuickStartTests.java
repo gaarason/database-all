@@ -1,6 +1,7 @@
 package gaarason.database.test;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import gaarason.database.appointment.FieldStrategy;
 import gaarason.database.connection.GaarasonDataSourceBuilder;
 import gaarason.database.connection.GaarasonDataSourceWrapper;
 import gaarason.database.contract.connection.GaarasonDataSource;
@@ -117,10 +118,10 @@ public class MysqlQuickStartTests {
             @Column(name = "teacher_id")
             private Integer teacherId;
 
-            @Column(name = "created_at", insertable = false, updatable = false)
+            @Column(name = "created_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
             private Date createdAt;
 
-            @Column(name = "updated_at", insertable = false, updatable = false)
+            @Column(name = "updated_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
             private Date updatedAt;
         }
     }

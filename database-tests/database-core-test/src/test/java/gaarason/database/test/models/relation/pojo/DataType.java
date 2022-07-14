@@ -1,5 +1,6 @@
 package gaarason.database.test.models.relation.pojo;
 
+import gaarason.database.appointment.FieldStrategy;
 import gaarason.database.test.models.relation.pojo.base.BaseEntity;
 import gaarason.database.annotation.Column;
 import gaarason.database.annotation.Table;
@@ -56,10 +57,10 @@ public class DataType extends BaseEntity {
     @Column(name = "subject", length = 20L, comment = "科目")
     private String subject;
 
-    @Column(name = "created_at", insertable = false, updatable = false, comment = "新增时间")
+    @Column(name = "created_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER, comment = "新增时间")
     private Date createdAt;
 
-    @Column(name = "updated_at", insertable = false, updatable = false, comment = "更新时间")
+    @Column(name = "updated_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER, comment = "更新时间")
     private Date updatedAt;
 
     @Column(name = "created_time")

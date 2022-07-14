@@ -10,8 +10,11 @@ import gaarason.database.eloquent.RecordBean;
 import gaarason.database.eloquent.RecordListBean;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.provider.FieldInfo;
+import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.util.ObjectUtils;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -174,8 +177,11 @@ public class RecordFactory {
         Model<T, K> model, Map<String, Column> map, ResultSetMetaData resultSetMetaData, ResultSet resultSet)
         throws SQLException {
 
-        // 字段信息大全
-        Map<String, FieldInfo> columnInfo = model.getModelInfo().getColumnFieldMap();
+        // 字段信息
+        Map<String, FieldMember> columnFieldMap = model.getContainer()
+            .getBean(ModelShadowProvider.class)
+            .get(model)
+            .getEntityMember().getColumnFieldMap();
 
         final int columnCountMoreOne = resultSetMetaData.getColumnCount() + 1;
         for (int i = 1; i < columnCountMoreOne; i++) {
@@ -183,11 +189,13 @@ public class RecordFactory {
             // 列名
             String columnName = resultSetMetaData.getColumnLabel(i);
             column.setName(columnName);
+            FieldMember fieldMember = columnFieldMap.get(columnName);
+            Field field = ObjectUtils.isNull(fieldMember) ? null : fieldMember.getField();
 
             // *尽量* 使用同类型赋值
             column.setValue(model.getContainer()
                 .getBean(ConversionConfig.class)
-                .getValueFromJdbcResultSet(columnInfo.get(columnName), resultSet, columnName));
+                .getValueFromJdbcResultSet(field, resultSet, columnName));
             column.setType(resultSetMetaData.getColumnType(i));
             column.setTypeName(resultSetMetaData.getColumnTypeName(i));
             column.setCount(resultSetMetaData.getColumnCount());

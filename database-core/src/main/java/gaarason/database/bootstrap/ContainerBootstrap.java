@@ -17,7 +17,9 @@ import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.SnowFlakeIdGenerator;
 import gaarason.database.util.ClassUtils;
 import gaarason.database.util.ConverterUtils;
+import gaarason.database.util.ObjectUtils;
 
+import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Set;
@@ -161,9 +163,9 @@ public class ContainerBootstrap extends ContainerProvider {
 
             @Nullable
             @Override
-            public Object getValueFromJdbcResultSet(@Nullable FieldInfo fieldInfo, ResultSet resultSet, String column)
+            public Object getValueFromJdbcResultSet(@Nullable Field field, ResultSet resultSet, String column)
                 throws SQLException {
-                return ConverterUtils.getValueFromJdbcResultSet(fieldInfo, resultSet, column);
+                return ConverterUtils.getValueFromJdbcResultSet(field, resultSet, column);
             }
         };
     }
@@ -175,7 +177,7 @@ public class ContainerBootstrap extends ContainerProvider {
      */
     protected ModelShadowProvider initModelShadow() {
         ModelShadowProvider modelShadowProvider = new ModelShadowProvider(this);
-        modelShadowProvider.loadModels(getBean(ReflectionScan.class).scanModels());
+        modelShadowProvider.loadModels(ObjectUtils.typeCast(getBean(ReflectionScan.class).scanModels()));
         LOGGER.debug("All Model has been load.");
         return modelShadowProvider;
     }

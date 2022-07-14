@@ -8,8 +8,9 @@ import gaarason.database.exception.base.BaseException;
  */
 public class RelationNotFoundException extends BaseException {
 
-    public RelationNotFoundException(String message) {
-        super(message);
+    public RelationNotFoundException(String fieldName, Class<?> entityClass) {
+        super("No associations were found for property[" + fieldName + "] in the entity[" +
+            entityClass + "].");
     }
 
 }

@@ -1,6 +1,7 @@
 package gaarason.database.eloquent;
 
 import gaarason.database.appointment.Column;
+import gaarason.database.appointment.EntityUseType;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
@@ -16,6 +17,9 @@ import gaarason.database.lang.Nullable;
 import gaarason.database.provider.FieldInfo;
 import gaarason.database.provider.ModelInfo;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.support.EntityMember;
+import gaarason.database.support.FieldMember;
+import gaarason.database.support.PrimaryKeyMember;
 import gaarason.database.support.RelationGetSupport;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
@@ -23,6 +27,7 @@ import gaarason.database.util.StringUtils;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -35,6 +40,11 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
      * 数据模型
      */
     protected final transient Model<T, K> model;
+
+    /**
+     * Model信息大全
+     */
+    protected final transient ModelShadowProvider modelShadow;
 
     /**
      * 数据实体类
@@ -87,6 +97,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
         String originalSql) {
         this.entityClass = model.getEntityClass();
         this.model = model;
+        this.modelShadow = model.getGaarasonDataSource().getContainer().getBean(ModelShadowProvider.class);
         this.originalSql = originalSql;
         init(stringColumnMap);
     }
@@ -98,25 +109,18 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
     public RecordBean(Model<T, K> model) {
         this.entityClass = model.getEntityClass();
         this.model = model;
+        this.modelShadow = model.getGaarasonDataSource().getContainer().getBean(ModelShadowProvider.class);
         init(new HashMap<>());
-    }
-
-    /**
-     * 获取Model信息
-     * @return ModelShadow
-     */
-    protected ModelShadowProvider getModelShadow() {
-        return model.getGaarasonDataSource().getContainer().getBean(ModelShadowProvider.class);
     }
 
     @Override
     public String lambda2FieldName(ColumnFunctionalInterface<T> column) {
-        return getModelShadow().getFieldNameByLambdaWithCache(column);
+        return modelShadow.parseFieldNameByLambdaWithCache(column);
     }
 
     @Override
     public String lambda2ColumnName(ColumnFunctionalInterface<T> column) {
-        return getModelShadow().getColumnNameByLambdaWithCache(column);
+        return modelShadow.parseColumnNameByLambdaWithCache(column);
     }
 
     @Override
@@ -214,7 +218,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
      */
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> map = new HashMap<>(16);
+        Map<String, Object> map = new LinkedHashMap<>(16);
         for (Column value : metadataMap.values()) {
             map.put(value.getName(), value.getValue());
         }
@@ -294,7 +298,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
         RelationshipRecordWithFunctionalInterface recordClosure) {
         // 效验参数
         if (!ObjectUtils.checkProperties(entityClass, fieldName)) {
-            throw new RelationNotFoundException(entityClass + " 不存在关联属性 : " + fieldName);
+            throw new RelationNotFoundException(fieldName, entityClass);
         }
 
         String[] columnArr = fieldName.split("\\.");
@@ -436,31 +440,20 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
     }
 
     @Override
-    public T getDirty() {
-        final Class<T> entityClazz = getModelShadow().get(model).getEntityClass();
-        // 获取 map
-        final Map<String, Object> dirtyMap = getDirtyMap();
-        // 将map赋值到实体对象
-        return EntityUtils.entityAssignmentBySimpleMap(dirtyMap, entityClazz);
-    }
-
-    @Override
     public Map<String, Object> getDirtyMap() {
-        final ModelInfo<T, K> modelInfo = getModelShadow().get(model);
+        EntityMember<T> entityMember = modelShadow.parseAnyEntityWithCache(entityClass);
 
         Map<String, Object> theMap = new HashMap<>(16);
-        // 新增与修改的有效字段区别处理
-        final Map<String, FieldInfo> fieldInfoMap =
-            isHasBind() ? modelInfo.getJavaFieldUpdateMap() : modelInfo.getJavaFieldInsertMap();
+        Map<String, FieldMember> columnFieldMap = entityMember.getColumnFieldMap();
         // 逐个比较, 注意null的处理
-        for (Map.Entry<String, FieldInfo> entry : fieldInfoMap.entrySet()) {
-            final String columnName = entry.getValue().getColumnName();
+        for (Map.Entry<String, FieldMember> entry : columnFieldMap.entrySet()) {
+            FieldMember fieldMember = entry.getValue();
+            final String columnName = fieldMember.getColumnName();
             final Column column = metadataMap.get(columnName);
             // 元数据中的值
             final Object valueInMetadataMap = ObjectUtils.isEmpty(column) ? null : column.getValue();
             // entity中的值
-            final Object valueInEntity = ModelShadowProvider.fieldGet(entry.getValue(), entity);
-
+            final Object valueInEntity = fieldMember.fieldGet(entity);
             // 如果不相等,则加入返回对象对象
             if (!ObjectUtils.nullSafeEquals(valueInMetadataMap, valueInEntity)) {
                 theMap.put(columnName, valueInEntity);
@@ -471,10 +464,11 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
 
     @Override
     public boolean isDirty(String fieldName) {
-        final FieldInfo fieldInfo = getModelShadow().getFieldInfoByEntityClass(model.getEntityClass(), fieldName);
+        FieldMember fieldMember = modelShadow.parseAnyEntityWithCache(entityClass)
+            .getFieldMemberByFieldName(fieldName);
         // 获取所有变更属性组成的map
         final Map<String, Object> dirtyMap = getDirtyMap();
-        return dirtyMap.containsKey(fieldInfo.getColumnName());
+        return dirtyMap.containsKey(fieldMember.getColumnName());
     }
 
     @Override
@@ -495,13 +489,11 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
     @Override
     @Nullable
     public Object getOriginal(String fieldName) throws EntityAttributeInvalidException {
-        final FieldInfo fieldInfo = getModelShadow().get(model).getJavaFieldMap().get(fieldName);
-        // 无效的参数,则抛出异常
-        if (ObjectUtils.isEmpty(fieldInfo)) {
-            throw new EntityAttributeInvalidException(fieldName, model.getEntityClass());
-        }
+        FieldMember fieldMember = modelShadow.parseAnyEntityWithCache(entityClass)
+            .getFieldMemberByFieldName(fieldName);
+
         // 从元数据中获取字段值
-        final Column column = metadataMap.get(fieldInfo.getColumnName());
+        final Column column = metadataMap.get(fieldMember.getColumnName());
         return ObjectUtils.isEmpty(column) ? null : column.getValue();
     }
 
@@ -562,20 +554,19 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
      * @param entity 实体
      */
     protected void primaryKeyAutoDeal(T entity) {
+        EntityMember<? extends Serializable> entityMember = modelShadow.parseAnyEntityWithCache(entity.getClass());
+
+        PrimaryKeyMember primaryKeyMember = entityMember.getPrimaryKeyMember();
         // 无主键信息, 不做处理
-        if (!model.isPrimaryKeyDefinition()) {
+        if (ObjectUtils.isEmpty(primaryKeyMember)) {
             return;
         }
 
-        FieldInfo fieldInfo = model.getPrimaryKeyFieldInfo();
         // 没有手动赋值主键时
-        if (ModelShadowProvider.fieldGet(fieldInfo, entity) == null) {
-
+        if (primaryKeyMember.getFieldMember().fieldGet(entity) == null) {
             // 当 IdGenerator 是 IdGenerator.Never.class 类型时，将其执行 nextId() 将返回 null,
-            K k = model.getPrimaryKeyIdGenerator().nextId();
-
             // 生成后赋值 ModelShadowProvider.setPrimaryKeyValue 将忽略 null 的赋值
-            getModelShadow().setPrimaryKeyValue(entity, k);
+            primaryKeyMember.getFieldMember().fieldSet(entity, primaryKeyMember.getIdGenerator().nextId());
         }
     }
 
@@ -598,32 +589,24 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
      * @param insertType 是否为更新操作
      */
     protected void selfUpdateMetadataMap(T entity, boolean insertType) {
-        // 模型信息
-        ModelInfo<T, K> modelInfo = getModelShadow().get(model);
-        // 字段信息集合
-        Map<String, FieldInfo> fieldInfoMap =
-            insertType ? modelInfo.getJavaFieldInsertMap() : modelInfo.getJavaFieldUpdateMap();
 
-        for (Map.Entry<String, FieldInfo> entry : fieldInfoMap.entrySet()) {
-            // 字段信息
-            FieldInfo fieldInfo = entry.getValue();
-            // 获取值
-            Object value = ModelShadowProvider.fieldGet(fieldInfo, entity);
-            // 声明不可 null, 值仍然为null, 说明值无效
-            if (!fieldInfo.isNullable() && value == null) {
-                continue;
+        EntityMember<? extends Serializable> entityMember = modelShadow.parseAnyEntityWithCache(entity.getClass());
+
+        Map<String, FieldMember> columnFieldMap = entityMember.getColumnFieldMap();
+
+        for (Map.Entry<String, FieldMember> entry : columnFieldMap.entrySet()) {
+            FieldMember fieldMember = entry.getValue();
+            Object value = fieldMember.fieldGet(entity);
+            if(fieldMember.effective(value, insertType ? EntityUseType.INSERT : EntityUseType.UPDATE)){
+                String columnName = fieldMember.getColumnName();
+                final Column theColumn = metadataMap.computeIfAbsent(columnName, k -> {
+                    Column column = new Column();
+                    column.setColumnName(columnName);
+                    column.setName(columnName);
+                    return column;
+                });
+                theColumn.setValue(value);
             }
-
-            // 数据库列名
-            String columnName = fieldInfo.getColumnName();
-            final Column theColumn = metadataMap.computeIfAbsent(columnName, k -> {
-                Column column = new Column();
-                column.setValue(value);
-                column.setColumnName(columnName);
-                column.setName(columnName);
-                return column;
-            });
-            theColumn.setValue(value);
         }
         hasBind = true;
     }

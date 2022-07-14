@@ -1,6 +1,8 @@
 package gaarason.database.appointment;
 
 
+import gaarason.database.lang.Nullable;
+
 /**
  * jdbc字段值对象
  * @author xt
@@ -18,6 +20,7 @@ public class Column {
      * 字段值, 大多数情况下是可序列化的类型
      * 但是也可能是 Blob 以及 Clob 等
      */
+    @Nullable
     private Object value;
 
     /**
@@ -81,11 +84,12 @@ public class Column {
         this.name = name;
     }
 
+    @Nullable
     public Object getValue() {
         return value;
     }
 
-    public void setValue(Object value) {
+    public void setValue(@Nullable Object value) {
         this.value = value;
     }
 

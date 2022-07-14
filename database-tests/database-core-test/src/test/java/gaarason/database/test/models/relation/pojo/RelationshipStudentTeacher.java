@@ -3,6 +3,7 @@ package gaarason.database.test.models.relation.pojo;
 import gaarason.database.annotation.BelongsTo;
 import gaarason.database.annotation.Column;
 import gaarason.database.annotation.Table;
+import gaarason.database.appointment.FieldStrategy;
 import gaarason.database.test.models.relation.pojo.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -30,10 +31,10 @@ public class RelationshipStudentTeacher extends BaseEntity implements Serializab
     @Column(name = "note", comment = "备注")
     private String note;
 
-    @Column(name = "created_at", insertable = false, updatable = false, comment = "新增时间")
+    @Column(name = "created_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER, comment = "新增时间")
     private Date createdAt;
 
-    @Column(name = "updated_at", insertable = false, updatable = false, comment = "更新时间")
+    @Column(name = "updated_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER, comment = "更新时间")
     private Date updatedAt;
 
     @BelongsTo(localModelForeignKey = "student_id")

@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 容器
+ * 对于简单对象(存在无参构造), 可以省略注册步骤
  * @author xt
  */
 public class ContainerProvider implements Container {

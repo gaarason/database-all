@@ -11,6 +11,9 @@ import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.provider.FieldInfo;
 import gaarason.database.provider.ModelInfo;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.support.FieldMember;
+import gaarason.database.support.ModelMember;
+import gaarason.database.support.PrimaryKeyMember;
 import gaarason.database.util.ObjectUtils;
 
 import java.io.Serializable;
@@ -97,11 +100,11 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @return 主键列名
      */
     protected String getPrimaryKeyColumnName(Model<? extends Serializable, ? extends Serializable> model) {
-        String primaryKeyColumnName = modelShadowProvider.get(model).getPrimaryKeyColumnName();
-        if (null == primaryKeyColumnName) {
+        PrimaryKeyMember primaryKeyMember = modelShadowProvider.get(model).getEntityMember().getPrimaryKeyMember();
+        if (null == primaryKeyMember) {
             throw new PrimaryKeyNotFoundException();
         }
-        return primaryKeyColumnName;
+        return primaryKeyMember.getFieldMember().getColumnName();
     }
 
     /**
@@ -140,16 +143,15 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
         List<Serializable> objectList = new ArrayList<>();
         if (!relationshipObjectList.isEmpty()) {
             // 模型信息
-            ModelInfo<?, ?> modelInfo = modelShadowProvider.getByEntityClass(
+            ModelMember<?, ?> modelMember = modelShadowProvider.getByEntityClass(
                 relationshipObjectList.get(0).getClass());
 
             // 字段信息
-            FieldInfo fieldInfo = modelInfo.getColumnFieldMap().get(columnName);
+            FieldMember fieldMember = modelMember.getEntityMember().getColumnFieldMap().get(columnName);
 
             for (Serializable o : relationshipObjectList) {
                 // 值
-                // todo  move
-                Object fieldValue = ModelShadowProvider.fieldGet(fieldInfo, o);
+                Object fieldValue = fieldMember.fieldGet(o);
                 // 满足则加入
                 if (fieldTargetValue.equals(fieldValue)) {
                     objectList.add(o);

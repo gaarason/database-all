@@ -3,7 +3,6 @@ package gaarason.database.provider;
 import gaarason.database.appointment.Column;
 import gaarason.database.appointment.EntityUseType;
 import gaarason.database.appointment.LambdaInfo;
-import gaarason.database.bootstrap.ContainerBootstrap;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
@@ -13,8 +12,6 @@ import gaarason.database.exception.EntityInvalidException;
 import gaarason.database.exception.IllegalAccessRuntimeException;
 import gaarason.database.exception.ModelInvalidException;
 import gaarason.database.lang.Nullable;
-import gaarason.database.logging.Log;
-import gaarason.database.logging.LogFactory;
 import gaarason.database.support.*;
 import gaarason.database.util.LambdaUtils;
 import gaarason.database.util.ObjectUtils;
@@ -27,10 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Model信息大全
  * @author xt
  */
-public class ModelShadowProvider extends Container.SimpleKeeper {
-
-
-    private static final Log LOGGER = LogFactory.getLog(ModelShadowProvider.class);
+public class ModelShadow extends Container.SimpleKeeper {
 
     /**
      * 持久信息
@@ -86,7 +80,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
     private final Cache cache = new Cache();
 
 
-    public ModelShadowProvider(Container container) {
+    public ModelShadow(Container container) {
         super(container);
     }
 
@@ -99,14 +93,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
             // 所有 Model 的子类 (含抽象类等)进行初始化分析
             // 初始化模型的基本信息, 并构建索引
             for (Class<? extends Model<Serializable, Serializable>> modelClass : modelClasses) {
-                ModelMember<?, ?> modelMember;
-                try {
-                    modelMember = new ModelMember<>(container, modelClass);
-                } catch (ClassCastException ignore) {
-                    // 父类, 抽象类跳过
-                    continue;
-                }
-
+                ModelMember<?, ?> modelMember = new ModelMember<>(container, modelClass);
                 persistence.modelIndexMap.put(modelClass, modelMember);
                 persistence.modelProxyIndexMap.put(modelMember.getModel().getClass(), modelMember);
                 persistence.entityIndexMap.put(modelMember.getEntityClass(), modelMember);
@@ -405,6 +392,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param id 数据库生成的id
      * @param <T> 数据表实体类
      * @param <K> 数据表主键类型
+     * @throws IllegalAccessRuntimeException 反射赋值异常
      */
     public <T, K> void setPrimaryKeyValue(T anyEntity, @Nullable K id) {
         // 属性信息集合

@@ -1,5 +1,6 @@
 package gaarason.database.query;
 
+import gaarason.database.appointment.EntityUseType;
 import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Model;
@@ -67,7 +68,7 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     @Override
     public int insert(T entity) throws SQLRuntimeException {
         // 获取entity所有有效sql字段
-        Set<String> columnNameSet = modelShadowProvider.columnNameSet(entity, true);
+        Set<String> columnNameSet = modelShadowProvider.columnNameSet(entity, EntityUseType.INSERT);
         // 获取entity所有有效字段的值
         List<Object> valueList = modelShadowProvider.valueList(entity, columnNameSet);
         // 字段加入grammar
@@ -118,7 +119,7 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     @Override
     public K insertGetId(T entity) throws SQLRuntimeException {
         // 获取entity所有有效sql字段
-        Set<String> columnNameSet = modelShadowProvider.columnNameSet(entity, true);
+        Set<String> columnNameSet = modelShadowProvider.columnNameSet(entity, EntityUseType.INSERT);
         // 获取entity所有有效字段的值
         List<Object> valueList = modelShadowProvider.valueList(entity, columnNameSet);
         // 字段加入grammar
@@ -204,7 +205,7 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
     @Override
     public int update(T entity) throws SQLRuntimeException {
         // 获取entity所有有效字段对其值得映射
-        Map<String, Object> stringStringMap = modelShadowProvider.columnValueMap(entity, false);
+        Map<String, Object> stringStringMap = modelShadowProvider.columnValueMap(entity, EntityUseType.UPDATE);
 
         data(stringStringMap);
         // 执行
@@ -224,7 +225,7 @@ public abstract class MiddleBuilder<T extends Serializable, K extends Serializab
      */
     protected void beforeBatchInsert(List<T> entityList) {
         // 获取entity所有有效字段
-        Set<String> columnNameSet = modelShadowProvider.columnNameSet(entityList.get(0), true);
+        Set<String> columnNameSet = modelShadowProvider.columnNameSet(entityList.get(0), EntityUseType.INSERT);
         List<List<Object>> valueListList = new ArrayList<>();
         for (T entity : entityList) {
             // 获取entity所有有效字段的值
