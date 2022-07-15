@@ -1,12 +1,13 @@
 package gaarason.database.query;
 
 import gaarason.database.appointment.EntityUseType;
-import gaarason.database.appointment.SqlType;
+import gaarason.database.appointment.Paginate;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.query.Grammar;
+import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.InsertNotSuccessException;
 import gaarason.database.exception.SQLRuntimeException;
@@ -22,9 +23,9 @@ import java.util.*;
  * @param <K>
  * @author xt
  */
-public abstract class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
+public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T, K> {
 
-    protected MiddleBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
+    protected ExecuteLevel3Builder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
         super(gaarasonDataSource, model, grammar);
     }
 
@@ -46,22 +47,6 @@ public abstract class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
         } catch (EntityNotFoundException e) {
             return null;
         }
-    }
-
-    @Override
-    public Record<T, K> firstOrFail() throws SQLRuntimeException, EntityNotFoundException {
-        limit(1);
-        return querySql();
-    }
-
-    @Override
-    public RecordList<T, K> get() throws SQLRuntimeException {
-        return querySqlList();
-    }
-
-    @Override
-    public int insert() throws SQLRuntimeException {
-        return updateSql(SqlType.INSERT);
     }
 
     @Override
@@ -108,12 +93,6 @@ public abstract class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
         return insert();
     }
 
-    @Override
-    public K insertGetId() throws SQLRuntimeException {
-        Grammar.SQLPartInfo sqlPartInfo = grammar.generateSql(SqlType.INSERT);
-        assert sqlPartInfo.getParameters() != null;
-        return executeGetId(sqlPartInfo.getSqlString(), sqlPartInfo.getParameters());
-    }
 
     @Override
     public K insertGetId(T entity) throws SQLRuntimeException {
@@ -176,13 +155,6 @@ public abstract class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
     }
 
     @Override
-    public List<K> insertGetIds() throws SQLRuntimeException {
-        Grammar.SQLPartInfo sqlPartInfo = grammar.generateSql(SqlType.INSERT);
-        assert sqlPartInfo.getParameters() != null;
-        return executeGetIds(sqlPartInfo.getSqlString(), sqlPartInfo.getParameters());
-    }
-
-    @Override
     public List<K> insertGetIds(List<T> entityList) throws SQLRuntimeException {
         // entityList处理
         beforeBatchInsert(entityList);
@@ -196,10 +168,6 @@ public abstract class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
         return insertGetIds();
     }
 
-    @Override
-    public int update() throws SQLRuntimeException {
-        return updateSql(SqlType.UPDATE);
-    }
 
     @Override
     public int update(T entity) throws SQLRuntimeException {
@@ -216,6 +184,109 @@ public abstract class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
         data(entityMap);
         // 执行
         return update();
+    }
+
+    @Nullable
+    @Override
+    public Record<T, K> query(String sql, @Nullable Collection<?> parameters) throws SQLRuntimeException {
+        try {
+            return queryOrFail(sql, parameters);
+        } catch (EntityNotFoundException ignore) {
+            return null;
+        }
+    }
+
+    @Nullable
+    @Override
+    public Record<T, K> query(String sql, Object... parameters) throws SQLRuntimeException {
+        return query(sql, Arrays.asList(parameters));
+    }
+
+    @Override
+    public Record<T, K> queryOrFail(String sql, Object... parameters)
+        throws SQLRuntimeException, EntityNotFoundException {
+        return queryOrFail(sql, Arrays.asList(parameters));
+    }
+
+    @Override
+    public RecordList<T, K> queryList(String sql, Object... parameters) throws SQLRuntimeException {
+        return queryList(sql, Arrays.asList(parameters));
+    }
+
+    @Override
+    public int execute(String sql, Object... parameters) throws SQLRuntimeException {
+        return execute(sql, Arrays.asList(parameters));
+    }
+
+    @Override
+    public List<K> executeGetIds(String sql, Object... parameters) throws SQLRuntimeException {
+        return executeGetIds(sql, Arrays.asList(parameters));
+    }
+
+    @Override
+    @Nullable
+    public K executeGetId(String sql, Object... parameters) throws SQLRuntimeException {
+        return executeGetId(sql, Arrays.asList(parameters));
+    }
+
+
+    /**
+     * 带总数的分页
+     * @param currentPage 当前页
+     * @param perPage 每页数量
+     * @return 分页对象
+     * @throws SQLRuntimeException 数据库异常
+     * @throws CloneNotSupportedRuntimeException 克隆异常
+     */
+    @Override
+    public Paginate<T> paginate(int currentPage, int perPage)
+        throws SQLRuntimeException, CloneNotSupportedRuntimeException {
+        Long count = clone().count("*");
+        List<T> list = limit((currentPage - 1) * perPage, perPage).get().toObjectList();
+        return new Paginate<>(list, currentPage, perPage, count.intValue());
+    }
+
+    /**
+     * 带总数的分页
+     * @param currentPage 当前页
+     * @param perPage 每页数量
+     * @return 分页对象
+     * @throws SQLRuntimeException 数据库异常
+     * @throws CloneNotSupportedRuntimeException 克隆异常
+     */
+    @Override
+    public Paginate<Map<String, Object>> paginateMapStyle(int currentPage, int perPage)
+        throws SQLRuntimeException, CloneNotSupportedRuntimeException {
+        Long count = clone().count("*");
+        List<Map<String, Object>> list = limit((currentPage - 1) * perPage, perPage).get().toMapList();
+        return new Paginate<>(list, currentPage, perPage, count.intValue());
+    }
+
+    /**
+     * 不带总数的分页
+     * @param currentPage 当前页
+     * @param perPage 每页数量
+     * @return 分页对象
+     * @throws SQLRuntimeException 数据库异常
+     */
+    @Override
+    public Paginate<T> simplePaginate(int currentPage, int perPage) throws SQLRuntimeException {
+        List<T> list = limit((currentPage - 1) * perPage, perPage).get().toObjectList();
+        return new Paginate<>(list, currentPage, perPage);
+    }
+
+    /**
+     * 不带总数的分页
+     * @param currentPage 当前页
+     * @param perPage 每页数量
+     * @return 分页对象
+     * @throws SQLRuntimeException 数据库异常
+     */
+    @Override
+    public Paginate<Map<String, Object>> simplePaginateMapStyle(int currentPage, int perPage)
+        throws SQLRuntimeException {
+        List<Map<String, Object>> list = limit((currentPage - 1) * perPage, perPage).get().toMapList();
+        return new Paginate<>(list, currentPage, perPage);
     }
 
     /**

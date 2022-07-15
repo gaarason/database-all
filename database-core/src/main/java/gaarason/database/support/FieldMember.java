@@ -74,7 +74,6 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
             field.isAnnotationPresent(Column.class) ? field.getAnnotation(Column.class) : DEFAULT_COLUMN_ANNOTATION;
         this.columnName = ObjectUtils.isEmpty(column.name()) ? StringUtils.humpToLine(field.getName()) : column.name();
 
-
         // todo 应该优先使用数据库默认值 DatabaseShadowProvider , 当默认值不存在时, 再才使用如下方法
         this.defaultValue = getContainer().getBean(ConversionConfig.class).getDefaultValueByJavaType(field.getType());
 
@@ -119,6 +118,10 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
             default:
                 fieldStrategy = column.conditionStrategy();
                 break;
+        }
+        // 当策略是DEFAULT时, 取用 strategy
+        if(fieldStrategy.equals(FieldStrategy.DEFAULT)){
+            fieldStrategy = column.strategy();
         }
         switch (fieldStrategy) {
             case NEVER:

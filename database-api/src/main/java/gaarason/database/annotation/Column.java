@@ -48,6 +48,11 @@ public @interface Column {
     boolean selectable() default true;
 
     /**
+     * 是否插入/更新/条件使用, 当对应策略值为DEFAULT时, 取用
+     */
+    FieldStrategy strategy() default FieldStrategy.NOT_NULL;
+
+    /**
      * 是否插入时使用
      */
     FieldStrategy insertStrategy() default FieldStrategy.DEFAULT;

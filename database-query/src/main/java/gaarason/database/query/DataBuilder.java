@@ -17,7 +17,7 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public abstract class DataBuilder<T, K> extends MiddleBuilder<T, K> {
+public abstract class DataBuilder<T, K> extends ExecuteLevel3Builder<T, K> {
 
     protected DataBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
         super(gaarasonDataSource, model, grammar);

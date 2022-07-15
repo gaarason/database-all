@@ -38,7 +38,7 @@ public abstract class ModelBean<T, K> implements Model<T, K> {
      * 注:不需要volatile修饰
      */
     @Nullable
-    protected ModelShadowProvider modelShadow;
+    protected transient ModelShadowProvider modelShadow;
 
     /**
      * @return dataSource代理

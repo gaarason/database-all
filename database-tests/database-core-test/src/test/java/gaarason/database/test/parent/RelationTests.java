@@ -61,13 +61,22 @@ abstract public class RelationTests extends BaseTests {
         Assert.assertNull(student2.getTeacher().getStudent());
 
         // 声明且使用
-        Student student3 = studentModel.newQuery().firstOrFail().with(Student::getTeacher).toObject();
+        Student student3 = studentModel.newQuery().with(Student::getTeacher).firstOrFail().toObject();
         System.out.println(student3);
         Assert.assertNotNull(student3.getTeacher());
         Assert.assertNull(student3.getRelationshipStudentTeachers());
         Assert.assertEquals((long) student3.getTeacher().getId(), 6);
         Assert.assertNull(student3.getTeacher().getStudents());
         Assert.assertNull(student3.getTeacher().getStudent());
+
+        // 声明且使用
+        Student student4 = studentModel.newQuery().with(Student::getTeacher).queryOrFail("select * from student limit 1").toObject();
+        System.out.println(student4);
+        Assert.assertNotNull(student4.getTeacher());
+        Assert.assertNull(student4.getRelationshipStudentTeachers());
+        Assert.assertEquals((long) student4.getTeacher().getId(), 6);
+        Assert.assertNull(student4.getTeacher().getStudents());
+        Assert.assertNull(student4.getTeacher().getStudent());
     }
 
     @Test

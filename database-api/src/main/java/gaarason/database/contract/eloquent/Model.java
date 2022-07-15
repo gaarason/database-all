@@ -11,8 +11,7 @@ import gaarason.database.exception.PrimaryKeyNotFoundException;
  * 数据模型
  * @author xt
  */
-public interface Model<T, K>
-    extends Query<T, K>, Event<T, K>, SoftDelete<T, K> {
+public interface Model<T, K> extends Query<T, K>, Event<T, K>, SoftDelete<T, K> {
 
     /**
      * Gaarason数据源

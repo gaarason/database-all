@@ -9,7 +9,9 @@ import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.exception.ConfirmOperationException;
 import gaarason.database.exception.EntityNotFoundException;
+import gaarason.database.test.models.normal.StudentCombination;
 import gaarason.database.test.models.normal.StudentModel;
+import gaarason.database.test.models.normal.StudentReversal;
 import gaarason.database.test.parent.base.BaseTests;
 import gaarason.database.test.utils.MultiThreadUtil;
 import gaarason.database.util.LocalDateUtils;
@@ -29,6 +31,10 @@ import java.util.*;
 abstract public class QueryBuilderTests extends BaseTests {
 
     private static final StudentModel studentModel = new StudentModel();
+
+    private static final StudentReversal.Model studentReversalModel = new StudentReversal.Model();
+
+    private static final StudentCombination studentCombination = new StudentCombination();
 
     @Override
     protected GaarasonDataSource getGaarasonDataSource() {
@@ -339,15 +345,32 @@ abstract public class QueryBuilderTests extends BaseTests {
         map.put("name", "gggg");
         map.put("age", "7");
 
-        int update = studentModel.newQuery().where("id", "3").updateMapStyle(map);
+        int update = studentReversalModel.newQuery().where("id", "3").updateMapStyle(map);
         Assert.assertEquals(update, 1);
-        StudentModel.Entity entity = studentModel.newQuery().where("id", "3").firstOrFail().toObject();
-        Assert.assertEquals(entity.getId().intValue(), 3);
-        Assert.assertEquals(entity.getName(), "gggg");
-        Assert.assertEquals(entity.getAge(), Byte.valueOf("7"));
+        StudentReversal student = studentReversalModel.newQuery().where("id", "3").firstOrFail().toObject();
+        Assert.assertEquals(student.getId().intValue(), 3);
+        Assert.assertEquals(student.getName(), "gggg");
+        Assert.assertEquals(student.getAge(), Byte.valueOf("7"));
 
         Assert.assertThrows(ConfirmOperationException.class, () -> {
-            studentModel.newQuery().data("name", "ee").update();
+            studentReversalModel.newQuery().data("name", "ee").update();
+        });
+    }
+
+    @Test
+    public void 更新_通过MAP更新_3() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", "gggg");
+        map.put("age", "7");
+        int update = studentCombination.newQuery().where("id", "3").updateMapStyle(map);
+        Assert.assertEquals(update, 1);
+        StudentCombination student = studentCombination.newQuery().where("id", "3").firstOrFail().toObject();
+        Assert.assertEquals(student.getId().intValue(), 3);
+        Assert.assertEquals(student.getName(), "gggg");
+        Assert.assertEquals(student.getAge(), Byte.valueOf("7"));
+
+        Assert.assertThrows(ConfirmOperationException.class, () -> {
+            studentCombination.newQuery().data("name", "ee").update();
         });
     }
 

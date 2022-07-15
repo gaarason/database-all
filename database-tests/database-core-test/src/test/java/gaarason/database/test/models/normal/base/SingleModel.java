@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Properties;
 
 @Slf4j
-public class SingleModel<T extends Serializable, K extends Serializable> extends Model<T, K> {
+public class SingleModel<T, K> extends Model<T, K> {
 
     private static final GaarasonDataSource mysql = mysqlDataSource();
 
