@@ -14,8 +14,6 @@ import gaarason.database.exception.EntityAttributeInvalidException;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.RelationNotFoundException;
 import gaarason.database.lang.Nullable;
-import gaarason.database.provider.FieldInfo;
-import gaarason.database.provider.ModelInfo;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.EntityMember;
 import gaarason.database.support.FieldMember;
@@ -597,7 +595,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
         for (Map.Entry<String, FieldMember> entry : columnFieldMap.entrySet()) {
             FieldMember fieldMember = entry.getValue();
             Object value = fieldMember.fieldGet(entity);
-            if(fieldMember.effective(value, insertType ? EntityUseType.INSERT : EntityUseType.UPDATE)){
+            if (fieldMember.effective(value, insertType ? EntityUseType.INSERT : EntityUseType.UPDATE)) {
                 String columnName = fieldMember.getColumnName();
                 final Column theColumn = metadataMap.computeIfAbsent(columnName, k -> {
                     Column column = new Column();

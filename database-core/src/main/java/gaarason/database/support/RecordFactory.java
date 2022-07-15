@@ -9,7 +9,6 @@ import gaarason.database.core.Container;
 import gaarason.database.eloquent.RecordBean;
 import gaarason.database.eloquent.RecordListBean;
 import gaarason.database.exception.EntityNotFoundException;
-import gaarason.database.provider.FieldInfo;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.ObjectUtils;
 

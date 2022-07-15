@@ -29,7 +29,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ModelShadowProvider extends Container.SimpleKeeper {
 
-
     private static final Log LOGGER = LogFactory.getLog(ModelShadowProvider.class);
 
     /**

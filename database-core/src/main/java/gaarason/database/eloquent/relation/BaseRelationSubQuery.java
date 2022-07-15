@@ -8,8 +8,6 @@ import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.core.Container;
 import gaarason.database.eloquent.RecordListBean;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
-import gaarason.database.provider.FieldInfo;
-import gaarason.database.provider.ModelInfo;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.FieldMember;
 import gaarason.database.support.ModelMember;

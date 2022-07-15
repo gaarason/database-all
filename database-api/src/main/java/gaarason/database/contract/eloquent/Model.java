@@ -4,11 +4,8 @@ import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.model.Event;
 import gaarason.database.contract.model.Query;
 import gaarason.database.contract.model.SoftDelete;
-import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.core.Container;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
-import gaarason.database.provider.FieldInfo;
-import gaarason.database.provider.ModelInfo;
 
 import java.io.Serializable;
 
@@ -16,7 +13,8 @@ import java.io.Serializable;
  * 数据模型
  * @author xt
  */
-public interface Model<T extends Serializable, K extends Serializable> extends Query<T, K>, Event<T, K>, SoftDelete<T, K> {
+public interface Model<T extends Serializable, K extends Serializable>
+    extends Query<T, K>, Event<T, K>, SoftDelete<T, K> {
 
     /**
      * Gaarason数据源

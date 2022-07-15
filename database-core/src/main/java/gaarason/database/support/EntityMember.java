@@ -280,7 +280,7 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
      */
     private void dealColumnMap(FieldMember fieldMember) {
         if (fieldMember.getColumn().inDatabase()) {
-            javaFieldMap.put(fieldMember.getColumnName(), fieldMember);
+            columnFieldMap.put(fieldMember.getColumnName(), fieldMember);
         }
     }
 

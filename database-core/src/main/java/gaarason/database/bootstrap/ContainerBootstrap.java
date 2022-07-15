@@ -11,7 +11,6 @@ import gaarason.database.lang.Nullable;
 import gaarason.database.logging.Log;
 import gaarason.database.logging.LogFactory;
 import gaarason.database.provider.ContainerProvider;
-import gaarason.database.provider.FieldInfo;
 import gaarason.database.provider.ModelInstanceProvider;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.SnowFlakeIdGenerator;
@@ -48,8 +47,10 @@ public class ContainerBootstrap extends ContainerProvider {
      * @return ContainerProvider
      */
     public static ContainerBootstrap buildAndBootstrap() {
-        return new ContainerBootstrap(GaarasonDatabaseProperties.buildFromSystemProperties().fillAndVerify()).bootstrap();
+        return new ContainerBootstrap(
+            GaarasonDatabaseProperties.buildFromSystemProperties().fillAndVerify()).bootstrap();
     }
+
     /**
      * 自动使用默认的配置
      * @return ContainerProvider

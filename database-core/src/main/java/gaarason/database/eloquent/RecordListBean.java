@@ -237,8 +237,7 @@ public class RecordListBean<T extends Serializable, K extends Serializable> exte
         final Column column = theRecord.getMetadataMap()
             .get(entityMember.getFieldMemberByFieldName(fieldName).getColumnName());
         if (column != null) {
-            assert column.getValue() != null;
-            return ObjectUtils.typeCast(column.getValue());
+            return column.getValue() == null ? null : ObjectUtils.typeCast(column.getValue());
         } else {
             return null;
         }

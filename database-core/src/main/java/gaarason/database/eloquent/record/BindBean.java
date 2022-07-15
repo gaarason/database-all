@@ -4,10 +4,7 @@ import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.extra.Bind;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
-import gaarason.database.exception.RelationNotFoundException;
-import gaarason.database.provider.ModelInfo;
 import gaarason.database.provider.ModelShadowProvider;
-import gaarason.database.provider.RelationFieldInfo;
 import gaarason.database.support.ModelMember;
 import gaarason.database.support.RecordFactory;
 
@@ -36,7 +33,9 @@ public class BindBean<T extends Serializable, K extends Serializable> implements
             .getBean(ModelShadowProvider.class)
             .get(tkRecord.getModel());
         // 关系信息
-        relationSubQuery = modelMember.getEntityMember().getFieldRelationMemberByFieldName(fieldName).getRelationSubQuery();
+        relationSubQuery = modelMember.getEntityMember()
+            .getFieldRelationMemberByFieldName(fieldName)
+            .getRelationSubQuery();
     }
 
     @Override
