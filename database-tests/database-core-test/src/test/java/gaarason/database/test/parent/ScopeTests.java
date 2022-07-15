@@ -16,8 +16,9 @@ import org.junit.runners.MethodSorters;
 abstract public class ScopeTests extends BaseTests {
 
     protected static StudentSoftDeleteModel studentModel = new StudentSoftDeleteModel();
+
     @Override
-    protected GaarasonDataSource getGaarasonDataSource(){
+    protected GaarasonDataSource getGaarasonDataSource() {
         return studentModel.getGaarasonDataSource();
     }
 

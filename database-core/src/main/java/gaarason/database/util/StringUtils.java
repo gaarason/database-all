@@ -15,19 +15,18 @@ import java.util.regex.Pattern;
  */
 public class StringUtils {
 
-    private StringUtils() {
-    }
-
     private static final String[] JAVA_KEYWORDS = {"abstract", "case", "continue", "enum", "for", "instanceof", "new",
         "return", "switch", "transient", "assert", "catch", "default", "extends", "goto", "int", "package", "short",
         "synchronized", "try", "boolean", "char", "do", "final", "if", "interface", "private", "static", "this", "void",
-        "break", "class", "double", "finally", "implements", "long", "protected", "strictfp", "throw", "volatile", "byte",
+        "break", "class", "double", "finally", "implements", "long", "protected", "strictfp", "throw", "volatile",
+        "byte",
         "const", "else", "float", "import", "native", "public", "super", "throws", "while", "byValue", "cast", "false",
         "future", "generic", "inner", "null", "operator", "outer", "rest", "true", "var"};
-
     private static final Pattern LINE_PATTERN = Pattern.compile("_(\\w)");
-
     private static final Pattern HUMP_PATTERN = Pattern.compile("[A-Z]");
+
+    private StringUtils() {
+    }
 
     /**
      * 将首字符转化为小写
@@ -44,7 +43,7 @@ public class StringUtils {
 
     /**
      * 下划线转驼峰
-     * @param str              原字符串
+     * @param str 原字符串
      * @param firstIsUpperCase 大驼峰
      * @return 处理后的字符
      */
@@ -80,7 +79,7 @@ public class StringUtils {
     /**
      * 格式化参数到 query 形式( 经过 url encode)
      * @param paramsMap 参数map
-     * @param sort      是否key排序
+     * @param sort 是否key排序
      * @return 字符串 eg: name=zhang&age=1
      * @throws MapEncodingException HTTP参数构造异常
      */
@@ -102,13 +101,13 @@ public class StringUtils {
 
     /**
      * 移除字符串左侧的所有character
-     * @param str       原字符串
+     * @param str 原字符串
      * @param character 将要移除的字符
      * @return 处理后的字符
      */
     public static String ltrim(String str, String character) {
         final int length = character.length();
-        if ("".equals(str) || str.length() < length){
+        if ("".equals(str) || str.length() < length) {
             return str;
         }
         return str.substring(0, length).equals(character) ? ltrim(str.substring(length), character) : str;
@@ -116,13 +115,13 @@ public class StringUtils {
 
     /**
      * 移除字符串右侧的所有character
-     * @param str       原字符串
+     * @param str 原字符串
      * @param character 将要移除的字符
      * @return 处理后的字符
      */
     public static String rtrim(String str, String character) {
         final int length = character.length();
-        if ("".equals(str) || str.length() < length){
+        if ("".equals(str) || str.length() < length) {
             return str;
         }
         return str.substring(str.length() - length).equals(character) ? rtrim(str.substring(0, str.length() - length),
@@ -206,10 +205,10 @@ public class StringUtils {
 
     /**
      * 递归解析map到query
-     * @param object    对象
+     * @param object 对象
      * @param parentStr 里层分隔符
-     * @param first     是否最外层
-     * @param sort      是否排序
+     * @param first 是否最外层
+     * @param sort 是否排序
      * @return 字符串 eg: name=zhang&age=1
      */
     private static String realQueryBuild(Object object, String parentStr, boolean first, boolean sort) {

@@ -55,136 +55,110 @@ public class Generator {
      * model 对应的模板字符串
      */
     private static final String MODEL_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("model"));
-
-    /**
-     * 输出目录
-     */
-    private String outputDir = "./";
-
-    /**
-     * 命名空间
-     */
-    private String namespace = "data";
-
-    /**
-     * entity目录
-     */
-    private String entityDir = "entity";
-
-    /**
-     * entity前缀
-     */
-    private String entityPrefix = "";
-
-    /**
-     * entity后缀
-     */
-    private String entitySuffix = "";
-
-    /**
-     * BaseEntity 中的字段
-     */
-    private List<String> baseEntityFields = new ArrayList<>();
-
-    /**
-     * BaseEntity 目录
-     */
-    private String baseEntityDir = "base";
-
-    /**
-     * BaseEntity 类名
-     */
-    private String baseEntityName = "BaseEntity";
-
-    /**
-     * model目录
-     */
-    private String modelDir = "model";
-
-    /**
-     * model前缀
-     */
-    private String modelPrefix = "";
-
-    /**
-     * model后缀
-     */
-    private String modelSuffix = "Model";
-
-    /**
-     * baseModel目录
-     */
-    private String baseModelDir = "base";
-
-    /**
-     * baseModel类名
-     */
-    private String baseModelName = "BaseModel";
-
-    /**
-     * 是否使用spring boot注解 model
-     */
-    private boolean isSpringBoot;
-
-    /**
-     * 是否使用swagger注解 entity
-     */
-    private boolean isSwagger;
-
-    /**
-     * 是否使用 org.hibernate.validator.constraints.* 注解 entity
-     */
-    private boolean isValidator;
-
-    /**
-     * 是否生成静态字段名
-     */
-    private boolean entityStaticField;
-
-    /**
-     * 生成并发线程数
-     */
-    private int corePoolSize = 20;
-
-    /**
-     * 新增时,不可通过代码更改的字段
-     */
-    private String[] disInsertable = {};
-
-    /**
-     * 更新时,不可通过代码更改的字段
-     */
-    private String[] disUpdatable = {};
-
-    /**
-     * model父类 所在的命名空间
-     */
-    private String baseModelNamespace;
-
-    /**
-     * entity父类 所在的命名空间
-     */
-    private String baseEntityNamespace;
-
-    /**
-     * model 所在的命名空间
-     */
-    private String modelNamespace;
-
-    /**
-     * entity 所在的命名空间
-     */
-    private String entityNamespace;
-
-    /**
-     * 用于委托执行的model
-     */
-    private Model<? extends Serializable, ? extends Serializable> model;
-
     /**
      * 存储 表名 -> 主键类型 的映射关系, 稍微提高性能
      */
     private final ConcurrentHashMap<String, String> tablePrimaryKeyTypeMap = new ConcurrentHashMap<>();
+    /**
+     * 输出目录
+     */
+    private String outputDir = "./";
+    /**
+     * 命名空间
+     */
+    private String namespace = "data";
+    /**
+     * entity目录
+     */
+    private String entityDir = "entity";
+    /**
+     * entity前缀
+     */
+    private String entityPrefix = "";
+    /**
+     * entity后缀
+     */
+    private String entitySuffix = "";
+    /**
+     * BaseEntity 中的字段
+     */
+    private List<String> baseEntityFields = new ArrayList<>();
+    /**
+     * BaseEntity 目录
+     */
+    private String baseEntityDir = "base";
+    /**
+     * BaseEntity 类名
+     */
+    private String baseEntityName = "BaseEntity";
+    /**
+     * model目录
+     */
+    private String modelDir = "model";
+    /**
+     * model前缀
+     */
+    private String modelPrefix = "";
+    /**
+     * model后缀
+     */
+    private String modelSuffix = "Model";
+    /**
+     * baseModel目录
+     */
+    private String baseModelDir = "base";
+    /**
+     * baseModel类名
+     */
+    private String baseModelName = "BaseModel";
+    /**
+     * 是否使用spring boot注解 model
+     */
+    private boolean isSpringBoot;
+    /**
+     * 是否使用swagger注解 entity
+     */
+    private boolean isSwagger;
+    /**
+     * 是否使用 org.hibernate.validator.constraints.* 注解 entity
+     */
+    private boolean isValidator;
+    /**
+     * 是否生成静态字段名
+     */
+    private boolean entityStaticField;
+    /**
+     * 生成并发线程数
+     */
+    private int corePoolSize = 20;
+    /**
+     * 新增时,不可通过代码更改的字段
+     */
+    private String[] disInsertable = {};
+    /**
+     * 更新时,不可通过代码更改的字段
+     */
+    private String[] disUpdatable = {};
+    /**
+     * model父类 所在的命名空间
+     */
+    private String baseModelNamespace;
+    /**
+     * entity父类 所在的命名空间
+     */
+    private String baseEntityNamespace;
+    /**
+     * model 所在的命名空间
+     */
+    private String modelNamespace;
+    /**
+     * entity 所在的命名空间
+     */
+    private String entityNamespace;
+    /**
+     * 用于委托执行的model
+     */
+    private Model<?, ?> model;
 
     /**
      * 使用无参构造时,需要重写 getModel 方法
@@ -384,7 +358,7 @@ public class Generator {
      * 使用无惨可重写
      * @return 数据库操作model
      */
-    public Model<? extends Serializable, ? extends Serializable> getModel() {
+    public Model<?, ?> getModel() {
         return model;
     }
 

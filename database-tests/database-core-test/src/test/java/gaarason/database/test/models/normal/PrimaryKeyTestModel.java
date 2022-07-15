@@ -1,9 +1,9 @@
 package gaarason.database.test.models.normal;
 
-import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.annotation.Column;
 import gaarason.database.annotation.Primary;
 import gaarason.database.annotation.Table;
+import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.test.models.normal.base.SingleModel;
 import lombok.Data;
 

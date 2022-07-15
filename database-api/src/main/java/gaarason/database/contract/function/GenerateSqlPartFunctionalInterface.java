@@ -9,7 +9,7 @@ import java.io.Serializable;
  * @author xt
  */
 @FunctionalInterface
-public interface GenerateSqlPartFunctionalInterface<T extends Serializable, K extends Serializable> extends Serializable {
+public interface GenerateSqlPartFunctionalInterface<T, K> extends Serializable {
 
     /**
      * 生成代码片段

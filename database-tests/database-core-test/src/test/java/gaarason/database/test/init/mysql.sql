@@ -1,47 +1,47 @@
 SET
-    FOREIGN_KEY_CHECKS = 0;
+FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS `data_type`;
 CREATE TABLE `data_type`
 (
-    `id`           bigint(1) unsigned  NOT NULL AUTO_INCREMENT,
-    `name`         varchar(20)         NOT NULL DEFAULT '' COMMENT '姓名',
+    `id`           bigint(1) unsigned NOT NULL AUTO_INCREMENT,
+    `name`         varchar(20)    NOT NULL DEFAULT '' COMMENT '姓名',
     `age`          tinyint(2) unsigned NOT NULL DEFAULT '0' COMMENT '年龄',
     `sex`          tinyint(2) unsigned NOT NULL DEFAULT '1' COMMENT '性别1男2女',
     `sex_2`        tinyint(1) unsigned NOT NULL DEFAULT '1' COMMENT 'test',
-    `subject`      varchar(20)         NOT NULL DEFAULT '' COMMENT '科目',
-    `created_at`   timestamp           NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '新增时间',
-    `updated_at`   timestamp           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `created_time` datetime            NOT NULL,
-    `updated_time` datetime            NOT NULL,
-    `is_deleted`   tinyint(1)          NOT NULL,
-    `char_char`    char(255)           NOT NULL,
-    `integer`      int(11)             NOT NULL,
-    `numeric`      decimal(10, 0)      NOT NULL,
-    `bigint`       bigint(20)          NOT NULL,
-    `binary`       binary(0)           NOT NULL DEFAULT '',
-    `bit`          bit(1)              NOT NULL DEFAULT b'0',
-    `blob`         blob                NOT NULL,
-    `date`         date                NOT NULL,
-    `decimal`      decimal(10, 0)      NOT NULL,
-    `double_d`     double              NOT NULL,
-    `point`        point               NOT NULL,
-    `linestring`   linestring          NOT NULL,
-    `geometry`     geometry            NOT NULL COMMENT '支付结果\nSUCCESS—支付成功\nREFUND—转入退款',
-    `text`         text                NOT NULL COMMENT '问题状态\r\n现"场检"查 enum(''''待提交'''',''''待整改'''',''''待复验'''',''''已通过'''',''''已作废'''',''''已关闭'''')\r\n实测实量一级问题 enum(''''检查中'''',''''待整改'''',''''已整改'''')\r\n实测实量二级问题 enum(''''检查中'''',''''检查完毕'''', ''''已整改'''')',
+    `subject`      varchar(20)    NOT NULL DEFAULT '' COMMENT '科目',
+    `created_at`   timestamp      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '新增时间',
+    `updated_at`   timestamp      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `created_time` datetime       NOT NULL,
+    `updated_time` datetime       NOT NULL,
+    `is_deleted`   tinyint(1) NOT NULL,
+    `char_char`    char(255)      NOT NULL,
+    `integer`      int(11) NOT NULL,
+    `numeric`      decimal(10, 0) NOT NULL,
+    `bigint`       bigint(20) NOT NULL,
+    `binary`       binary(0) NOT NULL DEFAULT '',
+    `bit`          bit(1)         NOT NULL DEFAULT b'0',
+    `blob`         blob           NOT NULL,
+    `date`         date           NOT NULL,
+    `decimal`      decimal(10, 0) NOT NULL,
+    `double_d`     double         NOT NULL,
+    `point`        point          NOT NULL,
+    `linestring`   linestring     NOT NULL,
+    `geometry`     geometry       NOT NULL COMMENT '支付结果\nSUCCESS—支付成功\nREFUND—转入退款',
+    `text`         text           NOT NULL COMMENT '问题状态\r\n现"场检"查 enum(''''待提交'''',''''待整改'''',''''待复验'''',''''已通过'''',''''已作废'''',''''已关闭'''')\r\n实测实量一级问题 enum(''''检查中'''',''''待整改'''',''''已整改'''')\r\n实测实量二级问题 enum(''''检查中'''',''''检查完毕'''', ''''已整改'''')',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
 DROP TABLE IF EXISTS `test`;
 CREATE TABLE `test`
 (
-    `id`         varchar(12)         NOT NULL DEFAULT 'no_id',
-    `name`       varchar(20)         NOT NULL DEFAULT '' COMMENT '姓名',
+    `id`         varchar(12) NOT NULL DEFAULT 'no_id',
+    `name`       varchar(20) NOT NULL DEFAULT '' COMMENT '姓名',
     `age`        tinyint(2) unsigned NOT NULL DEFAULT '0' COMMENT '年龄',
     `sex`        tinyint(2) unsigned NOT NULL DEFAULT '1' COMMENT '性别1男2女',
-    `subject`    varchar(20)         NOT NULL DEFAULT '' COMMENT '科目',
-    `created_at` timestamp           NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '新增时间',
-    `updated_at` timestamp           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+    `subject`    varchar(20) NOT NULL DEFAULT '' COMMENT '科目',
+    `created_at` timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '新增时间',
+    `updated_at` timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='test';
 INSERT INTO `test`
@@ -56,9 +56,9 @@ CREATE TABLE `relationship_student_teacher`
     `id`         int(1) unsigned NOT NULL AUTO_INCREMENT,
     `student_id` int(1) unsigned NOT NULL DEFAULT '0' COMMENT '学生id',
     `teacher_id` int(1) unsigned NOT NULL DEFAULT '0' COMMENT '教师id',
-    `note`       varchar(255)    NOT NULL DEFAULT '' COMMENT '备注',
-    `created_at` timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '新增时间',
-    `updated_at` timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `note`       varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
+    `created_at` timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '新增时间',
+    `updated_at` timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 30
@@ -106,13 +106,13 @@ VALUES ('20', '10', '2', '无备注', '2009-03-14 22:15:23', '2009-04-24 22:22:0
 DROP TABLE IF EXISTS `teacher`;
 CREATE TABLE `teacher`
 (
-    `id`         bigint(1) unsigned  NOT NULL AUTO_INCREMENT,
-    `name`       varchar(20)         NOT NULL DEFAULT '' COMMENT '姓名',
+    `id`         bigint(1) unsigned NOT NULL AUTO_INCREMENT,
+    `name`       varchar(20) NOT NULL DEFAULT '' COMMENT '姓名',
     `age`        tinyint(2) unsigned NOT NULL DEFAULT '0' COMMENT '年龄',
     `sex`        tinyint(2) unsigned NOT NULL DEFAULT '1' COMMENT '性别1男2女',
-    `subject`    varchar(20)         NOT NULL DEFAULT '' COMMENT '科目',
-    `created_at` timestamp           NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '新增时间',
-    `updated_at` timestamp           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `subject`    varchar(20) NOT NULL DEFAULT '' COMMENT '科目',
+    `created_at` timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '新增时间',
+    `updated_at` timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 18
@@ -128,14 +128,14 @@ VALUES ('8', '文松', '22', '2', '会计', '2009-03-17 20:15:23', '2009-04-24 2
 DROP TABLE IF EXISTS `student`;
 CREATE TABLE `student`
 (
-    `id`         int(1) unsigned     NOT NULL AUTO_INCREMENT,
-    `name`       varchar(20)         NOT NULL DEFAULT '' COMMENT '姓名',
+    `id`         int(1) unsigned NOT NULL AUTO_INCREMENT,
+    `name`       varchar(20) NOT NULL DEFAULT '' COMMENT '姓名',
     `age`        tinyint(2) unsigned NOT NULL DEFAULT '0' COMMENT '年龄',
     `sex`        tinyint(2) unsigned NOT NULL DEFAULT '1' COMMENT '性别1男2女',
-    `teacher_id` int(1) unsigned     NOT NULL DEFAULT '0' COMMENT '教师id',
-    `is_deleted` tinyint(1)          NOT NULL default 0,
-    `created_at` timestamp           NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '新增时间',
-    `updated_at` timestamp           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `teacher_id` int(1) unsigned NOT NULL DEFAULT '0' COMMENT '教师id',
+    `is_deleted` tinyint(1) NOT NULL default 0,
+    `created_at` timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '新增时间',
+    `updated_at` timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 20
@@ -163,14 +163,14 @@ VALUES ('10', '象帕', '15', '1', '0', 0, '2009-03-15 12:15:23', '2010-04-24 22
 DROP TABLE IF EXISTS `people`;
 CREATE TABLE `people`
 (
-    `id`         bigint(1) unsigned  NOT NULL AUTO_INCREMENT,
-    `name`       varchar(20)         NOT NULL DEFAULT '' COMMENT '姓名',
+    `id`         bigint(1) unsigned NOT NULL AUTO_INCREMENT,
+    `name`       varchar(20) NOT NULL DEFAULT '' COMMENT '姓名',
     `age`        tinyint(2) unsigned NOT NULL DEFAULT '0' COMMENT '年龄',
     `sex`        tinyint(2) unsigned NOT NULL DEFAULT '1' COMMENT '性别1男2女',
-    `teacher_id` int(1) unsigned     NOT NULL DEFAULT '0' COMMENT '教师id',
-    `is_deleted` tinyint(1)          NOT NULL default 0,
-    `created_at` timestamp           NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '新增时间',
-    `updated_at` timestamp           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `teacher_id` int(1) unsigned NOT NULL DEFAULT '0' COMMENT '教师id',
+    `is_deleted` tinyint(1) NOT NULL default 0,
+    `created_at` timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '新增时间',
+    `updated_at` timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 20
@@ -199,12 +199,12 @@ DROP TABLE IF EXISTS `datetime_test`;
 CREATE TABLE `datetime_test`
 (
     `id`               bigint(1) unsigned NOT NULL AUTO_INCREMENT,
-    `name`             varchar(20)        NOT NULL DEFAULT '' COMMENT '姓名',
-    `is_deleted`       tinyint(1)         NOT NULL default 0,
-    `time_column`      time               NOT NULL DEFAULT "00:00:00" COMMENT 'time类型字段',
-    `date_column`      date               NOT NULL DEFAULT "0001-01-01" COMMENT 'date类型字段',
-    `datetime_column`  datetime           NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'datetime类型字段',
-    `timestamp_column` timestamp          NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'timestamp类型字段',
+    `name`             varchar(20) NOT NULL DEFAULT '' COMMENT '姓名',
+    `is_deleted`       tinyint(1) NOT NULL default 0,
+    `time_column`      time        NOT NULL DEFAULT "00:00:00" COMMENT 'time类型字段',
+    `date_column`      date        NOT NULL DEFAULT "0001-01-01" COMMENT 'date类型字段',
+    `datetime_column`  datetime    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'datetime类型字段',
+    `timestamp_column` timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'timestamp类型字段',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1
@@ -215,20 +215,28 @@ VALUES (1, 'test', 0, '17:15:23', '2010-04-24', '2009-03-14 17:15:23', '2010-04-
 DROP TABLE IF EXISTS `null_test`;
 CREATE TABLE `null_test`
 (
-    `id`                    bigint(1) unsigned AUTO_INCREMENT,
-    `name`                  varchar(20)        DEFAULT NULL COMMENT '姓名',
-    `is_deleted`            tinyint(1)         DEFAULT NULL,
-    `json_array_column`     json               COMMENT 'json array 类型字段',
-    `json_object_column`    json               COMMENT 'json object 类型字段',
-    `time_column`           time               DEFAULT NULL COMMENT 'time类型字段',
-    `date_column`           date               DEFAULT NULL COMMENT 'date类型字段',
-    `datetime_column`       datetime           DEFAULT NULL COMMENT 'datetime类型字段',
-    `timestamp_column`      timestamp          DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'timestamp类型字段',
+    `id`                 bigint(1) unsigned AUTO_INCREMENT,
+    `name`               varchar(20) DEFAULT NULL COMMENT '姓名',
+    `is_deleted`         tinyint(1) DEFAULT NULL,
+    `json_array_column`  json COMMENT 'json array 类型字段',
+    `json_object_column` json COMMENT 'json object 类型字段',
+    `time_column`        time        DEFAULT NULL COMMENT 'time类型字段',
+    `date_column`        date        DEFAULT NULL COMMENT 'date类型字段',
+    `datetime_column`    datetime    DEFAULT NULL COMMENT 'datetime类型字段',
+    `timestamp_column`   timestamp   DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'timestamp类型字段',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4 COMMENT ='时间测试表';
 INSERT INTO `null_test` (`id`, `name`, `is_deleted`, `time_column`, `date_column`, `datetime_column`,
-                             `timestamp_column`)
+                         `timestamp_column`)
 VALUES (1, null, null, null, null, null, null);
-INSERT into null_test (`json_array_column`, `json_object_column`, `is_deleted`) VALUES ('[1,2,3]','{"name":"zhan","age":12}', 0);
+INSERT into null_test (`json_array_column`, `json_object_column`, `is_deleted`)
+VALUES ('[
+  1,
+  2,
+  3
+]', '{
+  "name": "zhan",
+  "age": 12
+}', 0);

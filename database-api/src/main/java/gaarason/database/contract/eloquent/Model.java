@@ -7,13 +7,11 @@ import gaarason.database.contract.model.SoftDelete;
 import gaarason.database.core.Container;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 
-import java.io.Serializable;
-
 /**
  * 数据模型
  * @author xt
  */
-public interface Model<T extends Serializable, K extends Serializable>
+public interface Model<T, K>
     extends Query<T, K>, Event<T, K>, SoftDelete<T, K> {
 
     /**

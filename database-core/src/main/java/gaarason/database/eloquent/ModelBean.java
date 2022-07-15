@@ -25,7 +25,7 @@ import java.util.HashSet;
  * 数据模型对象
  * @author xt
  */
-public abstract class ModelBean<T extends Serializable, K extends Serializable> implements Model<T, K> {
+public abstract class ModelBean<T, K> implements Model<T, K> {
 
     private static final String DEFAULT_SOFT_DELETED_COLUMN_NAME = "is_deleted";
 
@@ -185,19 +185,8 @@ public abstract class ModelBean<T extends Serializable, K extends Serializable> 
     }
 
     @Override
-    public Record<T, K> findOrFail(K id) throws EntityNotFoundException, SQLRuntimeException {
-        return newQuery().where(getPrimaryKeyColumnName(), id).firstOrFail();
-    }
-
-    @Override
     public Record<T, K> findOrFail(Object id) throws EntityNotFoundException, SQLRuntimeException {
         return newQuery().where(getPrimaryKeyColumnName(), id).firstOrFail();
-    }
-
-    @Override
-    @Nullable
-    public Record<T, K> find(K id) {
-        return newQuery().where(getPrimaryKeyColumnName(), id).first();
     }
 
     @Override

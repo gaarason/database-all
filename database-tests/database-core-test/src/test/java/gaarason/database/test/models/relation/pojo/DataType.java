@@ -1,9 +1,9 @@
 package gaarason.database.test.models.relation.pojo;
 
-import gaarason.database.appointment.FieldStrategy;
-import gaarason.database.test.models.relation.pojo.base.BaseEntity;
 import gaarason.database.annotation.Column;
 import gaarason.database.annotation.Table;
+import gaarason.database.appointment.FieldStrategy;
+import gaarason.database.test.models.relation.pojo.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -13,8 +13,6 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = true)
 @Table(name = "data_type")
 public class DataType extends BaseEntity {
-    private static final long serialVersionUID = 1L;
-
     /** auto generator start **/
 
     final public static String NAME = "name";
@@ -41,7 +39,7 @@ public class DataType extends BaseEntity {
     final public static String LINESTRING = "linestring";
     final public static String GEOMETRY = "geometry";
     final public static String TEXT = "text";
-
+    private static final long serialVersionUID = 1L;
     @Column(name = "name", length = 20L, comment = "姓名")
     private String name;
 

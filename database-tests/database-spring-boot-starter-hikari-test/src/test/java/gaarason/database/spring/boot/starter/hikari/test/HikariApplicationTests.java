@@ -26,7 +26,6 @@ public class HikariApplicationTests {
     GeneralModel generalModel;
 
 
-
     @Test
     public void 生成代码() {
         // set
@@ -63,8 +62,8 @@ public class HikariApplicationTests {
     public void run有参构造() {
         String jdbcUrl = "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8" +
             "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
-        String    username  = "root";
-        String    password  = "root";
+        String username = "root";
+        String password = "root";
         Generator generator = new Generator(jdbcUrl, username, password);
 
         // set
@@ -84,7 +83,10 @@ public class HikariApplicationTests {
 
     @Test
     public void 简单查询_通用() {
-        Record<GeneralModel.Table, Serializable> first = generalModel.newQuery().from("student").where("id", "3").first();
+        Record<GeneralModel.Table, Serializable> first = generalModel.newQuery()
+            .from("student")
+            .where("id", "3")
+            .first();
         Assertions.assertNotNull(first);
         Map<String, Object> stringObjectMap = first.toMap();
         Assertions.assertEquals(stringObjectMap.get("id").toString(), "3");

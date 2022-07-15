@@ -3,15 +3,15 @@ package gaarason.database.util;
 import gaarason.database.annotation.Column;
 import gaarason.database.annotation.Table;
 import gaarason.database.appointment.FinalVariable;
-import gaarason.database.config.ConversionConfig;
 import gaarason.database.exception.IllegalAccessRuntimeException;
 import gaarason.database.exception.TypeNotSupportedException;
-import gaarason.database.lang.Nullable;
-import gaarason.database.provider.ContainerProvider;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -82,12 +82,13 @@ public final class EntityUtils {
     /**
      * 将数据库查询结果赋值给 任意 entityList
      * @param stringColumnMapList 源数据
-     * @param entityClass         目标实体类
-     * @param <T>                 目标实体类
+     * @param entityClass 目标实体类
+     * @param <T> 目标实体类
      * @return 对象列表
      * @throws TypeNotSupportedException 实体不支持
      */
-    public static <T> List<T> entityAssignment(List<Map<String, gaarason.database.appointment.Column>> stringColumnMapList,
+    public static <T> List<T> entityAssignment(
+        List<Map<String, gaarason.database.appointment.Column>> stringColumnMapList,
         Class<T> entityClass) throws TypeNotSupportedException {
         List<T> entityList = new ArrayList<>();
         for (Map<String, gaarason.database.appointment.Column> stringColumnMap : stringColumnMapList) {
@@ -100,8 +101,8 @@ public final class EntityUtils {
     /**
      * 将数据库查询结果赋值给 任意 entity
      * @param stringColumnMap 源数据
-     * @param entityClass     目标实体类
-     * @param <T>             目标实体类
+     * @param entityClass 目标实体类
+     * @param <T> 目标实体类
      * @return 对象
      * @throws TypeNotSupportedException 实体不支持
      */
@@ -127,8 +128,8 @@ public final class EntityUtils {
     /**
      * stringObjectMap 赋值给 任意 entity
      * @param stringObjectMapList 源数据 List<map<列名, 值>>
-     * @param entityClass         目标实体类
-     * @param <T>                 目标实体类
+     * @param entityClass 目标实体类
+     * @param <T> 目标实体类
      * @return 对象
      * @throws TypeNotSupportedException 实体不支持
      */
@@ -146,12 +147,13 @@ public final class EntityUtils {
     /**
      * stringObjectMap 赋值给 任意 entity
      * @param stringObjectMap 源数据 map<列名, 值>
-     * @param entityClass     目标实体类
-     * @param <T>             目标实体类
+     * @param entityClass 目标实体类
+     * @param <T> 目标实体类
      * @return 对象
      * @throws TypeNotSupportedException 实体不支持
      */
-    public static <T> T entityAssignmentBySimpleMap(Map<String, Object> stringObjectMap, Class<T> entityClass) throws TypeNotSupportedException {
+    public static <T> T entityAssignmentBySimpleMap(Map<String, Object> stringObjectMap, Class<T> entityClass)
+        throws TypeNotSupportedException {
         try {
             T entity = entityClass.newInstance();
             List<Field> fields = getDeclaredFieldsContainParentWithoutStatic(entityClass);
@@ -169,9 +171,9 @@ public final class EntityUtils {
     /**
      * 将 complementEntity 中的属性赋值到 baseEntity 上
      * 1. 针对于非静态属性 2. complementEntity中所有的null属性都会跳过 (所以一定要使用包装类型来声明 entity)
-     * @param baseEntity       基本实体对象(不会被修改)
+     * @param baseEntity 基本实体对象(不会被修改)
      * @param complementEntity 合并实体对象
-     * @param <T>              实体类型
+     * @param <T> 实体类型
      * @return 合并后的对象
      */
     public static <T> T entityMerge(T baseEntity, T complementEntity) {
@@ -183,9 +185,9 @@ public final class EntityUtils {
     /**
      * 将 complementEntity 中的属性赋值到 baseEntity 上
      * 1. 针对于非静态属性 2. complementEntity中所有的null属性都会跳过 (所以一定要使用包装类型来声明 entity)
-     * @param baseEntity       基本实体对象(会被直接修改)
+     * @param baseEntity 基本实体对象(会被直接修改)
      * @param complementEntity 合并实体对象
-     * @param <T>              实体类型
+     * @param <T> 实体类型
      */
     public static <T> void entityMergeReference(T baseEntity, T complementEntity) {
         try {
@@ -240,14 +242,14 @@ public final class EntityUtils {
      */
     public static List<Field> getDeclaredFieldsContainParentWithoutStatic(Class<?> clazz) {
         List<Field> containStatic = getDeclaredFieldsContainParent(clazz);
-        return containStatic.stream().filter( field -> !EntityUtils.isStaticField(field)).collect(Collectors.toList());
+        return containStatic.stream().filter(field -> !EntityUtils.isStaticField(field)).collect(Collectors.toList());
     }
 
     /**
      * 返回 clazz 中的指定属性(public/protected/private)
      * 依次向上, 找到为止
      * @param clazz 类型
-     * @param name  属性名称
+     * @param name 属性名称
      * @return 属性对应的 Field
      * @throws NoSuchFieldException 不存在这个属性
      */
@@ -262,7 +264,6 @@ public final class EntityUtils {
             throw e;
         }
     }
-
 
 
 }

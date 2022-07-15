@@ -15,12 +15,9 @@ import java.util.List;
  */
 public class GaarasonDatabaseProperties implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
-    private static final Log LOGGER = LogFactory.getLog(GaarasonDatabaseProperties.class);
-
     public static final String PREFIX = "gaarason.database";
-
+    private static final long serialVersionUID = 1L;
+    private static final Log LOGGER = LogFactory.getLog(GaarasonDatabaseProperties.class);
     /**
      * 包扫描
      */
@@ -30,6 +27,55 @@ public class GaarasonDatabaseProperties implements Serializable {
      * 雪花算法
      */
     protected SnowFlake snowFlake = new SnowFlake();
+
+    /**
+     * 从 SystemProperties 中创建
+     * 对于列表类型的数据,使用,做区分 eg: gaarason.database.scan.packages=gaarason,com.github.gaarason
+     * @return GaarasonDatabaseProperties
+     */
+    public static GaarasonDatabaseProperties buildFromSystemProperties() {
+        // 多个值时, 使用的分隔符号
+        String symbol = ",";
+
+        // 雪花算法
+        GaarasonDatabaseProperties gaarasonDatabaseProperties = new GaarasonDatabaseProperties();
+        gaarasonDatabaseProperties.getSnowFlake()
+            .setDataId(
+                Integer.parseInt(System.getProperty(GaarasonDatabaseProperties.PREFIX + ".snow-flake.worker-id", "0")));
+        gaarasonDatabaseProperties.getSnowFlake()
+            .setDataId(
+                Integer.parseInt(System.getProperty(GaarasonDatabaseProperties.PREFIX + ".snow-flake.data-id", "0")));
+
+        // 包扫描
+        String packages = System.getProperty(GaarasonDatabaseProperties.PREFIX + ".scan.packages");
+
+        if (packages != null) {
+            gaarasonDatabaseProperties.getScan().getPackages().addAll(Arrays.asList(packages.split(symbol)));
+        }
+        String filterExcludePackages = System.getProperty(
+            GaarasonDatabaseProperties.PREFIX + ".scan.filter-exclude-packages");
+        if (filterExcludePackages != null) {
+            gaarasonDatabaseProperties.getScan()
+                .getFilterExcludePackages()
+                .addAll(Arrays.asList(filterExcludePackages.split(symbol)));
+        }
+        String filterIncludePatterns = System.getProperty(
+            GaarasonDatabaseProperties.PREFIX + ".scan.filter-include-patterns");
+        if (filterIncludePatterns != null) {
+            gaarasonDatabaseProperties.getScan()
+                .getFilterIncludePatterns()
+                .addAll(Arrays.asList(filterIncludePatterns.split(symbol)));
+        }
+        String filterExcludePatterns = System.getProperty(
+            GaarasonDatabaseProperties.PREFIX + ".scan.filter-exclude-patterns");
+        if (filterExcludePatterns != null) {
+            gaarasonDatabaseProperties.getScan()
+                .getFilterExcludePatterns()
+                .addAll(Arrays.asList(filterExcludePatterns.split(symbol)));
+        }
+
+        return gaarasonDatabaseProperties;
+    }
 
     public Scan getScan() {
         return scan;
@@ -50,6 +96,52 @@ public class GaarasonDatabaseProperties implements Serializable {
     @Override
     public String toString() {
         return "GaarasonDatabaseProperties{" + "scan=" + scan + ", snowFlake=" + snowFlake + '}';
+    }
+
+    /**
+     * 填补与验证
+     * java8 与 以上版本的ClassLoader 实现上的差别, 使得当 packages 为 null 时, java8 会扫描所有包, 而其他java版本则完全不扫描
+     * 因此, java8以上的版本, 必须配置本项目; java8为了更快的启动, 也应该配置本项目
+     * @return GaarasonDatabaseProperties
+     */
+    public GaarasonDatabaseProperties fillAndVerify() {
+        if (!ObjectUtils.isEmpty(this.getScan().getPackages())) {
+            // 固定扫描 gaarason.database
+            if (!this.getScan().getPackages().contains(GaarasonDatabaseProperties.PREFIX)) {
+                this.getScan().getPackages().add(GaarasonDatabaseProperties.PREFIX);
+            }
+        } else {
+            LOGGER.warn("You should configure for the package scan, as like : " + GaarasonDatabaseProperties.PREFIX +
+                ".scan.packages=you.package1,you.package2, or System.setProperty(\"gaarason.database.scan.packages\", \"you.package1,you.package2\"), or using @GaarasonDatabaseScan when spring boot is active");
+        }
+        LOGGER.info("Configuration is " + this);
+        return this;
+    }
+
+    /**
+     * 将自身合并其他来源的Scan配置
+     * @param scan 来自包扫描注解的配置
+     * @return GaarasonDatabaseProperties
+     * @see gaarason.database.spring.boot.starter.annotation.GaarasonDatabaseScan
+     */
+    public GaarasonDatabaseProperties mergeScan(GaarasonDatabaseProperties.Scan scan) {
+        this.getScan().getPackages().addAll(scan.getPackages());
+        this.getScan().getFilterExcludePackages().addAll(scan.getFilterExcludePackages());
+        this.getScan().getFilterIncludePatterns().addAll(scan.getFilterIncludePatterns());
+        this.getScan().getFilterExcludePatterns().addAll(scan.getFilterExcludePatterns());
+        return this;
+    }
+
+    /**
+     * 如果Packages为空, 则填充默认值
+     * @param defaultPackage 默认值
+     * @return GaarasonDatabaseProperties
+     */
+    public GaarasonDatabaseProperties fillPackageWhenIsEmpty(String defaultPackage) {
+        if (this.getScan().getPackages().isEmpty()) {
+            this.getScan().getPackages().add(defaultPackage);
+        }
+        return this;
     }
 
     /**
@@ -122,28 +214,28 @@ public class GaarasonDatabaseProperties implements Serializable {
             return packages;
         }
 
-        public List<String> getFilterExcludePackages() {
-            return filterExcludePackages;
-        }
-
-        public List<String> getFilterIncludePatterns() {
-            return filterIncludePatterns;
-        }
-
-        public List<String> getFilterExcludePatterns() {
-            return filterExcludePatterns;
-        }
-
         public void setPackages(List<String> packages) {
             this.packages = packages;
+        }
+
+        public List<String> getFilterExcludePackages() {
+            return filterExcludePackages;
         }
 
         public void setFilterExcludePackages(List<String> filterExcludePackages) {
             this.filterExcludePackages = filterExcludePackages;
         }
 
+        public List<String> getFilterIncludePatterns() {
+            return filterIncludePatterns;
+        }
+
         public void setFilterIncludePatterns(List<String> filterIncludePatterns) {
             this.filterIncludePatterns = filterIncludePatterns;
+        }
+
+        public List<String> getFilterExcludePatterns() {
+            return filterExcludePatterns;
         }
 
         public void setFilterExcludePatterns(List<String> filterExcludePatterns) {
@@ -156,101 +248,6 @@ public class GaarasonDatabaseProperties implements Serializable {
                 ", filterIncludePatterns=" + filterIncludePatterns + ", filterExcludePatterns=" +
                 filterExcludePatterns + '}';
         }
-    }
-
-    /**
-     * 填补与验证
-     * java8 与 以上版本的ClassLoader 实现上的差别, 使得当 packages 为 null 时, java8 会扫描所有包, 而其他java版本则完全不扫描
-     * 因此, java8以上的版本, 必须配置本项目; java8为了更快的启动, 也应该配置本项目
-     * @return GaarasonDatabaseProperties
-     */
-    public GaarasonDatabaseProperties fillAndVerify() {
-        if (!ObjectUtils.isEmpty(this.getScan().getPackages())) {
-            // 固定扫描 gaarason.database
-            if (!this.getScan().getPackages().contains(GaarasonDatabaseProperties.PREFIX)) {
-                this.getScan().getPackages().add(GaarasonDatabaseProperties.PREFIX);
-            }
-        } else {
-            LOGGER.warn("You should configure for the package scan, as like : " + GaarasonDatabaseProperties.PREFIX +
-                ".scan.packages=you.package1,you.package2, or System.setProperty(\"gaarason.database.scan.packages\", \"you.package1,you.package2\"), or using @GaarasonDatabaseScan when spring boot is active");
-        }
-        LOGGER.info("Configuration is " + this);
-        return this;
-    }
-
-    /**
-     * 从 SystemProperties 中创建
-     * 对于列表类型的数据,使用,做区分 eg: gaarason.database.scan.packages=gaarason,com.github.gaarason
-     * @return GaarasonDatabaseProperties
-     */
-    public static GaarasonDatabaseProperties buildFromSystemProperties() {
-        // 多个值时, 使用的分隔符号
-        String symbol = ",";
-
-        // 雪花算法
-        GaarasonDatabaseProperties gaarasonDatabaseProperties = new GaarasonDatabaseProperties();
-        gaarasonDatabaseProperties.getSnowFlake()
-            .setDataId(
-                Integer.parseInt(System.getProperty(GaarasonDatabaseProperties.PREFIX + ".snow-flake.worker-id", "0")));
-        gaarasonDatabaseProperties.getSnowFlake()
-            .setDataId(
-                Integer.parseInt(System.getProperty(GaarasonDatabaseProperties.PREFIX + ".snow-flake.data-id", "0")));
-
-        // 包扫描
-        String packages = System.getProperty(GaarasonDatabaseProperties.PREFIX + ".scan.packages");
-
-        if (packages != null) {
-            gaarasonDatabaseProperties.getScan().getPackages().addAll(Arrays.asList(packages.split(symbol)));
-        }
-        String filterExcludePackages = System.getProperty(
-            GaarasonDatabaseProperties.PREFIX + ".scan.filter-exclude-packages");
-        if (filterExcludePackages != null) {
-            gaarasonDatabaseProperties.getScan()
-                .getFilterExcludePackages()
-                .addAll(Arrays.asList(filterExcludePackages.split(symbol)));
-        }
-        String filterIncludePatterns = System.getProperty(
-            GaarasonDatabaseProperties.PREFIX + ".scan.filter-include-patterns");
-        if (filterIncludePatterns != null) {
-            gaarasonDatabaseProperties.getScan()
-                .getFilterIncludePatterns()
-                .addAll(Arrays.asList(filterIncludePatterns.split(symbol)));
-        }
-        String filterExcludePatterns = System.getProperty(
-            GaarasonDatabaseProperties.PREFIX + ".scan.filter-exclude-patterns");
-        if (filterExcludePatterns != null) {
-            gaarasonDatabaseProperties.getScan()
-                .getFilterExcludePatterns()
-                .addAll(Arrays.asList(filterExcludePatterns.split(symbol)));
-        }
-
-        return gaarasonDatabaseProperties;
-    }
-
-    /**
-     * 将自身合并其他来源的Scan配置
-     * @param scan 来自包扫描注解的配置
-     * @return GaarasonDatabaseProperties
-     * @see gaarason.database.spring.boot.starter.annotation.GaarasonDatabaseScan
-     */
-    public GaarasonDatabaseProperties mergeScan(GaarasonDatabaseProperties.Scan scan) {
-        this.getScan().getPackages().addAll(scan.getPackages());
-        this.getScan().getFilterExcludePackages().addAll(scan.getFilterExcludePackages());
-        this.getScan().getFilterIncludePatterns().addAll(scan.getFilterIncludePatterns());
-        this.getScan().getFilterExcludePatterns().addAll(scan.getFilterExcludePatterns());
-        return this;
-    }
-
-    /**
-     * 如果Packages为空, 则填充默认值
-     * @param defaultPackage 默认值
-     * @return GaarasonDatabaseProperties
-     */
-    public GaarasonDatabaseProperties fillPackageWhenIsEmpty(String defaultPackage){
-        if(this.getScan().getPackages().isEmpty()){
-            this.getScan().getPackages().add(defaultPackage);
-        }
-        return this;
     }
 
 }

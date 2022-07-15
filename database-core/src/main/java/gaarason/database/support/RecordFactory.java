@@ -12,7 +12,6 @@ import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.ObjectUtils;
 
-import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -43,7 +42,7 @@ public class RecordFactory {
      * @throws SQLException 数据库异常
      * @throws EntityNotFoundException 数据为空
      */
-    public static <T extends Serializable, K extends Serializable> Record<T, K> newRecord(Model<T, K> model,
+    public static <T, K> Record<T, K> newRecord(Model<T, K> model,
         ResultSet resultSet, String sql) throws SQLException, EntityNotFoundException {
         if (!resultSet.next()) {
             throw new EntityNotFoundException(sql);
@@ -64,7 +63,7 @@ public class RecordFactory {
      * @return 批量结果集(全新)
      * @throws SQLException 数据库异常
      */
-    public static <T extends Serializable, K extends Serializable> RecordList<T, K> newRecordList(Model<T, K> model,
+    public static <T, K> RecordList<T, K> newRecordList(Model<T, K> model,
         ResultSet resultSet, String sql) throws SQLException {
 
         RecordList<T, K> recordList = new RecordListBean<>(sql, model.getGaarasonDataSource().getContainer());
@@ -90,7 +89,7 @@ public class RecordFactory {
      * @param <K> 实体主键类型
      * @return 批量结果集(RecordList全新, Record为引用地址)
      */
-    public static <T extends Serializable, K extends Serializable> RecordList<T, K> newRecordList(Container container,
+    public static <T, K> RecordList<T, K> newRecordList(Container container,
         List<Record<T, K>> records) {
         String sql = !records.isEmpty() ? records.get(0).getOriginalSql() : "";
         RecordList<T, K> recordList = new RecordListBean<>(sql, container);
@@ -108,7 +107,7 @@ public class RecordFactory {
      * @param <K> 实体主键类型
      * @return 批量结果集(RecordList全新, Record为引用地址)
      */
-    public static <T extends Serializable, K extends Serializable> RecordList<T, K> newRecordList(
+    public static <T, K> RecordList<T, K> newRecordList(
         Record<T, K> theRecord) {
         List<Record<T, K>> records = new ArrayList<>();
         records.add(theRecord);
@@ -122,7 +121,7 @@ public class RecordFactory {
      * @param <K> 实体主键类型
      * @return 批量结果集(RecordList全新, Record为引用地址)
      */
-    public static <T extends Serializable, K extends Serializable> RecordList<T, K> newRecordList(Container container) {
+    public static <T, K> RecordList<T, K> newRecordList(Container container) {
         return new RecordListBean<>("", container);
     }
 
@@ -133,7 +132,7 @@ public class RecordFactory {
      * @param <K> 实体主键类型
      * @return 批量结果集
      */
-    public static <T extends Serializable, K extends Serializable> RecordList<T, K> copyRecordList(
+    public static <T, K> RecordList<T, K> copyRecordList(
         RecordList<T, K> originalRecordList) {
         RecordList<T, K> recordList = new RecordListBean<>(originalRecordList.getOriginalSql(),
             originalRecordList.getContainer());
@@ -156,7 +155,7 @@ public class RecordFactory {
      * @return 通用map
      * @throws SQLException 数据库异常
      */
-    public static <T extends Serializable, K extends Serializable> HashMap<String, Column> JDBCResultToMap(
+    public static <T, K> HashMap<String, Column> JDBCResultToMap(
         Model<T, K> model, ResultSetMetaData resultSetMetaData, ResultSet resultSet) throws SQLException {
         HashMap<String, Column> map = new HashMap<>();
         return (HashMap<String, Column>) JDBCResultToMap(model, map, resultSetMetaData, resultSet);
@@ -172,7 +171,7 @@ public class RecordFactory {
      * @return 通用map
      * @throws SQLException 数据库异常
      */
-    protected static <T extends Serializable, K extends Serializable> Map<String, Column> JDBCResultToMap(
+    protected static <T, K> Map<String, Column> JDBCResultToMap(
         Model<T, K> model, Map<String, Column> map, ResultSetMetaData resultSetMetaData, ResultSet resultSet)
         throws SQLException {
 

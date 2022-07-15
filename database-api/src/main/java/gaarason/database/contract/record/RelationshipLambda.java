@@ -7,15 +7,13 @@ import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.contract.support.LambdaStyle;
 
-import java.io.Serializable;
-
 /**
  * 关联关系
  * @param <T> 实体类
  * @param <K> 主键类型
  * @author xt
  */
-public interface RelationshipLambda<T extends Serializable, K extends Serializable>
+public interface RelationshipLambda<T, K>
     extends Relationship<T, K>, LambdaStyle<T, K> {
 
     /**
@@ -34,7 +32,7 @@ public interface RelationshipLambda<T extends Serializable, K extends Serializab
      * @return 关联的Model的查询构造器
      */
     default Record<T, K> with(ColumnFunctionalInterface<T> fieldName,
-                              GenerateSqlPartFunctionalInterface<T, K> builderClosure) {
+        GenerateSqlPartFunctionalInterface<T, K> builderClosure) {
         return with(lambda2FieldName(fieldName), builderClosure);
 
     }
@@ -47,8 +45,8 @@ public interface RelationshipLambda<T extends Serializable, K extends Serializab
      * @return 关联的Model的查询构造器
      */
     default Record<T, K> with(ColumnFunctionalInterface<T> fieldName,
-                              GenerateSqlPartFunctionalInterface<T, K> builderClosure,
-                              RelationshipRecordWithFunctionalInterface recordClosure) {
+        GenerateSqlPartFunctionalInterface<T, K> builderClosure,
+        RelationshipRecordWithFunctionalInterface recordClosure) {
         return with(lambda2FieldName(fieldName), builderClosure, recordClosure);
     }
 

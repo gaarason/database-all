@@ -44,15 +44,15 @@ abstract class BaseFieldGenerator {
      * @return 类名
      */
     protected static String cutClassName(Class<?> classType) {
-        String   className = classType.getName();
-        String[] split     = className.split("\\.");
+        String className = classType.getName();
+        String[] split = className.split("\\.");
         return split[split.length - 1];
     }
 
     /**
      * 生成Field
      * @param disInsertable 不可新增的字段
-     * @param disUpdatable  不可更新的字段
+     * @param disUpdatable 不可更新的字段
      * @return Field
      */
     public abstract Field toField(String[] disInsertable, String[] disUpdatable);

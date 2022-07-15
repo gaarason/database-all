@@ -22,7 +22,7 @@ public enum JoinType {
         this.operation = operation;
     }
 
-    public String getOperation(){
+    public String getOperation() {
         return operation;
     }
 }

@@ -6,7 +6,7 @@ package gaarason.database.util;
  */
 public class ExceptionUtils {
 
-    private ExceptionUtils(){
+    private ExceptionUtils() {
     }
 
     /**

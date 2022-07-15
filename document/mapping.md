@@ -1,6 +1,9 @@
 # database
+
 Eloquent ORM for Java
+
 ## 目录
+
 * [注册配置](/document/bean.md)
 * [数据映射](/document/mapping.md)
     * [总览](#总览)
@@ -21,12 +24,13 @@ Eloquent ORM for Java
 * [关联关系](/document/relationship.md)
 * [生成代码](/document/generate.md)
 * [版本信息](/document/version.md)
+
 ## 总览
 
 数据映射是用将数据库字段与java对象进行相互转换的必要手段, 理解为`数据`  
 [反向生成代码](/document/generate.md)  
 **数据类型应该使用包装类型替代基本类型 例如使用`Integer`替代`int`**  
-任意一个普通pojo对象即可, 下面是一个例子  
+任意一个普通pojo对象即可, 下面是一个例子
 
 ```java
 package temp.pojo;
@@ -79,7 +83,7 @@ public class Student implements Serializable {
 
 ### Table
 
-- `gaarason.database.eloquent.annotation.Table` 用于确定当前`pojo`映射的数据表名  
+- `gaarason.database.eloquent.annotation.Table` 用于确定当前`pojo`映射的数据表名
 - 当`pojo`的类名是对应表名的大驼峰时,可以省略(eg: `temp.pojo.SupTeacher`对应数据表`sup_teacher`时,可以省略)
 
 ### Primary
@@ -87,6 +91,7 @@ public class Student implements Serializable {
 ##### 自动主键
 
 当数据库主键为`bigint unsigned`时, 可以使用雪花id生成器, 兼容10ms以内时间回拨, 单个进程每秒500w个id
+
 - spring boot
     - 设置工作id gaarason.database.snow-flake.worker-id=2
 
@@ -100,9 +105,12 @@ long id = ContainerProvider.getBean(IdGenerator.SnowFlakesID.class).nextId();
 @Primary(idGenerator = IdGenerator.SnowFlakesID.class)
 private Long id;
 ```
+
 ##### 自定义主键
+
 定义主键生成  
 **注意, 有且只有使用 ORM 新增时,且主键没有赋值时, 生效**
+
 ```java
 public static class CustomPrimaryKey implements IdGenerator<Integer> {
     private final static AtomicInteger id = new AtomicInteger(200);
@@ -113,12 +121,16 @@ public static class CustomPrimaryKey implements IdGenerator<Integer> {
     }
 }
 ```
+
 指定使用
+
 ```java
 @Primary(idGenerator = CustomPrimaryKey.class)
 private Integer id;
 ```
+
 数据插入
+
 ```java
 final Record<PrimaryKeyTestModel.Entity, Integer> record0 = primaryKeyTestModel.newRecord();
 record0.save();
@@ -128,13 +140,13 @@ Assert.assertEquals(200, record0.getEntity().getId().intValue());
 ### Column
 
 - `gaarason.database.eloquent.annotation.Column` 用于确定每个数据字段的具体属性
-- 当`insertable`以及`updatable`为`false`时, 对应字段的`ORM`操作将被忽略 
+- 当`insertable`以及`updatable`为`false`时, 对应字段的`ORM`操作将被忽略
 - 如果某个数据对象没有`Primary`注解, 则大多数`ORM`操作将被禁用
 
 ### BelongsTo
 
 - 一对一关系  
-见关联关系
+  见关联关系
 
 ### BelongsToMany
 

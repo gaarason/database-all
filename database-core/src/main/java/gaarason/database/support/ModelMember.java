@@ -7,12 +7,11 @@ import gaarason.database.provider.ModelInstanceProvider;
 import gaarason.database.util.ObjectUtils;
 
 import java.io.Serializable;
-import java.util.Map;
 
 /**
  * 格式化后的Model信息
  */
-public class ModelMember<T extends Serializable, K extends Serializable> extends Container.SimpleKeeper
+public class ModelMember<T, K> extends Container.SimpleKeeper
     implements Serializable {
 
     /**

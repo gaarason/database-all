@@ -2,16 +2,11 @@ package gaarason.database.logging;
 
 public class NoLoggingImpl implements Log {
 
-    private int infoCount;
-
-    private int errorCount;
-
-    private int warnCount;
-
-    private int debugCount;
-
     private final String loggerName;
-
+    private int infoCount;
+    private int errorCount;
+    private int warnCount;
+    private int debugCount;
     private boolean debugEnable = false;
 
     private boolean infoEnable = true;

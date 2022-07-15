@@ -9,7 +9,9 @@ import gaarason.database.logging.LogFactory;
 import gaarason.database.util.ClassUtils;
 import gaarason.database.util.ObjectUtils;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -43,7 +45,8 @@ public class ContainerProvider implements Container {
             throw new InvalidConfigException(interfaceClass + " should be registered before get bean.");
         }
         // 添加到头部
-        LinkedList<InstanceCreatorFunctionalInterface<?>> instanceCreators = INSTANCE_CREATOR_MAP.computeIfAbsent(interfaceClass, k -> new LinkedList<>());
+        LinkedList<InstanceCreatorFunctionalInterface<?>> instanceCreators = INSTANCE_CREATOR_MAP.computeIfAbsent(
+            interfaceClass, k -> new LinkedList<>());
         instanceCreators.push(closure);
         instanceCreators.sort(Comparator.comparing(InstanceCreatorFunctionalInterface::getOrder));
     }
@@ -71,13 +74,14 @@ public class ContainerProvider implements Container {
     /**
      * 返回一个对象列表, 其中的每个对象必然单例
      * @param interfaceClass 接口类型
-     * @param fastReturn     获取一个实例对象, 就快速返回
-     * @param <T>            类型
+     * @param fastReturn 获取一个实例对象, 就快速返回
+     * @param <T> 类型
      * @return 对象
      */
     protected <T> List<T> getBeansInside(Class<T> interfaceClass, boolean fastReturn) {
         LinkedList<Object> objects = INSTANCE_MAP.getOrDefault(interfaceClass, new LinkedList<>());
-        List<InstanceCreatorFunctionalInterface<?>> instanceCreators = INSTANCE_CREATOR_MAP.getOrDefault(interfaceClass, new LinkedList<>());
+        List<InstanceCreatorFunctionalInterface<?>> instanceCreators = INSTANCE_CREATOR_MAP.getOrDefault(interfaceClass,
+            new LinkedList<>());
         /*
          * 对象列表没有值 || 在非快速返回的情况下, 对象列表没有足够的对象
          * 以上的2种情况, 都需要进行实例化 ( 不重复的进行实例化 )
@@ -123,9 +127,9 @@ public class ContainerProvider implements Container {
     /**
      * 缺省实例化方式
      * @param clazz 类
-     * @param <T>   类型
+     * @param <T> 类型
      */
-    protected  <T> InstanceCreatorFunctionalInterface<T> defaultNewInstance(Class<T> clazz) {
+    protected <T> InstanceCreatorFunctionalInterface<T> defaultNewInstance(Class<T> clazz) {
         return c -> {
             LOGGER.info("Instantiate unregistered objects[" + clazz.getName() + "] by default.");
             return ClassUtils.newInstance(clazz);

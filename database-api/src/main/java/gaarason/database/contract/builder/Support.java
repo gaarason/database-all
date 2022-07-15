@@ -7,13 +7,11 @@ import gaarason.database.contract.query.Grammar;
 import gaarason.database.contract.support.LambdaStyle;
 import gaarason.database.lang.Nullable;
 
-import java.io.Serializable;
-
 /**
  * 支持
  * @author xt
  */
-public interface Support<T extends Serializable, K extends Serializable> extends LambdaStyle<T, K> {
+public interface Support<T, K> extends LambdaStyle<T, K> {
 
     /**
      * sql生成器
@@ -56,7 +54,7 @@ public interface Support<T extends Serializable, K extends Serializable> extends
      * @return sql
      */
     default Grammar.SQLPartInfo generateSql(GenerateSqlPartFunctionalInterface<T, K> closure,
-                                            Grammar.SQLPartType sqlPartType) {
+        Grammar.SQLPartType sqlPartType) {
         Builder<T, K> subBuilder = closure.execute(getNewSelf());
         return subBuilder.getGrammar().get(sqlPartType);
     }

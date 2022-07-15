@@ -5,14 +5,13 @@ import gaarason.database.contract.eloquent.Record;
 import gaarason.database.exception.EntityAttributeInvalidException;
 import gaarason.database.lang.Nullable;
 
-import java.io.Serializable;
 import java.util.Map;
 
 /**
  * ORM 操作
  * @author xt
  */
-public interface Operation<T extends Serializable, K extends Serializable> {
+public interface Operation<T, K> {
 
     /**
      * 新增或者更新

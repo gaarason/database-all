@@ -8,6 +8,6 @@ import gaarason.database.exception.base.BaseException;
  */
 public class ClassNotFoundException extends BaseException {
     public ClassNotFoundException(String className) {
-        super("Class find by name ["+className+"] fail.");
+        super("Class find by name [" + className + "] fail.");
     }
 }

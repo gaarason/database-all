@@ -23,7 +23,6 @@ import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -32,7 +31,7 @@ import java.util.Map;
  * 结果集对象
  * @author xt
  */
-public class RecordBean<T extends Serializable, K extends Serializable> implements Record<T, K> {
+public class RecordBean<T, K> implements Record<T, K> {
 
     /**
      * 数据模型
@@ -552,7 +551,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
      * @param entity 实体
      */
     protected void primaryKeyAutoDeal(T entity) {
-        EntityMember<? extends Serializable> entityMember = modelShadow.parseAnyEntityWithCache(entity.getClass());
+        EntityMember<?> entityMember = modelShadow.parseAnyEntityWithCache(entity.getClass());
 
         PrimaryKeyMember primaryKeyMember = entityMember.getPrimaryKeyMember();
         // 无主键信息, 不做处理
@@ -588,7 +587,7 @@ public class RecordBean<T extends Serializable, K extends Serializable> implemen
      */
     protected void selfUpdateMetadataMap(T entity, boolean insertType) {
 
-        EntityMember<? extends Serializable> entityMember = modelShadow.parseAnyEntityWithCache(entity.getClass());
+        EntityMember<?> entityMember = modelShadow.parseAnyEntityWithCache(entity.getClass());
 
         Map<String, FieldMember> columnFieldMap = entityMember.getColumnFieldMap();
 

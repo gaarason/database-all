@@ -10,6 +10,7 @@ public class EntityNewInstanceException extends BaseException {
     public EntityNewInstanceException(Throwable e) {
         super(e);
     }
+
     public EntityNewInstanceException(String message, Throwable e) {
         super(message, e);
     }

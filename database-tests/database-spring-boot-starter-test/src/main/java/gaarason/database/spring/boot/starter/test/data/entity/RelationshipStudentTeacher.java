@@ -17,7 +17,7 @@ public class RelationshipStudentTeacher implements Serializable {
      * auto generator start
      **/
 
-    final public static String ID         = "id";
+    final public static String ID = "id";
 
     final public static String STUDENT_ID = "student_id";
 

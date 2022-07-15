@@ -80,7 +80,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
     private final ReferenceQueue<V> queue = new ReferenceQueue<>();
 
     @Nullable
-    private transient Set<Map.Entry<K,V>> entrySet = null;
+    private transient Set<Map.Entry<K, V>> entrySet = null;
 
     /* -- Constructors -- */
 
@@ -118,6 +118,10 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
 
     /* -- Simple queries -- */
 
+    private static boolean valEquals(@Nullable Object o1, @Nullable Object o2) {
+        return Objects.equals(o1, o2);
+    }
+
     /**
      * Return the number of key-value mappings in this cache.  The time
      * required by this operation is linear in the size of the map.
@@ -133,6 +137,8 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
         return entrySet().isEmpty();
     }
 
+    /* -- Lookup and modification operations -- */
+
     /**
      * Return <code>true</code> if this cache contains a mapping for the
      * specified key.  If there is no mapping for the key, this method will not
@@ -142,8 +148,6 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
     public boolean containsKey(Object key) {
         return ValueCell.strip(hash.get(key), false) != null;
     }
-
-    /* -- Lookup and modification operations -- */
 
     @Nullable
     public V get(Object key) {
@@ -196,12 +200,13 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
      */
     public Set<Map.Entry<K, V>> entrySet() {
         if (this.entrySet == null) {
-            Set<? extends Map.Entry<K,V>> entrySetTemp = new EntrySet();
-            this.entrySet = (Set<Map.Entry<K, V>>)entrySetTemp;
+            Set<? extends Map.Entry<K, V>> entrySetTemp = new EntrySet();
+            this.entrySet = (Set<Map.Entry<K, V>>) entrySetTemp;
         }
         return this.entrySet;
     }
 
+    /* -- Views -- */
 
     /* Process any ValueCells that have been cleared and enqueued by the
        garbage collector.  This method should be invoked once by each public
@@ -213,17 +218,10 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
         while ((vc = (ValueCell<?>) queue.poll()) != null) {
             if (vc.isValid()) {
                 hash.remove(vc.key);
-            }
-            else {
+            } else {
                 ValueCell.dropped--;
             }
         }
-    }
-
-    /* -- Views -- */
-
-    private static boolean valEquals(@Nullable Object o1, @Nullable Object o2) {
-        return Objects.equals(o1, o2);
     }
 
     /* The basic idea of this implementation is to maintain an internal HashMap
@@ -349,7 +347,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
                 }
 
                 public Entry next() {
-                    if ((next == null) && !hasNext()){
+                    if ((next == null) && !hasNext()) {
                         throw new NoSuchElementException();
                     }
                     Entry e = next;
@@ -379,8 +377,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
             processQueue();
             if (o instanceof SoftCache.Entry) {
                 return hashEntries.remove(((SoftCache<?, ?>.Entry) o).ent);
-            }
-            else {
+            } else {
                 return false;
             }
         }

@@ -12,49 +12,8 @@ import java.util.List;
 
 public class EntityUtilsTests {
 
-    interface Grandfather extends Serializable {
-        String name = "grand_father";
-        String age = "66";
-        String onlyGrandfather = "onlyGrandfather";
-    }
-
-    interface GrandMother{
-        String name = "grand_mother";
-        String age = "61";
-        String onlyGrandMother = "onlyGrandMother";
-    }
-
-    @Data
-    abstract static class Father implements Grandfather, GrandMother{
-        private static final long serialVersionUID = 1L;
-        private  String name = "father";
-        private Integer age = 36;
-        protected Integer sex = 1;
-        private String onlyFather = "onlyFather";
-    }
-
-    @EqualsAndHashCode(callSuper = true)
-    @Data
-    static class Son extends Father {
-        private static final long serialVersionUID = 1L;
-        private String name = "son";
-        private Integer age = 14;
-        private String onlySon = "onlySon";
-    }
-
-    @EqualsAndHashCode(callSuper = true)
-    @Data
-    static class Daughter extends Father {
-        private static final long serialVersionUID = 1L;
-        private String name = "daughter";
-        private Integer age = 12;
-        protected Integer sex = 0;
-        private String onlyDaughter = "onlyDaughter";
-    }
-
-
     @Test
-    public void getDeclaredFieldsContainParentTest(){
+    public void getDeclaredFieldsContainParentTest() {
         List<Field> fields = EntityUtils.getDeclaredFieldsContainParent(Son.class);
         System.out.println(fields);
 
@@ -78,7 +37,7 @@ public class EntityUtilsTests {
     }
 
     @Test
-    public void getDeclaredFieldsContainParentWithoutStaticTest(){
+    public void getDeclaredFieldsContainParentWithoutStaticTest() {
         List<Field> fields = EntityUtils.getDeclaredFieldsContainParentWithoutStatic(Son.class);
         Assert.assertEquals(7, fields.size());
     }
@@ -138,6 +97,46 @@ public class EntityUtilsTests {
         Assert.assertEquals(son3.getOnlyFather(), ssss);
 
 
+    }
+
+    interface Grandfather extends Serializable {
+        String name = "grand_father";
+        String age = "66";
+        String onlyGrandfather = "onlyGrandfather";
+    }
+
+    interface GrandMother {
+        String name = "grand_mother";
+        String age = "61";
+        String onlyGrandMother = "onlyGrandMother";
+    }
+
+    @Data
+    abstract static class Father implements Grandfather, GrandMother {
+        private static final long serialVersionUID = 1L;
+        protected Integer sex = 1;
+        private String name = "father";
+        private Integer age = 36;
+        private String onlyFather = "onlyFather";
+    }
+
+    @EqualsAndHashCode(callSuper = true)
+    @Data
+    static class Son extends Father {
+        private static final long serialVersionUID = 1L;
+        private String name = "son";
+        private Integer age = 14;
+        private String onlySon = "onlySon";
+    }
+
+    @EqualsAndHashCode(callSuper = true)
+    @Data
+    static class Daughter extends Father {
+        private static final long serialVersionUID = 1L;
+        protected Integer sex = 0;
+        private String name = "daughter";
+        private Integer age = 12;
+        private String onlyDaughter = "onlyDaughter";
     }
 
 }

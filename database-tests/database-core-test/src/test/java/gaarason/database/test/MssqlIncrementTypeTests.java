@@ -7,10 +7,10 @@ import org.junit.runners.MethodSorters;
 
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
-public class MssqlIncrementTypeTests  {
+public class MssqlIncrementTypeTests {
 //    public class MssqlIncrementTypeTests extends IncrementTypeTests {
 
-//    @BeforeClass
+    //    @BeforeClass
 //    public static void beforeClass() throws IOException {
 //        DatabaseTypeUtil.setDatabaseTypeToMssql();
 //        String sqlFilename = Thread.currentThread().getStackTrace()[1].getClass().getResource("/").toString().replace(
@@ -18,7 +18,7 @@ public class MssqlIncrementTypeTests  {
 //        initSql = readToString(sqlFilename);
 //    }
     @Test
-    public void empty(){
+    public void empty() {
 
     }
 }

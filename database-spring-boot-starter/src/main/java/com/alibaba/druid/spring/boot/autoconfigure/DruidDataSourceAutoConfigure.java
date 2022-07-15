@@ -32,7 +32,8 @@ import javax.sql.DataSource;
 @ConditionalOnClass(DruidDataSource.class)
 @ConditionalOnProperty(name = "spring.datasource.type", havingValue = "com.alibaba.druid.pool.DruidDataSource")
 @EnableConfigurationProperties({DruidStatProperties.class, DataSourceProperties.class})
-@Import({DruidSpringAopConfiguration.class, DruidStatViewServletConfiguration.class, DruidWebStatFilterConfiguration.class, DruidFilterConfiguration.class})
+@Import({DruidSpringAopConfiguration.class, DruidStatViewServletConfiguration.class,
+    DruidWebStatFilterConfiguration.class, DruidFilterConfiguration.class})
 public class DruidDataSourceAutoConfigure {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DruidDataSourceAutoConfigure.class);

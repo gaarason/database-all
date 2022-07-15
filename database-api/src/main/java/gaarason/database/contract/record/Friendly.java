@@ -6,9 +6,9 @@ import java.util.Map;
 
 /**
  * 结果友好转化
- * @author xt
  * @param <T> 实体类
  * @param <K> 主键类型
+ * @author xt
  */
 public interface Friendly<T, K> {
 
@@ -46,7 +46,7 @@ public interface Friendly<T, K> {
     /**
      * 元数据转实体对象, 不体现关联关系
      * @param clazz 自定义实体对象
-     * @param <V>   自定义实体对象
+     * @param <V> 自定义实体对象
      * @return 实体对象
      */
     <V> V toObject(Class<V> clazz);

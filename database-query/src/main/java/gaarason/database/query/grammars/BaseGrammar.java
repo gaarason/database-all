@@ -21,27 +21,24 @@ import java.util.stream.Collectors;
 public abstract class BaseGrammar implements Grammar, Serializable {
 
     /**
+     * 处理时, 需要用括号()包裹的
+     */
+    protected final static List<SQLPartType> PARENTHESES_ARE_REQUIRED = Arrays.asList(SQLPartType.FORCE_INDEX,
+        SQLPartType.IGNORE_INDEX, SQLPartType.COLUMN);
+    /**
      * column -> [ GenerateSqlPart , RelationshipRecordWith ]
      * @see RelationshipRecordWithFunctionalInterface
      * @see GenerateSqlPartFunctionalInterface
      */
     protected final HashMap<String, Object[]> withMap;
-
     /**
      * 表名
      */
     protected final String table;
-
     /**
      * SQL片段信息MAP
      */
     protected final Map<SQLPartType, List<SQLPartInfo>> SQLPartMap;
-
-    /**
-     * 处理时, 需要用括号()包裹的
-     */
-    protected final static List<SQLPartType> PARENTHESES_ARE_REQUIRED = Arrays.asList(SQLPartType.FORCE_INDEX,
-        SQLPartType.IGNORE_INDEX, SQLPartType.COLUMN);
 
     protected BaseGrammar(String tableName) {
         table = tableName;
@@ -57,7 +54,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
     @Override
     public String replaceValuesAndFillParameters(Collection<?> values, Collection<Object> parameters,
-                                                 String separator) {
+        String separator) {
         return values.stream().map(e -> {
             parameters.add(e);
             return " ? ";
@@ -66,7 +63,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
     @Override
     public void addSmartSeparator(SQLPartType sqlPartType, String sqlPartString,
-                                  @Nullable Collection<Object> parameters) {
+        @Nullable Collection<Object> parameters) {
         if (isEmpty(sqlPartType)) {
             add(sqlPartType, sqlPartString, parameters);
         } else {
@@ -76,7 +73,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
     @Override
     public void addFirstSmartSeparator(SQLPartType sqlPartType, String sqlPartString,
-                                  @Nullable Collection<Object> parameters) {
+        @Nullable Collection<Object> parameters) {
         if (isEmpty(sqlPartType)) {
             addFirst(sqlPartType, sqlPartString, parameters);
         } else {
@@ -86,8 +83,8 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
     @Override
     public void addSmartSeparator(SQLPartType sqlPartType, String sqlPartString,
-                                  @Nullable Collection<Object> parameters,
-                                  String separator) {
+        @Nullable Collection<Object> parameters,
+        String separator) {
         if (isEmpty(sqlPartType)) {
             add(sqlPartType, sqlPartString, parameters);
         } else {
@@ -97,8 +94,8 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
     @Override
     public void addFirstSmartSeparator(SQLPartType sqlPartType, String sqlPartString,
-                                  @Nullable Collection<Object> parameters,
-                                  String separator) {
+        @Nullable Collection<Object> parameters,
+        String separator) {
         if (isEmpty(sqlPartType)) {
             addFirst(sqlPartType, sqlPartString, parameters);
         } else {
@@ -159,7 +156,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
     @Override
     public void concatenate(SqlType sqlType, SQLPartType sqlPartType, StringBuilder sqlBuilder,
-                            Collection<Object> allParameters) {
+        Collection<Object> allParameters) {
         List<SQLPartInfo> sqlParts = SQLPartMap.get(sqlPartType);
         if (ObjectUtils.isEmpty(sqlParts)) {
             return;
@@ -191,7 +188,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     }
 
     void choreography(SqlType sqlType, StringBuilder sqlBuilder, Collection<Object> allParameters,
-                      SQLPartType... sqlPartTypes) {
+        SQLPartType... sqlPartTypes) {
         for (SQLPartType sqlPartType : sqlPartTypes) {
             concatenate(sqlType, sqlPartType, sqlBuilder, allParameters);
         }
@@ -273,7 +270,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
      */
     @Override
     public void pushWith(String column, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
-                         RelationshipRecordWithFunctionalInterface recordClosure) {
+        RelationshipRecordWithFunctionalInterface recordClosure) {
         withMap.put(column, new Object[]{builderClosure, recordClosure});
     }
 

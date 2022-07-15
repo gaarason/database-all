@@ -16,7 +16,7 @@ abstract public class PrimaryKeyTests extends BaseTests {
 
     protected static PrimaryKeyTestModel primaryKeyTestModel = new PrimaryKeyTestModel();
 
-    protected GaarasonDataSource getGaarasonDataSource(){
+    protected GaarasonDataSource getGaarasonDataSource() {
         return primaryKeyTestModel.getGaarasonDataSource();
     }
 

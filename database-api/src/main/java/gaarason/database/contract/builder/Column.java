@@ -3,7 +3,6 @@ package gaarason.database.contract.builder;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.lang.Nullable;
 
-import java.io.Serializable;
 import java.util.Collection;
 
 /**
@@ -13,7 +12,7 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public interface Column<T extends Serializable, K extends Serializable> {
+public interface Column<T, K> {
 
     /**
      * 新增字段

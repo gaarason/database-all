@@ -6,5 +6,5 @@ public interface TransactionFunctionalInterface<V> {
     /**
      * 事物处理
      */
-    V execute() ;
+    V execute();
 }

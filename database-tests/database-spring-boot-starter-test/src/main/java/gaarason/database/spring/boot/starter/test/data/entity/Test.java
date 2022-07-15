@@ -15,15 +15,15 @@ public class Test implements Serializable {
      * auto generator start
      **/
 
-    final public static String ID         = "id";
+    final public static String ID = "id";
 
-    final public static String NAME       = "name";
+    final public static String NAME = "name";
 
-    final public static String AGE        = "age";
+    final public static String AGE = "age";
 
-    final public static String SEX        = "sex";
+    final public static String SEX = "sex";
 
-    final public static String SUBJECT    = "subject";
+    final public static String SUBJECT = "subject";
 
     final public static String CREATED_AT = "created_at";
 

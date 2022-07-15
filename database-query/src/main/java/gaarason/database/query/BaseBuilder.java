@@ -2,8 +2,8 @@ package gaarason.database.query;
 
 import gaarason.database.appointment.FinalVariable;
 import gaarason.database.appointment.Paginate;
-import gaarason.database.appointment.ValueWrapper;
 import gaarason.database.appointment.SqlType;
+import gaarason.database.appointment.ValueWrapper;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
@@ -30,7 +30,7 @@ import java.util.*;
  * @param <K>
  * @author xt
  */
-public abstract class BaseBuilder<T extends Serializable, K extends Serializable> implements Builder<T, K> {
+public abstract class BaseBuilder<T, K> implements Builder<T, K> {
 
     /**
      * 数据库连接

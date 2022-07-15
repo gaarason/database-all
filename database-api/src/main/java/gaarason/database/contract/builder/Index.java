@@ -2,15 +2,13 @@ package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
 
-import java.io.Serializable;
-
 /**
  * 指定索引
  * @param <T>
  * @param <K>
  * @author xt
  */
-public interface Index<T extends Serializable, K extends Serializable> {
+public interface Index<T, K> {
 
     /**
      * 指定使用索引

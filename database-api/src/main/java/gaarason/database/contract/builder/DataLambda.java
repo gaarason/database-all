@@ -4,15 +4,13 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.lang.Nullable;
 
-import java.io.Serializable;
-
 /**
  * 数据
  * @param <T>
  * @param <K>
  * @author xt
  */
-public interface DataLambda<T extends Serializable, K extends Serializable> extends Data<T, K>, Support<T, K> {
+public interface DataLambda<T, K> extends Data<T, K>, Support<T, K> {
 
     /**
      * 数据更新

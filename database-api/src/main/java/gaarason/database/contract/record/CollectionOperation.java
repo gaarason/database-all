@@ -485,7 +485,7 @@ public interface CollectionOperation<E> extends List<E>, Deque<E> {
      * @return 新的集合
      */
     default <W, Y> Map<W, List<Y>> mapToGroups(ReturnTwo<Integer, E, W> closureKey,
-                                               ReturnTwo<Integer, E, Y> closureValue) {
+        ReturnTwo<Integer, E, Y> closureValue) {
         int index = 0;
         Map<W, List<Y>> outsideMap = new HashMap<>(16);
 

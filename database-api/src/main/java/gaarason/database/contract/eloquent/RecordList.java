@@ -1,17 +1,18 @@
 package gaarason.database.contract.eloquent;
 
 import gaarason.database.appointment.Column;
-import gaarason.database.contract.record.*;
+import gaarason.database.contract.record.CollectionOperationLambda;
+import gaarason.database.contract.record.FriendlyList;
+import gaarason.database.contract.record.RelationshipListLambda;
 import gaarason.database.core.Container;
 
-import java.io.Serializable;
 import java.util.*;
 
 /**
  * 结果集集合
  * @author xt
  */
-public interface RecordList<T extends Serializable, K extends Serializable> extends FriendlyList<T, K>,
+public interface RecordList<T, K> extends FriendlyList<T, K>,
     RelationshipListLambda<T, K>, List<Record<T, K>>,
     CollectionOperationLambda<T, K>, Container.Keeper, RandomAccess, Cloneable {
 

@@ -81,8 +81,8 @@ public class DruidApplicationTests {
     public void run有参构造() {
         String jdbcUrl = "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8" +
             "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
-        String    username  = "root";
-        String    password  = "root";
+        String username = "root";
+        String password = "root";
         Generator generator = new Generator(jdbcUrl, username, password);
 
         // set
@@ -102,7 +102,10 @@ public class DruidApplicationTests {
 
     @Test
     public void 简单查询_通用() {
-        Record<GeneralModel.Table, Serializable> first = generalModel.newQuery().from("student").where("id", "3").firstOrFail();
+        Record<GeneralModel.Table, Serializable> first = generalModel.newQuery()
+            .from("student")
+            .where("id", "3")
+            .firstOrFail();
         Assert.assertNotNull(first);
         Map<String, Object> stringObjectMap = first.toMap();
         Assert.assertEquals(stringObjectMap.get("id").toString(), "3");
@@ -123,12 +126,12 @@ public class DruidApplicationTests {
     }
 
     @Test
-    public void 使用接口调用(){
-        try{
+    public void 使用接口调用() {
+        try {
             Student student = studentQuery.updateName();
             System.out.println(student);
 
-        }catch (Throwable e){
+        } catch (Throwable e) {
             e.printStackTrace();
         }
 
@@ -137,9 +140,9 @@ public class DruidApplicationTests {
     }
 
     @Test
-    public void sss(){
+    public void sss() {
         Student student = teacherQuery.updateName();
-        System.out.println("end : "+ student);
+        System.out.println("end : " + student);
     }
 
 //    @Test

@@ -10,7 +10,6 @@ import gaarason.database.lang.Nullable;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,7 +21,7 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public abstract class HavingBuilder<T extends Serializable, K extends Serializable> extends GroupBuilder<T, K> {
+public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
 
     protected HavingBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
         super(gaarasonDataSource, model, grammar);

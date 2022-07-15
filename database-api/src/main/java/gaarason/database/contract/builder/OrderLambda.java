@@ -2,9 +2,6 @@ package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
-import gaarason.database.lang.Nullable;
-
-import java.io.Serializable;
 
 /**
  * 排序
@@ -12,7 +9,7 @@ import java.io.Serializable;
  * @param <K>
  * @author xt
  */
-public interface OrderLambda<T extends Serializable, K extends Serializable> extends Order<T, K>, Support<T, K> {
+public interface OrderLambda<T, K> extends Order<T, K>, Support<T, K> {
 
     /**
      * 排序
@@ -21,7 +18,7 @@ public interface OrderLambda<T extends Serializable, K extends Serializable> ext
      * @return 查询构造器
      */
     default Builder<T, K> orderBy(ColumnFunctionalInterface<T> column,
-                                  gaarason.database.appointment.OrderBy orderByType) {
+        gaarason.database.appointment.OrderBy orderByType) {
         return orderBy(lambda2ColumnName(column), orderByType);
     }
 

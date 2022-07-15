@@ -8,7 +8,6 @@ import gaarason.database.exception.InsertNotSuccessException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +17,7 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public interface Execute<T extends Serializable, K extends Serializable> {
+public interface Execute<T, K> {
 
     /**
      * 单个查询

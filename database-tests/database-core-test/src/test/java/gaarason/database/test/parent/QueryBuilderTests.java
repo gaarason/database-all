@@ -1,16 +1,15 @@
 package gaarason.database.test.parent;
 
+import gaarason.database.appointment.JoinType;
+import gaarason.database.appointment.OrderBy;
+import gaarason.database.appointment.Paginate;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.appointment.Paginate;
-import gaarason.database.appointment.JoinType;
-import gaarason.database.appointment.OrderBy;
 import gaarason.database.exception.ConfirmOperationException;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.test.models.normal.StudentModel;
-import gaarason.database.test.models.relation.pojo.Student;
 import gaarason.database.test.parent.base.BaseTests;
 import gaarason.database.test.utils.MultiThreadUtil;
 import gaarason.database.util.LocalDateUtils;
@@ -1635,7 +1634,7 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
-    public void 排序_orderBy(){
+    public void 排序_orderBy() {
         List<StudentModel.Entity> entities = studentModel.newQuery()
             .orderBy(StudentModel.Entity::getAge)
             .orderBy(StudentModel.Entity::getId, OrderBy.DESC)
@@ -1720,7 +1719,9 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertTrue(records2.isEmpty());
 
         RecordList<StudentModel.Entity, Integer> records3 = studentModel.newQuery()
-            .havingColumn(StudentModel.Entity::getAge, "<", StudentModel.Entity::getSex).group("age", "sex").select("age", "sex")
+            .havingColumn(StudentModel.Entity::getAge, "<", StudentModel.Entity::getSex)
+            .group("age", "sex")
+            .select("age", "sex")
             .get();
         Assert.assertTrue(records3.isEmpty());
     }

@@ -2,7 +2,6 @@ package gaarason.database.generator.test;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import gaarason.database.connection.GaarasonDataSourceBuilder;
-import gaarason.database.connection.GaarasonDataSourceWrapper;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.eloquent.Model;
 import gaarason.database.generator.Generator;
@@ -12,7 +11,8 @@ import org.junit.runners.MethodSorters;
 
 import javax.sql.DataSource;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 测试
@@ -113,21 +113,21 @@ public class GeneratorTests {
             return gaarasonDataSource;
         }
 
-        public static class Inner implements Serializable{
+        public static class Inner implements Serializable {
 
         }
     }
 
     public static class AutoGenerator extends Generator {
 
-        private final Model<? extends Serializable, ? extends Serializable> toolModel;
+        private final Model<?, ?> toolModel;
 
-        public AutoGenerator(Model<? extends Serializable, ? extends Serializable> model) {
+        public AutoGenerator(Model<?, ?> model) {
             toolModel = model;
         }
 
         @Override
-        public Model<? extends Serializable, ? extends Serializable> getModel() {
+        public Model<?, ?> getModel() {
             return toolModel;
         }
 

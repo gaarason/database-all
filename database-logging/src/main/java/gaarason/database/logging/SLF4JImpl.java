@@ -18,15 +18,11 @@ public class SLF4JImpl implements Log {
         }
     }
 
-    private int errorCount;
-
-    private int warnCount;
-
-    private int infoCount;
-
-    private int debugCount;
-
     private final LocationAwareLogger log;
+    private int errorCount;
+    private int warnCount;
+    private int infoCount;
+    private int debugCount;
 
     public SLF4JImpl(LocationAwareLogger log) {
         this.log = log;

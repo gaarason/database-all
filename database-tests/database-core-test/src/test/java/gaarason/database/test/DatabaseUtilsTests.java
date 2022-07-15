@@ -91,7 +91,8 @@ public class DatabaseUtilsTests {
 
         int a = 100;
         int b = 30000;
-        IdGenerator.SnowFlakesID snowFlakesID = ContainerBootstrap.buildAndBootstrap().getBean(IdGenerator.SnowFlakesID.class);
+        IdGenerator.SnowFlakesID snowFlakesID = ContainerBootstrap.buildAndBootstrap()
+            .getBean(IdGenerator.SnowFlakesID.class);
         MultiThreadUtil.run(a, b, () -> {
             long id = snowFlakesID.nextId();
             synchronized (ids) {
@@ -218,7 +219,9 @@ public class DatabaseUtilsTests {
             Assert.assertEquals("name", name.getFieldName());
             Assert.assertEquals("sex", sex.getFieldName());
         });
-        ModelShadowProvider modelShadowProvider = ContainerBootstrap.build().bootstrap().getBean(ModelShadowProvider.class);
+        ModelShadowProvider modelShadowProvider = ContainerBootstrap.build()
+            .bootstrap()
+            .getBean(ModelShadowProvider.class);
         modelShadowProvider.parseColumnNameByLambdaWithCache(Student::getName);
         MultiThreadUtil.run(100, 1000, () -> {
             String column = modelShadowProvider.parseColumnNameByLambdaWithCache(Student::getName);

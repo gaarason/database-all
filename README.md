@@ -1,21 +1,23 @@
 # database
+
 [![](https://jitpack.io/v/gaarason/database-all.svg)](https://jitpack.io/#gaarason/database-all)
 [![](https://img.shields.io/github/stars/gaarason/database-all)](https://github.com/gaarason/database-all)
-
 
 Eloquent ORM for Java
 
 ## 简介
 
-- 让连接数据库以及对数据库进行增删改查操作变得非常简单，不论希望使用原生 SQL、还是查询构造器，还是 Eloquent ORM。  
-      
-- Eloquent ORM 提供一个美观、简单的与数据库打交道的 ActiveRecord 实现，每张数据表都对应一个与该表数据结构对应的实体（Entity），以及的进行交互的模型（Model），通过模型类，你可以对数据表进行查询、插入、更新、删除等操作，并将结果反映到实体实例化的 java 对象中。  
- 
-- 对于关联关系 Eloquent ORM 提供了富有表现力的声明方式，与简洁的使用方法，并专注在内部进行查询与内存优化，在复杂的关系中有仍然有着良好的体验。  
+- 让连接数据库以及对数据库进行增删改查操作变得非常简单，不论希望使用原生 SQL、还是查询构造器，还是 Eloquent ORM。
+
+- Eloquent ORM 提供一个美观、简单的与数据库打交道的 ActiveRecord
+  实现，每张数据表都对应一个与该表数据结构对应的实体（Entity），以及的进行交互的模型（Model），通过模型类，你可以对数据表进行查询、插入、更新、删除等操作，并将结果反映到实体实例化的 java 对象中。
+
+- 对于关联关系 Eloquent ORM 提供了富有表现力的声明方式，与简洁的使用方法，并专注在内部进行查询与内存优化，在复杂的关系中有仍然有着良好的体验。
 
 - 兼容于其他常见的 ORM 框架, 以及常见的数据源 (DataSource)
 
 ## 目录
+
 * [注册配置](/document/bean.md)
 * [数据映射](/document/mapping.md)
 * [数据模型](/document/model.md)
@@ -56,9 +58,11 @@ List<Student> Students = studentModel.newQuery().whereIn("id", "1","2","3").get(
 // 增加关联 给id为8的学生增加3名老师(id分别为1,2,3)
 studentModel.findOrFail(8).bind("teachers").attach( teacherModel.findMany(1,2,3) );
 ```
+
 ## spring boot 快速开始
 
-1.引入仓库 pom.xml  
+1.引入仓库 pom.xml
+
 ```$xslt
 <repositories>
     <repository>
@@ -67,7 +71,9 @@ studentModel.findOrFail(8).bind("teachers").attach( teacherModel.findMany(1,2,3)
     </repository>
 </repositories>
 ```
-2.引入依赖 pom.xml  
+
+2.引入依赖 pom.xml
+
 ```$xslt
 <dependency>
     <groupId>com.github.gaarason.database-all</groupId>
@@ -75,7 +81,9 @@ studentModel.findOrFail(8).bind("teachers").attach( teacherModel.findMany(1,2,3)
     <version>RELEASE</version>
 </dependency>
 ```
-3.配置连接 application.properties  
+
+3.配置连接 application.properties
+
 ```$xslt
 spring.datasource.url=jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai
 spring.datasource.username=root
@@ -91,7 +99,9 @@ gaarason.database.snow-flake.worker-id=1
 # 包扫描路径, 默认是`@SpringBootApplication`所在的包
 gaarason.database.scan.packages=you.package1,you.package2
 ```
-4.快速开始  
+
+4.快速开始
+
 ```java
 @Resource
 GeneralModel generalModel;

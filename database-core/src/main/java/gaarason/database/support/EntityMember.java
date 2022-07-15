@@ -36,28 +36,23 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
      * 数据表名
      */
     private final String tableName;
-
+    /**
+     * `属性名`对应的`普通`字段数组
+     */
+    private final Map<String, FieldMember> javaFieldMap = new LinkedHashMap<>();
+    /**
+     * `数据库字段`名对应的`普通`字段数组
+     */
+    private final Map<String, FieldMember> columnFieldMap = new LinkedHashMap<>();
+    /**
+     * `属性名`对应的`关系`字段数组
+     */
+    private final Map<String, FieldRelationMember> relationFieldMap = new LinkedHashMap<>();
     /**
      * 主键信息
      */
     @Nullable
     private PrimaryKeyMember primaryKeyMember;
-
-    /**
-     * `属性名`对应的`普通`字段数组
-     */
-    private final Map<String, FieldMember> javaFieldMap = new LinkedHashMap<>();
-
-    /**
-     * `数据库字段`名对应的`普通`字段数组
-     */
-    private final Map<String, FieldMember> columnFieldMap = new LinkedHashMap<>();
-
-    /**
-     * `属性名`对应的`关系`字段数组
-     */
-    private final Map<String, FieldRelationMember> relationFieldMap = new LinkedHashMap<>();
-
     /**
      * 关联关系分析标记
      */
@@ -73,6 +68,28 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
         this.entityClass = entityClass;
         this.tableName = EntityUtils.tableName(entityClass);
         primitiveFieldDeal();
+    }
+
+    /**
+     * 是否有效的关联关系字段
+     * @param field 字段
+     * @return yes/no
+     */
+    private static boolean effectiveRelationField(Field field) {
+        // 非静态类型
+        boolean isNotStatic = !EntityUtils.isStaticField(field);
+        // 非基础类型
+        boolean isNotBasicType = !EntityUtils.isBasicField(field);
+        // 有相应的注解
+        boolean hasRelationAnnotation = false;
+
+        for (Class<? extends Annotation> relationAnnotation : FinalVariable.RELATION_ANNOTATIONS) {
+            if (field.isAnnotationPresent(relationAnnotation)) {
+                hasRelationAnnotation = true;
+                break;
+            }
+        }
+        return isNotStatic && isNotBasicType && hasRelationAnnotation;
     }
 
     /**
@@ -117,7 +134,8 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
      * @return 关系字段信息
      * @throws EntityAttributeInvalidException 无效的字段
      */
-    public FieldRelationMember getFieldRelationMemberByFieldName(String fieldName) throws EntityAttributeInvalidException {
+    public FieldRelationMember getFieldRelationMemberByFieldName(String fieldName)
+        throws EntityAttributeInvalidException {
         Map<String, FieldRelationMember> relationMemberMap = getRelationFieldMap();
         FieldRelationMember fieldRelationMember = relationMemberMap.get(fieldName);
         if (ObjectUtils.isEmpty(fieldRelationMember)) {
@@ -308,28 +326,6 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
                 relationFieldMap.put(fieldRelationMember.getName(), fieldRelationMember);
             }
         }
-    }
-
-    /**
-     * 是否有效的关联关系字段
-     * @param field 字段
-     * @return yes/no
-     */
-    private static boolean effectiveRelationField(Field field) {
-        // 非静态类型
-        boolean isNotStatic = !EntityUtils.isStaticField(field);
-        // 非基础类型
-        boolean isNotBasicType = !EntityUtils.isBasicField(field);
-        // 有相应的注解
-        boolean hasRelationAnnotation = false;
-
-        for (Class<? extends Annotation> relationAnnotation : FinalVariable.RELATION_ANNOTATIONS) {
-            if (field.isAnnotationPresent(relationAnnotation)) {
-                hasRelationAnnotation = true;
-                break;
-            }
-        }
-        return isNotStatic && isNotBasicType && hasRelationAnnotation;
     }
 
     // ---------------------------- simple getter ---------------------------- //

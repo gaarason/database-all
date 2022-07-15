@@ -40,8 +40,22 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
         this.localModel = model;
     }
 
+    /**
+     * 将数据源中的某一列,转化为可以使用 where in 查询的 set
+     * @param stringColumnMapList 数据源
+     * @param column 目标列
+     * @return 目标列的集合
+     */
+    protected static Set<Object> getColumnInMapList(List<Map<String, Column>> stringColumnMapList, String column) {
+        Set<Object> result = new HashSet<>();
+        for (Map<String, Column> stringColumnMap : stringColumnMapList) {
+            result.add(stringColumnMap.get(column).getValue());
+        }
+        return result;
+    }
+
     @Override
-    public RecordList<? extends Serializable, ? extends Serializable> dealBatchPrepare(String sql1) {
+    public RecordList<?, ?> dealBatchPrepare(String sql1) {
         return new RecordListBean<>(getContainer());
     }
 
@@ -51,7 +65,6 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      */
     protected abstract Container getContainer();
 
-
     /**
      * 集合兼容处理
      * 1. 用于解决AbstractList不实现removeAll的情况; 2. 产生全新对象; 3. 将集合类数据的类型,转化成model的主键类型
@@ -60,7 +73,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @return 集合
      */
     protected Collection<Object> compatibleCollection(Collection<Object> mayBeInstanceOfAbstractList,
-        Model<? extends Serializable, ? extends Serializable> model) {
+        Model<?, ?> model) {
         final Class<?> javaType = model.getPrimaryKeyClass();
         HashSet<Object> tempHashSet = new HashSet<>();
         for (Object old : mayBeInstanceOfAbstractList) {
@@ -97,7 +110,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @param model Model实例
      * @return 主键列名
      */
-    protected String getPrimaryKeyColumnName(Model<? extends Serializable, ? extends Serializable> model) {
+    protected String getPrimaryKeyColumnName(Model<?, ?> model) {
         PrimaryKeyMember primaryKeyMember = modelShadowProvider.get(model).getEntityMember().getPrimaryKeyMember();
         if (null == primaryKeyMember) {
             throw new PrimaryKeyNotFoundException();
@@ -110,23 +123,9 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @param modelClass Model类
      * @return Model实例
      */
-    protected Model<? extends Serializable, ? extends Serializable> getModelInstance(
-        Class<? extends Model<? extends Serializable, ? extends Serializable>> modelClass) {
+    protected Model<?, ?> getModelInstance(
+        Class<? extends Model<?, ?>> modelClass) {
         return modelShadowProvider.getByModelClass(ObjectUtils.typeCast(modelClass)).getModel();
-    }
-
-    /**
-     * 将数据源中的某一列,转化为可以使用 where in 查询的 set
-     * @param stringColumnMapList 数据源
-     * @param column 目标列
-     * @return 目标列的集合
-     */
-    protected static Set<Object> getColumnInMapList(List<Map<String, Column>> stringColumnMapList, String column) {
-        Set<Object> result = new HashSet<>();
-        for (Map<String, Column> stringColumnMap : stringColumnMapList) {
-            result.add(stringColumnMap.get(column).getValue());
-        }
-        return result;
     }
 
     /**
@@ -136,9 +135,9 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @param fieldTargetValue 对象的属性的目标值
      * @return 对象列表
      */
-    protected List<Serializable> findObjList(List<? extends Serializable> relationshipObjectList,
+    protected List<Object> findObjList(List<?> relationshipObjectList,
         String columnName, Object fieldTargetValue) {
-        List<Serializable> objectList = new ArrayList<>();
+        List<Object> objectList = new ArrayList<>();
         if (!relationshipObjectList.isEmpty()) {
             // 模型信息
             ModelMember<?, ?> modelMember = modelShadowProvider.getByEntityClass(
@@ -147,7 +146,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
             // 字段信息
             FieldMember fieldMember = modelMember.getEntityMember().getColumnFieldMap().get(columnName);
 
-            for (Serializable o : relationshipObjectList) {
+            for (Object o : relationshipObjectList) {
                 // 值
                 Object fieldValue = fieldMember.fieldGet(o);
                 // 满足则加入

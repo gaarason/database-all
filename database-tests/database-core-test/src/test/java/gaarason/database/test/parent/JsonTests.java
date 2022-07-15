@@ -22,27 +22,23 @@ abstract public class JsonTests extends BaseTests {
 
 
     /**
-     // 定义
-     @Json
-     private Map<Object, Object> json;
-
-     @Json
-     private List<Object> json;
-
-
-     // 查询 条件
-     where("json.key[0].key", "sss")     ->   	where json->'$.key[0].key' = "sss"
-     where("json.key.0.key", "sss")
-
-     // 查询 结果
-     select("json")
-     select("json.key.0.key as cccc")			->		select json->'$.key.0.key' as cccc
-
-     // 指定更新
-     data("json.key.0.key", "sss")
-
-     //
-
+     * // 定义
+     * @Json private Map<Object, Object> json;
+     * @Json private List<Object> json;
+     * <p>
+     * <p>
+     * // 查询 条件
+     * where("json.key[0].key", "sss")     ->   	where json->'$.key[0].key' = "sss"
+     * where("json.key.0.key", "sss")
+     * <p>
+     * // 查询 结果
+     * select("json")
+     * select("json.key.0.key as cccc")			->		select json->'$.key.0.key' as cccc
+     * <p>
+     * // 指定更新
+     * data("json.key.0.key", "sss")
+     * <p>
+     * //
      */
     @Test
     public void 原生JSON操作() {
@@ -67,22 +63,22 @@ abstract public class JsonTests extends BaseTests {
     }
 
     @Test
-    public void 更新_全部(){
+    public void 更新_全部() {
 
     }
 
     @Test
-    public void 更新_单个简单值(){
+    public void 更新_单个简单值() {
 
     }
 
     @Test
-    public void 更新_单个复杂值(){
+    public void 更新_单个复杂值() {
 
     }
 
     @Test
-    public void 更新_移除指定值(){
+    public void 更新_移除指定值() {
 
     }
 

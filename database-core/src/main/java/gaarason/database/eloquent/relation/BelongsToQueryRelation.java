@@ -13,7 +13,6 @@ import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.ObjectUtils;
 
-import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -54,7 +53,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public List<? extends Serializable> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
+    public List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
         Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         // 父表的外键字段名
         String column = belongsToTemplate.parentModelLocalKey;
@@ -111,7 +110,8 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     @Override
     public int detach(Record<?, ?> theRecord) {
         return detach(theRecord, Collections.singletonList(
-            Objects.requireNonNull(theRecord.getMetadataMap().get(belongsToTemplate.localModelForeignKey).getValue()).toString()));
+            Objects.requireNonNull(theRecord.getMetadataMap().get(belongsToTemplate.localModelForeignKey).getValue())
+                .toString()));
     }
 
     @Override

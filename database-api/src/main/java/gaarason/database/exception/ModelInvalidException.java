@@ -8,7 +8,7 @@ import gaarason.database.exception.base.BaseException;
  */
 public class ModelInvalidException extends BaseException {
 
-    public ModelInvalidException(Class<?> clazz){
+    public ModelInvalidException(Class<?> clazz) {
         super("Model class[" + clazz + "] have no information in the Shadow.");
     }
 

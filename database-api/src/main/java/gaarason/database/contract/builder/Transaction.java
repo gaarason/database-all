@@ -36,7 +36,7 @@ public interface Transaction {
 
     /**
      * 以闭包开启一个事物
-     * @param closure     事物中的处理
+     * @param closure 事物中的处理
      * @param maxAttempts 事物死锁重试次数
      * @return 事物中的处理的结果 (事物失败抛出异常)
      */
@@ -50,7 +50,7 @@ public interface Transaction {
 
     /**
      * 以闭包开启一个事物
-     * @param closure     事物中的处理
+     * @param closure 事物中的处理
      * @param maxAttempts 事物死锁重试次数
      */
     void transaction(Runnable closure, int maxAttempts);

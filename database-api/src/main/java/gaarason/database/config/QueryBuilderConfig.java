@@ -3,9 +3,6 @@ package gaarason.database.config;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
-import gaarason.database.contract.query.Grammar;
-
-import java.io.Serializable;
 
 /**
  * 区分数据库类型的查询构造器
@@ -30,11 +27,11 @@ public interface QueryBuilderConfig {
     /**
      * 获取全新的查询构造器
      * @param gaarasonDataSource 数据源
-     * @param model              数据模型
-     * @param <T>                实体类型
-     * @param <K>                主键类型
+     * @param model 数据模型
+     * @param <T> 实体类型
+     * @param <K> 主键类型
      * @return 查询构造器
      */
-    <T extends Serializable, K extends Serializable> Builder<T, K> newBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model);
+    <T, K> Builder<T, K> newBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model);
 
 }

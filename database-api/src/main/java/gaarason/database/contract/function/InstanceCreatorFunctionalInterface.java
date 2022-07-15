@@ -19,7 +19,7 @@ public interface InstanceCreatorFunctionalInterface<T> {
      * 排序(越小, 优先级越高)
      * @return 序号
      */
-    default Integer getOrder(){
+    default Integer getOrder() {
         return 0;
     }
 

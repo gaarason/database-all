@@ -3,10 +3,11 @@ package gaarason.database.contract.eloquent;
 import gaarason.database.appointment.Column;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
-import gaarason.database.contract.record.*;
+import gaarason.database.contract.record.Friendly;
+import gaarason.database.contract.record.OperationLambda;
+import gaarason.database.contract.record.RelationshipLambda;
 import gaarason.database.lang.Nullable;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,7 +15,7 @@ import java.util.Map;
  * 结果集
  * @author xt
  */
-public interface Record<T extends Serializable, K extends Serializable> extends Friendly<T, K>, OperationLambda<T, K>,
+public interface Record<T, K> extends Friendly<T, K>, OperationLambda<T, K>,
     RelationshipLambda<T, K> {
 
     /**

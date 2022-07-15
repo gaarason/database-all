@@ -3,7 +3,6 @@ package gaarason.database.contract.builder;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.lang.Nullable;
 
-import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -12,7 +11,7 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public interface Data<T extends Serializable, K extends Serializable> {
+public interface Data<T, K> {
 
     /**
      * 数据更新
@@ -24,7 +23,7 @@ public interface Data<T extends Serializable, K extends Serializable> {
     /**
      * 数据更新
      * @param column 列名
-     * @param value  值
+     * @param value 值
      * @return 查询构造器
      */
     Builder<T, K> data(String column, @Nullable Object value);
@@ -32,7 +31,7 @@ public interface Data<T extends Serializable, K extends Serializable> {
     /**
      * 数据更新(忽略值为null的情况)
      * @param column 列名
-     * @param value  值
+     * @param value 值
      * @return 查询构造器
      */
     Builder<T, K> dataIgnoreNull(String column, @Nullable Object value);
@@ -54,7 +53,7 @@ public interface Data<T extends Serializable, K extends Serializable> {
     /**
      * 字段自增
      * @param column 列名
-     * @param steps  步长
+     * @param steps 步长
      * @return 查询构造器
      */
     Builder<T, K> dataIncrement(String column, Object steps);
@@ -62,7 +61,7 @@ public interface Data<T extends Serializable, K extends Serializable> {
     /**
      * 字段自减
      * @param column 列名
-     * @param steps  步长
+     * @param steps 步长
      * @return 查询构造器
      */
     Builder<T, K> dataDecrement(String column, Object steps);

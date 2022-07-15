@@ -14,7 +14,6 @@ import gaarason.database.support.FieldMember;
 import gaarason.database.support.RecordFactory;
 import gaarason.database.util.ObjectUtils;
 
-import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -44,7 +43,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public RecordList<? extends Serializable, ? extends Serializable> dealBatchPrepare(String sql1) {
+    public RecordList<?, ?> dealBatchPrepare(String sql1) {
         return belongsToManyTemplate.relationModel.newQuery().queryList(sql1, new ArrayList<>());
     }
 
@@ -98,7 +97,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public List<? extends Serializable> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
+    public List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
         Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         // 目标关系表的外键字段名
         String targetModelLocalKey = belongsToManyTemplate.targetModelLocalKey;
@@ -110,8 +109,8 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         // 本表应该关联的 目标表id列表
         Set<Object> targetModelLocalKayValueSet = targetRecordList.getCacheMap().get(localModelLocalKeyValue);
 
-        List<Serializable> objectList = new ArrayList<>();
-        List<? extends Serializable> objects = targetRecordList.toObjectList(cacheRelationRecordList);
+        List<Object> objectList = new ArrayList<>();
+        List<?> objects = targetRecordList.toObjectList(cacheRelationRecordList);
 
         if (!objects.isEmpty()) {
             // 实体信息
@@ -120,7 +119,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
             // 字段信息
             FieldMember fieldMember = entityMember.getFieldMemberByColumnName(targetModelLocalKey);
 
-            for (Serializable obj : objects) {
+            for (Object obj : objects) {
                 // 目标值
                 Object targetModelLocalKeyValue = fieldMember.fieldGet(obj);
                 // 满足则加入
@@ -443,7 +442,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
     class BelongsToManyTemplate {
 
-        final Model<? extends Serializable, ? extends Serializable> relationModel; // user_teacher
+        final Model<?, ?> relationModel; // user_teacher
 
         final String foreignKeyForLocalModel;// user_id
 

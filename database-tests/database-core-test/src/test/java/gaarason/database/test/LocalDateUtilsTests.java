@@ -95,7 +95,8 @@ public class LocalDateUtilsTests {
         String dateStringOne = "2020-11-11 11:41:01";
         String formatterString = "yyyy-MM-dd HH:mm:ss";
 
-        final LocalDateTime localDateTime = LocalDateTime.parse(dateStringOne, DateTimeFormatter.ofPattern(formatterString));
+        final LocalDateTime localDateTime = LocalDateTime.parse(dateStringOne,
+            DateTimeFormatter.ofPattern(formatterString));
         final Date date = LocalDateUtils.localDateTime2date(localDateTime);
         SimpleDateFormat formatter = new SimpleDateFormat(formatterString);
         String sOne = formatter.format(date);

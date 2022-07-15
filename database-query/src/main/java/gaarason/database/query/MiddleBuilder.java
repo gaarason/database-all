@@ -14,7 +14,6 @@ import gaarason.database.lang.Nullable;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.MapUtils;
 
-import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -23,7 +22,7 @@ import java.util.*;
  * @param <K>
  * @author xt
  */
-public abstract class MiddleBuilder<T extends Serializable, K extends Serializable> extends BaseBuilder<T, K> {
+public abstract class MiddleBuilder<T, K> extends BaseBuilder<T, K> {
 
     protected MiddleBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
         super(gaarasonDataSource, model, grammar);

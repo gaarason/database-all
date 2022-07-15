@@ -14,7 +14,6 @@ import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,7 +25,7 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public abstract class OtherBuilder<T extends Serializable, K extends Serializable> extends WhereBuilder<T, K> {
+public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
 
     protected OtherBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
         super(gaarasonDataSource, model, grammar);
@@ -220,7 +219,7 @@ public abstract class OtherBuilder<T extends Serializable, K extends Serializabl
 
     @Override
     public Builder<T, K> join(JoinType joinType, GenerateSqlPartFunctionalInterface<T, K> tempTable, String alias,
-                              GenerateSqlPartFunctionalInterface<T, K> joinConditions) {
+        GenerateSqlPartFunctionalInterface<T, K> joinConditions) {
         Grammar.SQLPartInfo tableInfo = generateSql(tempTable);
         String table = FormatUtils.bracket(tableInfo.getSqlString()) + alias;
 
@@ -240,7 +239,7 @@ public abstract class OtherBuilder<T extends Serializable, K extends Serializabl
 
     @Override
     public Builder<T, K> join(JoinType joinType, String table,
-                              GenerateSqlPartFunctionalInterface<T, K> joinConditions) {
+        GenerateSqlPartFunctionalInterface<T, K> joinConditions) {
         Grammar.SQLPartInfo conditions = generateSql(joinConditions, Grammar.SQLPartType.WHERE);
         String sqlPart = FormatUtils.spaces(joinType.getOperation()) + "join " + table + FormatUtils.spaces("on") +
             FormatUtils.bracket(conditions.getSqlString());
@@ -273,7 +272,7 @@ public abstract class OtherBuilder<T extends Serializable, K extends Serializabl
 
     @Override
     public Builder<T, K> when(boolean condition, GenerateSqlPartFunctionalInterface<T, K> closureIfTrue,
-                              GenerateSqlPartFunctionalInterface<T, K> closureIfFalse) {
+        GenerateSqlPartFunctionalInterface<T, K> closureIfFalse) {
         return condition ? closureIfTrue.execute(this) : closureIfFalse.execute(this);
     }
 

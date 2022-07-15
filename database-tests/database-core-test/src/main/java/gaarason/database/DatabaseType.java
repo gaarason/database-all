@@ -24,8 +24,6 @@ public enum DatabaseType {
      */
     MSSQL_V2("microsoft sql server");
 
-    private final String databaseProductName;
-
     private static final Map<String, DatabaseType> DATABASE_PRODUCT_NAME_LOOKUP = new HashMap<>();
 
     static {
@@ -33,6 +31,8 @@ public enum DatabaseType {
             DATABASE_PRODUCT_NAME_LOOKUP.put(type.databaseProductName, type);
         }
     }
+
+    private final String databaseProductName;
 
     DatabaseType(String databaseProductName) {
         this.databaseProductName = databaseProductName;
@@ -46,7 +46,8 @@ public enum DatabaseType {
     public static DatabaseType forDatabaseProductName(String databaseProductName) {
         DatabaseType databaseType = DATABASE_PRODUCT_NAME_LOOKUP.get(databaseProductName);
         if (databaseType == null) {
-            throw new TypeNotSupportedException("Database product name [" + databaseProductName + "] not supported yet.");
+            throw new TypeNotSupportedException(
+                "Database product name [" + databaseProductName + "] not supported yet.");
         }
         return databaseType;
     }

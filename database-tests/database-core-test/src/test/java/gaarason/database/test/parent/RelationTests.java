@@ -1,9 +1,9 @@
 package gaarason.database.test.parent;
 
+import gaarason.database.appointment.OrderBy;
+import gaarason.database.appointment.Paginate;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
-import gaarason.database.appointment.Paginate;
-import gaarason.database.appointment.OrderBy;
 import gaarason.database.test.models.relation.model.RelationshipStudentTeacherModel;
 import gaarason.database.test.models.relation.model.StudentModel;
 import gaarason.database.test.models.relation.model.TeacherModel;

@@ -16,13 +16,13 @@ public class Student implements Serializable {
      * auto generator start
      **/
 
-    final public static String ID         = "id";
+    final public static String ID = "id";
 
-    final public static String NAME       = "name";
+    final public static String NAME = "name";
 
-    final public static String AGE        = "age";
+    final public static String AGE = "age";
 
-    final public static String SEX        = "sex";
+    final public static String SEX = "sex";
 
     final public static String TEACHER_ID = "teacher_id";
 

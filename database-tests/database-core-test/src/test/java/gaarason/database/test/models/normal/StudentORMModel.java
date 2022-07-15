@@ -1,10 +1,10 @@
 package gaarason.database.test.models.normal;
 
-import gaarason.database.appointment.FieldStrategy;
-import gaarason.database.contract.eloquent.Record;
 import gaarason.database.annotation.Column;
 import gaarason.database.annotation.Primary;
 import gaarason.database.annotation.Table;
+import gaarason.database.appointment.FieldStrategy;
+import gaarason.database.contract.eloquent.Record;
 import gaarason.database.test.models.normal.base.SingleModel;
 import lombok.Data;
 

@@ -1,9 +1,7 @@
 package gaarason.database.contract.model;
 
 import gaarason.database.contract.eloquent.Record;
-import gaarason.database.lang.Nullable;
 
-import java.io.Serializable;
 import java.util.Collection;
 
 /**
@@ -17,7 +15,7 @@ import java.util.Collection;
  * @param <K> 主键类型
  * @author xt
  */
-public interface Event<T extends Serializable, K extends Serializable> {
+public interface Event<T, K> {
 
     /**
      * sql日志记录

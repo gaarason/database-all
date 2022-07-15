@@ -17,7 +17,7 @@ public enum OrderBy {
         this.operation = operation;
     }
 
-    public String getOperation(){
+    public String getOperation() {
         return operation;
     }
 

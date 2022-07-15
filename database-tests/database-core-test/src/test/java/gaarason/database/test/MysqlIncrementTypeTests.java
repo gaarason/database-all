@@ -25,7 +25,7 @@ public class MysqlIncrementTypeTests extends IncrementTypeTests {
     }
 
     @Test
-    public void insertEmpty(){
+    public void insertEmpty() {
         Long aLong = peopleModel.newQuery().executeGetId("insert into people values ()", new ArrayList<>());
         Assert.assertNotNull(aLong);
         Assert.assertEquals(20, aLong.intValue());

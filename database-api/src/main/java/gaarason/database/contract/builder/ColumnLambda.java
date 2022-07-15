@@ -3,7 +3,6 @@ package gaarason.database.contract.builder;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -13,7 +12,7 @@ import java.util.Arrays;
  * @param <K>
  * @author xt
  */
-public interface ColumnLambda<T extends Serializable, K extends Serializable> extends Column<T, K>, Support<T, K> {
+public interface ColumnLambda<T, K> extends Column<T, K>, Support<T, K> {
 
     /**
      * 新增字段

@@ -5,15 +5,13 @@ import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 
-import java.io.Serializable;
-
 /**
  * 限制
  * @param <T>
  * @param <K>
  * @author xt
  */
-public interface WithLambda<T extends Serializable, K extends Serializable> extends With<T, K>, Support<T, K> {
+public interface WithLambda<T, K> extends With<T, K>, Support<T, K> {
 
     /**
      * 渴求式关联
@@ -31,7 +29,7 @@ public interface WithLambda<T extends Serializable, K extends Serializable> exte
      * @return 关联的Model的查询构造器
      */
     default Builder<T, K> with(ColumnFunctionalInterface<T> fieldName,
-                               GenerateSqlPartFunctionalInterface<?, ?> builderClosure) {
+        GenerateSqlPartFunctionalInterface<?, ?> builderClosure) {
         return with(lambda2FieldName(fieldName), builderClosure);
     }
 
@@ -43,8 +41,8 @@ public interface WithLambda<T extends Serializable, K extends Serializable> exte
      * @return 关联的Model的查询构造器
      */
     default Builder<T, K> with(ColumnFunctionalInterface<T> fieldName,
-                               GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
-                               RelationshipRecordWithFunctionalInterface recordClosure) {
+        GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
+        RelationshipRecordWithFunctionalInterface recordClosure) {
         return with(lambda2FieldName(fieldName), builderClosure, recordClosure);
     }
 

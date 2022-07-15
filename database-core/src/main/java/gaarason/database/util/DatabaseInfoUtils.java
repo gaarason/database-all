@@ -22,7 +22,7 @@ public class DatabaseInfoUtils {
     /**
      * 获取表名集合
      * @param gaarasonDataSource 数据源
-     * @param tableNamePattern   表名过滤表达式(null 表示全部获取)
+     * @param tableNamePattern 表名过滤表达式(null 表示全部获取)
      * @return 表名集合
      */
     public static Set<String> tableNames(GaarasonDataSource gaarasonDataSource, @Nullable String tableNamePattern) {
@@ -45,7 +45,7 @@ public class DatabaseInfoUtils {
     /**
      * 获取表字段信息
      * @param gaarasonDataSource 数据源
-     * @param tableNamePattern   表名过滤表达式(null 表示全部获取)
+     * @param tableNamePattern 表名过滤表达式(null 表示全部获取)
      * @return 表字段信息MAP
      */
     public static LinkedHashMap<String, DBColumn> getDBColumnsWIthTable(GaarasonDataSource gaarasonDataSource,

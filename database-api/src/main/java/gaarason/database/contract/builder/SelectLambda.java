@@ -2,12 +2,8 @@ package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
-import gaarason.database.lang.Nullable;
 
-import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Collection;
 
 /**
  * 需求字段
@@ -15,7 +11,7 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public interface SelectLambda<T extends Serializable, K extends Serializable> extends Select<T, K>, Support<T, K> {
+public interface SelectLambda<T, K> extends Select<T, K>, Support<T, K> {
 
     /**
      * 查询字段

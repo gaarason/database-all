@@ -4,15 +4,13 @@ import gaarason.database.contract.function.ChunkFunctionalInterface;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.exception.SQLRuntimeException;
 
-import java.io.Serializable;
-
 /**
  * 执行
  * @param <T>
  * @param <K>
  * @author xt
  */
-public interface ExecuteLambda<T extends Serializable, K extends Serializable> extends Execute<T, K>, Support<T, K> {
+public interface ExecuteLambda<T, K> extends Execute<T, K>, Support<T, K> {
 
     /**
      * 分块获取所有数据(数据库性能好), 并处理
@@ -22,7 +20,7 @@ public interface ExecuteLambda<T extends Serializable, K extends Serializable> e
      * @throws SQLRuntimeException 数据库异常
      */
     default void dealChunk(int num, ColumnFunctionalInterface<T> column,
-                           ChunkFunctionalInterface<T, K> chunkFunctionalInterface)
+        ChunkFunctionalInterface<T, K> chunkFunctionalInterface)
         throws SQLRuntimeException {
         dealChunk(num, lambda2ColumnName(column), chunkFunctionalInterface);
     }

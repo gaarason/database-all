@@ -7,7 +7,6 @@ import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
 import gaarason.database.util.ObjectUtils;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -18,7 +17,7 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public abstract class DataBuilder<T extends Serializable, K extends Serializable> extends MiddleBuilder<T, K> {
+public abstract class DataBuilder<T, K> extends MiddleBuilder<T, K> {
 
     protected DataBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
         super(gaarasonDataSource, model, grammar);
@@ -31,7 +30,7 @@ public abstract class DataBuilder<T extends Serializable, K extends Serializable
 
     @Override
     public Builder<T, K> dataRaw(@Nullable String sqlPart) {
-        if(!ObjectUtils.isEmpty(sqlPart)){
+        if (!ObjectUtils.isEmpty(sqlPart)) {
             dataGrammar(sqlPart, null);
         }
         return this;
@@ -70,14 +69,16 @@ public abstract class DataBuilder<T extends Serializable, K extends Serializable
     @Override
     public Builder<T, K> dataIncrement(String column, Object steps) {
         ArrayList<Object> parameters = new ArrayList<>();
-        String sqlPart = backQuote(column) + '=' + backQuote(column) + '+' + grammar.replaceValueAndFillParameters(steps, parameters);
+        String sqlPart = backQuote(column) + '=' + backQuote(column) + '+' +
+            grammar.replaceValueAndFillParameters(steps, parameters);
         return dataGrammar(sqlPart, parameters);
     }
 
     @Override
     public Builder<T, K> dataDecrement(String column, Object steps) {
         ArrayList<Object> parameters = new ArrayList<>();
-        String sqlPart = backQuote(column) + '=' + backQuote(column) + '-' + grammar.replaceValueAndFillParameters(steps, parameters);
+        String sqlPart = backQuote(column) + '=' + backQuote(column) + '-' +
+            grammar.replaceValueAndFillParameters(steps, parameters);
         return dataGrammar(sqlPart, parameters);
     }
 }

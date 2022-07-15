@@ -7,7 +7,7 @@ import gaarason.database.exception.base.BaseException;
  * @author xt
  */
 public class MapEncodingException extends BaseException {
-    public MapEncodingException(String message){
+    public MapEncodingException(String message) {
         super(message);
     }
 }

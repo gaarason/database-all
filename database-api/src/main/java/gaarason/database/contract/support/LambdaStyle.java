@@ -2,7 +2,6 @@ package gaarason.database.contract.support;
 
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -11,7 +10,7 @@ import java.util.stream.Collectors;
  * @param <T>
  * @param <K>
  */
-public interface LambdaStyle<T extends Serializable, K extends Serializable> {
+public interface LambdaStyle<T, K> {
 
     /**
      * 通过 表达式 推断属性名

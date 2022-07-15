@@ -17,7 +17,8 @@ public class LogFactory {
             } else if (logType.equalsIgnoreCase("log4j2")) {
                 tryImplementation("org.apache.logging.log4j.Logger", "gaarason.database.logging.Log4j2Impl");
             } else if (logType.equalsIgnoreCase("commonsLog")) {
-                tryImplementation("org.apache.commons.logging.LogFactory", "gaarason.database.logging.JakartaCommonsLoggingImpl");
+                tryImplementation("org.apache.commons.logging.LogFactory",
+                    "gaarason.database.logging.JakartaCommonsLoggingImpl");
             } else if (logType.equalsIgnoreCase("jdkLog")) {
                 tryImplementation("java.util.logging.Logger", "gaarason.database.logging.Jdk14LoggingImpl");
             }
@@ -26,7 +27,8 @@ public class LogFactory {
         tryImplementation("org.slf4j.Logger", "gaarason.database.logging.SLF4JImpl");
         tryImplementation("org.apache.log4j.Logger", "gaarason.database.logging.Log4jImpl");
         tryImplementation("org.apache.logging.log4j.Logger", "gaarason.database.logging.Log4j2Impl");
-        tryImplementation("org.apache.commons.logging.LogFactory", "gaarason.database.logging.JakartaCommonsLoggingImpl");
+        tryImplementation("org.apache.commons.logging.LogFactory",
+            "gaarason.database.logging.JakartaCommonsLoggingImpl");
         tryImplementation("java.util.logging.Logger", "gaarason.database.logging.Jdk14LoggingImpl");
 
         if (logConstructor == null) {

@@ -7,10 +7,8 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
-import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 
-import java.io.Serializable;
 import java.util.Collection;
 
 /**
@@ -19,7 +17,7 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public abstract class OrderBuilder<T extends Serializable, K extends Serializable> extends HavingBuilder<T, K> {
+public abstract class OrderBuilder<T, K> extends HavingBuilder<T, K> {
 
     protected OrderBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
         super(gaarasonDataSource, model, grammar);

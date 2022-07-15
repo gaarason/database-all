@@ -5,13 +5,11 @@ import gaarason.database.contract.support.LambdaStyle;
 import gaarason.database.exception.EntityAttributeInvalidException;
 import gaarason.database.lang.Nullable;
 
-import java.io.Serializable;
-
 /**
  * ORM 操作
  * @author xt
  */
-public interface OperationLambda<T extends Serializable, K extends Serializable> extends Operation<T, K>, LambdaStyle<T, K> {
+public interface OperationLambda<T, K> extends Operation<T, K>, LambdaStyle<T, K> {
 
     /**
      * 指定属性是否有发生改变

@@ -9,7 +9,6 @@ import gaarason.database.lang.Nullable;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 
-import java.io.Serializable;
 import java.util.Collection;
 
 /**
@@ -18,7 +17,7 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public abstract class SelectBuilder<T extends Serializable, K extends Serializable> extends OrderBuilder<T, K> {
+public abstract class SelectBuilder<T, K> extends OrderBuilder<T, K> {
 
     protected SelectBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
         super(gaarasonDataSource, model, grammar);
@@ -82,7 +81,7 @@ public abstract class SelectBuilder<T extends Serializable, K extends Serializab
     // todo test
     @Override
     public Builder<T, K> selectFunction(String function, GenerateSqlPartFunctionalInterface<T, K> closure,
-                                        @Nullable String alias) {
+        @Nullable String alias) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String completeSql = sqlPartInfo.getSqlString();
         String sqlPart =

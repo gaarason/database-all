@@ -7,7 +7,6 @@ import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
 
-import java.io.Serializable;
 import java.util.Collection;
 
 /**
@@ -16,7 +15,7 @@ import java.util.Collection;
  * @param <K> 主键类型
  * @author xt
  */
-public interface Query<T extends Serializable, K extends Serializable> {
+public interface Query<T, K> {
 
     /**
      * 新的查询构造器
@@ -71,26 +70,9 @@ public interface Query<T extends Serializable, K extends Serializable> {
      * @param id 主键
      * @return 结果集
      * @throws EntityNotFoundException 未找到对象
-     * @throws SQLRuntimeException     数据库异常
-     */
-    Record<T, K> findOrFail(K id) throws EntityNotFoundException, SQLRuntimeException;
-
-    /**
-     * 单个查询
-     * @param id 主键
-     * @return 结果集
-     * @throws EntityNotFoundException 未找到对象
-     * @throws SQLRuntimeException     数据库异常
+     * @throws SQLRuntimeException 数据库异常
      */
     Record<T, K> findOrFail(Object id) throws EntityNotFoundException, SQLRuntimeException;
-
-    /**
-     * 单个查询
-     * @param id 主键
-     * @return 结果集
-     */
-    @Nullable
-    Record<T, K> find(K id);
 
     /**
      * 单个查询
@@ -133,7 +115,7 @@ public interface Query<T extends Serializable, K extends Serializable> {
     /**
      * 单个查询, 当查询不到数据时 构建结果集
      * 实例并没有持久化到数据库中，你还需要调用 save 方法手动持久化
-     * @param conditionEntity  实体对象(用作查询条件)
+     * @param conditionEntity 实体对象(用作查询条件)
      * @param complementEntity 实体对象(用作插入时的补充)
      * @return 结果集
      */
@@ -141,7 +123,7 @@ public interface Query<T extends Serializable, K extends Serializable> {
 
     /**
      * 单个查询, 当查询不到数据时使用ORM insert本条数据
-     * @param conditionEntity  实体对象(用作查询条件)
+     * @param conditionEntity 实体对象(用作查询条件)
      * @param complementEntity 实体对象(用作插入时的补充)
      * @return 结果集
      */
@@ -165,7 +147,7 @@ public interface Query<T extends Serializable, K extends Serializable> {
     /**
      * 单个更新, 当查询不到数据时使用ORM insert本条数据
      * (已存在则更新，否则创建新模型)
-     * @param conditionEntity  实体对象(用作查询条件)
+     * @param conditionEntity 实体对象(用作查询条件)
      * @param complementEntity 实体对象(用作插入时的补充)
      * @return 结果集
      */

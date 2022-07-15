@@ -5,7 +5,6 @@ import gaarason.database.config.MysqlQueryBuilderConfig;
 import gaarason.database.config.QueryBuilderConfig;
 import gaarason.database.contract.function.InstanceCreatorFunctionalInterface;
 import gaarason.database.core.Container;
-import gaarason.database.provider.ContainerProvider;
 
 public class MysqlAutoconfiguration implements GaarasonAutoconfiguration {
 

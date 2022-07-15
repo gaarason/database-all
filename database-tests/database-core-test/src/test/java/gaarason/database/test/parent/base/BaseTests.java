@@ -21,7 +21,12 @@ abstract public class BaseTests {
 
     protected static String initSql = "";
 
-    abstract protected GaarasonDataSource getGaarasonDataSource();
+    @BeforeClass
+    public static void beforeClass() throws IOException {
+        String sqlFilename = Thread.currentThread().getStackTrace()[1].getClass().getResource("/").toString().replace(
+            "file:", "") + "../../src/test/java/gaarason/database/test/init/mysql.sql";
+        initSql = readToString(sqlFilename);
+    }
 //    abstract protected List<DataSource> getDataSourceList();
 
 //    abstract protected void setDatabaseType();
@@ -29,13 +34,6 @@ abstract public class BaseTests {
 //    abstract protected String initSqlFileName();
 
 //    abstract protected void initModel();
-
-    @BeforeClass
-    public static void beforeClass() throws IOException {
-        String sqlFilename = Thread.currentThread().getStackTrace()[1].getClass().getResource("/").toString().replace(
-            "file:", "") + "../../src/test/java/gaarason/database/test/init/mysql.sql";
-        initSql = readToString(sqlFilename);
-    }
 
     protected static String readToString(String fileName) throws IOException {
         String encoding = "UTF-8";
@@ -53,6 +51,8 @@ abstract public class BaseTests {
     public static void afterClass() {
         log.debug("in after class");
     }
+
+    abstract protected GaarasonDataSource getGaarasonDataSource();
 
     @Before
     public void before() throws SQLException {
@@ -81,7 +81,8 @@ abstract public class BaseTests {
 //                    System.out.println(i);
                 }
             } catch (Throwable e) {
-                throw new SQLRuntimeException(sqlTemp, new ArrayList<>(), e.getMessage(), gaarasonDataSource.getQueryBuilder().getValueSymbol(), e);
+                throw new SQLRuntimeException(sqlTemp, new ArrayList<>(), e.getMessage(),
+                    gaarasonDataSource.getQueryBuilder().getValueSymbol(), e);
             }
         }
     }

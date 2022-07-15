@@ -57,7 +57,7 @@ public class GaarasonDatabaseAutoConfiguration {
          * 指定 model 扫描范围
          */
         GaarasonConfigAutoconfigure(ApplicationContext applicationContext,
-                                    GaarasonDatabaseProperties gaarasonDatabaseProperties) {
+            GaarasonDatabaseProperties gaarasonDatabaseProperties) {
 
             final String springBootApplicationPackage = applicationContext.getBeansWithAnnotation(
                     SpringBootApplication.class)

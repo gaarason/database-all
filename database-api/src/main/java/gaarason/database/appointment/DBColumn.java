@@ -186,6 +186,13 @@ public class DBColumn implements Serializable {
 
     @Override
     public String toString() {
-        return "DBColumn{" + "tableCat='" + tableCat + '\'' + ", tableSchem='" + tableSchem + '\'' + ", tableName='" + tableName + '\'' + ", columnName='" + columnName + '\'' + ", dataType=" + dataType + ", typeName='" + typeName + '\'' + ", columnSize=" + columnSize + ", bufferLength=" + bufferLength + ", decimalDigits=" + decimalDigits + ", numPrecRadix=" + numPrecRadix + ", nullable=" + nullable + ", remarks='" + remarks + '\'' + ", columnDef='" + columnDef + '\'' + ", sqlDataType=" + sqlDataType + ", sqlDatetimeSub=" + sqlDatetimeSub + ", charOctetLength=" + charOctetLength + ", ordinalPosition=" + ordinalPosition + ", isNullable='" + isNullable + '\'' + ", isAutoincrement='" + isAutoincrement + '\'' + ", jdbcType=" + jdbcType + ", javaClassName='" + javaClassName + '\'' + ", unsigned=" + unsigned + '}';
+        return "DBColumn{" + "tableCat='" + tableCat + '\'' + ", tableSchem='" + tableSchem + '\'' + ", tableName='" +
+            tableName + '\'' + ", columnName='" + columnName + '\'' + ", dataType=" + dataType + ", typeName='" +
+            typeName + '\'' + ", columnSize=" + columnSize + ", bufferLength=" + bufferLength + ", decimalDigits=" +
+            decimalDigits + ", numPrecRadix=" + numPrecRadix + ", nullable=" + nullable + ", remarks='" + remarks +
+            '\'' + ", columnDef='" + columnDef + '\'' + ", sqlDataType=" + sqlDataType + ", sqlDatetimeSub=" +
+            sqlDatetimeSub + ", charOctetLength=" + charOctetLength + ", ordinalPosition=" + ordinalPosition +
+            ", isNullable='" + isNullable + '\'' + ", isAutoincrement='" + isAutoincrement + '\'' + ", jdbcType=" +
+            jdbcType + ", javaClassName='" + javaClassName + '\'' + ", unsigned=" + unsigned + '}';
     }
 }

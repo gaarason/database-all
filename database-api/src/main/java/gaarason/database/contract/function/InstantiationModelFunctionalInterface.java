@@ -2,8 +2,6 @@ package gaarason.database.contract.function;
 
 import gaarason.database.contract.eloquent.Model;
 
-import java.io.Serializable;
-
 /**
  * 执行并获取模型对象
  * @param <T> 实体类
@@ -11,7 +9,7 @@ import java.io.Serializable;
  * @author xt
  */
 @FunctionalInterface
-public interface InstantiationModelFunctionalInterface<T extends Serializable, K extends Serializable> {
+public interface InstantiationModelFunctionalInterface<T, K> {
 
     /**
      * 执行并获取模型对象

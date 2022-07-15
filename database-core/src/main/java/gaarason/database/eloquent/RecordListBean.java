@@ -20,7 +20,6 @@ import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
 
-import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -29,28 +28,25 @@ import java.util.*;
  * @param <K>
  * @author xt
  */
-public class RecordListBean<T extends Serializable, K extends Serializable> extends LinkedList<Record<T, K>>
+public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
     implements RecordList<T, K> {
-
-    /**
-     * 原始sql
-     */
-    protected String originalSql = "";
-
-    /**
-     * 临时缓存
-     */
-    protected transient HashMap<Object, Set<Object>> cacheMap = new HashMap<>();
 
     /**
      * 容器
      */
     protected final transient Container container;
-
     /**
      * Model信息
      */
     protected final transient ModelShadowProvider modelShadowProvider;
+    /**
+     * 原始sql
+     */
+    protected String originalSql = "";
+    /**
+     * 临时缓存
+     */
+    protected transient HashMap<Object, Set<Object>> cacheMap = new HashMap<>();
 
     public RecordListBean(Container container) {
         this.container = container;

@@ -2,7 +2,7 @@ package gaarason.database.appointment;
 
 /**
  * 表达式信息
- * 将 Stu::getName 解析为此对象, 那么 fieldName = name, entityCLass = Stu
+ * 将 Stu::getNameAge 解析为此对象, 那么 fieldName = nameAge, entityClass = Stu, columnName = name_age
  */
 public class LambdaInfo<T> {
     private final String fieldName;

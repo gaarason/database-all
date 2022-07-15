@@ -43,6 +43,14 @@ public class ContainerBootstrap extends ContainerProvider {
     protected volatile boolean bootstrapHasDone = false;
 
     /**
+     * 初始化
+     * @param databaseProperties 配置
+     */
+    protected ContainerBootstrap(GaarasonDatabaseProperties databaseProperties) {
+        properties = databaseProperties;
+    }
+
+    /**
      * 自动使用默认的配置
      * @return ContainerProvider
      */
@@ -121,14 +129,6 @@ public class ContainerBootstrap extends ContainerProvider {
     protected void bootstrapStepThird() {
         // 扫描 GaarasonAutoconfiguration 并执行其init()
         bootstrapGaarasonAutoconfiguration();
-    }
-
-    /**
-     * 初始化
-     * @param databaseProperties 配置
-     */
-    protected ContainerBootstrap(GaarasonDatabaseProperties databaseProperties) {
-        properties = databaseProperties;
     }
 
     /**

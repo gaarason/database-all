@@ -3,14 +3,12 @@ package gaarason.database.contract.function;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.lang.Nullable;
 
-import java.io.Serializable;
-
 /**
  * 结果集过滤
  * @author xt
  */
 @FunctionalInterface
-public interface FilterRecordAttributeFunctionalInterface<T extends Serializable, K extends Serializable, V> {
+public interface FilterRecordAttributeFunctionalInterface<T, K, V> {
 
     /**
      * 结果集过滤

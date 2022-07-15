@@ -7,16 +7,11 @@ import java.util.logging.Logger;
 public class Jdk14LoggingImpl implements Log {
 
     private final Logger log;
-
-    private int errorCount;
-
-    private int warnCount;
-
-    private int infoCount;
-
-    private int debugCount;
-
     private final String loggerName;
+    private int errorCount;
+    private int warnCount;
+    private int infoCount;
+    private int debugCount;
 
     public Jdk14LoggingImpl(String loggerName) {
         this.loggerName = loggerName;

@@ -1,6 +1,9 @@
 # database
+
 Eloquent ORM for Java
+
 ## 目录
+
 * [注册配置](/document/bean.md)
 * [数据映射](/document/mapping.md)
 * [数据模型](/document/model.md)
@@ -15,10 +18,11 @@ Eloquent ORM for Java
 * [关联关系](/document/relationship.md)
 * [生成代码](/document/generate.md)
 * [版本信息](/document/version.md)
+
 ## 总览
 
 数据模型是将数据库操作集中声明的对象, 理解为`表`  
-[反向生成代码](/document/generate.md)  
+[反向生成代码](/document/generate.md)
 
 ## 数据库连接
 
@@ -69,21 +73,24 @@ public class StudentModel extends BaseModel<Student, Long> {
 }
 
 ```
+
 ## 事件
 
-所有事件在`ORM`时触发, 事件可以继承自父类 
+所有事件在`ORM`时触发, 事件可以继承自父类
 
-Eloquent 模型可以触发事件，允许你在模型生命周期中的多个时间点调用如下这些方法：retrieved, creating, created, updating, updated, saving, saved, deleting, deleted, restoring, restored。事件允许你在一个指定模型类每次保存或更新的时候执行代码。
+Eloquent 模型可以触发事件，允许你在模型生命周期中的多个时间点调用如下这些方法：retrieved, creating, created, updating, updated, saving, saved, deleting,
+deleted, restoring, restored。事件允许你在一个指定模型类每次保存或更新的时候执行代码。
 
 `retrieved` 事件会在从数据库中获取已存在模型时触发。   
-当一个新模型被首次保存的时候，`creating` 和 `created` 事件会被触发。 
+当一个新模型被首次保存的时候，`creating` 和 `created` 事件会被触发。
 如果一个模型已经在数据库中存在并调用 `save` 方法，`updating`和`updated` 事件会被触发。  
-无论是创建还是更新，`saving`和`saved` 事件都会被触发。 
-`deleting`, `deleted`, `restoring`, `restored`则分别在删除以及恢复时触发。 
+无论是创建还是更新，`saving`和`saved` 事件都会被触发。
+`deleting`, `deleted`, `restoring`, `restored`则分别在删除以及恢复时触发。
 
 - `ing`结尾的事件, 均可以阻止事件的进行
 
 借用上面的`model`, 则一个事件的定义可以是以下形式
+
 ```java
 package temp.model;
 
@@ -138,10 +145,9 @@ public class StudentModel extends BaseModel<Student, Long> {
 }
 ```
 
-
 ### 软删除
 
-- 软删除相关实现, 重写 `gaarason.database.eloquent.query.BaseSoftDeleting`的相关方法  
+- 软删除相关实现, 重写 `gaarason.database.eloquent.query.BaseSoftDeleting`的相关方法
 - 开启软删除, 重写`softDeleting`方法结果为`true`
 
 ```java

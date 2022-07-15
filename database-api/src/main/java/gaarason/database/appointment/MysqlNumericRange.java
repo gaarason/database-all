@@ -33,9 +33,9 @@ public enum MysqlNumericRange {
 
     /**
      * @param mysqlColumnTypeName 字符的数据中的类型
-     * @param max                 最大值
-     * @param min                 最小值
-     * @param javaClassType       java类型
+     * @param max 最大值
+     * @param min 最小值
+     * @param javaClassType java类型
      */
     MysqlNumericRange(String mysqlColumnTypeName, long max, long min, Class<?> javaClassType) {
         this.mysqlColumnTypeName = mysqlColumnTypeName;

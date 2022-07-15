@@ -1,9 +1,9 @@
 package gaarason.database.test.parent;
 
+import gaarason.database.appointment.DBColumn;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.provider.DatabaseShadowProvider;
-import gaarason.database.appointment.DBColumn;
 import gaarason.database.test.models.normal.PeopleModel;
 import gaarason.database.test.parent.base.BaseTests;
 import gaarason.database.util.LocalDateUtils;
@@ -21,12 +21,12 @@ abstract public class IncrementTypeTests extends BaseTests {
 
     protected static PeopleModel peopleModel = new PeopleModel();
 
-    protected GaarasonDataSource getGaarasonDataSource(){
+    protected GaarasonDataSource getGaarasonDataSource() {
         return peopleModel.getGaarasonDataSource();
     }
 
     @Test
-    public void ss(){
+    public void ss() {
         GaarasonDataSource gaarasonDataSource = peopleModel.getGaarasonDataSource();
         Map<String, DBColumn> student = DatabaseShadowProvider.getTable(gaarasonDataSource, "data_type");
 

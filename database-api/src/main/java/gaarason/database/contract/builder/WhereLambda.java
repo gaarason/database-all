@@ -5,7 +5,6 @@ import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.lang.Nullable;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -15,7 +14,7 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public interface WhereLambda<T extends Serializable, K extends Serializable> extends Where<T, K>, Support<T, K> {
+public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
 
     /**
      * 比较列与值
@@ -142,7 +141,7 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @return 查询构造器
      */
     default Builder<T, K> whereSubQuery(ColumnFunctionalInterface<T> column, String symbol,
-                                        GenerateSqlPartFunctionalInterface<T, K> closure) {
+        GenerateSqlPartFunctionalInterface<T, K> closure) {
         return whereSubQuery(lambda2ColumnName(column), symbol, closure);
     }
 
@@ -203,7 +202,7 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @return 查询构造器
      */
     default Builder<T, K> whereIn(ColumnFunctionalInterface<T> column,
-                                  GenerateSqlPartFunctionalInterface<T, K> closure) {
+        GenerateSqlPartFunctionalInterface<T, K> closure) {
         return whereIn(lambda2ColumnName(column), closure);
     }
 
@@ -224,7 +223,7 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @return 查询构造器
      */
     default Builder<T, K> whereNotInIgnoreEmpty(ColumnFunctionalInterface<T> column,
-                                                @Nullable Collection<?> valueList) {
+        @Nullable Collection<?> valueList) {
         return whereNotInIgnoreEmpty(lambda2ColumnName(column), valueList);
     }
 
@@ -265,7 +264,7 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @return 查询构造器
      */
     default Builder<T, K> whereNotIn(ColumnFunctionalInterface<T> column,
-                                     GenerateSqlPartFunctionalInterface<T, K> closure) {
+        GenerateSqlPartFunctionalInterface<T, K> closure) {
         return whereNotIn(lambda2ColumnName(column), closure);
     }
 
@@ -317,7 +316,7 @@ public interface WhereLambda<T extends Serializable, K extends Serializable> ext
      * @return 查询构造器
      */
     default Builder<T, K> whereColumn(ColumnFunctionalInterface<T> column1, String symbol,
-                                      ColumnFunctionalInterface<T> column2) {
+        ColumnFunctionalInterface<T> column2) {
         return whereColumn(lambda2ColumnName(column1), symbol, lambda2ColumnName(column2));
     }
 

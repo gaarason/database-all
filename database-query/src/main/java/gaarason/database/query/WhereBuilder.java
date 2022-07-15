@@ -10,7 +10,6 @@ import gaarason.database.lang.Nullable;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,7 +21,7 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public abstract class WhereBuilder<T extends Serializable, K extends Serializable> extends SelectBuilder<T, K> {
+public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
 
     protected WhereBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
         super(gaarasonDataSource, model, grammar);
@@ -83,19 +82,10 @@ public abstract class WhereBuilder<T extends Serializable, K extends Serializabl
     }
 
     @Override
-    public Builder<T, K> where(T entity) {
+    public Builder<T, K> where(Object entity) {
         final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity, EntityUseType.CONDITION);
         return where(columnValueMap);
     }
-
-    @Override
-    public Builder<T, K> where(Object entity) {
-        // todo
-//        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity);
-//        return where(columnValueMap);
-        return null;
-    }
-
 
     @Override
     public Builder<T, K> where(Map<String, Object> map) {

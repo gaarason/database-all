@@ -1,6 +1,9 @@
 # database
+
 Eloquent ORM for Java
+
 ## 目录
+
 * [注册配置](/document/bean.md)
 * [数据映射](/document/mapping.md)
 * [数据模型](/document/model.md)
@@ -62,20 +65,25 @@ Eloquent ORM for Java
 
 ## 总览
 
-一下以示例的方式说明, 均来自源码中的单元测试   
+一下以示例的方式说明, 均来自源码中的单元测试
 
 ## 表达式风格
 
-目前支持表达式风格的列名与属性名   
+目前支持表达式风格的列名与属性名
+
 ```java
 // select name,age from student where id in (1,2,3)
 studentModel.newQuery().whereIn(Student::getId, 1,2,3).select(Student::getName).select(Student::getAge).get();
 ```
 
 ## 原生语句
+
 - 语句中使用 ? 做占位符, 注意问号(?)前后应该分别保留1个半角空格, 以便SQL日志记录
+
 ### 原生查询
+
 #### query queryList
+
 ```java
 // 查询单条
 Record<Student, Long> record = studentModel.newQuery()
@@ -90,8 +98,11 @@ RecordList<Student, Long>, Long> records1 = studentModel.newQuery().queryList("s
 
 RecordList<Student, Long>, Long> records2 = studentModel.newQuery().queryList("select * from student where sex= ? ", "2");
 ```
+
 ### 原生更新
+
 #### execute
+
 ```java
 List<String> parameters = new ArrayList<>();
 parameters.add("134");
@@ -103,8 +114,11 @@ int num1 = studentModel.newQuery()
 int num2 = studentModel.newQuery()
     .execute("insert into `student`(`id`,`name`,`age`,`sex`) values( ? , ? , ? , ? )", "134","testNAme","11","1");
 ```
+
 ### 原生新增
+
 #### executeGetId executeGetIds
+
 ```java
 
 List<String> parameters = new ArrayList<>();
@@ -123,6 +137,7 @@ List<Object> ids = studentModel.newQuery()
 ```
 
 ## 获取
+
 #### first firstOrFail get
 
 ```java
@@ -138,11 +153,16 @@ Record<Student, Long> record = studentModel.findOrFail("9")
 // select * from student where `age`<9
 RecordList<Student, Long>> records = studentModel.where("age","<","9").get();
 ```
+
 ### 分块处理
+
 当要进行大量数据查询时,可以使用分块, 在闭包中返回`boolean`表示是否进行下一次迭代  
 因为分块查询, 并发的数据更改一定会伴随数据不准确的问题, 如同redis中的`keys`与`scan`
+
 #### dealChunk
+
 ##### 使用limit分页
+
 ```java
 // 使用 limit 分页
 studentModel.where("age","<","9").dealChunk(2000, records -> {
@@ -151,7 +171,9 @@ studentModel.where("age","<","9").dealChunk(2000, records -> {
     return true;
     });
 ```
+
 ##### 使用索引分页
+
 ```java
 // 使用 索引 分页
 studentModel.where("age","<","9").dealChunk(2000, Student::getId, records -> {
@@ -163,7 +185,9 @@ studentModel.where("age","<","9").dealChunk(2000, Student::getId, records -> {
 ```
 
 ## 插入
+
 #### insert insertMapStyle insertGetId insertGetIds insertGetIdMapStyle insertGetIdOrFail insertGetIdOrFailMapStyle
+
 ```java
 
 // 推荐
@@ -245,8 +269,11 @@ int insert = studentModel.newQuery().insertMapStyle(entityList);
 ```
 
 ## 更新
+
 #### update  updateMapStyle
+
 当一个更新语句没有`where`时,将会抛出`ConfirmOperationException`
+
 ```java
 int num = studentModel.newQuery().data("name", "xxcc").where("id", "3").update();
 
@@ -275,7 +302,9 @@ int update = studentModel.newQuery().where("id", "3").updateMapStyle(map);
 当一个删除语句没有`where`时,将会抛出`ConfirmOperationException`
 
 ### 默认删除
+
 #### delete
+
 ```java
 int num = studentModel.newQuery().where("id", "3").delete();
 
@@ -284,8 +313,11 @@ studentModel.newQuery().delete();
 
 studentModel.newQuery().whereRaw(1).update();
 ```
+
 ### 强力删除
+
 #### forceDelete
+
 ```java
 int num = studentModel.newQuery().where("id", "3").forceDelete();
 
@@ -330,8 +362,11 @@ Assert.assertEquals(avg.toString(), "7.1667");
 BigDecimal sum = studentModel.newQuery().where("sex", "2").sum("id");
 Assert.assertEquals(sum.toString(), "12");
 ```
-### count 
+
+### count
+
 select 中的字段应该确保已经出现在 group 中
+
 ```java
 // 以下为手动
 // select count(*) as 'ccc' from (select `sex` from `student` group by `sex`)t
@@ -364,6 +399,7 @@ Assert.assertEquals(count04.longValue(), 2);
 ```
 
 ### max
+
 ```java
 // 以下为手动
 // select max(sex) as 'ccc' from (select `sex` from `student` group by `sex`)t
@@ -396,6 +432,7 @@ Assert.assertEquals(count04, "2");
 ```
 
 ### min
+
 ```java
 // 以下为手动
 // select min(sex) as 'ccc' from (select `sex` from `student` group by `sex`)t limit 1
@@ -422,6 +459,7 @@ Assert.assertEquals(min4, "1");
 ```
 
 ### avg
+
 ```java
 // 以下为手动
 // select avg(sex) as 'ccc' from (select `sex` from `student` group by `sex`)t limit 1
@@ -448,6 +486,7 @@ Assert.assertEquals(res4.toString(), "1.5000");
 ```
 
 ### sum
+
 ```java
 // 以下为手动
 // select sum(sex) as 'ccc' from (select `sex` from `student` group by `sex`)t limit 1
@@ -476,6 +515,7 @@ Assert.assertEquals(min4.toString(), "3");
 ## 自增或自减
 
 #### dataDecrement  dataIncrement
+
 ```java
 // update `student` set`age`= `age`-2  where id=4 
 int update = studentModel.newQuery().dataDecrement("age", 2).whereRaw("id=4").update();
@@ -485,7 +525,9 @@ int update2 = studentModel.newQuery().dataIncrement("age", 4).whereRaw("id=4").u
 ```
 
 ## select
+
 确定查询时返回的列
+
 ```java
 // select name,id,id from student limit 1;
 studentModel.newQuery().select("name").select("id").select("id").first();
@@ -496,8 +538,11 @@ studentModel.newQuery().select("name","id","created_at").first();
 // select concat_ws(name, id) as newkey from student limit 1;
 studentModel.newQuery().selectFunction("concat_ws", "\"-\",`name`,`id`", "newKey").first();
 ```
+
 ## when
+
 有时候你可能想要某些条件为 true 的时候才将条件子句应用到查询。例如，你可能只想给定值在请求中存在的情况下才应用 where 语句，这可以通过 when 方法实现
+
 ```java
 // select * from student where id > 3
 studentModel.newQuery().when(true, builder -> builder.where("id", ">", 3)).get()
@@ -514,10 +559,14 @@ studentModel.newQuery().when(false, builder -> builder.where("id", ">", 3), buil
 ```
 
 ## where
+
 ### 字段与值的比较
+
 #### where
+
 比较列与值   
 值为null时, 会使用 is null 语句
+
 ```java
 // select * from student where name id < 2 limit 1
 Record<Student, Long> record = studentModel.newQuery().whereRaw("id<2").first();
@@ -539,8 +588,10 @@ Record<Student, Long> record = studentModel.newQuery().where("id", null).first()
 ```
 
 #### whereLike
+
 "列like值" 的查询条件, 其中值需要自行包含 % 符号  
 忽略entity中，值为null的情况
+
 ```java
 // select * from `student` where `name`like"小%"
 studentModel.newQuery().whereLike("name", "小%").get();
@@ -560,12 +611,16 @@ studentModel.newQuery().whereLike("name", "小%").get();
 
     studentModel.newQuery().whereLike(student).get();
 ```
+
 #### whereMayLike  whereMayLikeIgnoreNull
+
 选择可能的条件类型
+
 * 当 value 以 %开头或者结尾时, 使用like查询
 * whereMayLike 当 value 为 null 时, 使用 is null 查询
 * whereMayLikeIgnoreNull 当 value 为 null 时, 忽略
 * 其他情况下, 使用 = 查询
+
 ```java
 // select * from `student` where `name`like"小%"
 studentModel.newQuery().whereMayLike("name", "小%").get();
@@ -593,11 +648,14 @@ studentModel.newQuery().whereMayLike(student).get();
 ```
 
 #### whereKeywords  whereKeywordsIgnoreNull
+
 在多个列中, 查找值
+
 * 当 value 以 %开头或者结尾时, 使用like查询
 * whereKeywords 当 value 为 null 时, 使用 is null 查询
 * whereKeywordsIgnoreNull 当 value 为 null 时, 忽略
 * 其他情况下, 使用 = 查询
+
 ```java
 // select * from `student` where ((`name`="小") or (`age`="小") or (`id`="小"))
 studentModel.newQuery().whereKeywords("小", "name", "age", "id").get()
@@ -623,7 +681,9 @@ studentModel.newQuery().whereKeywordsIgnoreNull(null, "name", "age", "id").where
 ```
 
 #### whereIgnoreNull
+
 会忽略为`null`的值
+
 ```java
 // select * from student where id = 123 limit 1
 Record<Student, Long> record = studentModel.newQuery().whereIgnoreNull("id", 123).whereIgnoreNull("name", null).first();
@@ -636,13 +696,18 @@ Record<Student, Long> record = studentModel.newQuery().whereIgnoreNull(map).firs
 ```
 
 ### 字段之间的比较
+
 #### whereColumn
+
 ```java
 // select * from student where `id` > `sex` limit 1
 Record<Student, Long> record = studentModel.newQuery().whereColumn("id", ">", "sex").first();
 ```
+
 ### 字段(不)在两值之间
+
 #### whereBetween whereNotBetween
+
 ```java
 // select * from student where `id` between "3" and "5" 
 RecordList<Student, Long>> records = studentModel.newQuery().whereBetween("id", "3", "5").get();
@@ -650,8 +715,11 @@ RecordList<Student, Long>> records = studentModel.newQuery().whereBetween("id", 
 // select * from student where `id` not between "3" and "5" 
 RecordList<Student, Long>> records = studentModel.newQuery().whereNotBetween("id", "3", "5").get();
 ```
+
 ### 字段(不)在范围内
+
 #### whereIn whereNotIn
+
 ```java
 List<Object> idList = new ArrayList<>();
 idList.add("4");
@@ -675,7 +743,7 @@ RecordList<Student, Long> records = studentModel.newQuery().whereIn("id",
 ).get()
 ```
 
-#### whereInIgnoreEmpty whereNotInIgnoreEmpty   
+#### whereInIgnoreEmpty whereNotInIgnoreEmpty
 
 和 whereIn whereNotIn 相比较，当参数为空时，会忽略。不会忽略列表中的`null`
 
@@ -694,7 +762,9 @@ RecordList<Student, Long>> records = studentModel.newQuery().whereNotInIgnoreEmp
 ```
 
 ### 字段(不)为null
+
 #### whereNull  whereNotNull
+
 ```java
 // select * from student where id is null;
 studentModel.newQuery().whereNull("id").get();
@@ -704,7 +774,9 @@ studentModel.newQuery().whereNotNull("id").get();
 ```
 
 ### 子查询
+
 #### whereSubQuery
+
 ```java
 List<Object> ins = new ArrayList<>();
 ins.add("1");
@@ -723,16 +795,22 @@ RecordList<Student, Long>> records = studentModel.newQuery()
 .whereSubQuery("id", "in", "select id from student where id = 3")
 .get();
 ```
+
 ### 且
+
 #### andWhere  andWhereIgnoreEmpty
+
 ```java
 // select * from student where id = 3 and (id=4)
 studentModel.newQuery().where("id", "3").andWhere(
     builder -> builder.whereRaw("id=4")
 ).get();
 ```
+
 ### 或
+
 #### orWhere  orWhereIgnoreEmpty
+
 ```java
 // select * from student where id = 3 or (id=4)
 RecordList<Student, Long>> records = studentModel.newQuery().where("id", "3").orWhere(
@@ -741,7 +819,9 @@ RecordList<Student, Long>> records = studentModel.newQuery().where("id", "3").or
 ```
 
 ### 条件为真(假)
+
 #### whereExists  whereNotExists
+
 ```java
 // select `id`,`name`,`age` from student group by `id`,`name`,`age` having `id`between "1" and "2"  
 // and exists (select `id`,`name`,`age` from student where `id`between "2" and "3" ) 
@@ -757,11 +837,13 @@ RecordList<Student, Long>> records = studentModel.newQuery()
 )
 .get();
 ```
+
 ## having
 
 类似于where, 暂略
 
 ## order
+
 ```java
 // select * from student order by id desc
 studentModel.newQuery().orderBy("id", OrderBy.DESC).get();
@@ -786,6 +868,7 @@ RecordList<Student, Long>> records = studentModel.newQuery()
 .group("sex", "id", "age")
 .get();
 ```
+
 ## join
 
 因为在`select`中使用的别名, 所以在使用`toObject`时无法正确匹配实例属性,因此建议使用`toMap`
@@ -832,14 +915,14 @@ RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().selec
 List<StudentModel.Entity> entities = records.toObjectList();
 ```
 
-
-
 ## limit
+
 ```java
 RecordList<Student, Long>> records = studentModel.newQuery().orderBy("id", OrderBy.DESC).limit(2, 3).get();
 
 RecordList<Student, Long>> records = studentModel.newQuery().orderBy("id", OrderBy.DESC).limit(2).get();
 ```
+
 ## from
 
 用以指定表名,大多数情况下可以不手动调用, 使用默认值
@@ -864,7 +947,6 @@ Long count = studentModel.newQuery().group("sex").select("sex").count();
 Assert.assertEquals(count.intValue(), 2);
 ```
 
-
 ## index
 
 #### forceIndex  ignoreIndex
@@ -881,7 +963,9 @@ RecordList<StudentModel.Entity, Integer> records3 = studentModel.newQuery().wher
 ```
 
 ## data
+
 #### data
+
 ```java
 Map<String, String> map = new HashMap<>();
 map.put("name", "gggg");
@@ -904,7 +988,9 @@ int num = studentModel.newQuery().data(mapHasNull).where("id", "3").update();
 // update `student` set`name`="小明",`age`=null where `id`="3"
 int num = studentModel.newQuery().data("name","小明").data("age",null).where("id", "3").update();
 ```
+
 #### dataIgnoreNull
+
 会忽略为`null`的值
 
 ```java
@@ -920,6 +1006,7 @@ int num = studentModel.newQuery().dataIgnoreNull("name",null).data("age","7").wh
 ```
 
 ## union
+
 ```java
 RecordList<Student, Long>> records = studentModel.newQuery()
 .unionAll((builder -> builder.where("id", "2")))
@@ -930,18 +1017,19 @@ RecordList<Student, Long>> records = studentModel.newQuery()
 ## 事务
 
 - `多线程` 事物绑定在线程中 **`(非常重要)`**
-  -  先开启事物，再在事物中开启多线程执行，子线程不处于事物中   
-  -  先开启多线程，再在每个子线程中开启事物(即使是同一个数据库连接GaarasonDataSource)，事物之间相互隔离，可以按单线程思路书写业务。     
+    - 先开启事物，再在事物中开启多线程执行，子线程不处于事物中
+    - 先开启多线程，再在每个子线程中开启事物(即使是同一个数据库连接GaarasonDataSource)，事物之间相互隔离，可以按单线程思路书写业务。
 
-- `隔离级别` 可以设置在[注册bean](/document/bean.md)的`SESSION SQL_MODE`。     
-- `传播性` 全局默认 PROPAGATION_NESTED 
-  -  如果不存在事务，创建事务。如果存在事务，则嵌套在事务内，嵌套事务依赖外层事务提交，不进行独立事务提交。
-  -  嵌套事务如果发生异常，则抛出异常，回滚嵌套事务的操作，回到开始嵌套事务的“保存点”，由外层事务的逻辑继续执行（外层捕获异常并处理即可）。  
-  -  嵌套事务如果不发生异常，则继续执行，不提交。由外层事务的逻辑继续执行，若外层事务后续发生异常，则回滚包括嵌套事务在内的所有事务。 
-- `Spring boot` 
-  -  通过`@EnableTransactionManagement` 开启事物管理后使用 `@Transactional` 管理亦可，此时的事务特性遵循`Spring`规范。
+- `隔离级别` 可以设置在[注册bean](/document/bean.md)的`SESSION SQL_MODE`。
+- `传播性` 全局默认 PROPAGATION_NESTED
+    - 如果不存在事务，创建事务。如果存在事务，则嵌套在事务内，嵌套事务依赖外层事务提交，不进行独立事务提交。
+    - 嵌套事务如果发生异常，则抛出异常，回滚嵌套事务的操作，回到开始嵌套事务的“保存点”，由外层事务的逻辑继续执行（外层捕获异常并处理即可）。
+    - 嵌套事务如果不发生异常，则继续执行，不提交。由外层事务的逻辑继续执行，若外层事务后续发生异常，则回滚包括嵌套事务在内的所有事务。
+- `Spring boot`
+    - 通过`@EnableTransactionManagement` 开启事物管理后使用 `@Transactional` 管理亦可，此时的事务特性遵循`Spring`规范。
 
 ### 手动事物
+
 ```java
 // 开启事物
 studentModel.newQuery().begin();
@@ -957,13 +1045,15 @@ studentModel.newQuery().rollBack();
 // 提交
 studentModel.newQuery().commit();
 ```
+
 ### 闭包事物
 
 - 异常自动回滚, 原样向上抛出
 - 语义表达性更直观
 - 自动处理死锁异常
 
-无返回值  
+无返回值
+
 ```java
 // 开启事物
 studentModel.newQuery().transaction(() -> {
@@ -972,7 +1062,9 @@ studentModel.newQuery().transaction(() -> {
     StudentSingleModel.Entity entity = studentModel.newQuery().where("id", "1").firstOrFail().toObject();
 }, 3);
 ```
+
 有返回值
+
 ```java
 // 开启事物
 boolean success = studentModel.newQuery().transaction(() -> {
@@ -983,42 +1075,59 @@ boolean success = studentModel.newQuery().transaction(() -> {
     return true;
 }, 3);
 ```
+
 ### 共享锁与排他锁
-####  sharedLock  lockForUpdate
+
+#### sharedLock  lockForUpdate
+
 ```java
 studentModel.newQuery().transaction(()->{
     studentModel.newQuery().where("id", "3").sharedLock().get();
 }, 3);
 ```
+
 ```java
 studentModel.newQuery().transaction(()->{
     studentModel.newQuery().where("id", "3").lockForUpdate().get();
 }, 3);
 ```
+
 ## 分页
+
 ### 快速分页
+
 #### simplePaginate
+
 不包含总数的分页
+
 ```java
 Paginate<Student> paginate = studentModel.newQuery().orderBy("id").simplePaginate(1, 3);
 
 
 Paginate<Map<String, Object>> paginateMap = studentModel.newQuery().orderBy("id").simplePaginateMapStyle(1, 3);
 ```
+
 ### 总数分页
+
 #### paginate
+
 包含总数的分页
+
 ```java
 Paginate<Student> paginate = studentModel.newQuery().orderBy("id").paginate(1, 4);
 
 Paginate<Map<String, Object>> paginate = studentModel.newQuery().orderBy("id").paginateMapStyle(1, 4);
 ```
+
 ## 功能
 
 ### 随机抽样
-#### inRandomOrder  
+
+#### inRandomOrder
+
 接收一个参数,优先选用连续计数类型字段(均匀分布的自增主键最佳).  
 在300w数据量下,效率约是`order by rand()`的5倍,任何情况下均有优越表现
+
 ```java
 studentModel.newQuery().where("sex", "1").orderBy("RAND()").limit(5).get().toObjectList();
 

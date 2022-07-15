@@ -6,8 +6,6 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.query.MsSqlBuilder;
 import gaarason.database.query.grammars.MsSqlGrammar;
 
-import java.io.Serializable;
-
 public class MssqlQueryBuilderConfig implements QueryBuilderConfig {
 
     @Override
@@ -21,7 +19,7 @@ public class MssqlQueryBuilderConfig implements QueryBuilderConfig {
     }
 
     @Override
-    public <T extends Serializable, K extends Serializable> Builder<T, K> newBuilder(
+    public <T, K> Builder<T, K> newBuilder(
         GaarasonDataSource gaarasonDataSource, Model<T, K> model) {
         return new MsSqlBuilder<>(gaarasonDataSource, model, new MsSqlGrammar(model.getTableName()));
     }

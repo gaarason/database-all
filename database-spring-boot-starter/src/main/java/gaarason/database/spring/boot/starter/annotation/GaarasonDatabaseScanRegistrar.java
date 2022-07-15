@@ -16,9 +16,13 @@ public class GaarasonDatabaseScanRegistrar implements ImportBeanDefinitionRegist
 
     private static final GaarasonDatabaseProperties.Scan SCAN = new GaarasonDatabaseProperties.Scan();
 
+    public static GaarasonDatabaseProperties.Scan getScan() {
+        return SCAN;
+    }
+
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-        synchronized (GaarasonDatabaseScanRegistrar.class){
+        synchronized (GaarasonDatabaseScanRegistrar.class) {
             AnnotationAttributes annoAttrs = AnnotationAttributes.fromMap(
                 importingClassMetadata.getAnnotationAttributes(GaarasonDatabaseScan.class.getName()));
             if (annoAttrs == null) {
@@ -30,10 +34,6 @@ public class GaarasonDatabaseScanRegistrar implements ImportBeanDefinitionRegist
             SCAN.getFilterIncludePatterns().addAll(Arrays.asList(annoAttrs.getStringArray("filterIncludePatterns")));
             SCAN.getFilterExcludePatterns().addAll(Arrays.asList(annoAttrs.getStringArray("filterExcludePatterns")));
         }
-    }
-
-    public static GaarasonDatabaseProperties.Scan getScan(){
-        return SCAN;
     }
 
 }

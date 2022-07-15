@@ -4,15 +4,13 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.lang.Nullable;
 
-import java.io.Serializable;
-
 /**
  * 排序
  * @param <T>
  * @param <K>
  * @author xt
  */
-public interface Order<T extends Serializable, K extends Serializable> {
+public interface Order<T, K> {
 
     /**
      * 排序

@@ -10,14 +10,13 @@ import gaarason.database.contract.function.RelationshipRecordWithFunctionalInter
 import gaarason.database.core.Container;
 import gaarason.database.provider.ModelShadowProvider;
 
-import java.io.Serializable;
 import java.util.*;
 
 /**
  * 关联关系获取
  * @author xt
  */
-public class RelationGetSupport<T extends Serializable, K extends Serializable> extends Container.SimpleKeeper {
+public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
 
     /**
      * 当前结果集

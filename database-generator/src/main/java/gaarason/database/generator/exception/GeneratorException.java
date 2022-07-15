@@ -7,10 +7,11 @@ import gaarason.database.exception.base.BaseException;
  * @author xt
  */
 public class GeneratorException extends BaseException {
-    public GeneratorException(String message){
+    public GeneratorException(String message) {
         super(message);
     }
-    public GeneratorException(Throwable e){
+
+    public GeneratorException(Throwable e) {
         super(e);
     }
 }

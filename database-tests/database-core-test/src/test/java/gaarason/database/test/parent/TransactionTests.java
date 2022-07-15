@@ -29,7 +29,7 @@ abstract public class TransactionTests extends BaseTests {
     protected static Student3Model student3Model = new Student3Model();
 
     @Override
-    protected GaarasonDataSource getGaarasonDataSource(){
+    protected GaarasonDataSource getGaarasonDataSource() {
         return studentModel.getGaarasonDataSource();
     }
 

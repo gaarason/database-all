@@ -4,10 +4,8 @@ import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.query.Grammar;
-import gaarason.database.provider.ContainerProvider;
 import gaarason.database.util.FormatUtils;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -17,7 +15,7 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public class MySqlBuilder<T extends Serializable, K extends Serializable> extends OtherBuilder<T, K> {
+public class MySqlBuilder<T, K> extends OtherBuilder<T, K> {
 
     public MySqlBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
         super(gaarasonDataSource, model, grammar);

@@ -27,7 +27,7 @@ public abstract class BaseModel<T extends Serializable, K extends Serializable> 
 
     /**
      * sql日志记录
-     * @param sql           带占位符的sql
+     * @param sql 带占位符的sql
      * @param parameterList 参数
      */
     @Override

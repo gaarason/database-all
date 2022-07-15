@@ -3,15 +3,13 @@ package gaarason.database.contract.builder;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 
-import java.io.Serializable;
-
 /**
  * 结果集连接
  * @param <T>
  * @param <K>
  * @author xt
  */
-public interface Union<T extends Serializable, K extends Serializable> {
+public interface Union<T, K> {
 
     /**
      * 结果集连接(去重)

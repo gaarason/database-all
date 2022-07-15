@@ -17,50 +17,6 @@ import java.util.Map;
 public interface Grammar {
 
     /**
-     * SQL片段类型
-     */
-    enum SQLPartType {
-        SELECT("select "), COLUMN(""), DATA(" set "), VALUE(" values "), FROM(" from "), TABLE(""),
-        FORCE_INDEX(" force index "), IGNORE_INDEX(" ignore index "), ORDER(" order by "), LIMIT(" limit "),
-        GROUP(" group by "), JOIN(""), WHERE(" where "), HAVING(" having "), LOCK(""), UNION("");
-
-        private final String keyword;
-
-        SQLPartType(String keyword) {
-            this.keyword = keyword;
-        }
-
-        public String getKeyword() {
-            return keyword;
-        }
-    }
-
-    /**
-     * SQL片段信息
-     */
-    class SQLPartInfo implements Serializable {
-        private final String sqlString;
-
-        @Nullable
-        private final Collection<Object> parameters;
-
-        public SQLPartInfo(String sqlString, @Nullable Collection<Object> parameters) {
-            this.sqlString = sqlString;
-            this.parameters = parameters;
-        }
-
-        public String getSqlString() {
-            return sqlString;
-        }
-
-        @Nullable
-        public Collection<Object> getParameters() {
-            return parameters;
-        }
-    }
-
-
-    /**
      * 返回替换参数后的字符, 并填充到"绑定参数集合"
      * @param value 参数 eg: 1
      * @param parameters 绑定参数集合, 引用地址
@@ -100,7 +56,7 @@ public interface Grammar {
      * @param separator 分割符号
      */
     void addSmartSeparator(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters,
-                           String separator);
+        String separator);
 
     /**
      * 加入sql片段(片段首部), 自动处理首个的情况
@@ -110,7 +66,7 @@ public interface Grammar {
      * @param separator 分割符号
      */
     void addFirstSmartSeparator(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters,
-                           String separator);
+        String separator);
 
     /**
      * 加入sql片段(片段尾部)
@@ -157,7 +113,7 @@ public interface Grammar {
      * @param allParameters 绑定参数 收集集合
      */
     void concatenate(SqlType sqlType, SQLPartType sqlPartType, StringBuilder sqlBuilder,
-                     Collection<Object> allParameters);
+        Collection<Object> allParameters);
 
     /**
      * 按照类型生成sql
@@ -180,11 +136,54 @@ public interface Grammar {
      * @param recordClosure 所关联的Model的再一级关联
      */
     void pushWith(String column, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
-                  RelationshipRecordWithFunctionalInterface recordClosure);
+        RelationshipRecordWithFunctionalInterface recordClosure);
 
     /**
      * 拉取with信息
      * @return map
      */
     Map<String, Object[]> pullWith();
+
+    /**
+     * SQL片段类型
+     */
+    enum SQLPartType {
+        SELECT("select "), COLUMN(""), DATA(" set "), VALUE(" values "), FROM(" from "), TABLE(""),
+        FORCE_INDEX(" force index "), IGNORE_INDEX(" ignore index "), ORDER(" order by "), LIMIT(" limit "),
+        GROUP(" group by "), JOIN(""), WHERE(" where "), HAVING(" having "), LOCK(""), UNION("");
+
+        private final String keyword;
+
+        SQLPartType(String keyword) {
+            this.keyword = keyword;
+        }
+
+        public String getKeyword() {
+            return keyword;
+        }
+    }
+
+    /**
+     * SQL片段信息
+     */
+    class SQLPartInfo implements Serializable {
+        private final String sqlString;
+
+        @Nullable
+        private final Collection<Object> parameters;
+
+        public SQLPartInfo(String sqlString, @Nullable Collection<Object> parameters) {
+            this.sqlString = sqlString;
+            this.parameters = parameters;
+        }
+
+        public String getSqlString() {
+            return sqlString;
+        }
+
+        @Nullable
+        public Collection<Object> getParameters() {
+            return parameters;
+        }
+    }
 }

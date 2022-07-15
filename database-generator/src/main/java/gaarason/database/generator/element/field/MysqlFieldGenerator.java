@@ -181,7 +181,7 @@ public class MysqlFieldGenerator extends BaseFieldGenerator {
     /**
      * 生成Field
      * @param disInsertable 不可新增的字段
-     * @param disUpdatable  不可更新的字段
+     * @param disUpdatable 不可更新的字段
      * @return Field
      */
     @Override
@@ -281,9 +281,9 @@ public class MysqlFieldGenerator extends BaseFieldGenerator {
 
     /**
      * 数字字符类型赋值
-     * @param field             字段信息
+     * @param field 字段信息
      * @param somethingUnsigned 类型(unsigned)
-     * @param something         类型
+     * @param something 类型
      */
     protected void fieldNumericAssignment(Field field, MysqlNumericRange somethingUnsigned,
         MysqlNumericRange something) {

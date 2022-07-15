@@ -3,7 +3,6 @@ package gaarason.database.provider;
 import gaarason.database.appointment.Column;
 import gaarason.database.appointment.EntityUseType;
 import gaarason.database.appointment.LambdaInfo;
-import gaarason.database.bootstrap.ContainerBootstrap;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
@@ -30,60 +29,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ModelShadowProvider extends Container.SimpleKeeper {
 
     private static final Log LOGGER = LogFactory.getLog(ModelShadowProvider.class);
-
-    /**
-     * 持久信息
-     * 需要手动初始化
-     */
-    static class Persistence {
-        /**
-         * Model Class做为索引
-         */
-        private final Map<Class<? extends Model<?, ?>>, ModelMember<?, ?>> modelIndexMap = new ConcurrentHashMap<>();
-
-        /**
-         * Model proxy Class做为索引
-         */
-        private final Map<Class<?>, ModelMember<?, ?>> modelProxyIndexMap = new ConcurrentHashMap<>();
-
-        /**
-         * Entity Class作为索引
-         */
-        private final Map<Class<?>, ModelMember<?, ?>> entityIndexMap = new ConcurrentHashMap<>();
-    }
-
-    /**
-     * 缓存信息
-     * 内存不足时自动清理. 因此需要惰性使用
-     */
-    static class Cache {
-
-        /**
-         * Entity 缓存
-         */
-        private final SoftCache<Class<?>, EntityMember<?>> entity = new SoftCache<>();
-
-        /**
-         * 缓存lambda风格的列名, 与为String风格的列名的映射
-         */
-        private final SoftCache<Class<?>, String> lambdaColumnName = new SoftCache<>();
-
-        /**
-         * 缓存lambda风格的属性名, 与为String风格的属性名的映射
-         */
-        private final SoftCache<Class<?>, String> lambdaFieldName = new SoftCache<>();
-    }
-
     /**
      * 持久信息
      */
     private final Persistence persistence = new Persistence();
-
     /**
      * 缓存信息
      */
     private final Cache cache = new Cache();
-
 
     public ModelShadowProvider(Container container) {
         super(container);
@@ -145,7 +98,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param <K> 主键类型
      * @return 格式化后的Model信息
      */
-    public <T extends Serializable, K extends Serializable> ModelMember<T, K> get(Model<T, K> model) {
+    public <T, K> ModelMember<T, K> get(Model<T, K> model) {
         return getByModelClass(ObjectUtils.typeCast(model.getClass()));
     }
 
@@ -156,7 +109,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param <K> 主键类型
      * @return 格式化后的Model信息
      */
-    public <T extends Serializable, K extends Serializable> ModelMember<T, K> getByModelClass(
+    public <T, K> ModelMember<T, K> getByModelClass(
         Class<? extends Model<T, K>> modelClass) {
         ModelMember<?, ?> result1 = persistence.modelProxyIndexMap.get(modelClass);
         if (null == result1) {
@@ -175,7 +128,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @return 格式化后的Model信息
      */
     public <T> ModelMember<? super T, ?> getByEntityClass(Class<T> clazz) {
-        ModelMember<? extends Serializable, ? extends Serializable> result = persistence.entityIndexMap.get(clazz);
+        ModelMember<?, ?> result = persistence.entityIndexMap.get(clazz);
         if (null == result) {
             throw new EntityInvalidException(clazz);
         }
@@ -213,7 +166,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param <T> 实体类型
      * @return 属性名
      */
-    public <T extends Serializable> String parseFieldNameByLambdaWithCache(ColumnFunctionalInterface<T> func) {
+    public <T> String parseFieldNameByLambdaWithCache(ColumnFunctionalInterface<T> func) {
         Class<?> clazz = func.getClass();
         String fieldName = cache.lambdaFieldName.get(clazz);
         if (fieldName == null) {
@@ -239,7 +192,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param <T> 实体类型
      * @return 列名
      */
-    public <T extends Serializable> String parseColumnNameByLambdaWithCache(ColumnFunctionalInterface<T> func) {
+    public <T> String parseColumnNameByLambdaWithCache(ColumnFunctionalInterface<T> func) {
         Class<?> clazz = func.getClass();
         String columnName = cache.lambdaColumnName.get(clazz);
         if (columnName == null) {
@@ -262,7 +215,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param <T> 实体类型
      * @return FieldInfo
      */
-    private <T extends Serializable> String parseLambda(ColumnFunctionalInterface<T> func) {
+    private <T> String parseLambda(ColumnFunctionalInterface<T> func) {
         // 解析 lambda
         LambdaInfo<T> lambdaInfo = LambdaUtils.parse(func);
         // 实例类
@@ -283,7 +236,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @return 字段信息
      * @throws EntityAttributeInvalidException 无效的字段
      */
-    public <T extends Serializable> FieldMember getFieldByAnyEntityClass(Class<T> entityClass, String fieldName)
+    public <T> FieldMember getFieldByAnyEntityClass(Class<T> entityClass, String fieldName)
         throws EntityAttributeInvalidException, EntityInvalidException {
 
         // 字段信息
@@ -318,7 +271,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param <T> 数据表实体类
      * @return 列名组成的list
      */
-    public <T extends Serializable> Set<String> columnNameSet(@Nullable T anyEntity, EntityUseType type) {
+    public <T> Set<String> columnNameSet(@Nullable T anyEntity, EntityUseType type) {
         if (ObjectUtils.isNull(anyEntity)) {
             return Collections.emptySet();
         }
@@ -332,7 +285,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param columnNames 有效的属性名
      * @return 字段的值组成的list
      */
-    public <T extends Serializable> List<Object> valueList(@Nullable T anyEntity, Collection<String> columnNames) {
+    public <T> List<Object> valueList(@Nullable T anyEntity, Collection<String> columnNames) {
         if (ObjectUtils.isNull(anyEntity)) {
             return Collections.emptyList();
         }
@@ -352,23 +305,6 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
         return valueList;
     }
 
-//    /**
-//     * 格式化值到字符串
-//     * 关键
-//     * @param value 原值 (实体的属性)
-//     * @return 字符串
-//     */
-//    @Nullable
-//    public String valueFormat(@Nullable Object value) {
-//        if (value instanceof Date) {
-//            return LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(value);
-//        } else if (value instanceof Boolean) {
-//            return (boolean) value ? "1" : "0";
-//        } else {
-//            return getContainer().getBean(ConversionConfig.class).castNullable(value, String.class);
-//        }
-//    }
-
     /**
      * 将结果集中的原信息, 赋值到实体
      * @param anyEntity 数据表实体对象
@@ -376,7 +312,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param <T> 数据表实体类
      * @param <K> 数据表主键类型
      */
-    public <T extends Serializable, K extends Serializable> void entityAssignment(T anyEntity, Record<T, K> theRecord) {
+    public <T, K> void entityAssignment(T anyEntity, Record<T, K> theRecord) {
         Map<String, Column> metadataMap = theRecord.getMetadataMap();
         EntityMember<?> entityMember = parseAnyEntityWithCache(anyEntity.getClass());
         // 数据库字段
@@ -392,7 +328,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
         PrimaryKeyMember primaryKeyMember = entityMember.getPrimaryKeyMember();
         if (primaryKeyMember != null) {
             Column primaryKeyColumn = metadataMap.get(primaryKeyMember.getFieldMember().getColumnName());
-            if (primaryKeyColumn != null) {
+            if (primaryKeyColumn != null && primaryKeyColumn.getValue() != null) {
                 theRecord.setOriginalPrimaryKeyValue(ObjectUtils.typeCast(primaryKeyColumn.getValue()));
             }
         }
@@ -415,6 +351,23 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
         }
     }
 
+//    /**
+//     * 格式化值到字符串
+//     * 关键
+//     * @param value 原值 (实体的属性)
+//     * @return 字符串
+//     */
+//    @Nullable
+//    public String valueFormat(@Nullable Object value) {
+//        if (value instanceof Date) {
+//            return LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(value);
+//        } else if (value instanceof Boolean) {
+//            return (boolean) value ? "1" : "0";
+//        } else {
+//            return getContainer().getBean(ConversionConfig.class).castNullable(value, String.class);
+//        }
+//    }
+
     /**
      * 获取 entity 对象的主键值
      * @param anyEntity 数据表实体对象
@@ -435,6 +388,49 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
             }
         }
         return null;
+    }
+
+    /**
+     * 持久信息
+     * 需要手动初始化
+     */
+    static class Persistence {
+        /**
+         * Model Class做为索引
+         */
+        private final Map<Class<? extends Model<?, ?>>, ModelMember<?, ?>> modelIndexMap = new ConcurrentHashMap<>();
+
+        /**
+         * Model proxy Class做为索引
+         */
+        private final Map<Class<?>, ModelMember<?, ?>> modelProxyIndexMap = new ConcurrentHashMap<>();
+
+        /**
+         * Entity Class作为索引
+         */
+        private final Map<Class<?>, ModelMember<?, ?>> entityIndexMap = new ConcurrentHashMap<>();
+    }
+
+    /**
+     * 缓存信息
+     * 内存不足时自动清理. 因此需要惰性使用
+     */
+    static class Cache {
+
+        /**
+         * Entity 缓存
+         */
+        private final SoftCache<Class<?>, EntityMember<?>> entity = new SoftCache<>();
+
+        /**
+         * 缓存lambda风格的列名, 与为String风格的列名的映射
+         */
+        private final SoftCache<Class<?>, String> lambdaColumnName = new SoftCache<>();
+
+        /**
+         * 缓存lambda风格的属性名, 与为String风格的属性名的映射
+         */
+        private final SoftCache<Class<?>, String> lambdaFieldName = new SoftCache<>();
     }
 
 }

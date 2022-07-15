@@ -2,7 +2,6 @@ package gaarason.database.annotation;
 
 import gaarason.database.appointment.FieldStrategy;
 import gaarason.database.contract.support.FieldFill;
-import gaarason.database.lang.Nullable;
 
 import java.lang.annotation.*;
 import java.sql.JDBCType;

@@ -6,7 +6,6 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.util.FormatUtils;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -16,7 +15,7 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public class MsSqlBuilder<T extends Serializable, K extends Serializable> extends OtherBuilder<T, K> {
+public class MsSqlBuilder<T, K> extends OtherBuilder<T, K> {
 
     public MsSqlBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
         super(gaarasonDataSource, model, grammar);

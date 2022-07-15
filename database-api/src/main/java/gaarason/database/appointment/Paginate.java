@@ -55,9 +55,9 @@ public class Paginate<T> implements Serializable {
 
     /**
      * 构建分页
-     * @param itemList    当前页的具体数据
+     * @param itemList 当前页的具体数据
      * @param currentPage 当前页的页码
-     * @param perPage     每页数量
+     * @param perPage 每页数量
      */
     public Paginate(List<T> itemList, int currentPage, int perPage) {
         this.currentPage = currentPage;
@@ -69,10 +69,10 @@ public class Paginate<T> implements Serializable {
 
     /**
      * 构建分页
-     * @param itemList    当前页的具体数据
+     * @param itemList 当前页的具体数据
      * @param currentPage 当前页的页码
-     * @param perPage     每页数量
-     * @param total       数据总量
+     * @param perPage 每页数量
+     * @param total 数据总量
      */
     public Paginate(List<T> itemList, int currentPage, int perPage, int total) {
         lastPage = Math.max((int) Math.ceil((float) total / perPage), 1);
@@ -86,9 +86,9 @@ public class Paginate<T> implements Serializable {
 
     /**
      * 计算当前页的第一条数据是总数据量中的第几条
-     * @param itemList    当前页的具体数据
+     * @param itemList 当前页的具体数据
      * @param currentPage 当前页的页码
-     * @param perPage     每页数量
+     * @param perPage 每页数量
      * @return 当前页的第一条数据是总数据量中的第几条
      */
     @Nullable
@@ -101,9 +101,9 @@ public class Paginate<T> implements Serializable {
 
     /**
      * 计算当前页的最后条数据是总数据量中的第几条
-     * @param itemList    当前页的具体数据
+     * @param itemList 当前页的具体数据
      * @param currentPage 当前页的页码
-     * @param perPage     每页数量
+     * @param perPage 每页数量
      * @return 当前页的最后条数据是总数据量中的第几条
      */
     @Nullable

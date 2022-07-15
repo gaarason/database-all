@@ -179,10 +179,9 @@ public class Field extends JavaElement {
                     "message = \"" + describe + "[" + columnName + "]需要大于等于" + min + "\"" +
                     ")\n";
             case STRING:
-                if (max == 0){
+                if (max == 0) {
                     return "";
-                }
-                else{
+                } else {
                     return indentation() + "@Length(" +
                         "min = " + min + ", " +
                         "max = " + max + ", " +

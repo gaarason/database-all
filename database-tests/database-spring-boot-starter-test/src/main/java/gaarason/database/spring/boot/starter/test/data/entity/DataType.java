@@ -16,53 +16,53 @@ public class DataType implements Serializable {
      * auto generator start
      **/
 
-    final public static String ID           = "id";
+    final public static String ID = "id";
 
-    final public static String NAME         = "name";
+    final public static String NAME = "name";
 
-    final public static String AGE          = "age";
+    final public static String AGE = "age";
 
-    final public static String SEX          = "sex";
+    final public static String SEX = "sex";
 
-    final public static String SUBJECT      = "subject";
+    final public static String SUBJECT = "subject";
 
-    final public static String CREATED_AT   = "created_at";
+    final public static String CREATED_AT = "created_at";
 
-    final public static String UPDATED_AT   = "updated_at";
+    final public static String UPDATED_AT = "updated_at";
 
     final public static String CREATED_TIME = "created_time";
 
     final public static String UPDATED_TIME = "updated_time";
 
-    final public static String IS_DELETED   = "is_deleted";
+    final public static String IS_DELETED = "is_deleted";
 
-    final public static String CHAR_CHAR    = "char_char";
+    final public static String CHAR_CHAR = "char_char";
 
-    final public static String INTEGER      = "integer";
+    final public static String INTEGER = "integer";
 
-    final public static String NUMERIC      = "numeric";
+    final public static String NUMERIC = "numeric";
 
-    final public static String BIGINT       = "bigint";
+    final public static String BIGINT = "bigint";
 
-    final public static String BINARY       = "binary";
+    final public static String BINARY = "binary";
 
-    final public static String BIT          = "bit";
+    final public static String BIT = "bit";
 
-    final public static String BLOB         = "blob";
+    final public static String BLOB = "blob";
 
-    final public static String DATE         = "date";
+    final public static String DATE = "date";
 
-    final public static String DECIMAL      = "decimal";
+    final public static String DECIMAL = "decimal";
 
-    final public static String DOUBLE_D     = "double_d";
+    final public static String DOUBLE_D = "double_d";
 
-    final public static String POINT        = "point";
+    final public static String POINT = "point";
 
-    final public static String LINESTRING   = "linestring";
+    final public static String LINESTRING = "linestring";
 
-    final public static String GEOMETRY     = "geometry";
+    final public static String GEOMETRY = "geometry";
 
-    final public static String TEXT         = "text";
+    final public static String TEXT = "text";
 
     @Primary()
     @Column(name = "id", unsigned = true)

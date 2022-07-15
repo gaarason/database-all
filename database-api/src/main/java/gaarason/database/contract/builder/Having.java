@@ -4,7 +4,6 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.lang.Nullable;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
@@ -14,7 +13,7 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public interface Having<T extends Serializable, K extends Serializable> {
+public interface Having<T, K> {
 
 
     /**
@@ -43,7 +42,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
      * 比较列与值
      * @param column 列名
      * @param symbol 比较关系
-     * @param value  值
+     * @param value 值
      * @return 查询构造器
      */
     Builder<T, K> having(String column, String symbol, Object value);
@@ -52,7 +51,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
      * 比较列与值(忽略值为null的情况)
      * @param column 列名
      * @param symbol 比较关系
-     * @param value  值
+     * @param value 值
      * @return 查询构造器
      */
     Builder<T, K> havingIgnoreNull(String column, String symbol, @Nullable Object value);
@@ -60,7 +59,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
     /**
      * 比较列与值相等
      * @param column 列名
-     * @param value  值
+     * @param value 值
      * @return 查询构造器
      */
     Builder<T, K> having(String column, @Nullable Object value);
@@ -68,7 +67,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
     /**
      * 比较列与值相等(忽略值为null的情况)
      * @param column 列名
-     * @param value  值
+     * @param value 值
      * @return 查询构造器
      */
     Builder<T, K> havingIgnoreNull(String column, @Nullable Object value);
@@ -141,7 +140,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
     /**
      * "列like值" 的查询条件, 其中值需要自行包含 % 符号 (忽略值为null的情况)
      * @param column 列名
-     * @param value  值
+     * @param value 值
      * @return 查询构造器
      */
     Builder<T, K> havingLike(String column, @Nullable Object value);
@@ -166,7 +165,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
      * 当 value 为 null 时, 使用 is null 查询
      * 其他情况下, 使用 = 查询
      * @param column 列名
-     * @param value  值
+     * @param value 值
      * @return 查询构造器
      */
     Builder<T, K> havingMayLike(String column, @Nullable Object value);
@@ -177,7 +176,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
      * 当 value 为 null 时, 忽略
      * 其他情况下, 使用 = 查询
      * @param column 列名
-     * @param value  值
+     * @param value 值
      * @return 查询构造器
      */
     Builder<T, K> havingMayLikeIgnoreNull(String column, @Nullable Object value);
@@ -234,7 +233,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
 
     /**
      * 列值在范围内
-     * @param column    列名
+     * @param column 列名
      * @param valueList 值所在的list
      * @return 查询构造器
      */
@@ -242,7 +241,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
 
     /**
      * 列值在范围内(忽略值为空的情况)
-     * @param column    列名
+     * @param column 列名
      * @param valueList 值所在的list
      * @return 查询构造器
      */
@@ -250,7 +249,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
 
     /**
      * 列值在范围内
-     * @param column     列名
+     * @param column 列名
      * @param valueArray 值所在的数组
      * @return 查询构造器
      */
@@ -258,7 +257,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
 
     /**
      * 列值在范围内(忽略值为空的情况)
-     * @param column     列名
+     * @param column 列名
      * @param valueArray 值所在的数组
      * @return 查询构造器
      */
@@ -267,14 +266,14 @@ public interface Having<T extends Serializable, K extends Serializable> {
     /**
      * 列值在范围内(子查询)
      * @param column 列名
-     * @param sql    完整sql eg:select id from student having age>10
+     * @param sql 完整sql eg:select id from student having age>10
      * @return 查询构造器
      */
     Builder<T, K> havingInRaw(String column, String sql);
 
     /**
      * 列值在范围内(子查询)
-     * @param column  列名
+     * @param column 列名
      * @param closure 闭包
      * @return 查询构造器
      */
@@ -282,7 +281,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
 
     /**
      * 列值不在范围内
-     * @param column    列名
+     * @param column 列名
      * @param valueList 值所在的list
      * @return 查询构造器
      */
@@ -290,7 +289,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
 
     /**
      * 列值不在范围内(忽略值为空的情况)
-     * @param column    列名
+     * @param column 列名
      * @param valueList 值所在的list
      * @return 查询构造器
      */
@@ -298,7 +297,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
 
     /**
      * 列值在范围内
-     * @param column     列名
+     * @param column 列名
      * @param valueArray 值所在的数组
      * @return 查询构造器
      */
@@ -306,7 +305,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
 
     /**
      * 列值在范围内(忽略值为空的情况)
-     * @param column     列名
+     * @param column 列名
      * @param valueArray 值所在的数组
      * @return 查询构造器
      */
@@ -315,14 +314,14 @@ public interface Having<T extends Serializable, K extends Serializable> {
     /**
      * 列值不在范围内(子查询)
      * @param column 列名
-     * @param sql    完整sql eg:select id from student having age>10
+     * @param sql 完整sql eg:select id from student having age>10
      * @return 查询构造器
      */
     Builder<T, K> havingNotInRaw(String column, String sql);
 
     /**
      * 列值不在范围内(子查询)
-     * @param column  列名
+     * @param column 列名
      * @param closure 闭包
      * @return 查询构造器
      */
@@ -331,8 +330,8 @@ public interface Having<T extends Serializable, K extends Serializable> {
     /**
      * 列值在2值之间
      * @param column 列名
-     * @param min    值1
-     * @param max    值2
+     * @param min 值1
+     * @param max 值2
      * @return 查询构造器
      */
     Builder<T, K> havingBetween(String column, Object min, Object max);
@@ -340,8 +339,8 @@ public interface Having<T extends Serializable, K extends Serializable> {
     /**
      * 列值不在2值之间
      * @param column 列名
-     * @param min    值1
-     * @param max    值2
+     * @param min 值1
+     * @param max 值2
      * @return 查询构造器
      */
     Builder<T, K> havingNotBetween(String column, Object min, Object max);
@@ -391,7 +390,7 @@ public interface Having<T extends Serializable, K extends Serializable> {
     /**
      * 比较字段与字段
      * @param column1 列1
-     * @param symbol  比较关系
+     * @param symbol 比较关系
      * @param column2 列2
      * @return 查询构造器
      */

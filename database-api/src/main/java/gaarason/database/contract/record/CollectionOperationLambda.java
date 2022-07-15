@@ -5,7 +5,6 @@ import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.support.LambdaStyle;
 import gaarason.database.lang.Nullable;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +14,7 @@ import java.util.Map;
  * @param <T> 实体类型
  * @param <K> 主键类型
  */
-public interface CollectionOperationLambda<T extends Serializable, K extends Serializable>
+public interface CollectionOperationLambda<T, K>
     extends CollectionOperation<Record<T, K>>, LambdaStyle<T, K> {
 
     /**
@@ -150,7 +149,7 @@ public interface CollectionOperationLambda<T extends Serializable, K extends Ser
      * @return 值的集合
      */
     default <W, Y> Map<W, Y> pluck(ColumnFunctionalInterface<T> fieldNameForValue,
-                                   ColumnFunctionalInterface<T> fieldNameForKey) {
+        ColumnFunctionalInterface<T> fieldNameForKey) {
         return pluck(lambda2FieldName(fieldNameForValue), lambda2FieldName(fieldNameForKey));
     }
 

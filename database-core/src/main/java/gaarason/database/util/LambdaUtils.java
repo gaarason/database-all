@@ -8,7 +8,6 @@ import gaarason.database.logging.Log;
 import gaarason.database.logging.LogFactory;
 import gaarason.database.provider.ModelShadowProvider;
 
-import java.io.Serializable;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -45,7 +44,7 @@ public class LambdaUtils {
      * @return 属性名
      * @see ModelShadowProvider
      */
-    public static <T extends Serializable> LambdaInfo<T> parse(ColumnFunctionalInterface<T> func) {
+    public static <T> LambdaInfo<T> parse(ColumnFunctionalInterface<T> func) {
         try {
             Method method = func.getClass().getDeclaredMethod("writeReplace");
             method.setAccessible(true);

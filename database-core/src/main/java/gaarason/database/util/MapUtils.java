@@ -9,7 +9,7 @@ import java.util.Map;
  */
 public class MapUtils {
 
-    private MapUtils(){
+    private MapUtils() {
 
     }
 
@@ -20,7 +20,7 @@ public class MapUtils {
      * @param <T> 值类型
      * @return list
      */
-    public static <T> List<T> mapValueToList(Map<?, T> map){
+    public static <T> List<T> mapValueToList(Map<?, T> map) {
         List<T> res = new ArrayList<>(map.size());
         for (Map.Entry<?, T> entry : map.entrySet()) {
             res.add(entry.getValue());

@@ -3,15 +3,13 @@ package gaarason.database.contract.builder;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 
-import java.io.Serializable;
-
 /**
  * 能力
  * @param <T>
  * @param <K>
  * @author xt
  */
-public interface AbilityLambda<T extends Serializable, K extends Serializable> extends Ability<T, K>, Support<T, K> {
+public interface AbilityLambda<T, K> extends Ability<T, K>, Support<T, K> {
 
     /**
      * 随机抽样

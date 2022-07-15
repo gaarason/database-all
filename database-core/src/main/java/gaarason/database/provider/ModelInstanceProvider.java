@@ -8,7 +8,6 @@ import gaarason.database.exception.ModelNewInstanceException;
 import gaarason.database.util.ClassUtils;
 import gaarason.database.util.ObjectUtils;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,7 +55,7 @@ public class ModelInstanceProvider extends Container.SimpleKeeper {
      * @return 模型对象
      * @throws ModelNewInstanceException 模型实例化失败
      */
-    public <T extends Serializable, K extends Serializable> Model<T, K> getModel(
+    public <T, K> Model<T, K> getModel(
         Class<? extends Model<T, K>> modelClass) throws ModelNewInstanceException {
         synchronized (this) {
             executed = true;

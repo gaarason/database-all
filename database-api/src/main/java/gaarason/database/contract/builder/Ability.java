@@ -2,15 +2,13 @@ package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
 
-import java.io.Serializable;
-
 /**
  * 能力
  * @param <T>
  * @param <K>
  * @author xt
  */
-public interface Ability<T extends Serializable, K extends Serializable> {
+public interface Ability<T, K> {
 
     /**
      * 随机抽样

@@ -8,12 +8,10 @@ import java.io.Serializable;
 
 @Data
 abstract public class BaseEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
-
     /** auto generator start **/
 
     final public static String ID = "id";
-
+    private static final long serialVersionUID = 1L;
     @Primary()
     @Column(name = "id", unsigned = true)
     private Long id;

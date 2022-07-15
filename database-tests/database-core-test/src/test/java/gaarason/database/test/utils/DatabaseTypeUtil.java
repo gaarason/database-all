@@ -10,7 +10,7 @@ public class DatabaseTypeUtil {
 
     private static DatabaseType databaseType = DatabaseType.MYSQL;
 
-    private DatabaseTypeUtil(){
+    private DatabaseTypeUtil() {
 
     }
 

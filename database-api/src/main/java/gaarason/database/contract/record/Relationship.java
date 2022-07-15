@@ -5,15 +5,13 @@ import gaarason.database.contract.eloquent.extra.Bind;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 
-import java.io.Serializable;
-
 /**
  * 关联关系
  * @param <T> 实体类
  * @param <K> 主键类型
  * @author xt
  */
-public interface Relationship<T extends Serializable, K extends Serializable> {
+public interface Relationship<T, K> {
 
 
     /**
@@ -45,7 +43,7 @@ public interface Relationship<T extends Serializable, K extends Serializable> {
      * @return 关联的Model的查询构造器
      */
     Record<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<T, K> builderClosure,
-                      RelationshipRecordWithFunctionalInterface recordClosure);
+        RelationshipRecordWithFunctionalInterface recordClosure);
 
     /**
      * 关系绑定操作对象

@@ -3,7 +3,6 @@ package gaarason.database.contract.builder;
 import gaarason.database.appointment.Paginate;
 import gaarason.database.exception.SQLRuntimeException;
 
-import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -11,7 +10,7 @@ import java.util.Map;
  * @param <T>
  * @author xt
  */
-public interface Pager<T extends Serializable, K extends Serializable> extends Support<T, K> {
+public interface Pager<T, K> extends Support<T, K> {
 
     /**
      * 不包含总数的分页

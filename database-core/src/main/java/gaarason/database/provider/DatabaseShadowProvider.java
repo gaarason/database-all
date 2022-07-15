@@ -1,7 +1,7 @@
 package gaarason.database.provider;
 
-import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.appointment.DBColumn;
+import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.util.DatabaseInfoUtils;
 
 import java.util.LinkedHashMap;
@@ -26,7 +26,7 @@ public final class DatabaseShadowProvider {
     /**
      * 获取表的信息
      * @param gaarasonDataSource 数据源
-     * @param table              表名
+     * @param table 表名
      * @return 表信息
      */
     public static Map<String, DBColumn> getTable(GaarasonDataSource gaarasonDataSource, String table) {
@@ -48,8 +48,8 @@ public final class DatabaseShadowProvider {
     /**
      * 获取表的信息
      * @param gaarasonDataSource 数据源
-     * @param manyTableInfoMap   许多的表信息
-     * @param table              表名
+     * @param manyTableInfoMap 许多的表信息
+     * @param table 表名
      * @return 表信息
      */
     private static Map<String, DBColumn> getTableFromGaarasonDataSource(GaarasonDataSource gaarasonDataSource,

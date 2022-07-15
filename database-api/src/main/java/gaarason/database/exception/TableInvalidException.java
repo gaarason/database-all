@@ -8,7 +8,7 @@ import gaarason.database.exception.base.BaseException;
  */
 public class TableInvalidException extends BaseException {
 
-    public TableInvalidException(String tableName){
+    public TableInvalidException(String tableName) {
         super("Table name[" + tableName + "] have no information in the Shadow.");
     }
 

@@ -64,7 +64,8 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
      * @param slaveDataSourceList (从)读数据源集合
      * @param container 容器
      */
-    GaarasonDataSourceWrapper(List<DataSource> masterDataSourceList, List<DataSource> slaveDataSourceList, Container container) {
+    GaarasonDataSourceWrapper(List<DataSource> masterDataSourceList, List<DataSource> slaveDataSourceList,
+        Container container) {
         super(container);
         if (masterDataSourceList.isEmpty() || slaveDataSourceList.isEmpty()) {
             throw new AbnormalParameterException("The two list of data source should not be empty.");

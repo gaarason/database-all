@@ -4,7 +4,6 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.lang.Nullable;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
@@ -14,7 +13,7 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public interface Where<T extends Serializable, K extends Serializable> {
+public interface Where<T, K> {
 
     /**
      * 加入sql片段
@@ -71,13 +70,6 @@ public interface Where<T extends Serializable, K extends Serializable> {
      * @return 查询构造器
      */
     Builder<T, K> whereIgnoreNull(String column, @Nullable Object value);
-
-    /**
-     * 将对象的属性转化为, 列与值相等的查询条件
-     * @param entity 实体对象
-     * @return 查询构造器
-     */
-    Builder<T, K> where(T entity);
 
     /**
      * 将对象的属性转化为, 列与值相等的查询条件

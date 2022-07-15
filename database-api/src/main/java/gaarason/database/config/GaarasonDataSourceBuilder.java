@@ -29,7 +29,7 @@ public interface GaarasonDataSourceBuilder {
     /**
      * 多个主库与从库的数据源
      * @param masterDataSourceList 原写数据源列表
-     * @param slaveDataSourceList  原读数据源列表
+     * @param slaveDataSourceList 原读数据源列表
      * @return 数据源
      */
     GaarasonDataSource build(List<DataSource> masterDataSourceList, List<DataSource> slaveDataSourceList);

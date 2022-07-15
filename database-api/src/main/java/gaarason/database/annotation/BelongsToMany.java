@@ -2,7 +2,6 @@ package gaarason.database.annotation;
 
 import gaarason.database.contract.eloquent.Model;
 
-import java.io.Serializable;
 import java.lang.annotation.*;
 
 /**
@@ -19,13 +18,13 @@ public @interface BelongsToMany {
      * `关系表`model
      * @return `关系表`
      */
-    Class<? extends Model<? extends Serializable, ? extends Serializable>> relationModel();
+    Class<? extends Model<?, ?>> relationModel();
 
     /**
      * `本表`中的`关联键`, 默认值为`本表`的主键(`@Primary()`修饰的键)
      * @return `本表`中的`关联键`
      */
-    String localModelLocalKey() default "";;
+    String localModelLocalKey() default "";
 
     /**
      * `关系表`中的`关联本表的外键`
@@ -43,5 +42,5 @@ public @interface BelongsToMany {
      * `目标表`中的`关联键`, 默认值为`目标表`的主键(`@Primary()`修饰的键)
      * @return `目标表`中的`关联键`
      */
-    String targetModelLocalKey() default "";;
+    String targetModelLocalKey() default "";
 }

@@ -7,7 +7,6 @@ import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
 import gaarason.database.util.ObjectUtils;
 
-import java.io.Serializable;
 import java.util.Collection;
 
 /**
@@ -16,7 +15,7 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public abstract class GroupBuilder<T extends Serializable, K extends Serializable> extends DataBuilder<T, K> {
+public abstract class GroupBuilder<T, K> extends DataBuilder<T, K> {
 
     protected GroupBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
         super(gaarasonDataSource, model, grammar);

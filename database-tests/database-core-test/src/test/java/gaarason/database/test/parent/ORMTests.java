@@ -1,9 +1,9 @@
 package gaarason.database.test.parent;
 
+import gaarason.database.appointment.OrderBy;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.appointment.OrderBy;
 import gaarason.database.exception.RelationAttachException;
 import gaarason.database.test.models.normal.StudentORMModel;
 import gaarason.database.test.models.relation.model.RelationshipStudentTeacherModel;
@@ -38,7 +38,7 @@ abstract public class ORMTests extends BaseTests {
     protected static RelationshipStudentTeacherModel relationshipStudentTeacherModel = new RelationshipStudentTeacherModel();
 
     @Override
-    protected GaarasonDataSource getGaarasonDataSource(){
+    protected GaarasonDataSource getGaarasonDataSource() {
         return studentORMModel.getGaarasonDataSource();
     }
 
@@ -151,7 +151,7 @@ abstract public class ORMTests extends BaseTests {
     }
 
     @Test
-    public void ORM新增_findOrNew(){
+    public void ORM新增_findOrNew() {
         String name = "findOrCreate的name";
         final StudentORMModel.Entity stu = new StudentORMModel.Entity();
         stu.setName(name);
@@ -186,7 +186,7 @@ abstract public class ORMTests extends BaseTests {
     }
 
     @Test
-    public void ORM新增_findByPrimaryKeyOrNew(){
+    public void ORM新增_findByPrimaryKeyOrNew() {
         String name = "findOrCreate的name";
         Integer id = 456;
         final StudentORMModel.Entity stu = new StudentORMModel.Entity();

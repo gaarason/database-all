@@ -1,15 +1,14 @@
 package gaarason.database.test;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import gaarason.database.appointment.FieldStrategy;
-import gaarason.database.connection.GaarasonDataSourceBuilder;
-import gaarason.database.connection.GaarasonDataSourceWrapper;
-import gaarason.database.contract.connection.GaarasonDataSource;
-import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.eloquent.Model;
 import gaarason.database.annotation.Column;
 import gaarason.database.annotation.Primary;
 import gaarason.database.annotation.Table;
+import gaarason.database.appointment.FieldStrategy;
+import gaarason.database.connection.GaarasonDataSourceBuilder;
+import gaarason.database.contract.connection.GaarasonDataSource;
+import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.eloquent.Model;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;

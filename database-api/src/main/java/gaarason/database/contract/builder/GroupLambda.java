@@ -3,7 +3,6 @@ package gaarason.database.contract.builder;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -12,7 +11,7 @@ import java.util.Arrays;
  * @param <K>
  * @author xt
  */
-public interface GroupLambda<T extends Serializable, K extends Serializable> extends Group<T, K>, Support<T, K> {
+public interface GroupLambda<T, K> extends Group<T, K>, Support<T, K> {
 
     /**
      * 分组

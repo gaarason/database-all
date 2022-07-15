@@ -29,7 +29,7 @@ public class AaaGcTests extends BaseTests {
     @Test
     public void testPressure() throws InterruptedException {
         while (true) {
-            MultiThreadUtil.run(10,100, () ->{
+            MultiThreadUtil.run(10, 100, () -> {
                 StudentModel.Entity entity = studentModel.newQuery()
                     .select(StudentModel.Entity::getId)
                     .select(StudentModel.Entity::getName)

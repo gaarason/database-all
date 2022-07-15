@@ -6,6 +6,5 @@ import gaarason.database.test.models.relation.pojo.Student;
 public class StudentModel extends BaseModel<Student, Long> {
 
 
-
 }
 
