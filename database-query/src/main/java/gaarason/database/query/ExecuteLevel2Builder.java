@@ -2,11 +2,9 @@ package gaarason.database.query;
 
 import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.connection.GaarasonDataSource;
-import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.contract.function.ChunkFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.exception.ConfirmOperationException;
 import gaarason.database.exception.EntityNotFoundException;
@@ -55,88 +53,103 @@ public abstract class ExecuteLevel2Builder<T, K> extends ExecuteLevel1Builder<T,
 
     @Override
     public int insert() throws SQLRuntimeException {
-        return updateSql(SqlType.INSERT);
+        // 事件
+        model.creating(this);
+        int rows = updateSql(SqlType.INSERT);
+        model.created(rows);
+        return rows;
     }
 
     @Override
     public int update() throws SQLRuntimeException {
-        return updateSql(SqlType.UPDATE);
+        // 事件
+        model.updating(this);
+        int rows = updateSql(SqlType.UPDATE);
+        model.updated(rows);
+        return rows;
+    }
+
+    @Override
+    public int restore() throws SQLRuntimeException {
+        // 事件
+        model.restoring(this);
+        int rows = model.restore(this);
+        model.restored(rows);
+        return rows;
+    }
+
+    @Override
+    public int delete() throws SQLRuntimeException {
+        // 事件
+        model.deleting(this);
+        int rows = model.delete(this);
+        model.deleted(rows);
+        return rows;
     }
 
     @Override
     public int forceDelete() throws SQLRuntimeException {
-        return updateSql(SqlType.DELETE);
+        // 事件
+        model.deleting(this);
+        int rows = updateSql(SqlType.DELETE);
+        model.deleted(rows);
+        return rows;
     }
 
     @Override
     public K insertGetId() throws SQLRuntimeException {
+        // 事件
+        model.creating(this);
         Grammar.SQLPartInfo sqlPartInfo = toSQLPartInfo(SqlType.INSERT);
         assert sqlPartInfo.getParameters() != null;
-        return executeGetId(sqlPartInfo.getSqlString(), sqlPartInfo.getParameters());
+        K id = executeGetId(sqlPartInfo.getSqlString(), sqlPartInfo.getParameters());
+        if (id != null) {
+            model.created(id);
+        }
+        return id;
     }
 
     @Override
     public List<K> insertGetIds() throws SQLRuntimeException {
+        // 事件
+        model.creating(this);
         Grammar.SQLPartInfo sqlPartInfo = toSQLPartInfo(SqlType.INSERT);
         assert sqlPartInfo.getParameters() != null;
-        return executeGetIds(sqlPartInfo.getSqlString(), sqlPartInfo.getParameters());
+        List<K> ids = executeGetIds(sqlPartInfo.getSqlString(), sqlPartInfo.getParameters());
+        model.created(ids);
+        return ids;
     }
 
     @Override
     public Record<T, K> firstOrFail() throws SQLRuntimeException, EntityNotFoundException {
         limit(1);
-        // sql组装执行
+        // 事件
+        model.retrieving(this);
+
         Grammar.SQLPartInfo sqlPartInfo = toSQLPartInfo(SqlType.SELECT);
         String sql = sqlPartInfo.getSqlString();
         Collection<Object> parameterList = sqlPartInfo.getParameters();
+        Record<T, K> record = queryOrFail(sql, parameterList);
 
-        return queryOrFail(sql, parameterList);
+        // 事件
+        model.retrieved(record);
+        return record;
     }
 
     @Override
     public RecordList<T, K> get() throws SQLRuntimeException {
+        // 事件
+        model.retrieving(this);
+
         // sql组装执行
         Grammar.SQLPartInfo sqlPartInfo = toSQLPartInfo(SqlType.SELECT);
         String sql = sqlPartInfo.getSqlString();
         Collection<Object> parameterList = sqlPartInfo.getParameters();
-        return queryList(sql, parameterList);
+        RecordList<T, K> records = queryList(sql, parameterList);
+
+        // 事件
+        model.retrieved(records);
+        return records;
     }
 
-    @Override
-    public void dealChunk(int num, ChunkFunctionalInterface<T, K> chunkFunctionalInterface) throws SQLRuntimeException {
-        int offset = 0;
-        boolean flag;
-        do {
-            Builder<T, K> cloneBuilder = clone();
-            cloneBuilder.limit(offset, num);
-            Grammar.SQLPartInfo sqlPartInfo = cloneBuilder.getGrammar().generateSql(SqlType.SELECT);
-            String sql = sqlPartInfo.getSqlString();
-            Collection<Object> parameterList = sqlPartInfo.getParameters();
-            RecordList<T, K> records = queryList(sql, parameterList);
-            flag = !records.isEmpty() && chunkFunctionalInterface.execute(records) && (records.size() == num);
-            offset += num;
-        } while (flag);
-    }
-
-    @Override
-    public void dealChunk(int num, String column, ChunkFunctionalInterface<T, K> chunkFunctionalInterface)
-        throws SQLRuntimeException {
-        boolean flag;
-        Object columnValue = null;
-        do {
-            Builder<T, K> cloneBuilder = clone();
-            cloneBuilder.whereIgnoreNull(column, ">", columnValue)
-                .firstOrderBy(builder -> builder.orderBy(column))
-                .limit(num);
-
-            Grammar.SQLPartInfo sqlPartInfo = cloneBuilder.getGrammar().generateSql(SqlType.SELECT);
-            String sql = sqlPartInfo.getSqlString();
-            Collection<Object> parameterList = sqlPartInfo.getParameters();
-            RecordList<T, K> records = queryList(sql, parameterList);
-            if (!records.isEmpty()) {
-                columnValue = records.last().getMetadataMap().get(column).getValue();
-            }
-            flag = !records.isEmpty() && chunkFunctionalInterface.execute(records) && (records.size() == num);
-        } while (flag);
-    }
 }

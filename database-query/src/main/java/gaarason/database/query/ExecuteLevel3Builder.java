@@ -3,9 +3,11 @@ package gaarason.database.query;
 import gaarason.database.appointment.EntityUseType;
 import gaarason.database.appointment.Paginate;
 import gaarason.database.contract.connection.GaarasonDataSource;
+import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.contract.function.ChunkFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.EntityNotFoundException;
@@ -186,15 +188,6 @@ public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T,
         return update();
     }
 
-    @Nullable
-    @Override
-    public Record<T, K> query(String sql, @Nullable Collection<?> parameters) throws SQLRuntimeException {
-        try {
-            return queryOrFail(sql, parameters);
-        } catch (EntityNotFoundException ignore) {
-            return null;
-        }
-    }
 
     @Nullable
     @Override
@@ -211,6 +204,37 @@ public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T,
     @Override
     public RecordList<T, K> queryList(String sql, Object... parameters) throws SQLRuntimeException {
         return queryList(sql, Arrays.asList(parameters));
+    }
+
+    @Override
+    public void dealChunk(int num, ChunkFunctionalInterface<T, K> chunkFunctionalInterface) throws SQLRuntimeException {
+        int offset = 0;
+        boolean flag;
+        do {
+            Builder<T, K> cloneBuilder = clone();
+            cloneBuilder.limit(offset, num);
+            RecordList<T, K> records = cloneBuilder.get();
+            flag = !records.isEmpty() && chunkFunctionalInterface.execute(records) && (records.size() == num);
+            offset += num;
+        } while (flag);
+    }
+
+    @Override
+    public void dealChunk(int num, String column, ChunkFunctionalInterface<T, K> chunkFunctionalInterface)
+        throws SQLRuntimeException {
+        boolean flag;
+        Object columnValue = null;
+        do {
+            Builder<T, K> cloneBuilder = clone();
+            cloneBuilder.whereIgnoreNull(column, ">", columnValue)
+                .firstOrderBy(builder -> builder.orderBy(column))
+                .limit(num);
+            RecordList<T, K> records = cloneBuilder.get();
+            if (!records.isEmpty()) {
+                columnValue = records.last().getMetadataMap().get(column).getValue();
+            }
+            flag = !records.isEmpty() && chunkFunctionalInterface.execute(records) && (records.size() == num);
+        } while (flag);
     }
 
     @Override

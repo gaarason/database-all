@@ -1,28 +1,22 @@
 package gaarason.database.query;
 
 import gaarason.database.appointment.FinalVariable;
-import gaarason.database.appointment.Paginate;
-import gaarason.database.appointment.SqlType;
-import gaarason.database.appointment.ValueWrapper;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
-import gaarason.database.contract.eloquent.Record;
-import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.contract.function.*;
+import gaarason.database.contract.function.ColumnFunctionalInterface;
+import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
+import gaarason.database.contract.function.TransactionFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.core.Container;
-import gaarason.database.exception.*;
+import gaarason.database.exception.AbnormalParameterException;
+import gaarason.database.exception.CloneNotSupportedRuntimeException;
+import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
-import gaarason.database.support.RecordFactory;
 import gaarason.database.util.ExceptionUtils;
-import gaarason.database.util.ObjectUtils;
-
-import java.io.Serializable;
-import java.sql.*;
-import java.util.*;
 
 /**
  * 基础查询构造器(sql生成器)
@@ -239,25 +233,6 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
         throw new AbnormalParameterException("The max attempts should not be less than 0.");
     }
 
-    /**
-     * 恢复软删除模型
-     * @return 受影响的行数
-     * @throws SQLRuntimeException sql异常
-     */
-    @Override
-    public int restore() throws SQLRuntimeException {
-        return model.restore(this);
-    }
-
-    /**
-     * 删除
-     * @return 受影响的行数
-     * @throws SQLRuntimeException sql异常
-     */
-    @Override
-    public int delete() throws SQLRuntimeException {
-        return model.delete(this);
-    }
 
     @Override
     @Nullable

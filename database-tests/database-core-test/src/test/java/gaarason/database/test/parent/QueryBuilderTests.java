@@ -2419,8 +2419,8 @@ abstract public class QueryBuilderTests extends BaseTests {
 
         List<String> e = new ArrayList<>();
         e.add("2");
-        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
-            .queryList("select * from student where sex=?", e);
+        RecordList<StudentModel.Entity, Integer> records = studentModel.nativeQueryList(
+            "select * from student where sex=?", e);
         Assert.assertEquals(records.size(), 4);
         Assert.assertEquals(records.get(0).toObject().getId().intValue(), 1);
 

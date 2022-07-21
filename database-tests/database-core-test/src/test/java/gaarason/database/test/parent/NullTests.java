@@ -57,7 +57,7 @@ abstract public class NullTests extends BaseTests {
             public Integer id;
         };
         List<NullTestModel.Entity> list2 = nullTestModel.newQuery().where(entitySon).get().toObjectList();
-        Assert.assertEquals(1, list2.size());
+        Assert.assertEquals(2, list2.size());
     }
 
     @Test

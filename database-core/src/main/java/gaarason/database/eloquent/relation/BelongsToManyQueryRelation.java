@@ -44,7 +44,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
     @Override
     public RecordList<?, ?> dealBatchPrepare(String sql1) {
-        return belongsToManyTemplate.relationModel.newQuery().queryList(sql1, new ArrayList<>());
+        return belongsToManyTemplate.relationModel.nativeQueryList(sql1, new ArrayList<>());
     }
 
     @Override

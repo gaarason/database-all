@@ -6,7 +6,6 @@ import gaarason.database.connection.GaarasonDataSourceBuilder;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.core.Container;
-import gaarason.database.eloquent.ModelBean;
 import gaarason.database.generator.element.field.Field;
 import gaarason.database.generator.element.field.MysqlFieldGenerator;
 import gaarason.database.generator.exception.GeneratorException;
@@ -701,7 +700,7 @@ public class Generator {
      */
     @SuppressWarnings("unchecked")
     private List<Map<String, Object>> showTables() {
-        return getModel().newQuery().queryList("show tables", new ArrayList<>()).toMapList();
+        return getModel().nativeQueryList("show tables", new ArrayList<>()).toMapList();
     }
 
     /**
@@ -714,8 +713,7 @@ public class Generator {
         List<String> parameters = new ArrayList<>();
         parameters.add(DBName());
         parameters.add(tableName);
-        return getModel().newQuery()
-            .queryList(
+        return getModel().nativeQueryList(
                 "select * from information_schema.`columns` where table_schema = ? and table_name = ? order by ordinal_position",
                 parameters)
             .toMapList();
@@ -827,7 +825,7 @@ public class Generator {
         return StringUtils.rtrim(outputDir, "/") + "/" + namespace2dir(namespace) + '/';
     }
 
-    public static class ToolModel extends ModelBean<ToolModel.Inner, Serializable> {
+    public static class ToolModel extends gaarason.database.eloquent.Model<ToolModel.Inner, Serializable> {
 
         protected static GaarasonDataSource gaarasonDataSource;
 

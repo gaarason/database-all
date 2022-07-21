@@ -51,7 +51,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
     @Override
     public RecordList<?, ?> dealBatch(String sql0, RecordList<?, ?> relationRecordList) {
-        return hasOneOrManyTemplate.sonModel.newQuery().queryList(sql0, new ArrayList<>());
+        return hasOneOrManyTemplate.sonModel.nativeQueryList(sql0, new ArrayList<>());
     }
 
     @Override

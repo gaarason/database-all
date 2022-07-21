@@ -18,7 +18,7 @@ import java.util.List;
 public interface Native<T, K> {
 
     /**
-     * 获取第一条数据, 数据为空时返回null
+     * 获取第一条数据, 数据为空时抛出异常
      * @param sql 查询语句
      * @param parameters 参数绑定列表
      * @return 数剧记录
@@ -29,7 +29,7 @@ public interface Native<T, K> {
         throws SQLRuntimeException, EntityNotFoundException;
 
     /**
-     * 获取第一条数据, 数据为空时返回null
+     * 获取第一条数据, 数据为空时抛出异常
      * @param sql 查询语句
      * @param parameters 参数绑定列表
      * @return 数剧记录
@@ -39,7 +39,7 @@ public interface Native<T, K> {
     Record<T, K> queryOrFail(String sql, Object... parameters) throws SQLRuntimeException, EntityNotFoundException;
 
     /**
-     * 获取第一条数据, 数据为空时抛出异常
+     * 获取第一条数据, 数据为空时返回null
      * @param sql 查询语句
      * @param parameters 参数绑定列表
      * @return 数剧记录
@@ -49,7 +49,7 @@ public interface Native<T, K> {
     Record<T, K> query(String sql, @Nullable Collection<?> parameters) throws SQLRuntimeException;
 
     /**
-     * 获取第一条数据, 数据为空时抛出异常
+     * 获取第一条数据, 数据为空时返回null
      * @param sql 查询语句
      * @param parameters 参数绑定列表
      * @return 数剧记录

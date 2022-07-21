@@ -49,7 +49,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
     @Override
     public RecordList<?, ?> dealBatch(String sql0, RecordList<?, ?> relationRecordList) {
-        return belongsToTemplate.parentModel.newQuery().queryList(sql0, new ArrayList<>());
+        return belongsToTemplate.parentModel.nativeQueryList(sql0, new ArrayList<>());
     }
 
     @Override
