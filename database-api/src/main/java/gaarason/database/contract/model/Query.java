@@ -72,7 +72,7 @@ public interface Query<T, K> {
      * @throws EntityNotFoundException 未找到对象
      * @throws SQLRuntimeException 数据库异常
      */
-    Record<T, K> findOrFail(Object id) throws EntityNotFoundException, SQLRuntimeException;
+    Record<T, K> findOrFail(@Nullable Object id) throws EntityNotFoundException, SQLRuntimeException;
 
     /**
      * 单个查询
@@ -80,7 +80,7 @@ public interface Query<T, K> {
      * @return 结果集
      */
     @Nullable
-    Record<T, K> find(Object id);
+    Record<T, K> find(@Nullable Object id);
 
     /**
      * 单个查询, 当查询不到数据时 构建结果集
@@ -130,11 +130,18 @@ public interface Query<T, K> {
     Record<T, K> findOrCreate(T conditionEntity, T complementEntity);
 
     /**
-     * ORM insert本条数据
+     * ORM insert 本条数据
      * @param entity 实体对象
      * @return 结果集
      */
     Record<T, K> create(T entity);
+
+    /**
+     * ORM update 本条数据
+     * @param entity 实体对象
+     * @return 结果集
+     */
+    Record<T, K> update(T entity);
 
     /**
      * 使用主键进行单个更新, 当查询不到数据时使用ORM insert本条数据

@@ -59,9 +59,9 @@ public interface Record<T, K> extends Friendly<T, K>, OperationLambda<T, K>,
     /**
      * 数据实体(将外部实体的属性合并到自身)
      * @param entity 实体对象
-     * @return 数据实体
+     * @return 查询结果集
      */
-    T fillEntity(T entity);
+    Record<T, K> fillEntity(T entity);
 
     /**
      * 主键值

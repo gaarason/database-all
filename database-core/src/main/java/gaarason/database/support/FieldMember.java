@@ -7,6 +7,7 @@ import gaarason.database.appointment.ValueWrapper;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.support.FieldFill;
 import gaarason.database.core.Container;
+import gaarason.database.exception.FieldInvalidException;
 import gaarason.database.exception.IllegalAccessRuntimeException;
 import gaarason.database.lang.Nullable;
 import gaarason.database.util.ObjectUtils;
@@ -106,6 +107,10 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
      * @return 是否有效
      */
     public boolean effective(@Nullable Object originalValue, EntityUseType type) {
+        // 非数据库字段, 则无效
+        if (!column.inDatabase()) {
+            return false;
+        }
         // 当前策略
         FieldStrategy fieldStrategy;
         switch (type) {
@@ -120,7 +125,7 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
                 break;
         }
         // 当策略是DEFAULT时, 取用 strategy
-        if(fieldStrategy.equals(FieldStrategy.DEFAULT)){
+        if (fieldStrategy.equals(FieldStrategy.DEFAULT)) {
             fieldStrategy = column.strategy();
         }
         switch (fieldStrategy) {
@@ -161,6 +166,22 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
     }
 
     /**
+     * 获取属性的值
+     * @param obj 对象
+     * @param type 实体的使用目的
+     * @return 值
+     * @throws FieldInvalidException 无效字段
+     */
+    @Nullable
+    public Object fieldGetOrFail(Object obj, EntityUseType type) throws FieldInvalidException {
+        Object value = fieldGet(obj);
+        if (!effective(value, type)) {
+            throw new FieldInvalidException();
+        }
+        return value;
+    }
+
+    /**
      * 设置属性的值
      * @param obj 对象
      * @param value 值
@@ -171,6 +192,33 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
             getField().set(obj, value);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessRuntimeException(e);
+        }
+    }
+
+    /**
+     * 设置属性的值
+     * @param obj 对象
+     * @param value 值
+     * @param type 实体的使用目的
+     * @throws FieldInvalidException 无效字段
+     */
+    public void fieldSetOrFail(Object obj, @Nullable Object value, EntityUseType type) throws FieldInvalidException {
+        if (!effective(value, type)) {
+            throw new FieldInvalidException();
+        }
+        fieldSet(obj, value);
+    }
+
+    /**
+     * 设置属性的值
+     * @param obj 对象
+     * @param value 值
+     * @param type 实体的使用目的
+     * @throws FieldInvalidException 无效字段
+     */
+    public void fieldSet(Object obj, @Nullable Object value, EntityUseType type) {
+        if (effective(value, type)) {
+            fieldSet(obj, value);
         }
     }
 

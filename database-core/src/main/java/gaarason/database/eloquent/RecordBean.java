@@ -11,6 +11,7 @@ import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.eloquent.record.BindBean;
 import gaarason.database.exception.EntityAttributeInvalidException;
+import gaarason.database.exception.FieldInvalidException;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.RelationNotFoundException;
 import gaarason.database.lang.Nullable;
@@ -152,10 +153,10 @@ public class RecordBean<T, K> implements Record<T, K> {
     }
 
     @Override
-    public T fillEntity(T entity) {
+    public Record<T, K> fillEntity(T entity) {
         // 合并属性
         EntityUtils.entityMergeReference(this.entity, entity);
-        return this.entity;
+        return this;
     }
 
     @Override
@@ -331,6 +332,32 @@ public class RecordBean<T, K> implements Record<T, K> {
         }
         // 执行
         boolean success = hasBind ? update() : insert();
+        // aop通知
+        model.saved(this);
+        // 响应
+        return success;
+    }
+
+    @Override
+    public boolean saveByPrimaryKey() {
+        // aop阻止
+        if (!model.saving(this)) {
+            return false;
+        }
+        boolean success;
+        // 兼容主键为nul, 且有效的情况
+        try {
+            // 实体中的主键
+            Object primaryKeyValue = modelShadow.parseAnyEntityWithCache(entityClass)
+                .getPrimaryKeyMemberOrFail()
+                .getFieldMember()
+                .fieldGetOrFail(entity, EntityUseType.CONDITION);
+
+            success = updateByPrimaryKey(primaryKeyValue);
+        } catch (FieldInvalidException e) {
+            success = insert();
+        }
+
         // aop通知
         model.saved(this);
         // 响应
@@ -528,14 +555,24 @@ public class RecordBean<T, K> implements Record<T, K> {
         if (originalPrimaryKeyValue == null) {
             throw new PrimaryKeyNotFoundException();
         }
+
+        return updateByPrimaryKey(originalPrimaryKeyValue);
+    }
+
+    /**
+     * 更新
+     * 事件使用 updating updated
+     * @param primaryKeyValue 主键值
+     * @return 执行成功
+     */
+    protected boolean updateByPrimaryKey(@Nullable Object primaryKeyValue) {
         // 阻止
         if (!model.updating(this)) {
             return false;
         }
         // 执行
         boolean success =
-            model.newQuery().where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString()).update(entity) >
-                0;
+            model.newQuery().where(model.getPrimaryKeyColumnName(), primaryKeyValue).update(entity) > 0;
         // 成功更新后,刷新自身属性
         if (success) {
             selfUpdate(entity, false);
@@ -562,8 +599,7 @@ public class RecordBean<T, K> implements Record<T, K> {
         // 没有手动赋值主键时
         if (primaryKeyMember.getFieldMember().fieldGet(entity) == null) {
             // 当 IdGenerator 是 IdGenerator.Never.class 类型时，将其执行 nextId() 将返回 null,
-            // 生成后赋值 ModelShadowProvider.setPrimaryKeyValue 将忽略 null 的赋值
-            primaryKeyMember.getFieldMember().fieldSet(entity, primaryKeyMember.getIdGenerator().nextId());
+            primaryKeyMember.getFieldMember().fieldSet(entity, primaryKeyMember.getIdGenerator().nextId(), EntityUseType.INSERT);
         }
     }
 

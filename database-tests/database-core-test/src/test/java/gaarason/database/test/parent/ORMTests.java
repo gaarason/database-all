@@ -5,6 +5,7 @@ import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.exception.RelationAttachException;
+import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.test.models.normal.StudentORMModel;
 import gaarason.database.test.models.relation.model.RelationshipStudentTeacherModel;
 import gaarason.database.test.models.relation.model.StudentModel;
@@ -87,6 +88,25 @@ abstract public class ORMTests extends BaseTests {
 
         Byte age2 = studentORMModel.newQuery().where("id", "9").firstOrFail().toObject().getAge();
         Assert.assertNotEquals(age2, Byte.valueOf("121"));
+    }
+
+    @Test
+    public void ORM更新_saveByPrimaryKey(){
+        StudentORMModel.Entity entity0 = studentORMModel.findOrFail(8).toObject();
+        entity0.setName("ddddd");
+        // 主键冲突
+        Assert.assertThrows(SQLRuntimeException.class , ()->{
+            studentORMModel.newRecord().fillEntity(entity0).save();
+        });
+
+
+        StudentORMModel.Entity entity = studentORMModel.findOrFail(8).toObject();
+        entity.setName("ddddd");
+        // 按entity中的主键存在就更新
+        studentORMModel.newRecord().fillEntity(entity).saveByPrimaryKey();
+
+        StudentORMModel.Entity check = studentORMModel.findOrFail(8).toObject();
+        Assert.assertEquals("ddddd", check.getName());
     }
 
     @Test

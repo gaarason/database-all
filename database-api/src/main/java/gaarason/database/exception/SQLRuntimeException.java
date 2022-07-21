@@ -6,6 +6,7 @@ import java.util.Collection;
 
 /**
  * sql异常
+ * @see java.sql.SQLIntegrityConstraintViolationException SQL完整性约束冲突异常(foreign key, primary key or unique key)
  * @author xt
  */
 public class SQLRuntimeException extends BaseException {

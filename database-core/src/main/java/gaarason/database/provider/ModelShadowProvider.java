@@ -376,18 +376,11 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @throws IllegalAccessRuntimeException 反射赋值异常
      */
     @Nullable
-    public <T, K> K getPrimaryKeyValue(T anyEntity) {
-        // 属性信息集合
-        EntityMember<?> entityMember = parseAnyEntityWithCache(anyEntity.getClass());
-
-        PrimaryKeyMember primaryKeyMember = entityMember.getPrimaryKeyMember();
-        if (null != primaryKeyMember) {
-            Object value = primaryKeyMember.getFieldMember().fieldGet(anyEntity);
-            if (value != null) {
-                return ObjectUtils.typeCast(value);
-            }
-        }
-        return null;
+    public <T, K> K getPrimaryKeyValue(T anyEntity, EntityUseType type) {
+        Object primaryKeyValue = parseAnyEntityWithCache(anyEntity.getClass())
+            .getPrimaryKeyMemberOrFail().getFieldMember()
+            .fieldGetOrFail(anyEntity, type);
+        return primaryKeyValue == null ? null : ObjectUtils.typeCast(primaryKeyValue);
     }
 
     /**

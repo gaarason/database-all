@@ -1,5 +1,6 @@
 package gaarason.database.eloquent;
 
+import gaarason.database.appointment.EntityUseType;
 import gaarason.database.appointment.ValueWrapper;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
@@ -90,13 +91,13 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
     }
 
     @Override
-    public Record<T, K> findOrFail(Object id) throws EntityNotFoundException, SQLRuntimeException {
+    public Record<T, K> findOrFail(@Nullable Object id) throws EntityNotFoundException, SQLRuntimeException {
         return newQuery().where(getPrimaryKeyColumnName(), id).firstOrFail();
     }
 
     @Override
     @Nullable
-    public Record<T, K> find(Object id) {
+    public Record<T, K> find(@Nullable Object id) {
         return newQuery().where(getPrimaryKeyColumnName(), id).first();
     }
 
@@ -116,13 +117,13 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
     @Override
     public Record<T, K> findByPrimaryKeyOrNew(T entity) {
         // 获取 entity 中的主键的值
-        final Serializable primaryKeyValue = getModelShadow().getPrimaryKeyValue(entity);
-        if (primaryKeyValue == null) {
-            throw new PrimaryKeyNotFoundException();
-        }
+
+        final Object primaryKeyValue = getModelShadow().parseAnyEntityWithCache(entity.getClass())
+            .getPrimaryKeyMemberOrFail().getFieldMember()
+            .fieldGetOrFail(entity, EntityUseType.CONDITION);
 
         // 查询是否存在满足条件的一条记录
-        final Record<T, K> first = find(ObjectUtils.typeCast(primaryKeyValue));
+        final Record<T, K> first = find(primaryKeyValue);
         if (first != null) {
             return first;
         }
@@ -189,14 +190,17 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
     }
 
     @Override
+    public Record<T, K> update(T entity) {
+        final Record<T, K> theRecord = newRecord();
+        theRecord.fillEntity(entity).saveByPrimaryKey();
+        return theRecord;
+    }
+
+    @Override
     public Record<T, K> updateByPrimaryKeyOrCreate(T entity) {
         // 获取 entity 中的主键的值
-        final Serializable primaryKeyValue = getModelShadow().getPrimaryKeyValue(entity);
-        if (primaryKeyValue == null) {
-            throw new PrimaryKeyNotFoundException();
-        }
-
-        final Record<T, K> first = find(ObjectUtils.typeCast(primaryKeyValue));
+        final Object primaryKeyValue = getModelShadow().getPrimaryKeyValue(entity, EntityUseType.CONDITION);
+        final Record<T, K> first = find(primaryKeyValue);
         final Record<T, K> theRecord = first != null ? first : this.newRecord();
         theRecord.fillEntity(entity);
         theRecord.save();

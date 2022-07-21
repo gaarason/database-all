@@ -17,9 +17,22 @@ public interface Operation<T, K> {
      * 新增或者更新
      * 新增情况下: saving -> creating -> created -> saved
      * 更新情况下: saving -> updating -> updated -> saved
+     * 注 1 : 新增或者更新, 以当前是否已经存在绑定的数据为依据,
+     * 并非以当前的 entity 中是否存在主键,
+     * 因为这样的话, 就无法实现更新主键的功能了.
+     * 如果是 希望以 entity 中是否存在主键在进行更新或者新增, 那么可以使用saveByKey()
      * @return 执行成功
      */
     boolean save();
+
+    /**
+     * 新增或者更新
+     * 新增情况下: saving -> creating -> created -> saved
+     * 更新情况下: saving -> updating -> updated -> saved
+     * 注 1 : 新增或者更新, 以当前的 entity 中是否存在主键
+     * @return 执行成功
+     */
+    boolean saveByPrimaryKey();
 
     /**
      * 删除
@@ -44,14 +57,14 @@ public interface Operation<T, K> {
     boolean restore(boolean refresh);
 
     /**
-     * 刷新(重新从数据库获取)
+     * 刷新(重新从数据库查询获取)
      * retrieved
      * @return 执行成功
      */
     Record<T, K> refresh();
 
     /**
-     * 刷新(重新从数据获取)
+     * 刷新(重新从指定数据获取)
      * retrieved
      * @param metadataMap 使用的元数据
      * @return 执行成功

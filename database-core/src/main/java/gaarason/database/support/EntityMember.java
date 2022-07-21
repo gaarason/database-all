@@ -7,6 +7,7 @@ import gaarason.database.appointment.ValueWrapper;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.core.Container;
 import gaarason.database.exception.EntityAttributeInvalidException;
+import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.RelationNotFoundException;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
@@ -326,6 +327,18 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
             }
         }
         return isNotStatic && isNotBasicType && hasRelationAnnotation;
+    }
+
+    /**
+     * 获取主键信息
+     * @return 主键信息
+     * @throws PrimaryKeyNotFoundException 主键信息未知
+     */
+    public PrimaryKeyMember getPrimaryKeyMemberOrFail() throws PrimaryKeyNotFoundException {
+        if(primaryKeyMember == null){
+            throw new PrimaryKeyNotFoundException();
+        }
+        return primaryKeyMember;
     }
 
     // ---------------------------- simple getter ---------------------------- //
