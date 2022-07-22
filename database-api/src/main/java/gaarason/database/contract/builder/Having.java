@@ -74,10 +74,10 @@ public interface Having<T, K> {
 
     /**
      * 将对象的属性转化为, 列与值相等的查询条件
-     * @param entity 实体对象
+     * @param anyEntity 实体对象
      * @return 查询构造器
      */
-    Builder<T, K> having(T entity);
+    Builder<T, K> having(Object anyEntity);
 
     /**
      * 列与值相等的查询条件
@@ -147,10 +147,10 @@ public interface Having<T, K> {
 
     /**
      * 将对象的属性转化为, "列like值" 的查询条件, 其中值需要自行包含 % 符号 (忽略entity中，值为null的情况)
-     * @param entity 实体对象
+     * @param anyEntity 实体对象
      * @return 查询构造器
      */
-    Builder<T, K> havingLike(@Nullable T entity);
+    Builder<T, K> havingLike(@Nullable Object anyEntity);
 
     /**
      * "列like值" 的查询条件, 其中值需要自行包含 % 符号, (忽略MAP中，值为null的情况)
@@ -184,13 +184,12 @@ public interface Having<T, K> {
     /**
      * 选择可能的条件类型
      * 当 value 以 %开头或者结尾时, 使用like查询
-     * 当 value 为 null 时, 当 @Column中的nullable=true ,使用 is null 查询
-     * 当 value 为 null 时, 当 @Column中的nullable=false, 忽略
+     * 当 value 为 null 时 ,使用 is null 查询
      * 其他情况下, 使用 = 查询
-     * @param entity 实体对象
+     * @param anyEntity 实体对象
      * @return 查询构造器
      */
-    Builder<T, K> havingMayLike(@Nullable T entity);
+    Builder<T, K> havingMayLike(@Nullable Object anyEntity);
 
     /**
      * 选择可能的条件类型

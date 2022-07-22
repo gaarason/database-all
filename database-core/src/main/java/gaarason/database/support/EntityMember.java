@@ -18,10 +18,7 @@ import gaarason.database.util.ObjectUtils;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiFunction;
 
 /**
@@ -49,6 +46,12 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
      * `属性名`对应的`关系`字段数组
      */
     private final Map<String, FieldRelationMember> relationFieldMap = new LinkedHashMap<>();
+
+    /**
+     * 可查询的`数据库字段`数组
+     */
+    private final List<String> selectColumnList = new LinkedList<>();
+
     /**
      * 主键信息
      */
@@ -123,8 +126,10 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
         return fieldRelationMember;
     }
 
+
     /**
      * 将实体对象中有效的数据库字段, 转化为简单Map
+     * 根据字段上的注解对字段进行填充 (可能会改变原对象)
      * @param entity 实体对象
      * @param type 实体的使用目的
      * @return 简单Map
@@ -139,6 +144,7 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
 
     /**
      * 将实体对象中有效的数据库字段, 转化为包装Map
+     * 根据字段上的注解对字段进行填充 (可能会改变原对象)
      * @param entity 实体对象
      * @param type 实体的使用目的
      * @return 简单Map
@@ -149,6 +155,7 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
 
     /**
      * 将实体对象中有效的数据库字段, 转化为指定Map
+     * 根据字段上的注解对字段进行填充 (可能会改变原对象)
      * @param entity 实体对象
      * @param type 实体的使用目的
      * @param function 结果转化方式
@@ -169,10 +176,12 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
             FieldMember fieldMember = entry.getValue();
             // 值
             Object value = fieldMember.fieldGet(entity);
-            // 填充
+            // 调用填充
             value = fieldMember.fill(entity, value, type);
             // 有效则加入 结果集
             if (fieldMember.effective(value, type)) {
+                // 回填
+                fieldMember.fieldSet(entity, value);
                 // 包装下
                 columnValueMap.put(entry.getKey(), function.apply(fieldMember, value));
             }
@@ -181,7 +190,7 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
     }
 
     /**
-     * 延迟载入关联关系
+     * 延迟获取关联关系
      * @return 关联关系map
      */
     public Map<String, FieldRelationMember> getRelationFieldMap() {
@@ -260,6 +269,9 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
 
             // 数据库字段名 索引键入
             dealColumnMap(fieldMember);
+
+            // 可查询的数据库字段
+            dealSelectColumnList(fieldMember);
         }
     }
 
@@ -278,6 +290,16 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
     private void dealColumnMap(FieldMember fieldMember) {
         if (fieldMember.getColumn().inDatabase()) {
             columnFieldMap.put(fieldMember.getColumnName(), fieldMember);
+        }
+    }
+
+    /**
+     * 可查询的`数据库字段`数组
+     * @param fieldMember 数据库字段信息
+     */
+    private void dealSelectColumnList(FieldMember fieldMember) {
+        if (fieldMember.getColumn().inDatabase() && fieldMember.getColumn().selectable()) {
+            selectColumnList.add(fieldMember.getColumnName());
         }
     }
 
@@ -363,4 +385,9 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
     public Map<String, FieldMember> getColumnFieldMap() {
         return columnFieldMap;
     }
+
+    public List<String> getSelectColumnList() {
+        return selectColumnList;
+    }
+
 }

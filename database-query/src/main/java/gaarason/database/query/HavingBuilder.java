@@ -82,8 +82,8 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> having(T entity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity, EntityUseType.CONDITION);
+    public Builder<T, K> having(Object anyEntity) {
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity, EntityUseType.CONDITION);
         return having(columnValueMap);
     }
 
@@ -123,13 +123,12 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
 
     @Override
     public Builder<T, K> havingKeywordsIgnoreNull(@Nullable Object value, Collection<String> columns) {
-        andHavingIgnoreEmpty(builder -> {
+        return andHavingIgnoreEmpty(builder -> {
             for (String column : columns) {
                 builder.orHavingIgnoreEmpty(builderInner -> builderInner.havingMayLikeIgnoreNull(column, value));
             }
             return builder;
         });
-        return this;
     }
 
     @Override
@@ -143,8 +142,8 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingLike(@Nullable T entity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity, EntityUseType.CONDITION);
+    public Builder<T, K> havingLike(@Nullable Object anyEntity) {
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity, EntityUseType.CONDITION);
         return havingLike(columnValueMap);
     }
 
@@ -178,8 +177,8 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingMayLike(@Nullable T entity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity, EntityUseType.CONDITION);
+    public Builder<T, K> havingMayLike(@Nullable Object anyEntity) {
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity, EntityUseType.CONDITION);
         return havingMayLike(columnValueMap);
     }
 

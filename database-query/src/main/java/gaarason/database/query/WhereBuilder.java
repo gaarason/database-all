@@ -82,8 +82,8 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> where(Object entity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity, EntityUseType.CONDITION);
+    public Builder<T, K> where(Object anyEntity) {
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity, EntityUseType.CONDITION);
         return where(columnValueMap);
     }
 
@@ -123,13 +123,12 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
 
     @Override
     public Builder<T, K> whereKeywordsIgnoreNull(@Nullable Object value, Collection<String> columns) {
-        andWhereIgnoreEmpty(builder -> {
+        return andWhereIgnoreEmpty(builder -> {
             for (String column : columns) {
                 builder.orWhereIgnoreEmpty(builderInner -> builderInner.whereMayLikeIgnoreNull(column, value));
             }
             return builder;
         });
-        return this;
     }
 
     @Override
@@ -143,8 +142,8 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereLike(@Nullable T entity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity, EntityUseType.CONDITION);
+    public Builder<T, K> whereLike(@Nullable Object anyEntity) {
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity, EntityUseType.CONDITION);
         return whereLike(columnValueMap);
     }
 
@@ -178,8 +177,8 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereMayLike(@Nullable T entity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMap(entity, EntityUseType.CONDITION);
+    public Builder<T, K> whereMayLike(@Nullable Object anyEntity) {
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity, EntityUseType.CONDITION);
         return whereMayLike(columnValueMap);
     }
 

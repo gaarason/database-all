@@ -82,29 +82,29 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
 
     @Override
     public RecordList<T, K> findMany(Collection<Object> ids) throws SQLRuntimeException {
-        return newQuery().whereIn(getPrimaryKeyColumnName(), ids).get();
+        return newQuery().select(getEntityClass()).whereIn(getPrimaryKeyColumnName(), ids).get();
     }
 
     @Override
     public RecordList<T, K> findMany(Object... ids) throws SQLRuntimeException {
-        return newQuery().whereIn(getPrimaryKeyColumnName(), new HashSet<>(Arrays.asList(ids))).get();
+        return newQuery().select(getEntityClass()).whereIn(getPrimaryKeyColumnName(), new HashSet<>(Arrays.asList(ids))).get();
     }
 
     @Override
     public Record<T, K> findOrFail(@Nullable Object id) throws EntityNotFoundException, SQLRuntimeException {
-        return newQuery().where(getPrimaryKeyColumnName(), id).firstOrFail();
+        return newQuery().select(getEntityClass()).where(getPrimaryKeyColumnName(), id).firstOrFail();
     }
 
     @Override
     @Nullable
     public Record<T, K> find(@Nullable Object id) {
-        return newQuery().where(getPrimaryKeyColumnName(), id).first();
+        return newQuery().select(getEntityClass()).where(getPrimaryKeyColumnName(), id).first();
     }
 
     @Override
     public Record<T, K> findOrNew(T entity) {
         // 查询是否存在满足条件的一条记录
-        final Record<T, K> first = newQuery().where(entity).first();
+        final Record<T, K> first = newQuery().select(getEntityClass()).where(entity).first();
         if (first != null) {
             return first;
         }
@@ -158,7 +158,7 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
     @Override
     public Record<T, K> findOrNew(T conditionEntity, T complementEntity) {
         // 查询是否存在满足条件的一条记录
-        final Record<T, K> first = newQuery().where(conditionEntity).first();
+        final Record<T, K> first = newQuery().select(getEntityClass()).where(conditionEntity).first();
         if (first != null) {
             return first;
         }
@@ -210,7 +210,7 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
     @Override
     public Record<T, K> updateOrCreate(T conditionEntity, T complementEntity) {
         // 查询是否存在满足条件的一条记录
-        final Record<T, K> first = newQuery().where(conditionEntity).first();
+        final Record<T, K> first = newQuery().select(getEntityClass()).where(conditionEntity).first();
         if (first != null) {
             // 更新
             first.fillEntity(complementEntity);

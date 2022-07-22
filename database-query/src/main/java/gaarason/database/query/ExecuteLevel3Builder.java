@@ -174,7 +174,7 @@ public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T,
     @Override
     public int update(T entity) throws SQLRuntimeException {
         // 获取entity所有有效字段对其值得映射
-        Map<String, Object> stringStringMap = modelShadowProvider.columnValueMap(entity, EntityUseType.UPDATE);
+        Map<String, Object> stringStringMap = modelShadowProvider.columnValueMapAfterFill(entity, EntityUseType.UPDATE);
 
         data(stringStringMap);
         // 执行

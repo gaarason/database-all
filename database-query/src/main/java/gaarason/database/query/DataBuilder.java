@@ -1,5 +1,6 @@
 package gaarason.database.query;
 
+import gaarason.database.appointment.EntityUseType;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
@@ -46,6 +47,12 @@ public abstract class DataBuilder<T, K> extends ExecuteLevel3Builder<T, K> {
     @Override
     public Builder<T, K> dataIgnoreNull(String column, @Nullable Object value) {
         return ObjectUtils.isNull(value) ? this : data(column, value);
+    }
+
+    @Override
+    public Builder<T, K> data(Object anyEntity) {
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity, EntityUseType.UPDATE);
+        return data(columnValueMap);
     }
 
     @Override

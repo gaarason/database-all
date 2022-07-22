@@ -250,12 +250,13 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
 
     /**
      * 通过entity解析对应的字段和值组成的map, 忽略不符合规则的字段
+     * 会根据字段上的注解对字段进行填充 (可能会改变原对象)
      * @param anyEntity 数据表实体对象
      * @param type 实体的使用目的
      * @param <T> 数据表实体类
      * @return 字段对值的映射
      */
-    public <T> Map<String, Object> columnValueMap(@Nullable T anyEntity, EntityUseType type) {
+    public <T> Map<String, Object> columnValueMapAfterFill(@Nullable T anyEntity, EntityUseType type) {
         if (ObjectUtils.isNull(anyEntity)) {
             return Collections.emptyMap();
         }
@@ -275,7 +276,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
         if (ObjectUtils.isNull(anyEntity)) {
             return Collections.emptySet();
         }
-        return columnValueMap(anyEntity, type).keySet();
+        return columnValueMapAfterFill(anyEntity, type).keySet();
     }
 
     /**

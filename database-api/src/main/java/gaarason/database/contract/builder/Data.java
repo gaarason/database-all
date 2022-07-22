@@ -38,6 +38,13 @@ public interface Data<T, K> {
 
     /**
      * 数据更新
+     * @param anyEntity 任意实体对象
+     * @return 查询构造器
+     */
+    Builder<T, K> data(Object anyEntity);
+
+    /**
+     * 数据更新
      * @param map Map<String column, String value>
      * @return 查询构造器
      */

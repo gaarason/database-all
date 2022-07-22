@@ -45,6 +45,20 @@ public interface Select<T, K> {
 
     /**
      * 查询字段
+     * @param anyEntity 任意实体对象
+     * @return 查询构造器
+     */
+    Builder<T, K> select(Object anyEntity);
+
+    /**
+     * 查询字段
+     * @param anyEntityClass 任意实体类
+     * @return 查询构造器
+     */
+    Builder<T, K> select(Class<?> anyEntityClass);
+
+    /**
+     * 查询字段
      * @param columnList 列名列表
      * @return 查询构造器
      */

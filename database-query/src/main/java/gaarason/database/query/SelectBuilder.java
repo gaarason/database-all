@@ -59,6 +59,16 @@ public abstract class SelectBuilder<T, K> extends OrderBuilder<T, K> {
     }
 
     @Override
+    public Builder<T, K> select(Object anyEntity) {
+        return select(anyEntity.getClass());
+    }
+
+    @Override
+    public Builder<T, K> select(Class<?> anyEntityClass) {
+        return select(modelShadowProvider.parseAnyEntityWithCache(anyEntityClass).getSelectColumnList());
+    }
+
+    @Override
     public Builder<T, K> select(Collection<String> columnList) {
         for (String column : columnList) {
             select(column);
