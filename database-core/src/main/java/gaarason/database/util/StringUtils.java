@@ -19,9 +19,8 @@ public class StringUtils {
         "return", "switch", "transient", "assert", "catch", "default", "extends", "goto", "int", "package", "short",
         "synchronized", "try", "boolean", "char", "do", "final", "if", "interface", "private", "static", "this", "void",
         "break", "class", "double", "finally", "implements", "long", "protected", "strictfp", "throw", "volatile",
-        "byte",
-        "const", "else", "float", "import", "native", "public", "super", "throws", "while", "byValue", "cast", "false",
-        "future", "generic", "inner", "null", "operator", "outer", "rest", "true", "var"};
+        "byte", "const", "else", "float", "import", "native", "public", "super", "throws", "while", "byValue", "cast",
+        "false", "future", "generic", "inner", "null", "operator", "outer", "rest", "true", "var"};
     private static final Pattern LINE_PATTERN = Pattern.compile("_(\\w)");
     private static final Pattern HUMP_PATTERN = Pattern.compile("[A-Z]");
 
@@ -124,8 +123,8 @@ public class StringUtils {
         if ("".equals(str) || str.length() < length) {
             return str;
         }
-        return str.substring(str.length() - length).equals(character) ? rtrim(str.substring(0, str.length() - length),
-            character) : str;
+        return str.substring(str.length() - length).equals(character) ?
+            rtrim(str.substring(0, str.length() - length), character) : str;
     }
 
     /**
@@ -241,6 +240,20 @@ public class StringUtils {
             r.append(parentStr).append('=').append(object).append('&');
         }
         return r.toString();
+    }
+
+    /**
+     * 值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
+     * @param value 原值
+     * @return 一定包含%的值
+     */
+    public static String sqlPathLike(Object value) {
+        String str = String.valueOf(value);
+        if (str.startsWith("%") || str.endsWith("%")) {
+            return str;
+        } else {
+            return "%" + str + "%";
+        }
     }
 
 }

@@ -902,6 +902,12 @@ abstract public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 条件_Between() {
+        List<StudentModel.Entity> entityList0 = studentModel.newQuery()
+            .whereBetweenRaw("id + age", 10, 20)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(4, entityList0.size());
+
         List<StudentModel.Entity> entityList1 = studentModel.newQuery()
             .whereBetween("id", "3", "5")
             .get()
@@ -1030,11 +1036,11 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(5, entityList1.size());
 
         List<StudentModel.Entity> entityList2 = studentModel.newQuery()
-            .whereLike("name", "小")
+            .whereLike("name", "小") // 自动拼成 "%小%"
             .whereLike("name", null)
             .get()
             .toObjectList();
-        Assert.assertEquals(0, entityList2.size());
+        Assert.assertEquals(5, entityList2.size());
 
         Map<String, Object> likeMap = new HashMap<>();
         likeMap.put("name", "%卡");
@@ -1067,11 +1073,11 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(5, entityList1.size());
 
         List<StudentModel.Entity> entityList2 = studentModel.newQuery()
-            .havingLike("name", "小")
+            .havingLike("name", "小")// 自动拼成 "%小%"
             .havingLike("name", null)
             .get()
             .toObjectList();
-        Assert.assertEquals(0, entityList2.size());
+        Assert.assertEquals(5, entityList2.size());
 
         Map<String, Object> likeMap = new HashMap<>();
         likeMap.put("name", "%卡");

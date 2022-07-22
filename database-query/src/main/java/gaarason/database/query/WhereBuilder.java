@@ -9,6 +9,7 @@ import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
+import gaarason.database.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,7 +84,8 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
 
     @Override
     public Builder<T, K> where(Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity, EntityUseType.CONDITION);
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity,
+            EntityUseType.CONDITION);
         return where(columnValueMap);
     }
 
@@ -96,8 +98,50 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
+    public Builder<T, K> whereFind(@Nullable Map<String, Object> map) {
+        if (!ObjectUtils.isEmpty(map)) {
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                String column = entry.getKey();
+                Object value = entry.getValue();
+                if (value instanceof Collection) {
+                    whereInIgnoreEmpty(column, (Collection<?>) value);
+                } else if (value instanceof Map) {
+                    Map<?, ?> betweenMap = (Map<?, ?>) value;
+                    if (betweenMap.containsKey("begin") && betweenMap.containsKey("end")) {
+                        whereBetween(column, betweenMap.get("begin"), betweenMap.get("end"));
+                    }
+                } else {
+                    whereMayLike(column, value);
+                }
+            }
+        }
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> whereNotFind(@Nullable Map<String, Object> map) {
+        if (!ObjectUtils.isEmpty(map)) {
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                String column = entry.getKey();
+                Object value = entry.getValue();
+                if (value instanceof Collection) {
+                    whereNotInIgnoreEmpty(column, (Collection<?>) value);
+                } else if (value instanceof Map) {
+                    Map<?, ?> betweenMap = (Map<?, ?>) value;
+                    if (betweenMap.containsKey("begin") && betweenMap.containsKey("end")) {
+                        whereNotBetween(column, betweenMap.get("begin"), betweenMap.get("end"));
+                    }
+                } else {
+                    whereMayNotLike(column, value);
+                }
+            }
+        }
+        return this;
+    }
+
+    @Override
     public Builder<T, K> whereIgnoreNull(@Nullable Map<String, Object> map) {
-        if (!ObjectUtils.isNull(map)) {
+        if (!ObjectUtils.isEmpty(map)) {
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 whereIgnoreNull(entry.getKey(), entry.getValue());
             }
@@ -138,12 +182,16 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
 
     @Override
     public Builder<T, K> whereLike(String column, @Nullable Object value) {
-        return whereIgnoreNull(column, "like", value);
+        if (ObjectUtils.isEmpty(value) || ObjectUtils.isEmpty(String.valueOf(value).replace("%", ""))) {
+            return this;
+        }
+        return whereIgnoreNull(column, "like", StringUtils.sqlPathLike(value));
     }
 
     @Override
     public Builder<T, K> whereLike(@Nullable Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity, EntityUseType.CONDITION);
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity,
+            EntityUseType.CONDITION);
         return whereLike(columnValueMap);
     }
 
@@ -159,12 +207,48 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
+    public Builder<T, K> whereNotLike(String column, @Nullable Object value) {
+        if (ObjectUtils.isEmpty(value) || ObjectUtils.isEmpty(String.valueOf(value).replace("%", ""))) {
+            return this;
+        }
+        return whereIgnoreNull(column, "not like", StringUtils.sqlPathLike(value));
+    }
+
+    @Override
+    public Builder<T, K> whereNotLike(@Nullable Object anyEntity) {
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity,
+            EntityUseType.CONDITION);
+        return whereNotLike(columnValueMap);
+    }
+
+    @Override
+    public Builder<T, K> whereNotLike(@Nullable Map<String, Object> map) {
+        if (ObjectUtils.isEmpty(map)) {
+            return this;
+        }
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            whereNotLike(entry.getKey(), entry.getValue());
+        }
+        return this;
+    }
+
+    @Override
     public Builder<T, K> whereMayLike(String column, @Nullable Object value) {
         String s = conversion.castNullable(value, String.class);
         if (!ObjectUtils.isNull(s) && (s.endsWith("%") || s.startsWith("%"))) {
             return whereLike(column, value);
         } else {
             return where(column, value);
+        }
+    }
+
+    @Override
+    public Builder<T, K> whereMayNotLike(String column, @Nullable Object value) {
+        String s = conversion.castNullable(value, String.class);
+        if (!ObjectUtils.isNull(s) && (s.endsWith("%") || s.startsWith("%"))) {
+            return whereNotLike(column, value);
+        } else {
+            return ObjectUtils.isNull(value) ? whereNotNull(column) : where(column, "<>", value);
         }
     }
 
@@ -177,9 +261,25 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
+    public Builder<T, K> whereMayNotLikeIgnoreNull(String column, @Nullable Object value) {
+        if (ObjectUtils.isNull(value)) {
+            return this;
+        }
+        return whereMayNotLike(column, value);
+    }
+
+    @Override
     public Builder<T, K> whereMayLike(@Nullable Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity, EntityUseType.CONDITION);
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity,
+            EntityUseType.CONDITION);
         return whereMayLike(columnValueMap);
+    }
+
+    @Override
+    public Builder<T, K> whereMayNotLike(@Nullable Object anyEntity) {
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity,
+            EntityUseType.CONDITION);
+        return whereMayNotLike(columnValueMap);
     }
 
     @Override
@@ -194,12 +294,34 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
+    public Builder<T, K> whereMayNotLike(@Nullable Map<String, Object> map) {
+        if (ObjectUtils.isEmpty(map)) {
+            return this;
+        }
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            whereMayNotLike(entry.getKey(), entry.getValue());
+        }
+        return this;
+    }
+
+    @Override
     public Builder<T, K> whereMayLikeIgnoreNull(@Nullable Map<String, Object> map) {
         if (ObjectUtils.isEmpty(map)) {
             return this;
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             whereMayLikeIgnoreNull(entry.getKey(), entry.getValue());
+        }
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> whereMayNotLikeIgnoreNull(@Nullable Map<String, Object> map) {
+        if (ObjectUtils.isEmpty(map)) {
+            return this;
+        }
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            whereMayNotLikeIgnoreNull(entry.getKey(), entry.getValue());
         }
         return this;
     }
@@ -294,19 +416,39 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     @Override
     public Builder<T, K> whereBetween(String column, Object min, Object max) {
         Collection<Object> parameters = new ArrayList<>();
-        String sqlPart = backQuote(column) + "between" +
-            grammar.replaceValueAndFillParameters(min, parameters) + "and" +
-            grammar.replaceValueAndFillParameters(max, parameters);
-        return whereGrammar(sqlPart, parameters, " and ");
+        return whereBetweenRaw(backQuote(column), grammar.replaceValueAndFillParameters(min, parameters),
+            grammar.replaceValueAndFillParameters(max, parameters), parameters);
+    }
+
+    @Override
+    public Builder<T, K> whereBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters) {
+        String sqlPart = column + " between " + min + " and " + max;
+        return whereGrammar(sqlPart, ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters),
+            " and ");
+    }
+
+    @Override
+    public Builder<T, K> whereBetweenRaw(String column, Object min, Object max) {
+        return whereBetweenRaw(column, min, max, null);
     }
 
     @Override
     public Builder<T, K> whereNotBetween(String column, Object min, Object max) {
         Collection<Object> parameters = new ArrayList<>();
-        String sqlPart = backQuote(column) + "not between" +
-            grammar.replaceValueAndFillParameters(min, parameters) + "and" +
-            grammar.replaceValueAndFillParameters(max, parameters);
-        return whereGrammar(sqlPart, parameters, " and ");
+        return whereNotBetweenRaw(backQuote(column), grammar.replaceValueAndFillParameters(min, parameters),
+            grammar.replaceValueAndFillParameters(max, parameters), parameters);
+    }
+
+    @Override
+    public Builder<T, K> whereNotBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters) {
+        String sqlPart = column + " not between " + min + " and " + max;
+        return whereGrammar(sqlPart, ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters),
+            " and ");
+    }
+
+    @Override
+    public Builder<T, K> whereNotBetweenRaw(String column, Object min, Object max) {
+        return whereNotBetweenRaw(column, min, max, null);
     }
 
     @Override

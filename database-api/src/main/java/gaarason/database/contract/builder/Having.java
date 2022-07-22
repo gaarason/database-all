@@ -87,6 +87,30 @@ public interface Having<T, K> {
     Builder<T, K> having(Map<String, Object> map);
 
     /**
+     * 使用组合条件
+     * 当 value 是集合类型时, 使用 in 查询
+     * 当 value 是MAP类型，且存在start以及end时，使用 between 查询
+     * 当 value 以 %开头或者结尾时, 使用 like ignore empty查询
+     * 当 value 为 null 时, 使用 is null
+     * 其他情况下, 使用 = 查询
+     * @param map 条件map
+     * @return 查询构造器
+     */
+    Builder<T, K> havingFind(Map<String, Object> map);
+
+    /**
+     * 使用组合条件
+     * 当 value 是集合类型时, 使用 not in 查询
+     * 当 value 是MAP类型，且存在start以及end时，使用 not between 查询
+     * 当 value 以 %开头或者结尾时, 使用 not like查询
+     * 当 value 为 null 时, 使用 is not null
+     * 其他情况下, 使用 != 查询
+     * @param map 条件map
+     * @return 查询构造器
+     */
+    Builder<T, K> havingNotFind(Map<String, Object> map);
+
+    /**
      * 列与值相等的查询条件(忽略MAP中，值为null的情况)
      * @param map 条件map
      * @return 查询构造器
@@ -137,8 +161,12 @@ public interface Having<T, K> {
      */
     Builder<T, K> havingKeywordsIgnoreNull(@Nullable Object value, String... columns);
 
+
     /**
-     * "列like值" 的查询条件, 其中值需要自行包含 % 符号 (忽略值为null的情况)
+     * "列like值" 的查询条件
+     * 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
+     * 忽略值为null的情况
+     * 忽略值为 % 、%%的情况
      * @param column 列名
      * @param value 值
      * @return 查询构造器
@@ -146,18 +174,55 @@ public interface Having<T, K> {
     Builder<T, K> havingLike(String column, @Nullable Object value);
 
     /**
-     * 将对象的属性转化为, "列like值" 的查询条件, 其中值需要自行包含 % 符号 (忽略entity中，值为null的情况)
+     * 将对象的属性转化为, "列like值" 的查询条件
+     * 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
+     * 忽略值为null的情况
+     * 忽略值为 % 、%%的情况
      * @param anyEntity 实体对象
      * @return 查询构造器
      */
     Builder<T, K> havingLike(@Nullable Object anyEntity);
 
     /**
-     * "列like值" 的查询条件, 其中值需要自行包含 % 符号, (忽略MAP中，值为null的情况)
+     * "列like值" 的查询条件
+     * 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
+     * 忽略值为null的情况
+     * 忽略值为 % 、%%的情况
      * @param map 条件map
      * @return 查询构造器
      */
     Builder<T, K> havingLike(@Nullable Map<String, Object> map);
+
+    /**
+     * "列 not like值" 的查询条件
+     * 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
+     * 忽略值为null的情况
+     * 忽略值为 % 、%%的情况
+     * @param column 列名
+     * @param value 值
+     * @return 查询构造器
+     */
+    Builder<T, K> havingNotLike(String column, @Nullable Object value);
+
+    /**
+     * 将对象的属性转化为, "列 not like值" 的查询条件
+     * 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
+     * 忽略值为null的情况
+     * 忽略值为 % 、%%的情况
+     * @param anyEntity 实体对象
+     * @return 查询构造器
+     */
+    Builder<T, K> havingNotLike(@Nullable Object anyEntity);
+
+    /**
+     * "列 not like值" 的查询条件
+     * 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
+     * 忽略值为null的情况
+     * 忽略值为 % 、%%的情况
+     * @param map 条件map
+     * @return 查询构造器
+     */
+    Builder<T, K> havingNotLike(@Nullable Map<String, Object> map);
 
     /**
      * 选择可能的条件类型
@@ -172,6 +237,17 @@ public interface Having<T, K> {
 
     /**
      * 选择可能的条件类型
+     * 当 value 以 %开头或者结尾时, 使用not like查询
+     * 当 value 为 null 时, 使用 is not null 查询
+     * 其他情况下, 使用 != 查询
+     * @param column 列名
+     * @param value 值
+     * @return 查询构造器
+     */
+    Builder<T, K> havingMayNotLike(String column, @Nullable Object value);
+
+    /**
+     * 选择可能的条件类型
      * 当 value 以 %开头或者结尾时, 使用like查询
      * 当 value 为 null 时, 忽略
      * 其他情况下, 使用 = 查询
@@ -180,6 +256,17 @@ public interface Having<T, K> {
      * @return 查询构造器
      */
     Builder<T, K> havingMayLikeIgnoreNull(String column, @Nullable Object value);
+
+    /**
+     * 选择可能的条件类型
+     * 当 value 以 %开头或者结尾时, 使用not like查询
+     * 当 value 为 null 时, 忽略
+     * 其他情况下, 使用 != 查询
+     * @param column 列名
+     * @param value 值
+     * @return 查询构造器
+     */
+    Builder<T, K> havingMayNotLikeIgnoreNull(String column, @Nullable Object value);
 
     /**
      * 选择可能的条件类型
@@ -193,13 +280,33 @@ public interface Having<T, K> {
 
     /**
      * 选择可能的条件类型
+     * 当 value 以 %开头或者结尾时, 使用not like查询
+     * 当 value 为 null 时 ,使用 is not null 查询
+     * 其他情况下, 使用 != 查询
+     * @param anyEntity 实体对象
+     * @return 查询构造器
+     */
+    Builder<T, K> havingMayNotLike(@Nullable Object anyEntity);
+
+    /**
+     * 选择可能的条件类型
      * 当 value 以 %开头或者结尾时, 使用like查询
-     * 当 value 为 null 时, 忽略
+     * 当 value 为 null 时 ,使用 is null 查询
      * 其他情况下, 使用 = 查询
      * @param map 条件map
      * @return 查询构造器
      */
     Builder<T, K> havingMayLike(@Nullable Map<String, Object> map);
+
+    /**
+     * 选择可能的条件类型
+     * 当 value 以 %开头或者结尾时, 使用not like查询
+     * 当 value 为 null 时 ,使用 is not null 查询
+     * 其他情况下, 使用 != 查询
+     * @param map 条件map
+     * @return 查询构造器
+     */
+    Builder<T, K> havingMayNotLike(@Nullable Map<String, Object> map);
 
     /**
      * 选择可能的条件类型
@@ -210,6 +317,16 @@ public interface Having<T, K> {
      * @return 查询构造器
      */
     Builder<T, K> havingMayLikeIgnoreNull(@Nullable Map<String, Object> map);
+
+    /**
+     * 选择可能的条件类型
+     * 当 value 以 %开头或者结尾时, 使用not like查询
+     * 当 value 为 null 时, 忽略
+     * 其他情况下, 使用 != 查询
+     * @param map 条件map
+     * @return 查询构造器
+     */
+    Builder<T, K> havingMayNotLikeIgnoreNull(@Nullable Map<String, Object> map);
 
     /**
      * 条件子查询
@@ -336,6 +453,25 @@ public interface Having<T, K> {
     Builder<T, K> havingBetween(String column, Object min, Object max);
 
     /**
+     * 列值在2值之间
+     * @param column 列名
+     * @param min 值1
+     * @param max 值2
+     * @param parameters 参数绑定列表
+     * @return 查询构造器
+     */
+    Builder<T, K> havingBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters);
+
+    /**
+     * 列值在2值之间
+     * @param column 列名
+     * @param min 值1
+     * @param max 值2
+     * @return 查询构造器
+     */
+    Builder<T, K> havingBetweenRaw(String column, Object min, Object max);
+
+    /**
      * 列值不在2值之间
      * @param column 列名
      * @param min 值1
@@ -343,6 +479,25 @@ public interface Having<T, K> {
      * @return 查询构造器
      */
     Builder<T, K> havingNotBetween(String column, Object min, Object max);
+
+    /**
+     * 列值不在2值之间
+     * @param column 列名
+     * @param min 值1
+     * @param max 值2
+     * @param parameters 参数绑定列表
+     * @return 查询构造器
+     */
+    Builder<T, K> havingNotBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters);
+
+    /**
+     * 列值不在2值之间
+     * @param column 列名
+     * @param min 值1
+     * @param max 值2
+     * @return 查询构造器
+     */
+    Builder<T, K> havingNotBetweenRaw(String column, Object min, Object max);
 
     /**
      * 列值为null

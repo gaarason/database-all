@@ -87,13 +87,29 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
     }
 
     /**
-     * "列like值" 的查询条件, 其中值需要自行包含 % 符号 (忽略值为null的情况)
+     * "列like值" 的查询条件
+     * 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
+     * 忽略值为null的情况
+     * 忽略值为 % 、%%的情况
      * @param column 列名表达式
      * @param value 值
      * @return 查询构造器
      */
     default Builder<T, K> whereLike(ColumnFunctionalInterface<T> column, @Nullable Object value) {
         return whereLike(lambda2ColumnName(column), value);
+    }
+
+    /**
+     * "列 not like值" 的查询条件
+     * 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
+     * 忽略值为null的情况
+     * 忽略值为 % 、%%的情况
+     * @param column 列名表达式
+     * @param value 值
+     * @return 查询构造器
+     */
+    default Builder<T, K> whereNotLike(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+        return whereNotLike(lambda2ColumnName(column), value);
     }
 
     /**
@@ -112,6 +128,19 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
     /**
      * 选择可能的条件类型
      * 当 value 以 %开头或者结尾时, 使用like查询
+     * 当 value 为 null 时, 使用 is null 查询
+     * 其他情况下, 使用 = 查询
+     * @param column 列名表达式
+     * @param value 值
+     * @return 查询构造器
+     */
+    default Builder<T, K> whereMayNotLike(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+        return whereMayNotLike(lambda2ColumnName(column), value);
+    }
+
+    /**
+     * 选择可能的条件类型
+     * 当 value 以 %开头或者结尾时, 使用like查询
      * 当 value 为 null 时, 忽略
      * 其他情况下, 使用 = 查询
      * @param column 列名表达式
@@ -120,6 +149,19 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      */
     default Builder<T, K> whereMayLikeIgnoreNull(ColumnFunctionalInterface<T> column, @Nullable Object value) {
         return whereMayLikeIgnoreNull(lambda2ColumnName(column), value);
+    }
+
+    /**
+     * 选择可能的条件类型
+     * 当 value 以 %开头或者结尾时, 使用not like查询
+     * 当 value 为 null 时, 忽略
+     * 其他情况下, 使用 != 查询
+     * @param column 列名
+     * @param value 值
+     * @return 查询构造器
+     */
+    default Builder<T, K> whereMayNotLikeIgnoreNull(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+        return whereMayNotLikeIgnoreNull(lambda2ColumnName(column), value);
     }
 
     /**

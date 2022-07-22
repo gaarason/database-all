@@ -87,13 +87,29 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
     }
 
     /**
-     * "列like值" 的查询条件, 其中值需要自行包含 % 符号 (忽略值为null的情况)
+     * "列like值" 的查询条件
+     * 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
+     * 忽略值为null的情况
+     * 忽略值为 % 、%%的情况
      * @param column 列名表达式
      * @param value 值
      * @return 查询构造器
      */
     default Builder<T, K> havingLike(ColumnFunctionalInterface<T> column, @Nullable Object value) {
         return havingLike(lambda2ColumnName(column), value);
+    }
+
+    /**
+     * "列 not like值" 的查询条件
+     * 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
+     * 忽略值为null的情况
+     * 忽略值为 % 、%%的情况
+     * @param column 列名表达式
+     * @param value 值
+     * @return 查询构造器
+     */
+    default Builder<T, K> havingNotLike(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+        return havingNotLike(lambda2ColumnName(column), value);
     }
 
     /**
@@ -112,6 +128,19 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
     /**
      * 选择可能的条件类型
      * 当 value 以 %开头或者结尾时, 使用like查询
+     * 当 value 为 null 时, 使用 is null 查询
+     * 其他情况下, 使用 = 查询
+     * @param column 列名表达式
+     * @param value 值
+     * @return 查询构造器
+     */
+    default Builder<T, K> havingMayNotLike(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+        return havingMayNotLike(lambda2ColumnName(column), value);
+    }
+
+    /**
+     * 选择可能的条件类型
+     * 当 value 以 %开头或者结尾时, 使用like查询
      * 当 value 为 null 时, 忽略
      * 其他情况下, 使用 = 查询
      * @param column 列名表达式
@@ -120,6 +149,19 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      */
     default Builder<T, K> havingMayLikeIgnoreNull(ColumnFunctionalInterface<T> column, @Nullable Object value) {
         return havingMayLikeIgnoreNull(lambda2ColumnName(column), value);
+    }
+
+    /**
+     * 选择可能的条件类型
+     * 当 value 以 %开头或者结尾时, 使用not like查询
+     * 当 value 为 null 时, 忽略
+     * 其他情况下, 使用 != 查询
+     * @param column 列名
+     * @param value 值
+     * @return 查询构造器
+     */
+    default Builder<T, K> havingMayNotLikeIgnoreNull(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+        return havingMayNotLikeIgnoreNull(lambda2ColumnName(column), value);
     }
 
     /**

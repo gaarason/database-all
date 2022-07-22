@@ -9,6 +9,7 @@ import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
+import gaarason.database.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,7 +84,8 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
 
     @Override
     public Builder<T, K> having(Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity, EntityUseType.CONDITION);
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity,
+            EntityUseType.CONDITION);
         return having(columnValueMap);
     }
 
@@ -91,6 +93,48 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     public Builder<T, K> having(Map<String, Object> map) {
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             having(entry.getKey(), entry.getValue());
+        }
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> havingFind(@Nullable Map<String, Object> map) {
+        if (!ObjectUtils.isEmpty(map)) {
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                String column = entry.getKey();
+                Object value = entry.getValue();
+                if (value instanceof Collection) {
+                    havingInIgnoreEmpty(column, (Collection<?>) value);
+                } else if (value instanceof Map) {
+                    Map<?, ?> betweenMap = (Map<?, ?>) value;
+                    if (betweenMap.containsKey("begin") && betweenMap.containsKey("end")) {
+                        havingBetween(column, betweenMap.get("begin"), betweenMap.get("end"));
+                    }
+                } else {
+                    havingMayLike(column, value);
+                }
+            }
+        }
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> havingNotFind(@Nullable Map<String, Object> map) {
+        if (!ObjectUtils.isEmpty(map)) {
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                String column = entry.getKey();
+                Object value = entry.getValue();
+                if (value instanceof Collection) {
+                    havingNotInIgnoreEmpty(column, (Collection<?>) value);
+                } else if (value instanceof Map) {
+                    Map<?, ?> betweenMap = (Map<?, ?>) value;
+                    if (betweenMap.containsKey("begin") && betweenMap.containsKey("end")) {
+                        havingNotBetween(column, betweenMap.get("begin"), betweenMap.get("end"));
+                    }
+                } else {
+                    havingMayNotLike(column, value);
+                }
+            }
         }
         return this;
     }
@@ -138,12 +182,16 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
 
     @Override
     public Builder<T, K> havingLike(String column, @Nullable Object value) {
-        return havingIgnoreNull(column, "like", value);
+        if(ObjectUtils.isEmpty(value) || ObjectUtils.isEmpty(String.valueOf(value).replace("%", ""))){
+            return this;
+        }
+        return havingIgnoreNull(column, "like", StringUtils.sqlPathLike(value));
     }
 
     @Override
     public Builder<T, K> havingLike(@Nullable Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity, EntityUseType.CONDITION);
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity,
+            EntityUseType.CONDITION);
         return havingLike(columnValueMap);
     }
 
@@ -159,12 +207,48 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
+    public Builder<T, K> havingNotLike(String column, @Nullable Object value) {
+        if(ObjectUtils.isEmpty(value) || ObjectUtils.isEmpty(String.valueOf(value).replace("%", ""))){
+            return this;
+        }
+        return havingIgnoreNull(column, "not like", StringUtils.sqlPathLike(value));
+    }
+
+    @Override
+    public Builder<T, K> havingNotLike(@Nullable Object anyEntity) {
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity,
+            EntityUseType.CONDITION);
+        return havingNotLike(columnValueMap);
+    }
+
+    @Override
+    public Builder<T, K> havingNotLike(@Nullable Map<String, Object> map) {
+        if (ObjectUtils.isEmpty(map)) {
+            return this;
+        }
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            havingNotLike(entry.getKey(), entry.getValue());
+        }
+        return this;
+    }
+
+    @Override
     public Builder<T, K> havingMayLike(String column, @Nullable Object value) {
         String s = conversion.castNullable(value, String.class);
         if (!ObjectUtils.isNull(s) && (s.endsWith("%") || s.startsWith("%"))) {
             return havingLike(column, value);
         } else {
             return having(column, value);
+        }
+    }
+
+    @Override
+    public Builder<T, K> havingMayNotLike(String column, @Nullable Object value) {
+        String s = conversion.castNullable(value, String.class);
+        if (!ObjectUtils.isNull(s) && (s.endsWith("%") || s.startsWith("%"))) {
+            return havingNotLike(column, value);
+        } else {
+            return ObjectUtils.isNull(value) ? havingNotNull(column) : having(column, "<>", value);
         }
     }
 
@@ -177,9 +261,25 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
+    public Builder<T, K> havingMayNotLikeIgnoreNull(String column, @Nullable Object value) {
+        if (ObjectUtils.isNull(value)) {
+            return this;
+        }
+        return havingMayNotLike(column, value);
+    }
+
+    @Override
     public Builder<T, K> havingMayLike(@Nullable Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity, EntityUseType.CONDITION);
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity,
+            EntityUseType.CONDITION);
         return havingMayLike(columnValueMap);
+    }
+
+    @Override
+    public Builder<T, K> havingMayNotLike(@Nullable Object anyEntity) {
+        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity,
+            EntityUseType.CONDITION);
+        return havingMayNotLike(columnValueMap);
     }
 
     @Override
@@ -189,6 +289,17 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             havingMayLike(entry.getKey(), entry.getValue());
+        }
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> havingMayNotLike(@Nullable Map<String, Object> map) {
+        if (ObjectUtils.isEmpty(map)) {
+            return this;
+        }
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            havingMayNotLike(entry.getKey(), entry.getValue());
         }
         return this;
     }
@@ -205,11 +316,21 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
+    public Builder<T, K> havingMayNotLikeIgnoreNull(@Nullable Map<String, Object> map) {
+        if (ObjectUtils.isEmpty(map)) {
+            return this;
+        }
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            havingMayNotLikeIgnoreNull(entry.getKey(), entry.getValue());
+        }
+        return this;
+    }
+
+    @Override
     public Builder<T, K> havingSubQuery(String column, String symbol, String completeSql) {
         String sqlPart = backQuote(column) + symbol + FormatUtils.bracket(completeSql);
         return havingRaw(sqlPart);
     }
-
 
     @Override
     public Builder<T, K> havingSubQuery(String column, String symbol,
@@ -295,19 +416,40 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     @Override
     public Builder<T, K> havingBetween(String column, Object min, Object max) {
         Collection<Object> parameters = new ArrayList<>();
-        String sqlPart =
-            backQuote(column) + "between" + grammar.replaceValueAndFillParameters(min, parameters) + "and" +
-                grammar.replaceValueAndFillParameters(max, parameters);
-        return havingGrammar(sqlPart, parameters, " and ");
+        return havingBetweenRaw(backQuote(column), grammar.replaceValueAndFillParameters(min, parameters),
+            grammar.replaceValueAndFillParameters(max, parameters), parameters);
+    }
+
+    @Override
+    public Builder<T, K> havingBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters) {
+        String sqlPart = column + " between " + min + " and " + max;
+        return havingGrammar(sqlPart, ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters),
+            " and ");
+    }
+
+    @Override
+    public Builder<T, K> havingBetweenRaw(String column, Object min, Object max) {
+        return havingBetweenRaw(column, min, max, null);
     }
 
     @Override
     public Builder<T, K> havingNotBetween(String column, Object min, Object max) {
         Collection<Object> parameters = new ArrayList<>();
-        String sqlPart =
-            backQuote(column) + "not between" + grammar.replaceValueAndFillParameters(min, parameters) + "and" +
-                grammar.replaceValueAndFillParameters(max, parameters);
-        return havingGrammar(sqlPart, parameters, " and ");
+        return havingNotBetweenRaw(backQuote(column), grammar.replaceValueAndFillParameters(min, parameters),
+            grammar.replaceValueAndFillParameters(max, parameters), parameters);
+    }
+
+    @Override
+    public Builder<T, K> havingNotBetweenRaw(String column, Object min, Object max,
+        @Nullable Collection<?> parameters) {
+        String sqlPart = column + " not between " + min + " and " + max;
+        return havingGrammar(sqlPart, ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters),
+            " and ");
+    }
+
+    @Override
+    public Builder<T, K> havingNotBetweenRaw(String column, Object min, Object max) {
+        return havingNotBetweenRaw(column, min, max, null);
     }
 
     @Override
