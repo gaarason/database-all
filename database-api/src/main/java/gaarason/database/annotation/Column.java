@@ -1,7 +1,7 @@
 package gaarason.database.annotation;
 
-import gaarason.database.appointment.FieldStrategy;
 import gaarason.database.contract.support.FieldFill;
+import gaarason.database.contract.support.FieldStrategy;
 
 import java.lang.annotation.*;
 import java.sql.JDBCType;
@@ -50,22 +50,22 @@ public @interface Column {
     /**
      * 是否插入/更新/条件使用, 当对应策略值为DEFAULT时, 取用
      */
-    FieldStrategy strategy() default FieldStrategy.NOT_NULL;
+    Class<? extends FieldStrategy> strategy() default FieldStrategy.NotNull.class;
 
     /**
      * 是否插入时使用
      */
-    FieldStrategy insertStrategy() default FieldStrategy.DEFAULT;
+    Class<? extends FieldStrategy> insertStrategy() default FieldStrategy.Default.class;
 
     /**
      * 是否更新时使用
      */
-    FieldStrategy updateStrategy() default FieldStrategy.DEFAULT;
+    Class<? extends FieldStrategy> updateStrategy() default FieldStrategy.Default.class;
 
     /**
      * 是否条件时使用
      */
-    FieldStrategy conditionStrategy() default FieldStrategy.DEFAULT;
+    Class<? extends FieldStrategy> conditionStrategy() default FieldStrategy.Default.class;
 
     /**
      * 字段填充策略

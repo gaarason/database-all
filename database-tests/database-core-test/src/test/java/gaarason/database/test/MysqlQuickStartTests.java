@@ -4,10 +4,10 @@ import com.alibaba.druid.pool.DruidDataSource;
 import gaarason.database.annotation.Column;
 import gaarason.database.annotation.Primary;
 import gaarason.database.annotation.Table;
-import gaarason.database.appointment.FieldStrategy;
 import gaarason.database.connection.GaarasonDataSourceBuilder;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.eloquent.Model;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -117,10 +117,10 @@ public class MysqlQuickStartTests {
             @Column(name = "teacher_id")
             private Integer teacherId;
 
-            @Column(name = "created_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
+            @Column(name = "created_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
             private Date createdAt;
 
-            @Column(name = "updated_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
+            @Column(name = "updated_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
             private Date updatedAt;
         }
     }

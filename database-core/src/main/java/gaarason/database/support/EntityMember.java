@@ -25,6 +25,7 @@ import java.util.function.BiFunction;
  * 数据库实体信息
  */
 public class EntityMember<T> extends Container.SimpleKeeper implements Serializable {
+
     /**
      * 实体类型
      */
@@ -34,14 +35,17 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
      * 数据表名
      */
     private final String tableName;
+
     /**
      * `属性名`对应的`普通`字段数组
      */
     private final Map<String, FieldMember> javaFieldMap = new LinkedHashMap<>();
+
     /**
      * `数据库字段`名对应的`普通`字段数组
      */
     private final Map<String, FieldMember> columnFieldMap = new LinkedHashMap<>();
+
     /**
      * `属性名`对应的`关系`字段数组
      */
@@ -57,6 +61,7 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
      */
     @Nullable
     private PrimaryKeyMember primaryKeyMember;
+
     /**
      * 关联关系分析标记
      */

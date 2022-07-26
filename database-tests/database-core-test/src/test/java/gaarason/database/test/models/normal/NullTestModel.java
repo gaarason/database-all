@@ -3,7 +3,7 @@ package gaarason.database.test.models.normal;
 import gaarason.database.annotation.Column;
 import gaarason.database.annotation.Primary;
 import gaarason.database.annotation.Table;
-import gaarason.database.appointment.FieldStrategy;
+import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.test.models.normal.base.SingleModel;
 import lombok.Data;
 
@@ -29,19 +29,19 @@ public class NullTestModel extends SingleModel<NullTestModel.Entity, Integer> {
         @Primary
         private Integer id;
 
-        @Column(length = 20, strategy = FieldStrategy.ALWAYS)
+        @Column(length = 20, strategy = FieldStrategy.Always.class)
         private String name;
 
-        @Column(name = "time_column", strategy = FieldStrategy.ALWAYS)
+        @Column(name = "time_column", strategy = FieldStrategy.Always.class)
         private LocalTime timeColumn;
 
-        @Column(name = "date_column", strategy = FieldStrategy.ALWAYS)
+        @Column(name = "date_column", strategy = FieldStrategy.Always.class)
         private LocalDate dateColumn;
 
-        @Column(name = "datetime_column", strategy = FieldStrategy.ALWAYS)
+        @Column(name = "datetime_column", strategy = FieldStrategy.Always.class)
         private LocalDateTime datetimeColumn;
 
-        @Column(name = "timestamp_column", strategy = FieldStrategy.ALWAYS)
+        @Column(name = "timestamp_column", strategy = FieldStrategy.Always.class)
         private Date timestampColumn;
 
         private boolean isDeleted;

@@ -2,10 +2,10 @@ package gaarason.database.support;
 
 import gaarason.database.annotation.Column;
 import gaarason.database.appointment.EntityUseType;
-import gaarason.database.appointment.FieldStrategy;
 import gaarason.database.appointment.ValueWrapper;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.support.FieldFill;
+import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.core.Container;
 import gaarason.database.exception.FieldInvalidException;
 import gaarason.database.exception.IllegalAccessRuntimeException;
@@ -68,6 +68,21 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
      */
     private final FieldFill fieldFill;
 
+    /**
+     * 字段插入策略
+     */
+    private final FieldStrategy insertStrategy;
+
+    /**
+     * 字段更新策略
+     */
+    private final FieldStrategy updateStrategy;
+
+    /**
+     * 字段条件策略
+     */
+    private final FieldStrategy conditionStrategy;
+
     public FieldMember(Container container, Field field) {
         super(container);
         this.field = field;
@@ -79,7 +94,13 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
         this.defaultValue = getContainer().getBean(ConversionConfig.class).getDefaultValueByJavaType(field.getType());
 
         this.fieldFill = container.getBean(column.fill());
+
+        // 字段使用策略
+        this.insertStrategy = dealFieldStrategy(container, EntityUseType.INSERT);
+        this.updateStrategy = dealFieldStrategy(container, EntityUseType.UPDATE);
+        this.conditionStrategy = dealFieldStrategy(container, EntityUseType.CONDITION);
     }
+
 
     /**
      * 填充
@@ -115,30 +136,16 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
         FieldStrategy fieldStrategy;
         switch (type) {
             case INSERT:
-                fieldStrategy = column.insertStrategy();
+                fieldStrategy = insertStrategy;
                 break;
             case UPDATE:
-                fieldStrategy = column.updateStrategy();
+                fieldStrategy = updateStrategy;
                 break;
             default:
-                fieldStrategy = column.conditionStrategy();
+                fieldStrategy = conditionStrategy;
                 break;
         }
-        // 当策略是DEFAULT时, 取用 strategy
-        if (fieldStrategy.equals(FieldStrategy.DEFAULT)) {
-            fieldStrategy = column.strategy();
-        }
-        switch (fieldStrategy) {
-            case NEVER:
-                return false;
-            case DEFAULT:
-            case NOT_NULL:
-                return !ObjectUtils.isNull(originalValue);
-            case NOT_EMPTY:
-                return !ObjectUtils.isEmpty(originalValue);
-            default:
-                return true;
-        }
+        return fieldStrategy.enable(originalValue);
     }
 
     /**
@@ -243,5 +250,34 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
 
     public FieldFill getFieldFill() {
         return fieldFill;
+    }
+
+    // ---------------------------- private function ---------------------------- //
+
+    /**
+     * 当前场景下的策略
+     * @param container 容器
+     * @param type 实体的使用目的
+     * @return 策略
+     */
+    private FieldStrategy dealFieldStrategy(Container container, EntityUseType type) {
+        // 当前策略
+        Class<? extends FieldStrategy> fieldStrategy;
+        switch (type) {
+            case INSERT:
+                fieldStrategy = column.insertStrategy();
+                break;
+            case UPDATE:
+                fieldStrategy = column.updateStrategy();
+                break;
+            default:
+                fieldStrategy = column.conditionStrategy();
+                break;
+        }
+        // 当策略是DEFAULT时, 取用 strategy
+        if (fieldStrategy.equals(FieldStrategy.Default.class)) {
+            fieldStrategy = column.strategy();
+        }
+        return container.getBean(fieldStrategy);
     }
 }

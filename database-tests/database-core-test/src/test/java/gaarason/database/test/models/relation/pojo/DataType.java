@@ -2,7 +2,7 @@ package gaarason.database.test.models.relation.pojo;
 
 import gaarason.database.annotation.Column;
 import gaarason.database.annotation.Table;
-import gaarason.database.appointment.FieldStrategy;
+import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.test.models.relation.pojo.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -55,10 +55,10 @@ public class DataType extends BaseEntity {
     @Column(name = "subject", length = 20L, comment = "科目")
     private String subject;
 
-    @Column(name = "created_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER, comment = "新增时间")
+    @Column(name = "created_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class, comment = "新增时间")
     private Date createdAt;
 
-    @Column(name = "updated_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER, comment = "更新时间")
+    @Column(name = "updated_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class, comment = "更新时间")
     private Date updatedAt;
 
     @Column(name = "created_time")

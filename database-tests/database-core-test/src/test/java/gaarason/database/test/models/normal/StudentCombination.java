@@ -3,7 +3,7 @@ package gaarason.database.test.models.normal;
 import gaarason.database.annotation.Column;
 import gaarason.database.annotation.Primary;
 import gaarason.database.annotation.Table;
-import gaarason.database.appointment.FieldStrategy;
+import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.test.models.normal.base.SingleModel;
 import lombok.Data;
 
@@ -29,10 +29,10 @@ public class StudentCombination extends SingleModel<StudentCombination, Integer>
     @Column(name = "teacher_id")
     private Integer teacherId;
 
-    @Column(name = "created_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
+    @Column(name = "created_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
     private Date createdAt;
 
-    @Column(name = "updated_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
+    @Column(name = "updated_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
     private Date updatedAt;
 
 }

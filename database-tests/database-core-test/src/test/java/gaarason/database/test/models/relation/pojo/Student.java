@@ -1,7 +1,7 @@
 package gaarason.database.test.models.relation.pojo;
 
 import gaarason.database.annotation.*;
-import gaarason.database.appointment.FieldStrategy;
+import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.test.models.relation.model.RelationshipStudentTeacherModel;
 import gaarason.database.test.models.relation.pojo.base.BaseEntity;
 import lombok.Data;
@@ -39,10 +39,10 @@ public class Student extends BaseEntity implements Serializable {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
-    @Column(name = "created_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER, comment = "新增时间")
+    @Column(name = "created_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class, comment = "新增时间")
     private Date createdAt;
 
-    @Column(name = "updated_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER, comment = "更新时间")
+    @Column(name = "updated_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class, comment = "更新时间")
     private Date updatedAt;
 
     @BelongsTo(localModelForeignKey = "teacher_id", parentModelLocalKey = "id")
