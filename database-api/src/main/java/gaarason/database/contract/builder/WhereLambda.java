@@ -69,20 +69,6 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      */
     @SuppressWarnings("unchecked")
     default Builder<T, K> whereKeywords(@Nullable Object value, ColumnFunctionalInterface<T>... columns) {
-        return whereKeywords(value, lambda2ColumnName(Arrays.asList(columns)));
-    }
-
-    /**
-     * 在多个列中, 查找值
-     * 当 value 以 %开头或者结尾时, 使用like查询
-     * 当 value 为 null 时, 忽略
-     * 其他情况下, 使用 = 查询
-     * @param value 值
-     * @param columns 多个列名表达式
-     * @return 查询构造器
-     */
-    @SuppressWarnings("unchecked")
-    default Builder<T, K> whereKeywordsIgnoreNull(@Nullable Object value, ColumnFunctionalInterface<T>... columns) {
         return whereKeywordsIgnoreNull(value, lambda2ColumnName(Arrays.asList(columns)));
     }
 
@@ -96,7 +82,7 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * @return 查询构造器
      */
     default Builder<T, K> whereLike(ColumnFunctionalInterface<T> column, @Nullable Object value) {
-        return whereLike(lambda2ColumnName(column), value);
+        return whereLikeIgnoreNull(lambda2ColumnName(column), value);
     }
 
     /**
@@ -109,7 +95,7 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * @return 查询构造器
      */
     default Builder<T, K> whereNotLike(ColumnFunctionalInterface<T> column, @Nullable Object value) {
-        return whereNotLike(lambda2ColumnName(column), value);
+        return whereNotLikeIgnoreNull(lambda2ColumnName(column), value);
     }
 
     /**

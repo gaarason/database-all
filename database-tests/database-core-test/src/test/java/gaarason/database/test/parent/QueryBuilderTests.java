@@ -1030,14 +1030,14 @@ abstract public class QueryBuilderTests extends BaseTests {
     @Test
     public void 条件_whereLike() {
         List<StudentModel.Entity> entityList1 = studentModel.newQuery()
-            .whereLike("name", "小%")
+            .whereLikeIgnoreNull("name", "小%")
             .get()
             .toObjectList();
         Assert.assertEquals(5, entityList1.size());
 
         List<StudentModel.Entity> entityList2 = studentModel.newQuery()
-            .whereLike("name", "小") // 自动拼成 "%小%"
-            .whereLike("name", null)
+            .whereLikeIgnoreNull("name", "小") // 自动拼成 "%小%"
+            .whereLikeIgnoreNull("name", null)
             .get()
             .toObjectList();
         Assert.assertEquals(5, entityList2.size());
@@ -1046,8 +1046,8 @@ abstract public class QueryBuilderTests extends BaseTests {
         likeMap.put("name", "%卡");
         Map<String, Object> likeMap2 = null;
         List<StudentModel.Entity> entityList3 = studentModel.newQuery()
-            .whereLike(likeMap)
-            .whereLike(likeMap2)
+            .whereLikeIgnoreNull(likeMap)
+            .whereLikeIgnoreNull(likeMap2)
             .get()
             .toObjectList();
         Assert.assertEquals(3, entityList3.size());
@@ -1057,8 +1057,8 @@ abstract public class QueryBuilderTests extends BaseTests {
         student.setName("%卡");
         StudentModel.Entity student2 = null;
         List<StudentModel.Entity> entityList4 = studentModel.newQuery()
-            .whereLike(student)
-            .whereLike(student2)
+            .whereLikeIgnoreNull(student)
+            .whereLikeIgnoreNull(student2)
             .get()
             .toObjectList();
         Assert.assertEquals(3, entityList4.size());
@@ -1108,79 +1108,51 @@ abstract public class QueryBuilderTests extends BaseTests {
             .whereKeywords("小", StudentModel.Entity::getName, StudentModel.Entity::getAge, StudentModel.Entity::getId)
             .get()
             .toObjectList();
-        Assert.assertEquals(0, list0.size());
+        Assert.assertEquals(5, list0.size());
 
         List<StudentModel.Entity> list = studentModel.newQuery()
-            .whereKeywords("小", "name", "age", "id")
+            .whereKeywordsIgnoreNull("小", "name", "age", "id")
             .get()
             .toObjectList();
-        Assert.assertEquals(0, list.size());
+        Assert.assertEquals(5, list.size());
 
         List<StudentModel.Entity> list1 = studentModel.newQuery()
-            .whereKeywords("小%", "name", "age", "id")
+            .whereKeywordsIgnoreNull("小%", "name", "age", "id")
             .get()
             .toObjectList();
         Assert.assertEquals(5, list1.size());
 
         List<StudentModel.Entity> list2 = studentModel.newQuery()
-            .whereKeywords(null, "name", "age", "id")
+            .whereKeywordsIgnoreNull(null, "name", "age", "id")
             .get()
             .toObjectList();
-        Assert.assertEquals(0, list2.size());
+        Assert.assertEquals(10, list2.size());
 
         List<StudentModel.Entity> list3 = studentModel.newQuery()
-            .whereKeywords(2, "name", "age", "id")
+            .whereKeywordsIgnoreNull(2, "name", "age", "id")
             .get()
             .toObjectList();
         Assert.assertEquals(1, list3.size());
 
         List<StudentModel.Entity> list4 = studentModel.newQuery()
-            .whereKeywords(6, "name", "age", "id")
+            .whereKeywordsIgnoreNull(6, "name", "age", "id")
             .get()
             .toObjectList();
-        Assert.assertEquals(2, list4.size());
+        Assert.assertEquals(3, list4.size());
 
         List<StudentModel.Entity> list5 = studentModel.newQuery()
-            .whereKeywords("%6", "name", "age", "id")
+            .whereKeywordsIgnoreNull("%6", "name", "age", "id")
             .get()
             .toObjectList();
         Assert.assertEquals(3, list5.size());
 
-        List<StudentModel.Entity> list6 = studentModel.newQuery()
-            .whereKeywordsIgnoreNull(null, "name", "age", "id")
-            .get()
-            .toObjectList();
-        Assert.assertEquals(10, list6.size());
-
         List<StudentModel.Entity> list7 = studentModel.newQuery()
-            .whereKeywords("%1", "name", "age", "id")
-            .whereKeywords("%张", "name", "age", "id")
-            .get()
-            .toObjectList();
-        Assert.assertEquals(1, list7.size());
-
-        List<StudentModel.Entity> list8 = studentModel.newQuery()
             .whereKeywordsIgnoreNull("%1", "name", "age", "id")
             .whereKeywordsIgnoreNull("%张", "name", "age", "id")
             .get()
             .toObjectList();
-        Assert.assertEquals(1, list8.size());
+        Assert.assertEquals(1, list7.size());
 
-        List<StudentModel.Entity> list9 = studentModel.newQuery()
-            .whereKeywordsIgnoreNull(null, "name", "age", "id")
-            .whereKeywordsIgnoreNull(null, "name", "age", "id")
-            .get()
-            .toObjectList();
-        Assert.assertEquals(10, list9.size());
-
-        List<StudentModel.Entity> list10 = studentModel.newQuery()
-            .whereKeywordsIgnoreNull(null, StudentModel.Entity::getName, StudentModel.Entity::getAge,
-                StudentModel.Entity::getId)
-            .whereKeywordsIgnoreNull(null, StudentModel.Entity::getName, StudentModel.Entity::getAge,
-                StudentModel.Entity::getId)
-            .get()
-            .toObjectList();
-        Assert.assertEquals(10, list10.size());
     }
 
     @Test
