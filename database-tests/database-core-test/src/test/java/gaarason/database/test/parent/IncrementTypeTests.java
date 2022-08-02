@@ -1,18 +1,25 @@
 package gaarason.database.test.parent;
 
+import gaarason.database.annotation.Column;
+import gaarason.database.annotation.Primary;
+import gaarason.database.annotation.Table;
 import gaarason.database.appointment.DBColumn;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
+import gaarason.database.contract.support.FieldStrategy;
+import gaarason.database.contract.support.IdGenerator;
 import gaarason.database.provider.DatabaseShadowProvider;
 import gaarason.database.test.models.normal.PeopleModel;
 import gaarason.database.test.parent.base.BaseTests;
 import gaarason.database.util.LocalDateUtils;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import java.io.Serializable;
 import java.util.*;
 
 @Slf4j
@@ -23,6 +30,32 @@ abstract public class IncrementTypeTests extends BaseTests {
 
     protected GaarasonDataSource getGaarasonDataSource() {
         return peopleModel.getGaarasonDataSource();
+    }
+
+    @Data
+    @Table(name = "people")
+    public static class PeopleSnowFlakesID implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        @Primary(idGenerator = IdGenerator.SnowFlakesID.class)
+        private Long id;
+
+        @Column(length = 20)
+        private String name;
+
+        private Byte age;
+
+        private Byte sex;
+
+        @Column(name = "teacher_id")
+        private Integer teacherId;
+
+        @Column(name = "created_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
+        private Date createdAt;
+
+        @Column(name = "updated_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
+        private Date updatedAt;
     }
 
     @Test
@@ -159,9 +192,8 @@ abstract public class IncrementTypeTests extends BaseTests {
     }
 
     @Test
-    public void 雪花算法id_ORM新增且没有赋值给主键才会生效() {
-        Record<PeopleModel.Entity, Long> entityLongRecord = peopleModel.newRecord();
-        PeopleModel.Entity entity = entityLongRecord.getEntity();
+    public void 雪花算法id_新增且没有赋值给主键才会生效() {
+        PeopleSnowFlakesID entity = new PeopleSnowFlakesID();
         entity.setName("姓名");
         entity.setAge(Byte.valueOf("13"));
         entity.setSex(Byte.valueOf("1"));
@@ -169,7 +201,7 @@ abstract public class IncrementTypeTests extends BaseTests {
         entity.setCreatedAt(new Date(1312312312));
         entity.setUpdatedAt(new Date(1312312312));
 
-        entityLongRecord.save();
+        peopleModel.newQuery().insert(entity);
         System.out.println(entity);
         Assert.assertTrue(entity.getId() - 170936861320019968L > 0);
 
@@ -179,5 +211,24 @@ abstract public class IncrementTypeTests extends BaseTests {
         Assert.assertTrue(entity1.getId() - 170936861320019968L > 0);
     }
 
+    @Test
+    public void 雪花算法id_批量新增且没有赋值给主键才会生效() {
+        ArrayList<PeopleSnowFlakesID> objects = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            PeopleSnowFlakesID entity = new PeopleSnowFlakesID();
+            entity.setName("姓名");
+            entity.setAge(Byte.valueOf("13"));
+            entity.setSex(Byte.valueOf("1"));
+            entity.setTeacherId(0);
+            entity.setCreatedAt(new Date(1312312312));
+            entity.setUpdatedAt(new Date(1312312312));
+            objects.add(entity);
+        }
+        peopleModel.newQuery().insert(objects);
+        System.out.println(objects);
+        for (PeopleSnowFlakesID object : objects) {
+            Assert.assertNotNull(object.getId());
+        }
+    }
 
 }

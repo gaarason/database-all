@@ -84,7 +84,7 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
 
     @Override
     public Builder<T, K> having(Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity,
+        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity,
             EntityUseType.CONDITION);
         return having(columnValueMap);
     }
@@ -190,7 +190,7 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
 
     @Override
     public Builder<T, K> havingLike(@Nullable Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity,
+        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity,
             EntityUseType.CONDITION);
         return havingLike(columnValueMap);
     }
@@ -216,7 +216,7 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
 
     @Override
     public Builder<T, K> havingNotLike(@Nullable Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity,
+        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity,
             EntityUseType.CONDITION);
         return havingNotLike(columnValueMap);
     }
@@ -270,14 +270,14 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
 
     @Override
     public Builder<T, K> havingMayLike(@Nullable Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity,
+        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity,
             EntityUseType.CONDITION);
         return havingMayLike(columnValueMap);
     }
 
     @Override
     public Builder<T, K> havingMayNotLike(@Nullable Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity,
+        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity,
             EntityUseType.CONDITION);
         return havingMayNotLike(columnValueMap);
     }

@@ -14,12 +14,19 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 @FixMethodOrder(MethodSorters.JVM)
 @Slf4j
 abstract public class BaseTests {
 
     protected static String initSql = "";
+
+    protected static ThreadPoolExecutor pool = new ThreadPoolExecutor(8, 8, 1L, TimeUnit.MINUTES,
+        new LinkedBlockingDeque<>(100));
 
     @BeforeClass
     public static void beforeClass() throws IOException {
@@ -55,7 +62,7 @@ abstract public class BaseTests {
     abstract protected GaarasonDataSource getGaarasonDataSource();
 
     @Before
-    public void before() throws SQLException {
+    public void before() throws SQLException, InterruptedException {
         log.debug("数据库重新初始化开始");
         initDataSourceList(getGaarasonDataSource());
         log.debug("数据库重新初始化完成");
@@ -67,24 +74,29 @@ abstract public class BaseTests {
     }
 
     // 初始化数据库连接列表
-    protected void initDataSourceList(GaarasonDataSource gaarasonDataSource) throws SQLException {
+    protected void initDataSourceList(GaarasonDataSource gaarasonDataSource) throws SQLException, InterruptedException {
         String[] split = initSql.split(";\n");
-        String sqlTemp = "";
+        CountDownLatch countDownLatch = new CountDownLatch(gaarasonDataSource.getMasterDataSourceList().size());
         for (DataSource dataSource : gaarasonDataSource.getMasterDataSourceList()) {
-
-            try (Connection connection = dataSource.getConnection()) {
-                for (String sql : split) {
-                    sqlTemp = sql;
+            pool.execute(() -> {
+                String sqlTemp = "";
+                try (Connection connection = dataSource.getConnection()) {
+                    for (String sql : split) {
+                        sqlTemp = sql;
 //                    System.out.println(sql);
-                    PreparedStatement preparedStatement = connection.prepareStatement(sql);
-                    int i = preparedStatement.executeUpdate();
+                        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                        int i = preparedStatement.executeUpdate();
 //                    System.out.println(i);
+                    }
+                } catch (Throwable e) {
+                    throw new SQLRuntimeException(sqlTemp, new ArrayList<>(), e.getMessage(),
+                        gaarasonDataSource.getQueryBuilder().getValueSymbol(), e);
+                } finally {
+                    countDownLatch.countDown();
                 }
-            } catch (Throwable e) {
-                throw new SQLRuntimeException(sqlTemp, new ArrayList<>(), e.getMessage(),
-                    gaarasonDataSource.getQueryBuilder().getValueSymbol(), e);
-            }
+            });
         }
+        countDownLatch.await();
     }
 
     @After

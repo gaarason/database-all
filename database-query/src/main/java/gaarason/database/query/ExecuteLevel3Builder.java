@@ -14,8 +14,10 @@ import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.InsertNotSuccessException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
+import gaarason.database.support.EntityMember;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.MapUtils;
+import gaarason.database.util.ObjectUtils;
 
 import java.util.*;
 
@@ -33,13 +35,13 @@ public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T,
 
 
     @Override
-    public Record<T, K> find(K id) throws SQLRuntimeException {
-        return where(model.getPrimaryKeyColumnName(), id.toString()).first();
+    public Record<T, K> find(@Nullable Object id) throws SQLRuntimeException {
+        return where(model.getPrimaryKeyColumnName(), id).first();
     }
 
     @Override
-    public Record<T, K> findOrFail(K id) throws EntityNotFoundException, SQLRuntimeException {
-        return where(model.getPrimaryKeyColumnName(), id.toString()).firstOrFail();
+    public Record<T, K> findOrFail(@Nullable Object id) throws EntityNotFoundException, SQLRuntimeException {
+        return where(model.getPrimaryKeyColumnName(), id).firstOrFail();
     }
 
     @Override
@@ -52,17 +54,9 @@ public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T,
     }
 
     @Override
-    public int insert(T entity) throws SQLRuntimeException {
-        // 获取entity所有有效sql字段
-        Set<String> columnNameSet = modelShadowProvider.columnNameSet(entity, EntityUseType.INSERT);
-        // 获取entity所有有效字段的值
-        List<Object> valueList = modelShadowProvider.valueList(entity, columnNameSet);
-        // 字段加入grammar
-        column(columnNameSet);
-        // 字段的值加入grammar
-        value(valueList);
-        // 执行
-        return insert();
+    public int insert(@Nullable Object anyEntity) throws SQLRuntimeException {
+        Map<String, Object> simpleMap = modelShadowProvider.entityToMap(anyEntity, EntityUseType.INSERT);
+        return insertMapStyle(simpleMap);
     }
 
     @Override
@@ -80,7 +74,7 @@ public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T,
     }
 
     @Override
-    public int insert(List<T> entityList) throws SQLRuntimeException {
+    public int insert(List<?> entityList) throws SQLRuntimeException {
         // entityList处理
         beforeBatchInsert(entityList);
         // 执行
@@ -95,23 +89,14 @@ public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T,
         return insert();
     }
 
-
     @Override
-    public K insertGetId(T entity) throws SQLRuntimeException {
-        // 获取entity所有有效sql字段
-        Set<String> columnNameSet = modelShadowProvider.columnNameSet(entity, EntityUseType.INSERT);
-        // 获取entity所有有效字段的值
-        List<Object> valueList = modelShadowProvider.valueList(entity, columnNameSet);
-        // 字段加入grammar
-        column(columnNameSet);
-        // 字段的值加入grammar
-        value(valueList);
-        // 执行, 并获取主键id
-        K primaryId = insertGetId();
+    public K insertGetId(Object anyEntity) throws SQLRuntimeException {
+        Map<String, Object> simpleMap = modelShadowProvider.entityToMap(anyEntity, EntityUseType.INSERT);
+        K primaryKeyValue = insertGetIdMapStyle(simpleMap);
         // 赋值主键
-        modelShadowProvider.setPrimaryKeyValue(entity, primaryId);
+        modelShadowProvider.setPrimaryKeyValue(anyEntity, primaryKeyValue);
         // 返回主键
-        return primaryId;
+        return primaryKeyValue;
     }
 
     @Override
@@ -138,8 +123,8 @@ public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T,
     }
 
     @Override
-    public K insertGetIdOrFail(T entity) throws SQLRuntimeException, InsertNotSuccessException {
-        K id = insertGetId(entity);
+    public K insertGetIdOrFail(Object anyEntity) throws SQLRuntimeException, InsertNotSuccessException {
+        K id = insertGetId(anyEntity);
         if (id == null) {
             throw new InsertNotSuccessException();
         }
@@ -157,9 +142,9 @@ public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T,
     }
 
     @Override
-    public List<K> insertGetIds(List<T> entityList) throws SQLRuntimeException {
+    public List<K> insertGetIds(List<?> anyEntityList) throws SQLRuntimeException {
         // entityList处理
-        beforeBatchInsert(entityList);
+        beforeBatchInsert(anyEntityList);
         return insertGetIds();
     }
 
@@ -170,11 +155,11 @@ public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T,
         return insertGetIds();
     }
 
-
     @Override
-    public int update(T entity) throws SQLRuntimeException {
+    public int update(Object anyEntity) throws SQLRuntimeException {
         // 获取entity所有有效字段对其值得映射
-        Map<String, Object> stringStringMap = modelShadowProvider.columnValueMapAfterFill(entity, EntityUseType.UPDATE);
+        Map<String, Object> stringStringMap = modelShadowProvider.entityToMap(anyEntity,
+            EntityUseType.UPDATE);
 
         data(stringStringMap);
         // 执行
@@ -317,19 +302,18 @@ public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T,
      * 批量插入数据, entityList处理
      * @param entityList 数据实体对象列表
      */
-    protected void beforeBatchInsert(List<T> entityList) {
-        // 获取entity所有有效字段
-        Set<String> columnNameSet = modelShadowProvider.columnNameSet(entityList.get(0), EntityUseType.INSERT);
-        List<List<Object>> valueListList = new ArrayList<>();
-        for (T entity : entityList) {
-            // 获取entity所有有效字段的值
-            List<Object> valueList = modelShadowProvider.valueList(entity, columnNameSet);
-            valueListList.add(valueList);
+    protected void beforeBatchInsert(List<?> entityList) {
+        List<Map<String, Object>> mapList = new LinkedList<>();
+        EntityMember<Object> entityMember = null;
+        for (Object entity : entityList) {
+            // 初始化 entityMember
+            if (entityMember == null) {
+                entityMember = modelShadowProvider.parseAnyEntityWithCache(entity);
+            }
+            mapList.add( modelShadowProvider.entityToMap(entity, EntityUseType.INSERT));
         }
-        // 字段加入grammar
-        column(columnNameSet);
-        // 字段的值加入grammar
-        valueList(valueListList);
+        // 转入mapList处理
+        beforeBatchInsertMapStyle(mapList);
     }
 
     /**
@@ -337,6 +321,9 @@ public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T,
      * @param entityMapList 数据实体map列表
      */
     protected void beforeBatchInsertMapStyle(List<Map<String, Object>> entityMapList) {
+        if (ObjectUtils.isEmpty(entityMapList)) {
+            return;
+        }
         // 获取entity所有有效字段
         Set<String> columnNameSet = new LinkedHashSet<>(entityMapList.get(0).keySet());
         List<List<Object>> valueListList = new ArrayList<>();
@@ -358,8 +345,8 @@ public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T,
      * @return 拼接后的字符
      */
     protected String function(String functionName, String parameter, @Nullable String alias) {
-        return functionName + FormatUtils.bracket(parameter) + (alias == null ? "" :
-            " as " + FormatUtils.quotes(alias));
+        return functionName + FormatUtils.bracket(parameter) +
+            (alias == null ? "" : " as " + FormatUtils.quotes(alias));
     }
 
     /**

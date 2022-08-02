@@ -37,6 +37,13 @@ public interface From<T, K> {
     Builder<T, K> from(String table);
 
     /**
+     * 更改查询的表名
+     * @param anyEntity 任意实体对象
+     * @return 查询构造器
+     */
+    Builder<T, K> from(Object anyEntity);
+
+    /**
      * 临时表查询
      * @param alias 临时表别名
      * @param closure 闭包

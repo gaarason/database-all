@@ -26,7 +26,7 @@ public interface Execute<T, K> {
      * @throws SQLRuntimeException 数据库异常
      */
     @Nullable
-    Record<T, K> find(K id) throws SQLRuntimeException;
+    Record<T, K> find(@Nullable Object id) throws SQLRuntimeException;
 
     /**
      * 单个查询
@@ -35,7 +35,7 @@ public interface Execute<T, K> {
      * @throws EntityNotFoundException 未找到对象
      * @throws SQLRuntimeException 数据库异常
      */
-    Record<T, K> findOrFail(K id) throws EntityNotFoundException, SQLRuntimeException;
+    Record<T, K> findOrFail(@Nullable Object id) throws EntityNotFoundException, SQLRuntimeException;
 
     /**
      * 获取第一条数据, 数据为空时返回null
@@ -87,11 +87,11 @@ public interface Execute<T, K> {
 
     /**
      * 插入数据
-     * @param entity 数据实体对象
+     * @param anyEntity 任意数据实体对象
      * @return 受影响的行数
      * @throws SQLRuntimeException 数据库异常
      */
-    int insert(T entity) throws SQLRuntimeException;
+    int insert(@Nullable Object anyEntity) throws SQLRuntimeException;
 
     /**
      * 插入数据
@@ -107,7 +107,7 @@ public interface Execute<T, K> {
      * @return 受影响的行数
      * @throws SQLRuntimeException 数据库异常
      */
-    int insert(List<T> entityList) throws SQLRuntimeException;
+    int insert(List<?> entityList) throws SQLRuntimeException;
 
     /**
      * 批量插入数据
@@ -127,12 +127,12 @@ public interface Execute<T, K> {
 
     /**
      * 插入数据(会将数据库自增id更新到entity)
-     * @param entity 数据实体对象
+     * @param anyEntity 任意数据实体对象
      * @return 数据库自增id|null
      * @throws SQLRuntimeException 数据库异常
      */
     @Nullable
-    K insertGetId(T entity) throws SQLRuntimeException;
+    K insertGetId(Object anyEntity) throws SQLRuntimeException;
 
     /**
      * 插入数据
@@ -153,12 +153,12 @@ public interface Execute<T, K> {
 
     /**
      * 插入数据(会将数据库自增id更新到entity)
-     * @param entity 数据实体对象
+     * @param anyEntity 任意数据实体对象
      * @return 数据库自增id
      * @throws SQLRuntimeException 数据库异常
      * @throws InsertNotSuccessException 新增失败
      */
-    K insertGetIdOrFail(T entity) throws SQLRuntimeException, InsertNotSuccessException;
+    K insertGetIdOrFail(Object anyEntity) throws SQLRuntimeException, InsertNotSuccessException;
 
     /**
      * 插入数据
@@ -178,11 +178,11 @@ public interface Execute<T, K> {
 
     /**
      * 批量插入数据
-     * @param entityList 数据实体对象列表
+     * @param anyEntityList 数据实体对象列表
      * @return 数据库自增id列表
      * @throws SQLRuntimeException 数据库异常
      */
-    List<K> insertGetIds(List<T> entityList) throws SQLRuntimeException;
+    List<K> insertGetIds(List<?> anyEntityList) throws SQLRuntimeException;
 
     /**
      * 批量插入数据
@@ -201,11 +201,11 @@ public interface Execute<T, K> {
 
     /**
      * 更新数据
-     * @param entity 数据实体对象
+     * @param anyEntity 任意数据实体对象
      * @return 受影响的行数
      * @throws SQLRuntimeException 数据库异常
      */
-    int update(T entity) throws SQLRuntimeException;
+    int update(Object anyEntity) throws SQLRuntimeException;
 
     /**
      * 更新数据

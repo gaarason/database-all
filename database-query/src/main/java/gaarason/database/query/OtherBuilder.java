@@ -10,6 +10,7 @@ import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.ToSqlFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
+import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
@@ -113,6 +114,12 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
     @Override
     public Builder<T, K> from(String table) {
         return fromRaw(FormatUtils.column(table));
+    }
+
+    @Override
+    public Builder<T, K> from(Object anyEntity) {
+        String tableName = modelShadowProvider.parseAnyEntityWithCache(anyEntity.getClass()).getTableName();
+        return from(tableName);
     }
 
     @Override

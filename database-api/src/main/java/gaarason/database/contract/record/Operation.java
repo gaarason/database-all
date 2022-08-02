@@ -20,7 +20,7 @@ public interface Operation<T, K> {
      * 注 1 : 新增或者更新, 以当前是否已经存在绑定的数据为依据,
      * 并非以当前的 entity 中是否存在主键,
      * 因为这样的话, 就无法实现更新主键的功能了.
-     * 如果是 希望以 entity 中是否存在主键在进行更新或者新增, 那么可以使用saveByKey()
+     * 如果是 希望以 entity 中是否存在主键在进行更新或者新增, 那么可以使用 saveByPrimaryKey()
      * @return 执行成功
      */
     boolean save();

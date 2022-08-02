@@ -137,6 +137,15 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
 
     /**
      * 解析实体类
+     * @param anyEntity 任意实体类(可查找泛型)
+     * @return 格式化后的Entity信息
+     */
+    public <T> EntityMember<T> parseAnyEntityWithCache(T anyEntity) {
+        return ObjectUtils.typeCast(parseAnyEntityWithCache(anyEntity.getClass()));
+    }
+
+    /**
+     * 解析实体类
      * @param anyEntityClass 任意实体类(可查找泛型)
      * @return 格式化后的Entity信息
      */
@@ -256,54 +265,12 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param <T> 数据表实体类
      * @return 字段对值的映射
      */
-    public <T> Map<String, Object> columnValueMapAfterFill(@Nullable T anyEntity, EntityUseType type) {
+    public <T> Map<String, Object> entityToMap(@Nullable T anyEntity, EntityUseType type) {
         if (ObjectUtils.isNull(anyEntity)) {
             return Collections.emptyMap();
         }
         EntityMember<?> entityMember = parseAnyEntityWithCache(anyEntity.getClass());
         return entityMember.toSimpleMap(ObjectUtils.typeCast(anyEntity), type);
-    }
-
-    /**
-     * 通过entity解析对应的字段组成的list
-     * 忽略不符合规则的字段
-     * @param anyEntity 数据表实体对象
-     * @param type 实体的使用目的
-     * @param <T> 数据表实体类
-     * @return 列名组成的list
-     */
-    public <T> Set<String> columnNameSet(@Nullable T anyEntity, EntityUseType type) {
-        if (ObjectUtils.isNull(anyEntity)) {
-            return Collections.emptySet();
-        }
-        return columnValueMapAfterFill(anyEntity, type).keySet();
-    }
-
-    /**
-     * 通过entity解析对应的字段的值组成的list, 忽略不符合规则的字段
-     * @param anyEntity 数据表实体对象
-     * @param <T> 数据表实体类
-     * @param columnNames 有效的属性名
-     * @return 字段的值组成的list
-     */
-    public <T> List<Object> valueList(@Nullable T anyEntity, Collection<String> columnNames) {
-        if (ObjectUtils.isNull(anyEntity)) {
-            return Collections.emptyList();
-        }
-        EntityMember<?> entityMember = parseAnyEntityWithCache(anyEntity.getClass());
-        Map<String, FieldMember> columnFieldMap = entityMember.getColumnFieldMap();
-
-        // 结果集
-        List<Object> valueList = new ArrayList<>();
-
-        for (Map.Entry<String, FieldMember> entry : columnFieldMap.entrySet()) {
-            // 加入需要的数据
-            if (columnNames.contains(entry.getKey())) {
-                FieldMember fieldMember = entry.getValue();
-                valueList.add(fieldMember.fieldGet(anyEntity));
-            }
-        }
-        return valueList;
     }
 
     /**

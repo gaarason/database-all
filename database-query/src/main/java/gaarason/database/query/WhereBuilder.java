@@ -84,7 +84,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
 
     @Override
     public Builder<T, K> where(Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity,
+        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity,
             EntityUseType.CONDITION);
         return where(columnValueMap);
     }
@@ -175,7 +175,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
 
     @Override
     public Builder<T, K> whereLikeIgnoreNull(@Nullable Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity,
+        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity,
             EntityUseType.CONDITION);
         return whereLikeIgnoreNull(columnValueMap);
     }
@@ -201,7 +201,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
 
     @Override
     public Builder<T, K> whereNotLikeIgnoreNull(@Nullable Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity,
+        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity,
             EntityUseType.CONDITION);
         return whereNotLikeIgnoreNull(columnValueMap);
     }
@@ -255,14 +255,14 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
 
     @Override
     public Builder<T, K> whereMayLike(@Nullable Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity,
+        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity,
             EntityUseType.CONDITION);
         return whereMayLike(columnValueMap);
     }
 
     @Override
     public Builder<T, K> whereMayNotLike(@Nullable Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity,
+        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity,
             EntityUseType.CONDITION);
         return whereMayNotLike(columnValueMap);
     }

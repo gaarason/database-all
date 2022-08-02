@@ -51,7 +51,7 @@ public abstract class DataBuilder<T, K> extends ExecuteLevel3Builder<T, K> {
 
     @Override
     public Builder<T, K> data(Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.columnValueMapAfterFill(anyEntity, EntityUseType.UPDATE);
+        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity, EntityUseType.UPDATE);
         return data(columnValueMap);
     }
 

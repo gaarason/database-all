@@ -1,5 +1,6 @@
 package gaarason.database.annotation;
 
+import gaarason.database.contract.support.FieldConversion;
 import gaarason.database.contract.support.FieldFill;
 import gaarason.database.contract.support.FieldStrategy;
 
@@ -103,12 +104,7 @@ public @interface Column {
     JDBCType jdbcType() default JDBCType.JAVA_OBJECT;
 
     /**
-     * java对象序列化到数据库
+     * 序列与反序列化
      */
-    Class<?> serializer() default Object.class;
-
-    /**
-     * 从数据库反序列化到java对象
-     */
-    Class<?> deserializer() default Object.class;
+    Class<? extends FieldConversion> conversion() default FieldConversion.Default.class;
 }

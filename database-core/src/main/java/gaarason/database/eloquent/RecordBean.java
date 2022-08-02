@@ -257,7 +257,6 @@ public class RecordBean<T, K> implements Record<T, K> {
 
     }
 
-
     /**
      * 元数据转实体对象
      * @return 实体对象
@@ -531,8 +530,6 @@ public class RecordBean<T, K> implements Record<T, K> {
         if (!model.creating(this)) {
             return false;
         }
-        // 主键处理
-        primaryKeyAutoDeal(entity);
         // 执行
         boolean success = model.newQuery().insertGetId(entity) != null;
         // 成功插入后,刷新自身属性
@@ -581,26 +578,6 @@ public class RecordBean<T, K> implements Record<T, K> {
         }
         // 响应
         return success;
-    }
-
-    /**
-     * 主键自动处理
-     * @param entity 实体
-     */
-    protected void primaryKeyAutoDeal(T entity) {
-        EntityMember<?> entityMember = modelShadow.parseAnyEntityWithCache(entity.getClass());
-
-        PrimaryKeyMember primaryKeyMember = entityMember.getPrimaryKeyMember();
-        // 无主键信息, 不做处理
-        if (ObjectUtils.isEmpty(primaryKeyMember)) {
-            return;
-        }
-
-        // 没有手动赋值主键时
-        if (primaryKeyMember.getFieldMember().fieldGet(entity) == null) {
-            // 当 IdGenerator 是 IdGenerator.Never.class 类型时，将其执行 nextId() 将返回 null,
-            primaryKeyMember.getFieldMember().fieldSet(entity, primaryKeyMember.getIdGenerator().nextId(), EntityUseType.INSERT);
-        }
     }
 
     /**

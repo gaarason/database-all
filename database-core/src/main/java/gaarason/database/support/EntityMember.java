@@ -3,7 +3,6 @@ package gaarason.database.support;
 import gaarason.database.annotation.Primary;
 import gaarason.database.appointment.EntityUseType;
 import gaarason.database.appointment.FinalVariable;
-import gaarason.database.appointment.ValueWrapper;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.core.Container;
 import gaarason.database.exception.EntityAttributeInvalidException;
@@ -131,7 +130,6 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
         return fieldRelationMember;
     }
 
-
     /**
      * 将实体对象中有效的数据库字段, 转化为简单Map
      * 根据字段上的注解对字段进行填充 (可能会改变原对象)
@@ -140,22 +138,7 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
      * @return 简单Map
      */
     public Map<String, Object> toSimpleMap(T entity, EntityUseType type) {
-        return toMap(entity, type, (fieldMember, value) -> {
-
-            // todo 类型转化 ???
-            return value;
-        });
-    }
-
-    /**
-     * 将实体对象中有效的数据库字段, 转化为包装Map
-     * 根据字段上的注解对字段进行填充 (可能会改变原对象)
-     * @param entity 实体对象
-     * @param type 实体的使用目的
-     * @return 简单Map
-     */
-    public Map<String, ValueWrapper> toWrapperMap(T entity, EntityUseType type) {
-        return toMap(entity, type, FieldMember::wrap);
+        return toMap(entity, type, (fieldMember, value) -> value);
     }
 
     /**
@@ -180,14 +163,9 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
             // 属性信息
             FieldMember fieldMember = entry.getValue();
             // 值
-            Object value = fieldMember.fieldGet(entity);
-            // 调用填充
-            value = fieldMember.fill(entity, value, type);
+            Object value = fieldMember.fieldGet(entity, type);
             // 有效则加入 结果集
-            if (fieldMember.effective(value, type)) {
-                // 回填
-                fieldMember.fieldSet(entity, value);
-                // 包装下
+            if (fieldMember.effective(value)) {
                 columnValueMap.put(entry.getKey(), function.apply(fieldMember, value));
             }
         }
@@ -362,7 +340,7 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
      * @throws PrimaryKeyNotFoundException 主键信息未知
      */
     public PrimaryKeyMember getPrimaryKeyMemberOrFail() throws PrimaryKeyNotFoundException {
-        if(primaryKeyMember == null){
+        if (primaryKeyMember == null) {
             throw new PrimaryKeyNotFoundException();
         }
         return primaryKeyMember;
