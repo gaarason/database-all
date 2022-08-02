@@ -275,23 +275,17 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
 
     /**
      * 将结果集中的原信息, 赋值到实体
-     * @param anyEntity 数据表实体对象
+     * @param anyEntityClass 数据表实体对象
      * @param theRecord 查询结果集
      * @param <T> 数据表实体类
-     * @param <K> 数据表主键类型
+     * @return 实体
      */
-    public <T, K> void entityAssignment(T anyEntity, Record<T, K> theRecord) {
+    public <T> T entityAssignment(Class<T> anyEntityClass, Record<?, ?> theRecord) {
         Map<String, Column> metadataMap = theRecord.getMetadataMap();
-        EntityMember<?> entityMember = parseAnyEntityWithCache(anyEntity.getClass());
-        // 数据库字段
-        for (Map.Entry<String, FieldMember> fieldMemberEntry : entityMember.getColumnFieldMap().entrySet()) {
-            FieldMember fieldMember = fieldMemberEntry.getValue();
-            Column column = metadataMap.get(fieldMember.getColumnName());
-            if (column != null) {
-                Object value = column.getValue();
-                fieldMember.fieldSet(anyEntity, value);
-            }
-        }
+        EntityMember<T> entityMember = parseAnyEntityWithCache(anyEntityClass);
+        T entity = entityMember.toEntity(metadataMap,
+            (fieldMember, column) -> column != null ? column.getValue() : null);
+
         // 数据库主键
         PrimaryKeyMember primaryKeyMember = entityMember.getPrimaryKeyMember();
         if (primaryKeyMember != null) {
@@ -300,6 +294,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
                 theRecord.setOriginalPrimaryKeyValue(ObjectUtils.typeCast(primaryKeyColumn.getValue()));
             }
         }
+        return entity;
     }
 
     /**

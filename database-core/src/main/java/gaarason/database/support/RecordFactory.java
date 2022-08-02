@@ -187,13 +187,21 @@ public class RecordFactory {
             // 列名
             String columnName = resultSetMetaData.getColumnLabel(i);
             column.setName(columnName);
+            
             FieldMember fieldMember = columnFieldMap.get(columnName);
-            Field field = ObjectUtils.isNull(fieldMember) ? null : fieldMember.getField();
 
-            // *尽量* 使用同类型赋值
-            column.setValue(model.getContainer()
-                .getBean(ConversionConfig.class)
-                .getValueFromJdbcResultSet(field, resultSet, columnName));
+            // 值获取
+            if(!ObjectUtils.isNull(fieldMember)){
+                Object valueAfterDeserialize = fieldMember.getFieldConversion()
+                    .deserialize(fieldMember.getField(), resultSet, columnName);
+                column.setValue(valueAfterDeserialize);
+            }else {
+                // *尽量* 使用同类型赋值
+                column.setValue(model.getContainer()
+                    .getBean(ConversionConfig.class)
+                    .getValueFromJdbcResultSet(null, resultSet, columnName));
+            }
+
             column.setType(resultSetMetaData.getColumnType(i));
             column.setTypeName(resultSetMetaData.getColumnTypeName(i));
             column.setCount(resultSetMetaData.getColumnCount());

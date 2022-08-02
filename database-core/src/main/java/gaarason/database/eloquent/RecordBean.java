@@ -270,7 +270,7 @@ public class RecordBean<T, K> implements Record<T, K> {
 
     @Override
     public <V> V toObject(Class<V> clazz) {
-        return EntityUtils.entityAssignment(this.metadataMap, clazz);
+        return modelShadow.entityAssignment(clazz, this);
     }
 
     @Override

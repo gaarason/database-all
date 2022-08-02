@@ -282,7 +282,9 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
      */
     public void fieldSet(Object obj, @Nullable Object value) {
         try {
-            getField().set(obj, value);
+            // 反序列化后
+            Object valueAfterDeserialize = fieldConversion.deserialize(getField(), value);
+            getField().set(obj, valueAfterDeserialize);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessRuntimeException(e);
         }

@@ -1,5 +1,7 @@
 package gaarason.database.test;
 
+import gaarason.database.annotation.Primary;
+import gaarason.database.test.models.normal.NullTestModel;
 import gaarason.database.util.EntityUtils;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -10,7 +12,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.List;
 
-public class EntityUtilsTests {
+public class PrimaryKeyEntityUtilsTests {
 
     @Test
     public void getDeclaredFieldsContainParentTest() {
@@ -34,6 +36,52 @@ public class EntityUtilsTests {
          ]
          */
         Assert.assertEquals(9, fields.size());
+    }
+
+    @Test
+    public void 匿名类() {
+
+        Son sonSon = new Son() {
+
+            private static final long serialVersionUID = 1L;
+            private String name = "son son";
+            private Integer age = 6;
+            private String onlySonSon = "onlySonSon";
+            Son this$0 = new Son();
+            Son this$0$;
+
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public void setName(String name) {
+                this.name = name;
+            }
+
+            @Override
+            public Integer getAge() {
+                return age;
+            }
+
+            @Override
+            public void setAge(Integer age) {
+                this.age = age;
+            }
+
+            public String getOnlySonSon() {
+                return onlySonSon;
+            }
+
+            public void setOnlySonSon(String onlySonSon) {
+                this.onlySonSon = onlySonSon;
+            }
+        };
+
+        List<Field> fields = EntityUtils.getDeclaredFieldsContainParent(sonSon.getClass());
+        System.out.println(fields);
+        Assert.assertEquals(13, fields.size());
     }
 
     @Test

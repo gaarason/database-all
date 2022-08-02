@@ -1,6 +1,6 @@
 package gaarason.database.test;
 
-import gaarason.database.test.parent.PrimaryKeyTests;
+import gaarason.database.test.parent.AnnotationTests;
 import gaarason.database.test.utils.DatabaseTypeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.BeforeClass;
@@ -11,7 +11,7 @@ import java.io.IOException;
 
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
-public class MysqlPrimaryKeyTests extends PrimaryKeyTests {
+public class MysqlAnnotationTests extends AnnotationTests {
 
     @BeforeClass
     public static void beforeClass() throws IOException {

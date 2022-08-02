@@ -8,10 +8,7 @@ import gaarason.database.exception.TypeNotSupportedException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -223,11 +220,16 @@ public final class EntityUtils {
 
     /**
      * 返回 clazz 中的所有属性(public/protected/private/default),含static, 含父类, 不含接口的
+     * 移除属性名包含this$的属性
      * @param clazz 类型
      * @return 所有字段列表(子类的更加靠前)
      */
     public static List<Field> getDeclaredFieldsContainParent(Class<?> clazz) {
         List<Field> fields = new ArrayList<>(Arrays.asList(clazz.getDeclaredFields()));
+
+        // 简单的避免内部类的影响, 当然这个方式可能会误判, 但是的确简单
+        fields.removeIf(next -> next.getName().contains("this$"));
+
         Class<?> superclass = clazz.getSuperclass();
         if (superclass != null && !superclass.equals(Object.class)) {
             fields.addAll(getDeclaredFieldsContainParent(superclass));
@@ -237,6 +239,7 @@ public final class EntityUtils {
 
     /**
      * 返回 clazz 中的所有属性(public/protected/private/default), 含父类, 不含static, 不含接口的
+     * 移除属性名包含this$的属性
      * @param clazz 类型
      * @return 所有字段列表(子类的更加靠前)
      */

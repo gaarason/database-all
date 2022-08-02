@@ -173,6 +173,35 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
     }
 
     /**
+     * 将Map中有效的数据库字段, 赋值到全新的实体对象
+     * @param columnValueMap MAP对象
+     * @param function 结果转化方式
+     * @param <W> 结果类型
+     * @return 实体对象
+     */
+    public <W> T toEntity(Map<String, W> columnValueMap, BiFunction<FieldMember, W, Object> function) {
+        T entity = newInstance();
+        if (ObjectUtils.isNull(columnValueMap)) {
+            return entity;
+        }
+
+        // 属性信息集合 (ColumnName 为key)
+        Map<String, FieldMember> columnFieldMap = getColumnFieldMap();
+        for (Map.Entry<String, FieldMember> entry : columnFieldMap.entrySet()) {
+            // 属性信息
+            FieldMember fieldMember = entry.getValue();
+            // 值
+            if (columnValueMap.containsKey(fieldMember.getColumnName())) {
+                W w = columnValueMap.get(fieldMember.getColumnName());
+                Object value = function.apply(fieldMember, w);
+                // 赋值
+                fieldMember.fieldSet(entity, value);
+            }
+        }
+        return entity;
+    }
+
+    /**
      * 延迟获取关联关系
      * @return 关联关系map
      */
@@ -192,47 +221,18 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
     }
 
     /**
-     * 将Map中有效的数据库字段, 赋值到全新的实体对象
-     * @param columnValueMap MAP对象
-     * @param type 实体的使用目的
-     * @param function 结果转化方式
-     * @param <W> 结果类型
-     * @return 实体对象
-     */
-    public <W> T toEntity(Map<String, W> columnValueMap, EntityUseType type,
-        BiFunction<FieldMember, W, Object> function) {
-        T entity = newInstance();
-        if (ObjectUtils.isNull(columnValueMap)) {
-            return entity;
-        }
-
-        // 属性信息集合 (ColumnName 为key)
-        Map<String, FieldMember> columnFieldMap = getColumnFieldMap();
-        for (Map.Entry<String, FieldMember> entry : columnFieldMap.entrySet()) {
-            // 属性信息
-            FieldMember fieldMember = entry.getValue();
-            // 值
-            W w = columnValueMap.get(fieldMember.getColumnName());
-            Object value = function.apply(fieldMember, w);
-
-            // 有效则赋值
-            if (fieldMember.effective(value, type)) {
-                fieldMember.fieldSet(entity, value);
-            }
-        }
-        return entity;
-    }
-
-    /**
      * 普通属性处理
      */
     private void primitiveFieldDeal() {
-        // 返回实体中的所有属性(public/protected/private/default),含static, 含父类, 不含接口的
-        List<Field> fields = EntityUtils.getDeclaredFieldsContainParent(entityClass);
+        // 返回实体中的所有属性(public/protected/private/default), 不含static, 含父类, 不含接口的
+        List<Field> fields = EntityUtils.getDeclaredFieldsContainParentWithoutStatic(entityClass);
 
         for (Field field : fields) {
-            // 跳过(静态属性 or 非基本类型(由关联关系去处理))
-            if (EntityUtils.isStaticField(field) || !EntityUtils.isBasicField(field)) {
+
+            /*
+             * 跳过 关联关系相关字段
+             */
+            if (effectiveRelationField(field)) {
                 continue;
             }
 
@@ -263,7 +263,10 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
      * @param fieldMember 数据库字段信息
      */
     private void dealJavaFieldMap(FieldMember fieldMember) {
-        javaFieldMap.put(fieldMember.getField().getName(), fieldMember);
+        // 属性重名的情况下, 子类优先
+        if (!javaFieldMap.containsKey(fieldMember.getField().getName())) {
+            javaFieldMap.put(fieldMember.getField().getName(), fieldMember);
+        }
     }
 
     /**
@@ -271,7 +274,8 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
      * @param fieldMember 数据库字段信息
      */
     private void dealColumnMap(FieldMember fieldMember) {
-        if (fieldMember.getColumn().inDatabase()) {
+        // 字段重名的情况下, 子类优先
+        if (fieldMember.getColumn().inDatabase() && !columnFieldMap.containsKey(fieldMember.getColumnName())) {
             columnFieldMap.put(fieldMember.getColumnName(), fieldMember);
         }
     }
@@ -281,7 +285,8 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
      * @param fieldMember 数据库字段信息
      */
     private void dealSelectColumnList(FieldMember fieldMember) {
-        if (fieldMember.getColumn().inDatabase() && fieldMember.getColumn().selectable()) {
+        if (fieldMember.getColumn().inDatabase() && fieldMember.getColumn().selectable() &&
+            !selectColumnList.contains(fieldMember.getColumnName())) {
             selectColumnList.add(fieldMember.getColumnName());
         }
     }
@@ -307,7 +312,9 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
                 FieldRelationMember fieldRelationMember = new FieldRelationMember(container, field, model);
 
                 // 关联关系记录
-                relationFieldMap.put(fieldRelationMember.getName(), fieldRelationMember);
+                if(!relationFieldMap.containsKey(fieldRelationMember.getName())){
+                    relationFieldMap.put(fieldRelationMember.getName(), fieldRelationMember);
+                }
             }
         }
     }
@@ -348,7 +355,7 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
 
     // ---------------------------- simple getter ---------------------------- //
 
-    public Class<?> getEntityClass() {
+    public Class<T> getEntityClass() {
         return entityClass;
     }
 

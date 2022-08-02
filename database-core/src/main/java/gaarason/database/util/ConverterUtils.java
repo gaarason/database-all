@@ -276,6 +276,11 @@ public class ConverterUtils {
      * @see FinalVariable ALLOW_FIELD_TYPES
      */
     public static <R> R cast(final Object obj, final Class<R> clz) throws TypeCastException {
+        // 无需转化
+        if(clz.isAssignableFrom(obj.getClass())){
+            return ObjectUtils.typeCast(obj);
+        }
+
         Object result;
         if (Boolean.class.equals(clz) || boolean.class.equals(clz)) {
             result = getAsBoolean(obj);

@@ -87,9 +87,7 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
             EntityMember<T> entityMember = modelMember.getEntityMember();
 
             // 实体类的对象
-            T entity = entityMember.newInstance();
-            // 普通属性集合
-            modelShadow.entityAssignment(entity, theRecord);
+            T entity = modelShadow.entityAssignment(entityMember.getEntityClass(), theRecord);
 
             // 关系属性集合
             Map<String, FieldRelationMember> relationFieldMap = entityMember.getRelationFieldMap();
