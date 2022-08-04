@@ -31,6 +31,8 @@ abstract public class BaseTests {
         new LinkedBlockingDeque<>(100));
 
     static {
+        // 包扫描
+        System.setProperty("gaarason.database.scan.packages", "gaarason.database");
 
         Map<TABLE, String[]> tableSql = new HashMap<>();
         for (TABLE table : TABLE.values()) {

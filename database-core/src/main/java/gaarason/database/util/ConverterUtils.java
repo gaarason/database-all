@@ -423,12 +423,6 @@ public class ConverterUtils {
 
         Class<?> fieldType = field.getType();
 
-
-        // 返回的字段值为null, 且目标类型可以接受null
-        if (EntityUtils.isFieldCanBeNull(field) && resultSet.getObject(column) == null) {
-            return null;
-        }
-
         if (Boolean.class.equals(fieldType) || boolean.class.equals(fieldType)) {
             return resultSet.getBoolean(column);
         } else if (Byte.class.equals(fieldType) || byte.class.equals(fieldType)) {
