@@ -28,7 +28,10 @@ abstract public class CollectionTests extends BaseTests {
     protected GaarasonDataSource getGaarasonDataSource() {
         return studentModel.getGaarasonDataSource();
     }
-
+    @Override
+    protected List<TABLE> getInitTables() {
+        return Arrays.asList(TABLE.student);
+    }
     @Override
     protected void otherAfter() {
         records = studentModel.newQuery().orderBy("id").get();

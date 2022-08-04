@@ -1,3 +1,5 @@
+# noinspection SqlNoDataSourceInspectionForFile
+
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `data_type`;
 CREATE TABLE `data_type`

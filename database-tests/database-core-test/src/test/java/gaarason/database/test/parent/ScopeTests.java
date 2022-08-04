@@ -11,6 +11,9 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
 abstract public class ScopeTests extends BaseTests {
@@ -21,7 +24,10 @@ abstract public class ScopeTests extends BaseTests {
     protected GaarasonDataSource getGaarasonDataSource() {
         return studentModel.getGaarasonDataSource();
     }
-
+    @Override
+    protected List<TABLE> getInitTables() {
+        return Arrays.asList(TABLE.student);
+    }
     @Test
     public void 软删除与恢复() {
         int id = studentModel.newQuery().where("id", "5").delete();

@@ -12,6 +12,8 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -32,7 +34,10 @@ abstract public class TransactionTests extends BaseTests {
     protected GaarasonDataSource getGaarasonDataSource() {
         return studentModel.getGaarasonDataSource();
     }
-
+    @Override
+    protected List<TABLE> getInitTables() {
+        return Arrays.asList(TABLE.student);
+    }
     @Test
     public void 事物_单个数据连接可嵌套事物_子事务独立提交() {
         // 1层事物

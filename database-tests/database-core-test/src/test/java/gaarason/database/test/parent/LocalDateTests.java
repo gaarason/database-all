@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -23,7 +24,10 @@ import java.util.List;
 abstract public class LocalDateTests extends BaseTests {
 
     protected static DatetimeTestModel datetimeTestModel = new DatetimeTestModel();
-
+    @Override
+    protected List<TABLE> getInitTables() {
+        return Arrays.asList(TABLE.datetime_test);
+    }
     protected GaarasonDataSource getGaarasonDataSource() {
         return datetimeTestModel.getGaarasonDataSource();
     }

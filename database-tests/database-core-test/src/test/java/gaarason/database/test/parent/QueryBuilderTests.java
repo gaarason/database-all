@@ -41,6 +41,11 @@ abstract public class QueryBuilderTests extends BaseTests {
         return studentModel.getGaarasonDataSource();
     }
 
+    @Override
+    protected List<TABLE> getInitTables() {
+        return Arrays.asList(TABLE.student);
+    }
+
     @Test
     public void 新增_多线程_循环_非entity方式() throws InterruptedException {
         // 原本数据量

@@ -42,7 +42,10 @@ abstract public class ORMTests extends BaseTests {
     protected GaarasonDataSource getGaarasonDataSource() {
         return studentORMModel.getGaarasonDataSource();
     }
-
+    @Override
+    protected List<TABLE> getInitTables() {
+        return Arrays.asList(TABLE.student, TABLE.teacher, TABLE.relationship_student_teacher);
+    }
     @Test
     public void ORM查询() {
         Record<StudentORMModel.Entity, Integer> record = studentORMModel.findOrFail(3);

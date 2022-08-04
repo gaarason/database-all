@@ -90,7 +90,7 @@ public class DatabaseUtilsTests {
         List<Long> ids = new LinkedList<>();
 
         int a = 100;
-        int b = 30000;
+        int b = 3000;
         IdGenerator.SnowFlakesID snowFlakesID = ContainerBootstrap.buildAndBootstrap()
             .getBean(IdGenerator.SnowFlakesID.class);
         MultiThreadUtil.run(a, b, () -> {
@@ -186,7 +186,7 @@ public class DatabaseUtilsTests {
 
     @Test
     public void getColumnByMethodTest() {
-        MultiThreadUtil.run(100, 1000, () -> {
+        MultiThreadUtil.run(100, 100, () -> {
             LambdaInfo<Student> name = LambdaUtils.parse(Student::getName);
             LambdaUtils.parse(Student::getName);
             LambdaUtils.parse(Student::getName);
@@ -223,7 +223,7 @@ public class DatabaseUtilsTests {
             .bootstrap()
             .getBean(ModelShadowProvider.class);
         modelShadowProvider.parseColumnNameByLambdaWithCache(Student::getName);
-        MultiThreadUtil.run(100, 1000, () -> {
+        MultiThreadUtil.run(100, 100, () -> {
             String column = modelShadowProvider.parseColumnNameByLambdaWithCache(Student::getName);
             modelShadowProvider.parseColumnNameByLambdaWithCache(Student::getName);
             modelShadowProvider.parseColumnNameByLambdaWithCache(Student::getName);

@@ -17,10 +17,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
@@ -42,7 +39,10 @@ abstract public class RelationTests extends BaseTests {
     protected GaarasonDataSource getGaarasonDataSource() {
         return studentModel.getGaarasonDataSource();
     }
-
+    @Override
+    protected List<TABLE> getInitTables() {
+        return Arrays.asList(TABLE.student, TABLE.teacher, TABLE.relationship_student_teacher);
+    }
     @Test
     public void 一对一关系() {
         // 声明但不使用

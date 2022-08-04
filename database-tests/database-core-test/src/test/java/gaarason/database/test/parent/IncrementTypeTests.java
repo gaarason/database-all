@@ -31,7 +31,10 @@ abstract public class IncrementTypeTests extends BaseTests {
     protected GaarasonDataSource getGaarasonDataSource() {
         return peopleModel.getGaarasonDataSource();
     }
-
+    @Override
+    protected List<TABLE> getInitTables() {
+        return Arrays.asList(TABLE.people);
+    }
     @Data
     @Table(name = "people")
     public static class PeopleSnowFlakesID implements Serializable {

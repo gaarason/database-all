@@ -10,12 +10,18 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
 abstract public class AnnotationTests extends BaseTests {
 
     protected static AnnotationTestModel annotationTestModel = new AnnotationTestModel();
-
+    @Override
+    protected List<TABLE> getInitTables() {
+        return Arrays.asList(TABLE.student, TABLE.null_test);
+    }
     protected GaarasonDataSource getGaarasonDataSource() {
         return annotationTestModel.getGaarasonDataSource();
     }

@@ -119,8 +119,7 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
     public <V> List<V> toObjectList(Class<V> clazz) {
         List<V> entityList = new ArrayList<>();
         for (Record<T, K> tkRecord : this) {
-            final V v = EntityUtils.entityAssignment(tkRecord.getMetadataMap(), clazz);
-            entityList.add(v);
+            entityList.add(tkRecord.toObject(clazz));
         }
         return entityList;
     }

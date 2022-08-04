@@ -8,6 +8,8 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -20,7 +22,10 @@ abstract public class JsonTests extends BaseTests {
         return jsonTestModel.getGaarasonDataSource();
     }
 
-
+    @Override
+    protected List<TABLE> getInitTables() {
+        return Arrays.asList(TABLE.null_test);
+    }
     /**
      * // 定义
      * @Json private Map<Object, Object> json;

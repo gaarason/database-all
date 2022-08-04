@@ -12,6 +12,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +25,10 @@ abstract public class NullTests extends BaseTests {
     protected GaarasonDataSource getGaarasonDataSource() {
         return nullTestModel.getGaarasonDataSource();
     }
-
+    @Override
+    protected List<TABLE> getInitTables() {
+        return Arrays.asList(TABLE.null_test);
+    }
     @Test
     public void test() {
         Integer id = 3456;

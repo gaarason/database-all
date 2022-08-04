@@ -10,6 +10,9 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
 public class AaaGcTests extends BaseTests {
@@ -19,6 +22,11 @@ public class AaaGcTests extends BaseTests {
     @Override
     protected GaarasonDataSource getGaarasonDataSource() {
         return studentModel.getGaarasonDataSource();
+    }
+
+    @Override
+    protected List<TABLE> getInitTables() {
+        return Arrays.asList(TABLE.student);
     }
 
     @Test

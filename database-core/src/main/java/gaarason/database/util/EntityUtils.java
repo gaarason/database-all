@@ -77,95 +77,6 @@ public final class EntityUtils {
     }
 
     /**
-     * 将数据库查询结果赋值给 任意 entityList
-     * @param stringColumnMapList 源数据
-     * @param entityClass 目标实体类
-     * @param <T> 目标实体类
-     * @return 对象列表
-     * @throws TypeNotSupportedException 实体不支持
-     */
-    public static <T> List<T> entityAssignment(
-        List<Map<String, gaarason.database.appointment.Column>> stringColumnMapList,
-        Class<T> entityClass) throws TypeNotSupportedException {
-        List<T> entityList = new ArrayList<>();
-        for (Map<String, gaarason.database.appointment.Column> stringColumnMap : stringColumnMapList) {
-            T entity = entityAssignment(stringColumnMap, entityClass);
-            entityList.add(entity);
-        }
-        return entityList;
-    }
-
-    /**
-     * 将数据库查询结果赋值给 任意 entity
-     * @param stringColumnMap 源数据
-     * @param entityClass 目标实体类
-     * @param <T> 目标实体类
-     * @return 对象
-     * @throws TypeNotSupportedException 实体不支持
-     */
-    public static <T> T entityAssignment(Map<String, gaarason.database.appointment.Column> stringColumnMap,
-        Class<T> entityClass) throws TypeNotSupportedException {
-        try {
-            T entity = entityClass.newInstance();
-            List<Field> fields = getDeclaredFieldsContainParentWithoutStatic(entityClass);
-            for (Field field : fields) {
-                field.setAccessible(true);
-                String columnName = EntityUtils.columnName(field);
-                gaarason.database.appointment.Column column = stringColumnMap.get(columnName);
-                if (column != null) {
-                    field.set(entity, column.getValue());
-                }
-            }
-            return entity;
-        } catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
-            throw new TypeNotSupportedException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * stringObjectMap 赋值给 任意 entity
-     * @param stringObjectMapList 源数据 List<map<列名, 值>>
-     * @param entityClass 目标实体类
-     * @param <T> 目标实体类
-     * @return 对象
-     * @throws TypeNotSupportedException 实体不支持
-     */
-    public static <T> List<T> entityAssignmentBySimpleMap(List<Map<String, Object>> stringObjectMapList,
-        Class<T> entityClass) throws TypeNotSupportedException {
-
-        List<T> entityList = new ArrayList<>();
-        for (Map<String, Object> stringObjectMap : stringObjectMapList) {
-            T entity = entityAssignmentBySimpleMap(stringObjectMap, entityClass);
-            entityList.add(entity);
-        }
-        return entityList;
-    }
-
-    /**
-     * stringObjectMap 赋值给 任意 entity
-     * @param stringObjectMap 源数据 map<列名, 值>
-     * @param entityClass 目标实体类
-     * @param <T> 目标实体类
-     * @return 对象
-     * @throws TypeNotSupportedException 实体不支持
-     */
-    public static <T> T entityAssignmentBySimpleMap(Map<String, Object> stringObjectMap, Class<T> entityClass)
-        throws TypeNotSupportedException {
-        try {
-            T entity = entityClass.newInstance();
-            List<Field> fields = getDeclaredFieldsContainParentWithoutStatic(entityClass);
-            for (Field field : fields) {
-                field.setAccessible(true);
-                String columnName = EntityUtils.columnName(field);
-                field.set(entity, stringObjectMap.get(columnName));
-            }
-            return entity;
-        } catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
-            throw new TypeNotSupportedException(e.getMessage(), e);
-        }
-    }
-
-    /**
      * 将 complementEntity 中的属性赋值到 baseEntity 上
      * 1. 针对于非静态属性 2. complementEntity中所有的null属性都会跳过 (所以一定要使用包装类型来声明 entity)
      * @param baseEntity 基本实体对象(不会被修改)
@@ -200,23 +111,6 @@ public final class EntityUtils {
             throw new IllegalAccessRuntimeException(e);
         }
     }
-
-//    /**
-//     * 格式化值到字符串
-//     * 关键
-//     * @param value 原值 (实体的属性)
-//     * @return 字符串
-//     */
-//    @Nullable
-//    public static String valueFormat(@Nullable Object value) {
-//        if (value instanceof Date) {
-//            return LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(value);
-//        } else if (value instanceof Boolean) {
-//            return (boolean) value ? "1" : "0";
-//        } else {
-//            return ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class);
-//        }
-//    }
 
     /**
      * 返回 clazz 中的所有属性(public/protected/private/default),含static, 含父类, 不含接口的
@@ -267,6 +161,5 @@ public final class EntityUtils {
             throw e;
         }
     }
-
 
 }
