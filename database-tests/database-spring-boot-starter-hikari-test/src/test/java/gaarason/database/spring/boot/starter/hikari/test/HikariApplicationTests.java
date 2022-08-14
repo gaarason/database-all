@@ -45,8 +45,6 @@ public class HikariApplicationTests {
         generator.setEntityPrefix("");                  // 实体的类名前缀
         generator.setEntitySuffix("");                  // 实体的类名后缀
 
-        generator.setDisInsertable("created_at", "updated_at");     // 新增时,不可通过ORM更改的字段
-        generator.setDisUpdatable("created_at", "updated_at");      // 更新时,不可通过ORM更改的字段
 
         generator.setBaseModelDir("base");              // 模型父类的相对路径
         generator.setBaseModelName("BaseModel");        // 模型父类的类名
@@ -75,8 +73,6 @@ public class HikariApplicationTests {
 //        generator.setOutputDir("./src/test/java/");
         generator.setOutputDir("./src/test/java1/");
         generator.setNamespace("test.data");
-        generator.setDisInsertable("created_at", "updated_at");
-        generator.setDisUpdatable("created_at", "updated_at");
 
         generator.run();
     }

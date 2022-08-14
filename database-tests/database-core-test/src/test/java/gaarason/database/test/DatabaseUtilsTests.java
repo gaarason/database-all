@@ -220,7 +220,7 @@ public class DatabaseUtilsTests {
             Assert.assertEquals("sex", sex.getFieldName());
         });
         ModelShadowProvider modelShadowProvider = ContainerBootstrap.build()
-            .bootstrap()
+            .autoBootstrap()
             .getBean(ModelShadowProvider.class);
         modelShadowProvider.parseColumnNameByLambdaWithCache(Student::getName);
         MultiThreadUtil.run(100, 100, () -> {

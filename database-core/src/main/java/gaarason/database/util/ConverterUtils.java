@@ -423,68 +423,73 @@ public class ConverterUtils {
 
         Class<?> fieldType = field.getType();
 
+        Object value;
+
         if (Boolean.class.equals(fieldType) || boolean.class.equals(fieldType)) {
-            return resultSet.getBoolean(column);
+            value =  resultSet.getBoolean(column);
         } else if (Byte.class.equals(fieldType) || byte.class.equals(fieldType)) {
-            return resultSet.getByte(column);
+            value =  resultSet.getByte(column);
         } else if (Character.class.equals(fieldType) || char.class.equals(fieldType)) {
             String tempStr = resultSet.getString(column);
-            return tempStr != null ? tempStr.toCharArray()[0] : ' ';
+            value =  tempStr != null ? tempStr.toCharArray()[0] : ' ';
         } else if (Short.class.equals(fieldType) || short.class.equals(fieldType)) {
-            return resultSet.getShort(column);
+            value =  resultSet.getShort(column);
         } else if (Integer.class.equals(fieldType) || int.class.equals(fieldType)) {
-            return resultSet.getInt(column);
+            value =  resultSet.getInt(column);
         } else if (Long.class.equals(fieldType) || long.class.equals(fieldType)) {
-            return resultSet.getLong(column);
+            value =  resultSet.getLong(column);
         } else if (Float.class.equals(fieldType) || float.class.equals(fieldType)) {
-            return resultSet.getFloat(column);
+            value =  resultSet.getFloat(column);
         } else if (Double.class.equals(fieldType) || double.class.equals(fieldType)) {
-            return resultSet.getDouble(column);
+            value =  resultSet.getDouble(column);
         } else if (BigInteger.class.isAssignableFrom(fieldType)) {
-            return new BigInteger(resultSet.getString(column));
+            value =  new BigInteger(resultSet.getString(column));
         } else if (BigDecimal.class.equals(fieldType)) {
-            return resultSet.getBigDecimal(column);
+            value =  resultSet.getBigDecimal(column);
         } else if (Number.class.isAssignableFrom(fieldType)) {
-            return resultSet.getLong(column);
+            value =  resultSet.getLong(column);
         } else if (java.sql.Date.class.equals(fieldType)) {
-            return resultSet.getDate(column);
+            value =  resultSet.getDate(column);
         } else if (Time.class.equals(fieldType)) {
-            return resultSet.getTime(column);
+            value =  resultSet.getTime(column);
         } else if (Year.class.equals(fieldType)) {
             Timestamp timestamp = resultSet.getTimestamp(column);
-            return ObjectUtils.isNull(timestamp) ? null : Year.from(timestamp.toLocalDateTime());
+            value =  ObjectUtils.isNull(timestamp) ? null : Year.from(timestamp.toLocalDateTime());
         } else if (YearMonth.class.equals(fieldType)) {
             Timestamp timestamp = resultSet.getTimestamp(column);
-            return ObjectUtils.isNull(timestamp) ? null : YearMonth.from(timestamp.toLocalDateTime());
+            value =  ObjectUtils.isNull(timestamp) ? null : YearMonth.from(timestamp.toLocalDateTime());
         } else if (Month.class.equals(fieldType)) {
             Timestamp timestamp = resultSet.getTimestamp(column);
-            return ObjectUtils.isNull(timestamp) ? null : Month.from(timestamp.toLocalDateTime());
+            value =  ObjectUtils.isNull(timestamp) ? null : Month.from(timestamp.toLocalDateTime());
         } else if (MonthDay.class.equals(fieldType)) {
             Timestamp timestamp = resultSet.getTimestamp(column);
-            return ObjectUtils.isNull(timestamp) ? null : MonthDay.from(timestamp.toLocalDateTime());
+            value =  ObjectUtils.isNull(timestamp) ? null : MonthDay.from(timestamp.toLocalDateTime());
         } else if (Timestamp.class.equals(fieldType)) {
-            return resultSet.getTimestamp(column);
+            value =  resultSet.getTimestamp(column);
         } else if (Date.class.isAssignableFrom(fieldType)) {
             Timestamp timestamp = resultSet.getTimestamp(column);
-            return ObjectUtils.isNull(timestamp) ? null : Date.from(timestamp.toInstant());
+            value =  ObjectUtils.isNull(timestamp) ? null : Date.from(timestamp.toInstant());
         } else if (LocalDate.class.equals(fieldType)) {
             java.sql.Date date = resultSet.getDate(column);
-            return ObjectUtils.isNull(date) ? null : date.toLocalDate();
+            value =  ObjectUtils.isNull(date) ? null : date.toLocalDate();
         } else if (LocalTime.class.equals(fieldType)) {
             Time time = resultSet.getTime(column);
-            return ObjectUtils.isNull(time) ? null : time.toLocalTime();
+            value =  ObjectUtils.isNull(time) ? null : time.toLocalTime();
         } else if (LocalDateTime.class.equals(fieldType)) {
             Timestamp timestamp = resultSet.getTimestamp(column);
-            return ObjectUtils.isNull(timestamp) ? null : timestamp.toLocalDateTime();
+            value =  ObjectUtils.isNull(timestamp) ? null : timestamp.toLocalDateTime();
         } else if (String.class.equals(fieldType)) {
-            return resultSet.getString(column);
+            value =  resultSet.getString(column);
         } else if (Blob.class.isAssignableFrom(fieldType)) {
-            return resultSet.getBlob(column);
+            value =  resultSet.getBlob(column);
         } else if (Clob.class.isAssignableFrom(fieldType)) {
-            return resultSet.getClob(column);
+            value =  resultSet.getClob(column);
         } else {
             // 未识别的类型
-            return resultSet.getObject(column, fieldType);
+            value =  resultSet.getObject(column, fieldType);
         }
+
+        // 返回的字段值为null, 且目标类型可以接受null
+        return resultSet.wasNull() && EntityUtils.isFieldCanBeNull(field) ? null : value;
     }
 }

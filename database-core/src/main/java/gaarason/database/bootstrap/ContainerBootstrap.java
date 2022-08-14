@@ -56,7 +56,7 @@ public class ContainerBootstrap extends ContainerProvider {
      */
     public static ContainerBootstrap buildAndBootstrap() {
         return new ContainerBootstrap(
-            GaarasonDatabaseProperties.buildFromSystemProperties().fillAndVerify()).bootstrap();
+            GaarasonDatabaseProperties.buildFromSystemProperties().fillAndVerify()).autoBootstrap();
     }
 
     /**
@@ -77,25 +77,26 @@ public class ContainerBootstrap extends ContainerProvider {
     }
 
     /**
-     * 启动
+     * 自动化启动
+     * @return ContainerProvider
      */
-    public synchronized ContainerBootstrap bootstrap() {
+    public synchronized ContainerBootstrap autoBootstrap() {
         if (bootstrapHasDone) {
             LOGGER.error("Bootstrap in " + getClass() + " can not bo done twice.");
             return this;
         }
         bootstrapHasDone = true;
-        bootstrapStepFirst();
-        bootstrapStepSecond();
-        bootstrapStepThird();
+        defaultRegister();
+        bootstrapGaarasonAutoconfiguration();
+        initialization();
         return this;
     }
 
     /**
-     * 初始化第一步
      * 初始化 无依赖的对象, 以及仅依赖于配置的对象
+     * @return ContainerProvider
      */
-    protected void bootstrapStepFirst() {
+    public ContainerBootstrap defaultRegister() {
         // 初始化包扫描类
         register(ReflectionScan.class, clazz -> new DefaultReflectionScan(properties));
         // ID生成 雪花算法
@@ -112,23 +113,41 @@ public class ContainerBootstrap extends ContainerProvider {
         register(ConversionConfig.class, clazz -> initConversionConfig());
         // Model的实例化的工厂的提供者
         register(ModelInstanceProvider.class, clazz -> new ModelInstanceProvider(this));
+        // Model信息大全
+        register(ModelShadowProvider.class, clazz -> new ModelShadowProvider(this));
+        return this;
     }
 
     /**
-     * 初始化第二步
-     * 初始化 依赖于bootstrapStepFirst()结果的对象
+     * 找到所有的GaarasonAutoconfiguration自动配置类, 并执行其 init()
+     * @return ContainerProvider
      */
-    protected void bootstrapStepSecond() {
-        register(ModelShadowProvider.class, clazz -> initModelShadow());
+    public ContainerBootstrap bootstrapGaarasonAutoconfiguration() {
+        Set<Class<? extends GaarasonAutoconfiguration>> gaarasonAutoconfigurations = getBean(
+            ReflectionScan.class).scanAutoconfiguration();
+
+        for (Class<? extends GaarasonAutoconfiguration> gaarasonAutoconfiguration : gaarasonAutoconfigurations) {
+            try {
+                ClassUtils.newInstance(gaarasonAutoconfiguration).init(this);
+                LOGGER.debug(
+                    "Auto configuration [" + gaarasonAutoconfiguration.getName() + "] executed successfully .");
+            } catch (Throwable e) {
+                LOGGER.error(
+                    "A problem was encountered during automatic configuration [" + gaarasonAutoconfiguration.getName() +
+                        "].", e);
+            }
+        }
+        LOGGER.debug("All gaarasonAutoconfiguration has been init.");
+        return this;
     }
 
     /**
-     * 初始化第三步
-     * 初始化 其他对象 以及自动配置
+     * 初始化
+     * @return ContainerProvider
      */
-    protected void bootstrapStepThird() {
-        // 扫描 GaarasonAutoconfiguration 并执行其init()
-        bootstrapGaarasonAutoconfiguration();
+    public ContainerBootstrap initialization() {
+        initModelShadow();
+        return this;
     }
 
     /**
@@ -177,30 +196,10 @@ public class ContainerBootstrap extends ContainerProvider {
      * @return ModelShadow
      */
     protected ModelShadowProvider initModelShadow() {
-        ModelShadowProvider modelShadowProvider = new ModelShadowProvider(this);
-        modelShadowProvider.loadModels(ObjectUtils.typeCast(getBean(ReflectionScan.class).scanModels()));
-        LOGGER.debug("All Model has been load.");
+        ModelShadowProvider modelShadowProvider = getBean(ModelShadowProvider.class);
+        int i = modelShadowProvider.loadModels(ObjectUtils.typeCast(getBean(ReflectionScan.class).scanModels()));
+        LOGGER.debug("All " + i + " Model has been load.");
         return modelShadowProvider;
     }
 
-    /**
-     * 找到所有的GaarasonAutoconfiguration自动配置类, 并执行其 init()
-     */
-    protected void bootstrapGaarasonAutoconfiguration() {
-        Set<Class<? extends GaarasonAutoconfiguration>> gaarasonAutoconfigurations = getBean(
-            ReflectionScan.class).scanAutoconfiguration();
-
-        for (Class<? extends GaarasonAutoconfiguration> gaarasonAutoconfiguration : gaarasonAutoconfigurations) {
-            try {
-                ClassUtils.newInstance(gaarasonAutoconfiguration).init(this);
-                LOGGER.debug(
-                    "Auto configuration [" + gaarasonAutoconfiguration.getName() + "] executed successfully .");
-            } catch (Throwable e) {
-                LOGGER.error(
-                    "A problem was encountered during automatic configuration [" + gaarasonAutoconfiguration.getName() +
-                        "].", e);
-            }
-        }
-        LOGGER.debug("All gaarasonAutoconfiguration has been init.");
-    }
 }

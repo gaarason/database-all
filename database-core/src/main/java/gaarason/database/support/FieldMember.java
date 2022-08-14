@@ -30,7 +30,7 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
      * 注解默认值, 所需字段媒介
      */
     @Primary(increment = false, idGenerator = IdGenerator.Never.class)
-    @Column
+    @Column(fill = FieldFill.NotFill.class)
     private static final Object DEFAULT_COLUMN_ANNOTATION_FIELD = new Object();
 
     /**
@@ -155,22 +155,23 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
     /**
      * 填充
      * @param entity 实体对象
+     * @param field 属性字段, 应仅用于读取信息, 而非进行改动与赋值
      * @param originalValue 原始值
      * @param type 实体的使用目的
      * @return 填充的值
      */
     @Nullable
-    public Object fill(Object entity, @Nullable Object originalValue, EntityUseType type) {
+    public Object fill(Object entity, Field field, @Nullable Object originalValue, EntityUseType type) {
         switch (type) {
             case INSERT:
                 if (originalValue == null) {
                     originalValue = idGenerator.nextId();
                 }
-                return fieldFill.inserting(entity, originalValue);
+                return fieldFill.inserting(entity, field, originalValue);
             case UPDATE:
-                return fieldFill.updating(entity, originalValue);
+                return fieldFill.updating(entity, field, originalValue);
             default:
-                return fieldFill.condition(entity, originalValue);
+                return fieldFill.condition(entity, field, originalValue);
         }
     }
 
@@ -247,7 +248,7 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
         // 普通获取
         Object value = fieldGet(entity);
         // 填充
-        Object valueAfterFill = fill(entity, value, type);
+        Object valueAfterFill = fill(entity, getField(), value, type);
         // 判断是否有效
         if (!effective(valueAfterFill, type)) {
             return FIELD_INVALID_EXCEPTION;

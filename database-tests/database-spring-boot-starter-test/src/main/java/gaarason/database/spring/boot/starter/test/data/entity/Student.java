@@ -1,6 +1,7 @@
 package gaarason.database.spring.boot.starter.test.data.entity;
 
 import gaarason.database.annotation.*;
+import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.spring.boot.starter.test.data.model.RelationshipStudentTeacherModel;
 import lombok.Data;
 
@@ -51,10 +52,10 @@ public class Student implements Serializable {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
-    @Column(name = "created_at", insertable = false, updatable = false, comment = "新增时间")
+    @Column(name = "created_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class, comment = "新增时间")
     private Date createdAt;
 
-    @Column(name = "updated_at", insertable = false, updatable = false, comment = "更新时间")
+    @Column(name = "updated_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class, comment = "更新时间")
     private Date updatedAt;
 
     /** auto generator end **/

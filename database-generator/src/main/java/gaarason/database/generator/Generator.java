@@ -5,10 +5,15 @@ import gaarason.database.bootstrap.ContainerBootstrap;
 import gaarason.database.connection.GaarasonDataSourceBuilder;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Model;
+import gaarason.database.contract.support.FieldConversion;
+import gaarason.database.contract.support.FieldFill;
+import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.core.Container;
+import gaarason.database.generator.appointment.Style;
 import gaarason.database.generator.element.field.Field;
 import gaarason.database.generator.element.field.MysqlFieldGenerator;
 import gaarason.database.generator.exception.GeneratorException;
+import gaarason.database.generator.support.TemplateHelper;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.StringUtils;
@@ -25,10 +30,13 @@ import java.util.concurrent.*;
  */
 public class Generator {
 
+
+    private static final String TEMPLATE_PATH = "/template";
+
     /**
      * 未知主键类型时, 使用的java类
      */
-    private static final String UNKNOWN_PRIMARY_KEY_TYPE = "Serializable";
+    private static final String UNKNOWN_PRIMARY_KEY_TYPE = "Object";
 
     /**
      * entity父类 对应的模板字符串
@@ -54,6 +62,9 @@ public class Generator {
      * model 对应的模板字符串
      */
     private static final String MODEL_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("model"));
+
+    private TemplateHelper templateHelper;
+
     /**
      * 存储 表名 -> 主键类型 的映射关系, 稍微提高性能
      */
@@ -130,14 +141,42 @@ public class Generator {
      * 生成并发线程数
      */
     private int corePoolSize = 20;
+
     /**
-     * 新增时,不可通过代码更改的字段
+     * 查询时，指定不查询的列
      */
-    private String[] disInsertable = {};
+    private String[] columnDisSelectable = {};
+
     /**
-     * 更新时,不可通过代码更改的字段
+     * 字段, 填充方式
      */
-    private String[] disUpdatable = {};
+    private final Map<String , Class<? extends FieldFill>> columnFill = new HashMap<>();
+    /**
+     * 字段, 使用策略
+     */
+    private final Map<String , Class<? extends FieldStrategy>> columnStrategy = new HashMap<>();
+    /**
+     * 字段, 新增使用策略
+     */
+    private final Map<String , Class<? extends FieldStrategy>> columnInsertStrategy = new HashMap<>();
+    /**
+     * 字段, 更新使用策略
+     */
+    private final Map<String , Class<? extends FieldStrategy>> columnUpdateStrategy = new HashMap<>();
+    /**
+     * 字段, 条件使用策略
+     */
+    private final Map<String , Class<? extends FieldStrategy>> columnConditionStrategy = new HashMap<>();
+
+    /**
+     * 字段, 序列化与反序列化方式
+     */
+    private final Map<String , Class<? extends FieldConversion>> columnConversion = new HashMap<>();
+
+    /**
+     * 代码风格
+     */
+    private Style style = Style.NORMAL;
     /**
      * model父类 所在的命名空间
      */
@@ -199,7 +238,7 @@ public class Generator {
      */
     public Generator(DataSource dataSource) {
         ToolModel.gaarasonDataSource = GaarasonDataSourceBuilder.build(dataSource,
-            ContainerBootstrap.build().bootstrap());
+            ContainerBootstrap.build().autoBootstrap());
         this.model = ToolModel.gaarasonDataSource.getContainer()
             .getBean(ModelShadowProvider.class)
             .getByModelClass(ToolModel.class)
@@ -262,9 +301,9 @@ public class Generator {
      * @param parameterMap 参数
      * @return 填充后的内容
      */
-    private static String fillTemplate(String template, Map<String, String> parameterMap) {
-        for (Map.Entry<String, String> entry : parameterMap.entrySet()) {
-            template = template.replace(entry.getKey(), entry.getValue());
+    private static String fillTemplate(String template, Map<String, ?> parameterMap) {
+        for (Map.Entry<String, ?> entry : parameterMap.entrySet()) {
+            template = template.replace(entry.getKey(), String.valueOf(entry.getValue()));
         }
         return template;
     }
@@ -369,6 +408,9 @@ public class Generator {
             throw new GeneratorException("使用无参构造`public void Generator()`时,需要重写`getModel`方法,否则请使用`public void " +
                 "Generator(String jdbcUrl, String username, String password)`");
         }
+
+//        templateHelper = new TemplateHelper(style, outputDir);
+
         baseModelNamespace = namespace + ("".equals(modelDir) ? "" : ("." + modelDir)) + ("".equals(
             baseModelDir) ? "" : ("." + baseModelDir));
         baseEntityNamespace = namespace + ("".equals(entityDir) ? "" : ("." + entityDir)) + ("".equals(
@@ -446,13 +488,48 @@ public class Generator {
      * @return 内容
      */
     private String fillBaseModelTemplate() {
-        Map<String, String> parameterMap = new HashMap<>();
+        Map<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("${namespace}", baseModelNamespace);
         parameterMap.put("${model_name}", baseModelName);
         parameterMap.put("${base_entity_name}", baseEntityName);
         parameterMap.put("${base_entity_namespace}", baseEntityNamespace);
 
         return fillTemplate(BASE_MODEL_TEMPLATE_STR, parameterMap);
+    }
+
+
+    /**
+     * 填充baseModel模板内容
+     */
+    private void processBaseModel() {
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("namespace", baseModelNamespace);
+        parameterMap.put("file_name", baseModelName);
+        parameterMap.put("model_name", baseModelName);
+        parameterMap.put("base_entity_name", baseEntityName);
+        parameterMap.put("base_entity_namespace", baseEntityNamespace);
+
+        templateHelper.writeBaseModel(parameterMap);
+    }
+
+    private void processBaseEntity(String tableName){
+        Map<String, String> parameterMap = new HashMap<>();
+        parameterMap.put("namespace", baseEntityNamespace);
+        parameterMap.put("entity_name", baseEntityName);
+
+        parameterMap.put("swagger_import", isSwagger ?
+            "import io.swagger.annotations.ApiModel;\n" +
+                "import io.swagger.annotations.ApiModelProperty;\n" : "");
+        parameterMap.put("validator_import", isValidator ?
+            "import org.hibernate.validator.constraints.Length;\n" +
+                "\n" +
+                "import javax.validation.constraints.Max;\n" +
+                "import javax.validation.constraints.Min;\n" : "\n");
+
+        parameterMap.put("static_fields", entityStaticField ? fillStaticFieldsTemplate(tableName, true) : "");
+        parameterMap.put("fields", fillFieldsTemplate(tableName, true));
+
+        templateHelper.writeBaseEntity(parameterMap);
     }
 
     /**
@@ -630,7 +707,15 @@ public class Generator {
         mysqlFieldGenerator.setCharacterSetName(getValue(fieldStringObjectMap, MysqlFieldGenerator.CHARACTER_SET_NAME));
         mysqlFieldGenerator.setColumnDefault(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_DEFAULT));
 
-        Field field = mysqlFieldGenerator.toField(disInsertable, disUpdatable);
+        mysqlFieldGenerator.setColumnDisSelectable(columnDisSelectable);
+        mysqlFieldGenerator.setColumnFill(columnFill);
+        mysqlFieldGenerator.setColumnStrategy(columnStrategy);
+        mysqlFieldGenerator.setColumnInsertStrategy(columnInsertStrategy);
+        mysqlFieldGenerator.setColumnUpdateStrategy(columnUpdateStrategy);
+        mysqlFieldGenerator.setColumnConditionStrategy(columnConditionStrategy);
+        mysqlFieldGenerator.setColumnConversion(columnConversion);
+
+        Field field = mysqlFieldGenerator.toField();
 
         // 暂存主键类型
         if (field.isPrimary()) {
@@ -743,14 +828,9 @@ public class Generator {
         baseEntityFields = Arrays.asList(column);
     }
 
-    public void setDisInsertable(String... column) {
-        disInsertable = column;
+    public void setStyle(Style style) {
+        this.style = style;
     }
-
-    public void setDisUpdatable(String... column) {
-        disUpdatable = column;
-    }
-
 
     public void setOutputDir(String outputDir) {
         this.outputDir = outputDir;
@@ -820,6 +900,53 @@ public class Generator {
         this.corePoolSize = corePoolSize;
     }
 
+    public Generator setColumnDisSelectable(String... columnDisSelectable) {
+        this.columnDisSelectable = columnDisSelectable;
+        return this;
+
+    }
+
+    public Generator setColumnFill(Class<? extends FieldFill> fieldFillClass, String... columns){
+        for (String column : columns) {
+            columnFill.put(column, fieldFillClass);
+        }
+        return this;
+    }
+
+    public Generator setColumnStrategy(Class<? extends FieldStrategy> fieldStrategyClass, String... columns){
+        for (String column : columns) {
+            columnStrategy.put(column, fieldStrategyClass);
+        }
+        return this;
+    }
+
+    public Generator setColumnInsertStrategy(Class<? extends FieldStrategy> fieldStrategyClass, String... columns){
+        for (String column : columns) {
+            columnInsertStrategy.put(column, fieldStrategyClass);
+        }
+        return this;
+    }
+
+    public Generator setColumnUpdateStrategy(Class<? extends FieldStrategy> fieldStrategyClass, String... columns){
+        for (String column : columns) {
+            columnUpdateStrategy.put(column, fieldStrategyClass);
+        }
+        return this;
+    }
+
+    public Generator setColumnConditionStrategy(Class<? extends FieldStrategy> fieldStrategyClass, String... columns){
+        for (String column : columns) {
+            columnConditionStrategy.put(column, fieldStrategyClass);
+        }
+        return this;
+    }
+
+    public Generator setColumnConversion(Class<? extends FieldConversion> fieldConversionClass, String... columns){
+        for (String column : columns) {
+            columnConversion.put(column, fieldConversionClass);
+        }
+        return this;
+    }
 
     private String getAbsoluteWriteFilePath(String namespace) {
         return StringUtils.rtrim(outputDir, "/") + "/" + namespace2dir(namespace) + '/';

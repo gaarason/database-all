@@ -1,8 +1,12 @@
 package gaarason.database.generator.element.field;
 
+import gaarason.database.contract.support.FieldConversion;
+import gaarason.database.contract.support.FieldFill;
+import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.generator.element.JavaClassification;
 import gaarason.database.generator.element.JavaElement;
 import gaarason.database.generator.element.JavaVisibility;
+import gaarason.database.util.ObjectUtils;
 
 /**
  * 数据库列属性
@@ -33,32 +37,63 @@ public class Field extends JavaElement {
     /**
      * 是否唯一
      */
-    private boolean unique;
+    private Boolean unique;
 
     /**
      * 是否,仅为正数
      */
-    private boolean unsigned;
+    private Boolean unsigned;
 
     /**
      * 字段可否为 null
      */
-    private boolean nullable;
+    private Boolean nullable;
 
     /**
      * 字段默认值
      */
     private String defaultValue;
 
-    /**
-     * 是否允许新增时赋值
-     */
-    private boolean insertable = true;
+//    /**
+//     * 是否允许新增时赋值
+//     */
+//    private boolean insertable = true;
+//
+//    /**
+//     * 是否允许更新时赋值
+//     */
+//    private boolean updatable = true;
 
     /**
-     * 是否允许更新时赋值
+     * 查询时，指定不查询的列
      */
-    private boolean updatable = true;
+    private Boolean columnDisSelectable;
+    /**
+     * 字段, 填充方式
+     */
+    private Class<? extends FieldFill> columnFill;
+    /**
+     * 字段, 使用策略
+     */
+    private Class<? extends FieldStrategy> columnStrategy;
+    /**
+     * 字段, 新增使用策略
+     */
+    private Class<? extends FieldStrategy> columnInsertStrategy;
+    /**
+     * 字段, 更新使用策略
+     */
+    private Class<? extends FieldStrategy> columnUpdateStrategy;
+    /**
+     * 字段, 条件使用策略
+     */
+    private Class<? extends FieldStrategy> columnConditionStrategy;
+
+    /**
+     * 字段, 序列化与反序列化方式
+     */
+    private Class<? extends FieldConversion> columnConversion;
+
 
     /**
      * 字段长度
@@ -133,11 +168,15 @@ public class Field extends JavaElement {
         return indentation() + "@Column(" +
 
             "name = \"" + columnName + "\"" +
-            (unique ? ", unique = " + unique : "") +
             (unsigned ? ", unsigned = " + unsigned : "") +
             (nullable ? ", nullable = " + nullable : "") +
-            (!insertable ? ", insertable = " + insertable : "") +
-            (!updatable ? ", updatable = " + updatable : "") +
+            (!ObjectUtils.isNull(columnDisSelectable) ? ", selectable = " + columnDisSelectable : "") +
+            (!ObjectUtils.isNull(columnFill) ? ", fill = " + class2String(columnFill) : "") +
+            (!ObjectUtils.isNull(columnStrategy) ? ", strategy = " + class2String(columnStrategy) : "") +
+            (!ObjectUtils.isNull(columnInsertStrategy) ? ", insertStrategy = " + class2String(columnInsertStrategy) : "") +
+            (!ObjectUtils.isNull(columnUpdateStrategy) ? ", updateStrategy = " + class2String(columnUpdateStrategy) : "") +
+            (!ObjectUtils.isNull(columnConditionStrategy) ? ", conditionStrategy = " + class2String(columnConditionStrategy) : "") +
+            (!ObjectUtils.isNull(columnConversion) ? ", conversion = " + class2String(columnConversion) : "") +
             (length != null && length != 255 ? ", length = " + length + "L" : "") +
             (!"".equals(comment) ? ", comment = \"" + comment + "\"" : "") +
 
@@ -191,6 +230,12 @@ public class Field extends JavaElement {
             default:
                 return "";
         }
+    }
+
+    private String class2String(Class<?> clazz){
+        String classStr = clazz.toString();
+        return classStr.replace("class ", "").replace("$",".") + ".class";
+
     }
 
     /**
@@ -266,20 +311,64 @@ public class Field extends JavaElement {
         this.defaultValue = defaultValue;
     }
 
-    public boolean isInsertable() {
-        return insertable;
+    public Boolean getColumnDisSelectable() {
+        return columnDisSelectable;
     }
 
-    public void setInsertable(boolean insertable) {
-        this.insertable = insertable;
+    public void setColumnDisSelectable(Boolean columnDisSelectable) {
+        this.columnDisSelectable = columnDisSelectable;
     }
 
-    public boolean isUpdatable() {
-        return updatable;
+    public Class<? extends FieldFill> getColumnFill() {
+        return columnFill;
     }
 
-    public void setUpdatable(boolean updatable) {
-        this.updatable = updatable;
+    public void setColumnFill(Class<? extends FieldFill> columnFill) {
+        this.columnFill = columnFill;
+    }
+
+    public Class<? extends FieldStrategy> getColumnStrategy() {
+        return columnStrategy;
+    }
+
+    public void setColumnStrategy(Class<? extends FieldStrategy> columnStrategy) {
+        this.columnStrategy = columnStrategy;
+    }
+
+    public Class<? extends FieldStrategy> getColumnInsertStrategy() {
+        return columnInsertStrategy;
+    }
+
+    public void setColumnInsertStrategy(
+        Class<? extends FieldStrategy> columnInsertStrategy) {
+        this.columnInsertStrategy = columnInsertStrategy;
+    }
+
+    public Class<? extends FieldStrategy> getColumnUpdateStrategy() {
+        return columnUpdateStrategy;
+    }
+
+    public void setColumnUpdateStrategy(
+        Class<? extends FieldStrategy> columnUpdateStrategy) {
+        this.columnUpdateStrategy = columnUpdateStrategy;
+    }
+
+    public Class<? extends FieldStrategy> getColumnConditionStrategy() {
+        return columnConditionStrategy;
+    }
+
+    public void setColumnConditionStrategy(
+        Class<? extends FieldStrategy> columnConditionStrategy) {
+        this.columnConditionStrategy = columnConditionStrategy;
+    }
+
+    public Class<? extends FieldConversion> getColumnConversion() {
+        return columnConversion;
+    }
+
+    public void setColumnConversion(
+        Class<? extends FieldConversion> columnConversion) {
+        this.columnConversion = columnConversion;
     }
 
     public Long getLength() {

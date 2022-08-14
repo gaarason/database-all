@@ -4,6 +4,7 @@ import gaarason.database.annotation.BelongsTo;
 import gaarason.database.annotation.Column;
 import gaarason.database.annotation.Primary;
 import gaarason.database.annotation.Table;
+import gaarason.database.contract.support.FieldStrategy;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -37,12 +38,12 @@ public class RelationshipStudentTeacher implements Serializable {
     @Column(name = "teacher_id", unsigned = true, comment = "教师id")
     private Long teacherId;
 
-    @Column(name = "created_at", insertable = false, updatable = false, comment = "新增时间")
+    @Column(name = "created_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class, comment = "新增时间")
     private Date createdAt;
 
     private String note;
 
-    @Column(name = "updated_at", insertable = false, updatable = false, comment = "更新时间")
+    @Column(name = "updated_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class, comment = "更新时间")
     private Date updatedAt;
 
     /** auto generator end **/

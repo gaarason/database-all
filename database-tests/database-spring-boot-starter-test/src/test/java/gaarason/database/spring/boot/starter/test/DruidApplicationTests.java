@@ -116,7 +116,7 @@ public class DruidApplicationTests {
     public void 简单插入_返回自增id() {
         List<Object> vList = new ArrayList<>();
         vList.add("aaaccc");
-        Object id = generalModel.newQuery().from("student").select("name").value(vList).insertGetId();
+        Object id = generalModel.newQuery().from("student").column("name").value(vList).insertGetId();
         Assert.assertNotNull(id);
 
         Object studentId = generalModel.newQuery().from("student").insertGetId();

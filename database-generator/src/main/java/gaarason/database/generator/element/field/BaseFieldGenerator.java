@@ -51,9 +51,7 @@ abstract class BaseFieldGenerator {
 
     /**
      * 生成Field
-     * @param disInsertable 不可新增的字段
-     * @param disUpdatable 不可更新的字段
      * @return Field
      */
-    public abstract Field toField(String[] disInsertable, String[] disUpdatable);
+    public abstract Field toField();
 }

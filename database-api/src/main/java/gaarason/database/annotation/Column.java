@@ -71,7 +71,7 @@ public @interface Column {
     /**
      * 字段填充策略
      */
-    Class<? extends FieldFill> fill() default FieldFill.DefaultFieldFill.class;
+    Class<? extends FieldFill> fill() default FieldFill.NotFill.class;
 
     /**
      * (Optional) The column length. (Applies only if a

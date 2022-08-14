@@ -45,9 +45,11 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
     /**
      * 通过反射等手段, 得到model信息
      * @param modelClasses model类型的集合
+     * @return 数量
      */
-    public void loadModels(Collection<Class<? extends Model<Serializable, Serializable>>> modelClasses) {
+    public int loadModels(Collection<Class<? extends Model<Serializable, Serializable>>> modelClasses) {
         synchronized (persistence) {
+            int i = 0;
             // 所有 Model 的子类 (含抽象类等)进行初始化分析
             // 初始化模型的基本信息, 并构建索引
             for (Class<? extends Model<Serializable, Serializable>> modelClass : modelClasses) {
@@ -58,37 +60,42 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
                     // 父类, 抽象类跳过
                     continue;
                 }
-
+                i ++;
                 persistence.modelIndexMap.put(modelClass, modelMember);
                 persistence.modelProxyIndexMap.put(modelMember.getModel().getClass(), modelMember);
                 persistence.entityIndexMap.put(modelMember.getEntityClass(), modelMember);
             }
+            return i;
         }
     }
 
     /**
      * 通过反射等手段, 刷新model信息
      * @param modelClasses model类型的集合
+     * @return 数量
      */
-    public void refreshModels(Collection<Class<? extends Model<Serializable, Serializable>>> modelClasses) {
-        loadModels(modelClasses);
+    public int refreshModels(Collection<Class<? extends Model<Serializable, Serializable>>> modelClasses) {
+        return loadModels(modelClasses);
     }
 
     /**
      * 卸载model信息
      * @param modelClasses model类型的集合
+     * @return 数量
      */
-    public void unloadModels(Collection<Class<? extends Model<Serializable, Serializable>>> modelClasses) {
+    public int unloadModels(Collection<Class<? extends Model<Serializable, Serializable>>> modelClasses) {
         synchronized (persistence) {
+            int i = 0;
             for (Class<? extends Model<Serializable, Serializable>> modelClass : modelClasses) {
                 ModelMember<?, ?> modelMember = persistence.modelIndexMap.remove(modelClass);
                 if (!ObjectUtils.isEmpty(modelMember)) {
+                    i ++;
                     persistence.entityIndexMap.remove(modelMember.getEntityClass());
                     persistence.modelProxyIndexMap.entrySet().removeIf(entry -> entry.getValue() == modelMember);
                 }
             }
+            return i;
         }
-
     }
 
     /**

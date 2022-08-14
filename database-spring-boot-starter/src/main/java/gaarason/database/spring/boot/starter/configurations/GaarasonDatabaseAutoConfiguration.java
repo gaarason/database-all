@@ -1,14 +1,15 @@
 package gaarason.database.spring.boot.starter.configurations;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
-import gaarason.database.config.GaarasonDataSourceBuilder;
+import gaarason.database.bootstrap.ContainerBootstrap;
 import gaarason.database.config.GaarasonDatabaseProperties;
+import gaarason.database.connection.GaarasonDataSourceBuilder;
 import gaarason.database.contract.connection.GaarasonDataSource;
+import gaarason.database.core.Container;
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.generator.GeneralGenerator;
 import gaarason.database.logging.Log;
 import gaarason.database.logging.LogFactory;
-import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.ModelInstanceProvider;
 import gaarason.database.spring.boot.starter.annotation.GaarasonDatabaseScanRegistrar;
 import gaarason.database.spring.boot.starter.provider.GaarasonTransactionManager;
@@ -28,7 +29,6 @@ import org.springframework.context.annotation.Primary;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
-import java.util.Collections;
 
 /**
  * 自动配置
@@ -45,57 +45,72 @@ public class GaarasonDatabaseAutoConfiguration {
      * Spring配置GaarasonDatabaseProperties
      */
     @Bean
+    @ConditionalOnMissingBean
     @ConfigurationProperties(prefix = GaarasonDatabaseProperties.PREFIX)
     public GaarasonDatabaseProperties gaarasonDatabaseProperties() {
         return new GaarasonDatabaseProperties();
     }
 
+    /**
+     * 容器初始化
+     * @param applicationContext 应用上下文
+     * @param gaarasonDatabaseProperties 配置
+     * @return 容器
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public Container container(ApplicationContext applicationContext, GaarasonDatabaseProperties gaarasonDatabaseProperties){
+        // 简单获取 @SpringBootApplication 所在的包名
+        final String springBootApplicationPackage = applicationContext.getBeansWithAnnotation(
+                SpringBootApplication.class)
+            .entrySet()
+            .iterator()
+            .next()
+            .getValue()
+            .getClass()
+            .getPackage().getName();
 
-    @Configuration
-    public static class GaarasonConfigAutoconfigure {
-        /**
-         * 指定 model 扫描范围
+        /*
+         * 将配置合并
+         * 认定 GaarasonDatabaseScan 的解析一定在此之前完成了.
+         * 默认使用 @SpringBootApplication 所在的包路径
          */
-        GaarasonConfigAutoconfigure(ApplicationContext applicationContext,
-            GaarasonDatabaseProperties gaarasonDatabaseProperties) {
+        gaarasonDatabaseProperties.mergeScan(GaarasonDatabaseScanRegistrar.getScan())
+            .fillPackageWhenIsEmpty(springBootApplicationPackage)
+            .fillAndVerify();
 
-            final String springBootApplicationPackage = applicationContext.getBeansWithAnnotation(
-                    SpringBootApplication.class)
-                .entrySet()
-                .iterator()
-                .next()
-                .getValue()
-                .getClass()
-                .getPackage().getName();
+        // 从配置创建全新容器
+        ContainerBootstrap container = ContainerBootstrap.build(gaarasonDatabaseProperties);
 
-            /*
-             * GaarasonDatabaseProperties 配置注册到 ContainerProvider
-             * 认定 GaarasonDatabaseScan 的解析一定在此之前完成了.
-             * 默认使用 @SpringBootApplication 所在的包路径
-             */
-            ContainerProvider.register(GaarasonDatabaseProperties.class,
-                (clazz -> gaarasonDatabaseProperties.mergeScan(GaarasonDatabaseScanRegistrar.getScan())
-                    .fillPackageWhenIsEmpty(springBootApplicationPackage)
-                    .fillAndVerify()));
+        container.defaultRegister();
 
-            // 注册 model实例获取方式
-            ModelInstanceProvider.register(modelClass -> {
-                try {
-                    return ObjectUtils.typeCast(applicationContext.getBean(modelClass));
-                } catch (BeansException e) {
-                    return ObjectUtils.typeCast(
-                        applicationContext.getBean(StringUtils.lowerFirstChar(modelClass.getSimpleName())));
-                }
-            });
-            LOGGER.info("Model instance provider has been registered success.");
-        }
+        // 注册 model实例获取方式
+        container.getBean(ModelInstanceProvider.class).register(modelClass -> {
+            try {
+                return ObjectUtils.typeCast(applicationContext.getBean(modelClass));
+            } catch (BeansException e) {
+                return ObjectUtils.typeCast(
+                    applicationContext.getBean(StringUtils.lowerFirstChar(modelClass.getSimpleName())));
+            }
+        });
+        LOGGER.info("Model instance provider has been registered success.");
+
+        container.bootstrapGaarasonAutoconfiguration();
+
+        container.initialization();
+
+        LOGGER.info("Container has completed initialization.");
+        return container;
     }
 
     @Configuration
     public static class GaarasonDataSourceAutoconfigure {
 
         @Resource
-        DataSource dataSource;
+        private DataSource dataSource;
+
+        @Resource
+        private Container container;
 
         /**
          * 数据源配置
@@ -106,8 +121,8 @@ public class GaarasonDatabaseAutoConfiguration {
         @ConditionalOnMissingBean(GaarasonDataSource.class)
         public GaarasonDataSource gaarasonDataSource() {
             LOGGER.info("GaarasonDataSource init with " + dataSource.getClass().getName());
-            return ContainerProvider.getBean(GaarasonDataSourceBuilder.class)
-                .build(Collections.singletonList(dataSource));
+            // 创建 GaarasonDataSource
+            return GaarasonDataSourceBuilder.build(dataSource, container);
         }
 
         /**

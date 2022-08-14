@@ -2,6 +2,7 @@ package gaarason.database.spring.boot.starter.test.data.entity;
 
 import gaarason.database.annotation.Column;
 import gaarason.database.annotation.Table;
+import gaarason.database.contract.support.FieldStrategy;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -45,10 +46,10 @@ public class Test implements Serializable {
     @Column(name = "subject", length = 20, comment = "科目")
     private String subject;
 
-    @Column(name = "created_at", insertable = false, updatable = false, comment = "新增时间")
+    @Column(name = "created_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class, comment = "新增时间")
     private Date createdAt;
 
-    @Column(name = "updated_at", insertable = false, updatable = false, comment = "更新时间")
+    @Column(name = "updated_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class, comment = "更新时间")
     private Date updatedAt;
 
     /** auto generator end **/

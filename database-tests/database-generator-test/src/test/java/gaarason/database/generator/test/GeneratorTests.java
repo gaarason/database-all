@@ -3,6 +3,9 @@ package gaarason.database.generator.test;
 import com.alibaba.druid.pool.DruidDataSource;
 import gaarason.database.connection.GaarasonDataSourceBuilder;
 import gaarason.database.contract.connection.GaarasonDataSource;
+import gaarason.database.contract.support.FieldConversion;
+import gaarason.database.contract.support.FieldFill;
+import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.eloquent.Model;
 import gaarason.database.generator.Generator;
 import org.junit.FixMethodOrder;
@@ -30,15 +33,15 @@ public class GeneratorTests {
         Generator generator = new Generator(jdbcUrl, username, password);
 
         // set
-//        generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
-        generator.setOutputDir("./src/test/java1/");     // 所有生成文件的路径
+        generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
+//        generator.setOutputDir("./src/test/java1/");     // 所有生成文件的路径
         generator.setNamespace("gaarason.database.test.models.relation.pojo");                 // 所有生成文件的所属命名空间
         generator.setCorePoolSize(20);                  // 所用的线程数
         generator.setSpringBoot(true);                // 是否生成spring boot相关注解
         generator.setSwagger(false);                   // 是否生成swagger相关注解
         generator.setValidator(false);                 // 是否生成validator相关注解
 
-        generator.setEntityStaticField(true);          // 是否在实体中生成静态字段
+        generator.setEntityStaticField(false);          // 是否在实体中生成静态字段
         generator.setBaseEntityDir("base");             // 实体父类的相对路径
         generator.setBaseEntityFields("id");            // 实体父类存在的字段
         generator.setBaseEntityName("BaseEntity");      // 实体父类的类名
@@ -46,8 +49,16 @@ public class GeneratorTests {
         generator.setEntityPrefix("");                  // 实体的类名前缀
         generator.setEntitySuffix("");                  // 实体的类名后缀
 
-        generator.setDisInsertable("created_at", "updated_at");     // 新增时,不可通过ORM更改的字段
-        generator.setDisUpdatable("created_at", "updated_at");      // 更新时,不可通过ORM更改的字段
+        generator.setColumnDisSelectable("created_at", "updated_at");             // 字段, 不可查询
+
+        generator.setColumnFill(FieldFill.NotFill.class, "created_at", "updated_at");  // 字段, 填充方式
+
+        generator.setColumnStrategy(FieldStrategy.Default.class, "created_at", "updated_at");   // 字段, 使用策略
+        generator.setColumnInsertStrategy(FieldStrategy.Never.class, "created_at", "updated_at");   // 字段, 新增使用策略
+        generator.setColumnUpdateStrategy(FieldStrategy.Never.class, "created_at", "updated_at");   // 字段, 更新使用策略
+        generator.setColumnConditionStrategy(FieldStrategy.Default.class, "created_at", "updated_at");   // 字段, 条件使用策略
+
+        generator.setColumnConversion(FieldConversion.Default.class, "created_at", "updated_at");   // 字段, 序列化与反序列化方式
 
         generator.setBaseModelDir("base");              // 模型父类的相对路径
         generator.setBaseModelName("BaseModel");        // 模型父类的类名
@@ -71,8 +82,6 @@ public class GeneratorTests {
 //        autoGenerator.setOutputDir("./src/test/java/");
         autoGenerator.setOutputDir("./src/test/java1/");
         autoGenerator.setNamespace("test.data");
-        autoGenerator.setDisInsertable("created_at", "updated_at");
-        autoGenerator.setDisUpdatable("created_at", "updated_at");
 
         autoGenerator.run();
     }

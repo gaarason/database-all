@@ -21,7 +21,7 @@ public class GaarasonDataSourceBuilder {
      * @return GaarasonDataSource
      */
     public static GaarasonDataSource build(DataSource masterDataSource) {
-        return build(masterDataSource, ContainerBootstrap.build().bootstrap());
+        return build(masterDataSource, ContainerBootstrap.build().autoBootstrap());
     }
 
     /**
@@ -30,7 +30,7 @@ public class GaarasonDataSourceBuilder {
      * @return GaarasonDataSource
      */
     public static GaarasonDataSource build(List<DataSource> masterDataSourceList) {
-        return build(masterDataSourceList, ContainerBootstrap.build().bootstrap());
+        return build(masterDataSourceList, ContainerBootstrap.build().autoBootstrap());
     }
 
     /**
@@ -41,7 +41,7 @@ public class GaarasonDataSourceBuilder {
      */
     public static GaarasonDataSource build(List<DataSource> masterDataSourceList,
         List<DataSource> slaveDataSourceList) {
-        return build(masterDataSourceList, slaveDataSourceList, ContainerBootstrap.build().bootstrap());
+        return build(masterDataSourceList, slaveDataSourceList, ContainerBootstrap.build().autoBootstrap());
     }
 
     /**

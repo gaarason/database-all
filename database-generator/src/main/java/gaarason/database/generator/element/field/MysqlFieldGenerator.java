@@ -1,6 +1,9 @@
 package gaarason.database.generator.element.field;
 
 import gaarason.database.appointment.MysqlNumericRange;
+import gaarason.database.contract.support.FieldConversion;
+import gaarason.database.contract.support.FieldFill;
+import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.generator.element.JavaClassification;
 import gaarason.database.generator.element.JavaVisibility;
 import gaarason.database.util.StringUtils;
@@ -8,9 +11,7 @@ import gaarason.database.util.StringUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Locale;
+import java.util.*;
 import java.util.regex.Matcher;
 
 /**
@@ -179,13 +180,42 @@ public class MysqlFieldGenerator extends BaseFieldGenerator {
     private String columnDefault;
 
     /**
+     * 查询时，指定不查询的列
+     */
+    private String[] columnDisSelectable = {};
+
+    /**
+     * 字段, 填充方式
+     */
+    private Map<String , Class<? extends FieldFill>> columnFill = new HashMap<>();
+    /**
+     * 字段, 使用策略
+     */
+    private Map<String , Class<? extends FieldStrategy>> columnStrategy = new HashMap<>();
+    /**
+     * 字段, 新增使用策略
+     */
+    private Map<String , Class<? extends FieldStrategy>> columnInsertStrategy = new HashMap<>();
+    /**
+     * 字段, 更新使用策略
+     */
+    private Map<String , Class<? extends FieldStrategy>> columnUpdateStrategy = new HashMap<>();
+    /**
+     * 字段, 条件使用策略
+     */
+    private Map<String , Class<? extends FieldStrategy>> columnConditionStrategy = new HashMap<>();
+
+    /**
+     * 字段, 序列化与反序列化方式
+     */
+    private Map<String , Class<? extends FieldConversion>> columnConversion = new HashMap<>();
+
+    /**
      * 生成Field
-     * @param disInsertable 不可新增的字段
-     * @param disUpdatable 不可更新的字段
      * @return Field
      */
     @Override
-    public Field toField(String[] disInsertable, String[] disUpdatable) {
+    public Field toField() {
         Field field = new Field();
         field.setPrimary("PRI".equals(columnKey));
         field.setIncrement(extra != null && extra.contains("auto_increment"));
@@ -196,13 +226,34 @@ public class MysqlFieldGenerator extends BaseFieldGenerator {
         field.setUnique("UNI".equals(columnKey));
         field.setUnsigned(columnType.contains("unsigned"));
         field.setNullable("YES".equals(isNullable));
-        field.setInsertable(!Arrays.asList(disInsertable).contains(columnName));
-        field.setUpdatable(!Arrays.asList(disUpdatable).contains(columnName));
         field.setDefaultValue(newlineCharactersToReplace(columnDefault));
         field.setLength(characterMaximumLength != null ? Long.valueOf(characterMaximumLength) : null);
         field.setComment(newlineCharactersToReplace(columnComment));
         field.setJavaDocLines(new ArrayList<>());
         field.setVisibility(JavaVisibility.PRIVATE);
+
+        if(Arrays.asList(columnDisSelectable).contains(columnName)){
+            field.setColumnDisSelectable(true);
+        }
+
+        if(columnFill.containsKey(columnName)){
+            field.setColumnFill(columnFill.get(columnName));
+        }
+        if(columnStrategy.containsKey(columnName)){
+            field.setColumnStrategy(columnStrategy.get(columnName));
+        }
+        if(columnInsertStrategy.containsKey(columnName)){
+            field.setColumnInsertStrategy(columnInsertStrategy.get(columnName));
+        }
+        if(columnUpdateStrategy.containsKey(columnName)){
+            field.setColumnUpdateStrategy(columnUpdateStrategy.get(columnName));
+        }
+        if(columnConditionStrategy.containsKey(columnName)){
+            field.setColumnConditionStrategy(columnConditionStrategy.get(columnName));
+        }
+        if(columnConversion.containsKey(columnName)){
+            field.setColumnConversion(columnConversion.get(columnName));
+        }
 
         // 数据类型
         switch (dataType.toLowerCase(Locale.ENGLISH)) {
@@ -452,5 +503,66 @@ public class MysqlFieldGenerator extends BaseFieldGenerator {
 
     public void setColumnDefault(String columnDefault) {
         this.columnDefault = columnDefault;
+    }
+    public String[] getColumnDisSelectable() {
+        return columnDisSelectable;
+    }
+
+    public void setColumnDisSelectable(String[] columnDisSelectable) {
+        this.columnDisSelectable = columnDisSelectable;
+    }
+
+    public Map<String, Class<? extends FieldFill>> getColumnFill() {
+        return columnFill;
+    }
+
+    public void setColumnFill(
+        Map<String, Class<? extends FieldFill>> columnFill) {
+        this.columnFill = columnFill;
+    }
+
+    public Map<String, Class<? extends FieldStrategy>> getColumnStrategy() {
+        return columnStrategy;
+    }
+
+    public void setColumnStrategy(
+        Map<String, Class<? extends FieldStrategy>> columnStrategy) {
+        this.columnStrategy = columnStrategy;
+    }
+
+    public Map<String, Class<? extends FieldStrategy>> getColumnInsertStrategy() {
+        return columnInsertStrategy;
+    }
+
+    public void setColumnInsertStrategy(
+        Map<String, Class<? extends FieldStrategy>> columnInsertStrategy) {
+        this.columnInsertStrategy = columnInsertStrategy;
+    }
+
+    public Map<String, Class<? extends FieldStrategy>> getColumnUpdateStrategy() {
+        return columnUpdateStrategy;
+    }
+
+    public void setColumnUpdateStrategy(
+        Map<String, Class<? extends FieldStrategy>> columnUpdateStrategy) {
+        this.columnUpdateStrategy = columnUpdateStrategy;
+    }
+
+    public Map<String, Class<? extends FieldStrategy>> getColumnConditionStrategy() {
+        return columnConditionStrategy;
+    }
+
+    public void setColumnConditionStrategy(
+        Map<String, Class<? extends FieldStrategy>> columnConditionStrategy) {
+        this.columnConditionStrategy = columnConditionStrategy;
+    }
+
+    public Map<String, Class<? extends FieldConversion>> getColumnConversion() {
+        return columnConversion;
+    }
+
+    public void setColumnConversion(
+        Map<String, Class<? extends FieldConversion>> columnColumnConversion) {
+        this.columnConversion = columnColumnConversion;
     }
 }
