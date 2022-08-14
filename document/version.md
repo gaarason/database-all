@@ -24,11 +24,25 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
-### 3.6.0
+### 4.0.0
 
+- 在`Record`中, 增加 `saveByPrimaryKey()`, 更改`fillEntity()`返回值
 - 查询结果集(`RecordList`) 现在是`LinkedList`的子类, 而非之前的的`ArrayList`, 同时更改了`pop()`/`push(element)`的行为, 并移除了`prepend(element)`
+
+- 在Builder中, 增加 `select(anyEntity)`, `select(anyEntityClass)`更改`where(entity)`为`where(anyEntity)`,`having(entity)`为`having(anyEntity)`返回值
+- 在Builder中, 增加 `whereFind(map)`, `whereNotFind(map)`,`whereNotLike(column, value)`,`whereNotLike(anyEntity)`,`whereNotLike(map)`,`whereMayNotLike(column, value)`,`whereMayNotLikeIgnoreNull(column, value)`,`whereMayNotLike(anyEntity)`,
+  `whereMayNotLike(map)`,`whereMayNotLikeIgnoreNull(map)`,`whereBetweenRaw()`,`whereNotBetweenRaw()` 以及having与其对应的方法
+- 在`Builder`中, 更改`whereKeywordsIgnoreNull()`的行为, 重命名`whereLike()`为 `whereLikeIgnoreNull()`, 移除 更改`whereKeywords()`
+- 在`@Column`中, 更改`strategy`/`insertStrategy`/`updateStrategy`/`conditionStrategy`的类型为接口类型(`FieldStrategy`)便于业务自定义实现
+- 在`@Column`中, 增加 `conversion` 属性便于业务自定义实现序列化与反序列化;
+- 在`Builder`中, 修改`find(id)`/`findOrFail(id)`/`insert(entity)`/`insert(list<entity>)`/`insertGetId(entity)`/`insertGetIdOrFail(entity)`/`insertGetIds(list<entity>)`/`update(entity)`等方法的参数类型为Object;
+- 在`Builder`中, 新增 `form(entity)`;
 - 现在`Container`不再是全局静态, 而是使用对象生命周期管理, 便于同个进程下多个容器之间进行隔离
 - 现在`ModelShadow`不再是全局静态的, 而是使用`Container`进行管理
+
+### 3.5.2
+
+- 小优化
 
 ### 3.5.1
 
