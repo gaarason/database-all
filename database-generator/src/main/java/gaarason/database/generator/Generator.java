@@ -13,7 +13,6 @@ import gaarason.database.generator.appointment.Style;
 import gaarason.database.generator.element.field.Field;
 import gaarason.database.generator.element.field.MysqlFieldGenerator;
 import gaarason.database.generator.exception.GeneratorException;
-import gaarason.database.generator.support.TemplateHelper;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.StringUtils;
@@ -62,8 +61,6 @@ public class Generator {
      * model 对应的模板字符串
      */
     private static final String MODEL_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("model"));
-
-    private TemplateHelper templateHelper;
 
     /**
      * 存储 表名 -> 主键类型 的映射关系, 稍微提高性能
@@ -495,41 +492,6 @@ public class Generator {
         parameterMap.put("${base_entity_namespace}", baseEntityNamespace);
 
         return fillTemplate(BASE_MODEL_TEMPLATE_STR, parameterMap);
-    }
-
-
-    /**
-     * 填充baseModel模板内容
-     */
-    private void processBaseModel() {
-        Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("namespace", baseModelNamespace);
-        parameterMap.put("file_name", baseModelName);
-        parameterMap.put("model_name", baseModelName);
-        parameterMap.put("base_entity_name", baseEntityName);
-        parameterMap.put("base_entity_namespace", baseEntityNamespace);
-
-        templateHelper.writeBaseModel(parameterMap);
-    }
-
-    private void processBaseEntity(String tableName){
-        Map<String, String> parameterMap = new HashMap<>();
-        parameterMap.put("namespace", baseEntityNamespace);
-        parameterMap.put("entity_name", baseEntityName);
-
-        parameterMap.put("swagger_import", isSwagger ?
-            "import io.swagger.annotations.ApiModel;\n" +
-                "import io.swagger.annotations.ApiModelProperty;\n" : "");
-        parameterMap.put("validator_import", isValidator ?
-            "import org.hibernate.validator.constraints.Length;\n" +
-                "\n" +
-                "import javax.validation.constraints.Max;\n" +
-                "import javax.validation.constraints.Min;\n" : "\n");
-
-        parameterMap.put("static_fields", entityStaticField ? fillStaticFieldsTemplate(tableName, true) : "");
-        parameterMap.put("fields", fillFieldsTemplate(tableName, true));
-
-        templateHelper.writeBaseEntity(parameterMap);
     }
 
     /**
