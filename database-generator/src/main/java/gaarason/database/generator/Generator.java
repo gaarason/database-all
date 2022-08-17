@@ -13,6 +13,7 @@ import gaarason.database.generator.appointment.Style;
 import gaarason.database.generator.element.field.Field;
 import gaarason.database.generator.element.field.MysqlFieldGenerator;
 import gaarason.database.generator.exception.GeneratorException;
+import gaarason.database.generator.support.TemplateHelper;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.StringUtils;
@@ -36,31 +37,6 @@ public class Generator {
      * 未知主键类型时, 使用的java类
      */
     private static final String UNKNOWN_PRIMARY_KEY_TYPE = "Object";
-
-    /**
-     * entity父类 对应的模板字符串
-     */
-    private static final String BASE_ENTITY_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("baseEntity"));
-
-    /**
-     * entity 对应的模板字符串
-     */
-    private static final String ENTITY_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("entity"));
-
-    /**
-     * entity field 对应的模板字符串
-     */
-    private static final String FIELD_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("field"));
-
-    /**
-     * model父类 对应的模板字符串
-     */
-    private static final String BASE_MODEL_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("baseModel"));
-
-    /**
-     * model 对应的模板字符串
-     */
-    private static final String MODEL_TEMPLATE_STR = fileGetContent(getAbsoluteReadFileName("model"));
 
     /**
      * 存储 表名 -> 主键类型 的映射关系, 稍微提高性能
@@ -174,6 +150,9 @@ public class Generator {
      * 代码风格
      */
     private Style style = Style.NORMAL;
+
+    private TemplateHelper templateHelper;
+
     /**
      * model父类 所在的命名空间
      */
@@ -282,85 +261,6 @@ public class Generator {
             .getModel();
     }
 
-
-    /**
-     * 将类的命名空间转化为对应的目录
-     * @param namespace 命名空间
-     * @return 目录
-     */
-    private static String namespace2dir(String namespace) {
-        return namespace.replace('.', '/');
-    }
-
-    /**
-     * 填充模板
-     * @param template 模板内容
-     * @param parameterMap 参数
-     * @return 填充后的内容
-     */
-    private static String fillTemplate(String template, Map<String, ?> parameterMap) {
-        for (Map.Entry<String, ?> entry : parameterMap.entrySet()) {
-            template = template.replace(entry.getKey(), String.valueOf(entry.getValue()));
-        }
-        return template;
-    }
-
-    /**
-     * 获取绝对路径
-     * @param name 文件名
-     * @return 绝对路径
-     */
-    private static String getAbsoluteReadFileName(String name) {
-        return "/template/" + name;
-    }
-
-    /**
-     * 获取文件内容
-     * @param fileName 文件名
-     * @return 文件内容
-     */
-    private static String fileGetContent(String fileName) {
-        InputStream is = Generator.class.getResourceAsStream(fileName);
-        BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-        String s;
-        StringBuilder configContentStr = new StringBuilder();
-        try {
-            while ((s = br.readLine()) != null) {
-                configContentStr.append(s);
-            }
-        } catch (IOException e) {
-            throw new GeneratorException(e);
-        }
-
-        return configContentStr.toString();
-    }
-
-    /**
-     * 写入文件内容
-     * @param path 文件路径
-     * @param fileName 文件名
-     * @param content 文件内容
-     */
-    private static void filePutContent(String path, String fileName, String content) {
-        try {
-            File file = new File(path);
-            if (file.exists() || file.mkdirs()) {
-                OutputStreamWriter outputStreamWriter = new OutputStreamWriter(
-                    new FileOutputStream(path + fileName + ".java"), StandardCharsets.UTF_8);
-
-                outputStreamWriter.write(content.replaceAll("\\\\n", "\n"));
-                outputStreamWriter.flush();
-                outputStreamWriter.close();
-                // 控制台输出
-                consoleLog(fileName + " 生成完毕, 路径 : " + path);
-                return;
-            }
-            throw new GeneratorException("目录建立失败 : " + file);
-        } catch (IOException e) {
-            throw new GeneratorException(e);
-        }
-    }
-
     /**
      * 将不合法的java标识符转换
      * @param name 未验证的java标识符
@@ -406,7 +306,7 @@ public class Generator {
                 "Generator(String jdbcUrl, String username, String password)`");
         }
 
-//        templateHelper = new TemplateHelper(style, outputDir);
+        templateHelper = new TemplateHelper(style, outputDir);
 
         baseModelNamespace = namespace + ("".equals(modelDir) ? "" : ("." + modelDir)) + ("".equals(
             baseModelDir) ? "" : ("." + baseModelDir));
@@ -424,15 +324,10 @@ public class Generator {
         init();
         // 表信息
         List<Map<String, Object>> tables = showTables();
-        // baseModel 文件内容
-        String baseDaoTemplateStrReplace = fillBaseModelTemplate();
-        // baseModel 写入文件
-        filePutContent(getAbsoluteWriteFilePath(baseModelNamespace), baseModelName, baseDaoTemplateStrReplace);
-        // baseEntity 文件内容
-        String baseEntityTemplateStrReplace = fillBaseEntityTemplate(
-            tables.get(0).entrySet().stream().findFirst().get().getValue().toString());
-        // baseEntity 写入文件
-        filePutContent(getAbsoluteWriteFilePath(baseEntityNamespace), baseEntityName, baseEntityTemplateStrReplace);
+        // 生成 baseModel
+        processBaseModel();
+        // 生成 baseEntity
+        processBaseEntity(tables.get(0).entrySet().stream().findFirst().get().getValue().toString());
 
         ThreadPoolExecutor threadPool = new ThreadPoolExecutor(corePoolSize, corePoolSize + 1, 1,
             TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(65535));
@@ -453,9 +348,10 @@ public class Generator {
                     String entityComment = tableInfo.get("TABLE_COMMENT") == null ? tableName : tableInfo.get(
                         "TABLE_COMMENT").toString();
                     // entity文件内容
-                    String entityTemplateStrReplace = fillPojoTemplate(tableName, entityName, entityComment);
-                    // entity写入文件
-                    filePutContent(getAbsoluteWriteFilePath(entityNamespace), entityName, entityTemplateStrReplace);
+                    processEntity(tableName, entityName, entityComment);
+//                    String entityTemplateStrReplace = fillPojoTemplate();
+//                    // entity写入文件
+//                    filePutContent(getAbsoluteWriteFilePath(entityNamespace), entityName, entityTemplateStrReplace);
 
                     // 主键的java类型
                     String primaryKeyType = Optional.ofNullable(tablePrimaryKeyTypeMap.get(tableName))
@@ -464,10 +360,8 @@ public class Generator {
                     // model文件名
                     String modelName = modelName(tableName);
                     // model文件内容
-                    String modelTemplateStrReplace = fillModelTemplate(tableName, modelName, entityName,
+                    processModel(tableName, modelName, entityName,
                         primaryKeyType);
-                    // model写入文件
-                    filePutContent(getAbsoluteWriteFilePath(modelNamespace), modelName, modelTemplateStrReplace);
                 }
                 countDownLatch.countDown();
             });
@@ -480,28 +374,19 @@ public class Generator {
         consoleLog("全部生成完毕");
     }
 
-    /**
-     * 填充baseModel模板内容
-     * @return 内容
-     */
-    private String fillBaseModelTemplate() {
+    private void processBaseModel(){
         Map<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("${namespace}", baseModelNamespace);
-        parameterMap.put("${model_name}", baseModelName);
+        parameterMap.put("${base_model_name}", baseModelName);
         parameterMap.put("${base_entity_name}", baseEntityName);
         parameterMap.put("${base_entity_namespace}", baseEntityNamespace);
-
-        return fillTemplate(BASE_MODEL_TEMPLATE_STR, parameterMap);
+        templateHelper.writeBaseModel(parameterMap);
     }
 
-    /**
-     * 填充baseEntity模板内容
-     * @return 内容
-     */
-    private String fillBaseEntityTemplate(String tableName) {
+    private void processBaseEntity(String  tableName){
         Map<String, String> parameterMap = new HashMap<>();
         parameterMap.put("${namespace}", baseEntityNamespace);
-        parameterMap.put("${entity_name}", baseEntityName);
+        parameterMap.put("${base_entity_name}", baseEntityName);
 
         parameterMap.put("${swagger_import}", isSwagger ?
             "import io.swagger.annotations.ApiModel;\n" +
@@ -514,40 +399,13 @@ public class Generator {
 
         parameterMap.put("${static_fields}", entityStaticField ? fillStaticFieldsTemplate(tableName, true) : "");
         parameterMap.put("${fields}", fillFieldsTemplate(tableName, true));
-
-        return fillTemplate(BASE_ENTITY_TEMPLATE_STR, parameterMap);
+        templateHelper.writeBaseEntity(parameterMap);
     }
 
     /**
-     * 填充model模板内容
-     * @param tableName 表名
-     * @param modelName dao对象名
-     * @param entityName pojo对象名
-     * @return 内容
+     * 填充baseModel模板内容
      */
-    private String fillModelTemplate(String tableName, String modelName, String entityName, String primaryKeyType) {
-        Map<String, String> parameterMap = new HashMap<>();
-        parameterMap.put("${namespace}", modelNamespace);
-        parameterMap.put("${base_model_namespace}", baseModelNamespace);
-        parameterMap.put("${base_model_name}", baseModelName);
-        parameterMap.put("${entity_namespace}", entityNamespace);
-        parameterMap.put("${entity_name}", entityName);
-        parameterMap.put("${primary_key_type}", primaryKeyType);
-        parameterMap.put("${model_name}", modelName);
-        parameterMap.put("${is_spring_boot}", isSpringBoot ? "import org.springframework.stereotype.Repository;" +
-            "\n\n@Repository" : "");
-
-        return fillTemplate(MODEL_TEMPLATE_STR, parameterMap);
-    }
-
-    /**
-     * 填充entity模板内容
-     * @param tableName 表名
-     * @param entityName 对象名
-     * @param comment 表注释
-     * @return 内容
-     */
-    private String fillPojoTemplate(String tableName, String entityName, String comment) {
+    private void processEntity(String tableName, String entityName, String comment) {
         Map<String, String> parameterMap = new HashMap<>();
         parameterMap.put("${base_entity_namespace}", baseEntityNamespace);
         parameterMap.put("${base_entity_name}", baseEntityName);
@@ -566,7 +424,28 @@ public class Generator {
         parameterMap.put("${static_fields}", entityStaticField ? fillStaticFieldsTemplate(tableName, false) : "");
         parameterMap.put("${fields}", fillFieldsTemplate(tableName, false));
 
-        return fillTemplate(ENTITY_TEMPLATE_STR, parameterMap);
+        templateHelper.writeEntity(parameterMap);
+    }
+
+    /**
+     * 填充model模板内容
+     * @param tableName 表名
+     * @param modelName dao对象名
+     * @param entityName pojo对象名
+     */
+    private void processModel(String tableName, String modelName, String entityName, String primaryKeyType) {
+        Map<String, String> parameterMap = new HashMap<>();
+        parameterMap.put("${namespace}", modelNamespace);
+        parameterMap.put("${base_model_namespace}", baseModelNamespace);
+        parameterMap.put("${base_model_name}", baseModelName);
+        parameterMap.put("${entity_namespace}", entityNamespace);
+        parameterMap.put("${entity_name}", entityName);
+        parameterMap.put("${primary_key_type}", primaryKeyType);
+        parameterMap.put("${model_name}", modelName);
+        parameterMap.put("${is_spring_boot}", isSpringBoot ? "import org.springframework.stereotype.Repository;" +
+            "\n\n@Repository" : "");
+
+        templateHelper.writeModel(parameterMap);
     }
 
     /**
@@ -705,7 +584,7 @@ public class Generator {
         parameterMap.put("${validator}", isValidator ? field.toAnnotationOrgHibernateValidatorConstraintValidator() :
             "");
 
-        return fillTemplate(FIELD_TEMPLATE_STR, parameterMap);
+        return templateHelper.fillField(parameterMap);
     }
 
     /**
@@ -908,10 +787,6 @@ public class Generator {
             columnConversion.put(column, fieldConversionClass);
         }
         return this;
-    }
-
-    private String getAbsoluteWriteFilePath(String namespace) {
-        return StringUtils.rtrim(outputDir, "/") + "/" + namespace2dir(namespace) + '/';
     }
 
     public static class ToolModel extends gaarason.database.eloquent.Model<ToolModel.Inner, Serializable> {

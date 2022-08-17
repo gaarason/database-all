@@ -1,5 +1,1 @@
-${primary}
-${column}
-${apiModelProperty}
-${validator}
-${field}
+${primary}${column}${apiModelProperty}${validator}${field}

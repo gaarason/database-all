@@ -1,9 +1,0 @@
-package ${namespace};\n
-\n
-import ${base_model_namespace}.${base_model_name};\n
-import ${entity_namespace}.${entity_name};\n
-import java.io.Serializable;\n
-${is_spring_boot}\n
-public class ${model_name} extends ${base_model_name}<${entity_name}, ${primary_key_type}> {\n
-\n
-}

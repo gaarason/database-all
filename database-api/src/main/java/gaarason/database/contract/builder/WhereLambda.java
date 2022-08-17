@@ -81,7 +81,7 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    default Builder<T, K> whereLike(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+    default Builder<T, K> whereLikeIgnoreNull(ColumnFunctionalInterface<T> column, @Nullable Object value) {
         return whereLikeIgnoreNull(lambda2ColumnName(column), value);
     }
 
@@ -94,7 +94,7 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    default Builder<T, K> whereNotLike(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+    default Builder<T, K> whereNotLikeIgnoreNull(ColumnFunctionalInterface<T> column, @Nullable Object value) {
         return whereNotLikeIgnoreNull(lambda2ColumnName(column), value);
     }
 
