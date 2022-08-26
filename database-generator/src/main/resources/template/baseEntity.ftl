@@ -1,14 +1,7 @@
 package ${namespace};
 
-import gaarason.database.annotation.Column;
-import gaarason.database.annotation.Primary;
-${swagger_import}
-import lombok.Data;
-${validator_import}
-import java.io.Serializable;
-import java.math.BigInteger;
-import java.util.Date;
-    
+${imports}
+
 @Data
 public abstract class ${base_entity_name} implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -18,4 +11,6 @@ public abstract class ${base_entity_name} implements Serializable {
 ${static_fields}
 ${fields}
     /** auto generator end **/
+
+${base_model_within_base_entity}
 }

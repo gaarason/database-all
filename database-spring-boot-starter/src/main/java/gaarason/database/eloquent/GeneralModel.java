@@ -27,7 +27,9 @@ public class GeneralModel extends Model<GeneralModel.Table, Serializable> {
     }
 
     public void log(String sql, Collection<?> parameterList) {
-        log.debug("SQL complete : " + String.format(sql.replace(" ? ", "\"%s\""), parameterList.toArray()));
+        if (log.isDebugEnabled()) {
+            log.debug("SQL complete : " + String.format(sql.replace(" ? ", "\"%s\""), parameterList.toArray()));
+        }
     }
 
     @gaarason.database.annotation.Table(name = "@@GeneralModel.Table@@")

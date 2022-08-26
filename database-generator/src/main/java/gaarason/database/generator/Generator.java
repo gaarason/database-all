@@ -1,6 +1,7 @@
 package gaarason.database.generator;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import gaarason.database.annotation.Table;
 import gaarason.database.bootstrap.ContainerBootstrap;
 import gaarason.database.connection.GaarasonDataSourceBuilder;
 import gaarason.database.contract.connection.GaarasonDataSource;
@@ -10,17 +11,19 @@ import gaarason.database.contract.support.FieldFill;
 import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.core.Container;
 import gaarason.database.generator.appointment.Style;
+import gaarason.database.generator.element.base.BaseElement;
 import gaarason.database.generator.element.field.Field;
 import gaarason.database.generator.element.field.MysqlFieldGenerator;
 import gaarason.database.generator.exception.GeneratorException;
 import gaarason.database.generator.support.TemplateHelper;
+import gaarason.database.generator.support.TypeReference;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.StringUtils;
 
+import javax.annotation.Resource;
 import javax.sql.DataSource;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -41,7 +44,7 @@ public class Generator {
     /**
      * 存储 表名 -> 主键类型 的映射关系, 稍微提高性能
      */
-    private final ConcurrentHashMap<String, String> tablePrimaryKeyTypeMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Class<?>> tablePrimaryKeyTypeMap = new ConcurrentHashMap<>();
     /**
      * 输出目录
      */
@@ -123,33 +126,33 @@ public class Generator {
     /**
      * 字段, 填充方式
      */
-    private final Map<String , Class<? extends FieldFill>> columnFill = new HashMap<>();
+    private final Map<String, Class<? extends FieldFill>> columnFill = new HashMap<>();
     /**
      * 字段, 使用策略
      */
-    private final Map<String , Class<? extends FieldStrategy>> columnStrategy = new HashMap<>();
+    private final Map<String, Class<? extends FieldStrategy>> columnStrategy = new HashMap<>();
     /**
      * 字段, 新增使用策略
      */
-    private final Map<String , Class<? extends FieldStrategy>> columnInsertStrategy = new HashMap<>();
+    private final Map<String, Class<? extends FieldStrategy>> columnInsertStrategy = new HashMap<>();
     /**
      * 字段, 更新使用策略
      */
-    private final Map<String , Class<? extends FieldStrategy>> columnUpdateStrategy = new HashMap<>();
+    private final Map<String, Class<? extends FieldStrategy>> columnUpdateStrategy = new HashMap<>();
     /**
      * 字段, 条件使用策略
      */
-    private final Map<String , Class<? extends FieldStrategy>> columnConditionStrategy = new HashMap<>();
+    private final Map<String, Class<? extends FieldStrategy>> columnConditionStrategy = new HashMap<>();
 
     /**
      * 字段, 序列化与反序列化方式
      */
-    private final Map<String , Class<? extends FieldConversion>> columnConversion = new HashMap<>();
+    private final Map<String, Class<? extends FieldConversion>> columnConversion = new HashMap<>();
 
     /**
      * 代码风格
      */
-    private Style style = Style.NORMAL;
+    private Style style = Style.ENTITY;
 
     private TemplateHelper templateHelper;
 
@@ -347,21 +350,15 @@ public class Generator {
                     // 表注释
                     String entityComment = tableInfo.get("TABLE_COMMENT") == null ? tableName : tableInfo.get(
                         "TABLE_COMMENT").toString();
+
+
                     // entity文件内容
                     processEntity(tableName, entityName, entityComment);
-//                    String entityTemplateStrReplace = fillPojoTemplate();
-//                    // entity写入文件
-//                    filePutContent(getAbsoluteWriteFilePath(entityNamespace), entityName, entityTemplateStrReplace);
-
-                    // 主键的java类型
-                    String primaryKeyType = Optional.ofNullable(tablePrimaryKeyTypeMap.get(tableName))
-                        .map(Object::toString)
-                        .orElse(UNKNOWN_PRIMARY_KEY_TYPE);
                     // model文件名
                     String modelName = modelName(tableName);
+
                     // model文件内容
-                    processModel(tableName, modelName, entityName,
-                        primaryKeyType);
+                    processModel(tableName, modelName, entityName);
                 }
                 countDownLatch.countDown();
             });
@@ -374,7 +371,7 @@ public class Generator {
         consoleLog("全部生成完毕");
     }
 
-    private void processBaseModel(){
+    private void processBaseModel() {
         Map<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("${namespace}", baseModelNamespace);
         parameterMap.put("${base_model_name}", baseModelName);
@@ -383,46 +380,54 @@ public class Generator {
         templateHelper.writeBaseModel(parameterMap);
     }
 
-    private void processBaseEntity(String  tableName){
+    private void processBaseEntity(String tableName) {
+        BaseElement element = new BaseElement() {};
+        element.setNamespace(baseEntityNamespace);
+        element.setClassName(baseEntityName);
+
+        element.type2Name(Serializable.class);
+        element.type2Name("lombok.Data");
+
         Map<String, String> parameterMap = new HashMap<>();
         parameterMap.put("${namespace}", baseEntityNamespace);
         parameterMap.put("${base_entity_name}", baseEntityName);
-
-        parameterMap.put("${swagger_import}", isSwagger ?
-            "import io.swagger.annotations.ApiModel;\n" +
-                "import io.swagger.annotations.ApiModelProperty;\n" : "");
-        parameterMap.put("${validator_import}", isValidator ?
-            "import org.hibernate.validator.constraints.Length;\n" +
-                "\n" +
-                "import javax.validation.constraints.Max;\n" +
-                "import javax.validation.constraints.Min;\n" : "\n");
-
         parameterMap.put("${static_fields}", entityStaticField ? fillStaticFieldsTemplate(tableName, true) : "");
-        parameterMap.put("${fields}", fillFieldsTemplate(tableName, true));
+        parameterMap.put("${fields}", fillFieldsTemplate(element, tableName, true));
+
+        parameterMap.put("${base_model_within_base_entity}", fillBaseModelWithinBaseEntityTemplate(element));
+
+        parameterMap.put("${imports}", element.printImports());
+
         templateHelper.writeBaseEntity(parameterMap);
     }
+
 
     /**
      * 填充baseModel模板内容
      */
     private void processEntity(String tableName, String entityName, String comment) {
+        BaseElement element = new BaseElement() {};
+        element.setNamespace(entityNamespace);
+        element.setClassName(entityName);
+        element.type2Name("lombok.Data");
+        element.type2Name("lombok.EqualsAndHashCode");
+        element.type2Name(Table.class);
+
         Map<String, String> parameterMap = new HashMap<>();
         parameterMap.put("${base_entity_namespace}", baseEntityNamespace);
-        parameterMap.put("${base_entity_name}", baseEntityName);
+        parameterMap.put("${base_entity_name}", element.type2Name(baseEntityNamespace + "." + baseEntityName));
         parameterMap.put("${namespace}", entityNamespace);
         parameterMap.put("${entity_name}", entityName);
         parameterMap.put("${table}", tableName);
-        parameterMap.put("${swagger_import}", isSwagger ?
-            "import io.swagger.annotations.ApiModel;\n" +
-                "import io.swagger.annotations.ApiModelProperty;\n" : "");
-        parameterMap.put("${validator_import}", isValidator ?
-            "import org.hibernate.validator.constraints.Length;\n" +
-                "\n" +
-                "import javax.validation.constraints.Max;\n" +
-                "import javax.validation.constraints.Min;\n" : "\n");
-        parameterMap.put("${swagger_annotation}", isSwagger ? "@ApiModel(\"" + comment + "\")\n" : "");
+
+        parameterMap.put("${swagger_annotation}",
+            isSwagger ? element.anno2Name("io.swagger.annotations.ApiModel") + "(\"" + comment + "\")\n" : "");
         parameterMap.put("${static_fields}", entityStaticField ? fillStaticFieldsTemplate(tableName, false) : "");
-        parameterMap.put("${fields}", fillFieldsTemplate(tableName, false));
+        parameterMap.put("${fields}", fillFieldsTemplate(element, tableName, false));
+
+        parameterMap.put("${model_within_entity}", fillModelWithinEntityTemplate(element, tableName, entityName));
+
+        parameterMap.put("${imports}", element.printImports());
 
         templateHelper.writeEntity(parameterMap);
     }
@@ -433,19 +438,74 @@ public class Generator {
      * @param modelName dao对象名
      * @param entityName pojo对象名
      */
-    private void processModel(String tableName, String modelName, String entityName, String primaryKeyType) {
+    private void processModel(String tableName, String modelName, String entityName) {
+        BaseElement element = new BaseElement() {};
+        element.setNamespace(entityNamespace);
+        element.setClassName(entityName);
+        element.type2Name("lombok.Data");
+        element.type2Name("lombok.EqualsAndHashCode");
+        element.type2Name(Table.class);
+
+
         Map<String, String> parameterMap = new HashMap<>();
         parameterMap.put("${namespace}", modelNamespace);
         parameterMap.put("${base_model_namespace}", baseModelNamespace);
         parameterMap.put("${base_model_name}", baseModelName);
         parameterMap.put("${entity_namespace}", entityNamespace);
         parameterMap.put("${entity_name}", entityName);
-        parameterMap.put("${primary_key_type}", primaryKeyType);
+
+        parameterMap.put("${primary_key_type}",
+            tablePrimaryKeyTypeMap.containsKey(tableName) ? element.type2Name(tablePrimaryKeyTypeMap.get(tableName)) :
+                element.type2Name(Object.class));
+
         parameterMap.put("${model_name}", modelName);
-        parameterMap.put("${is_spring_boot}", isSpringBoot ? "import org.springframework.stereotype.Repository;" +
-            "\n\n@Repository" : "");
+        parameterMap.put("${is_spring_boot}",
+            isSpringBoot ? element.anno2Name("import org.springframework.stereotype.Repository") : "");
+
+        parameterMap.put("${imports}", element.printImports());
 
         templateHelper.writeModel(parameterMap);
+    }
+
+    private String fillBaseModelWithinBaseEntityTemplate(BaseElement element) {
+        if (Style.ENTITY.equals(style) || Style.ALL.equals(style)) {
+            // 导入
+            element.type2Name(new TypeReference<gaarason.database.eloquent.Model<?, ?>>() {});
+            element.type2Name(new TypeReference<Collection<?>>() {});
+            element.type2Name(new TypeReference<GaarasonDataSource>() {});
+            element.anno2Name(Resource.class);
+
+            // 模板替换参数
+            Map<String, String> parameterMap = new HashMap<>(16);
+            parameterMap.put("${base_entity_name}", baseEntityName);
+            parameterMap.put("${base_model_name}", element.type2Name(baseEntityNamespace + "." + baseModelName));
+            return templateHelper.fillBaseModelWithinBaseEntity(parameterMap);
+        } else {
+            return "";
+        }
+    }
+
+    private String fillModelWithinEntityTemplate(BaseElement element, String tableName, String entityName) {
+        if (Style.ENTITY.equals(style) || Style.ALL.equals(style)) {
+            // 导入
+
+            // 模板替换参数
+            Map<String, String> parameterMap = new HashMap<>(16);
+
+            parameterMap.put("${entity_name}", entityName);
+            parameterMap.put("${is_spring_boot}",
+                isSpringBoot ? element.type2Name("org.springframework.stereotype.@Repository") : "");
+            parameterMap.put("${base_model_name}",
+                element.type2Name(baseEntityNamespace + "." + baseEntityName + "$" + baseModelName));
+            parameterMap.put("${primary_key_type}",
+                tablePrimaryKeyTypeMap.containsKey(tableName) ?
+                    element.type2Name(tablePrimaryKeyTypeMap.get(tableName)) :
+                    element.type2Name(Object.class));
+
+            return templateHelper.fillModelWithinEntity(parameterMap);
+        } else {
+            return "";
+        }
     }
 
     /**
@@ -454,7 +514,7 @@ public class Generator {
      * @param isForBaseEntity entity父类使用
      * @return 内容
      */
-    private String fillFieldsTemplate(String tableName, boolean isForBaseEntity) {
+    private String fillFieldsTemplate(BaseElement element, String tableName, boolean isForBaseEntity) {
         consoleLog("处理表 : " + tableName);
 
         StringBuilder str = new StringBuilder();
@@ -463,7 +523,7 @@ public class Generator {
 
         for (Map<String, Object> field : fields) {
             // 每个字段的填充
-            String fieldTemplateStrReplace = fillFieldTemplate(field, tableName, isForBaseEntity);
+            String fieldTemplateStrReplace = fillFieldTemplate(element, field, tableName, isForBaseEntity);
             // 追加
             str.append(fieldTemplateStrReplace);
         }
@@ -516,7 +576,7 @@ public class Generator {
      * @param isForBaseEntity 用于entity父类使用
      * @return 内容
      */
-    private String fillFieldTemplate(Map<String, Object> fieldStringObjectMap, String tableName,
+    private String fillFieldTemplate(BaseElement element, Map<String, Object> fieldStringObjectMap, String tableName,
         boolean isForBaseEntity) {
 
         System.out.println(fieldStringObjectMap);
@@ -556,7 +616,7 @@ public class Generator {
         mysqlFieldGenerator.setColumnConditionStrategy(columnConditionStrategy);
         mysqlFieldGenerator.setColumnConversion(columnConversion);
 
-        Field field = mysqlFieldGenerator.toField();
+        Field field = mysqlFieldGenerator.toField(element);
 
         // 暂存主键类型
         if (field.isPrimary()) {
@@ -747,42 +807,42 @@ public class Generator {
 
     }
 
-    public Generator setColumnFill(Class<? extends FieldFill> fieldFillClass, String... columns){
+    public Generator setColumnFill(Class<? extends FieldFill> fieldFillClass, String... columns) {
         for (String column : columns) {
             columnFill.put(column, fieldFillClass);
         }
         return this;
     }
 
-    public Generator setColumnStrategy(Class<? extends FieldStrategy> fieldStrategyClass, String... columns){
+    public Generator setColumnStrategy(Class<? extends FieldStrategy> fieldStrategyClass, String... columns) {
         for (String column : columns) {
             columnStrategy.put(column, fieldStrategyClass);
         }
         return this;
     }
 
-    public Generator setColumnInsertStrategy(Class<? extends FieldStrategy> fieldStrategyClass, String... columns){
+    public Generator setColumnInsertStrategy(Class<? extends FieldStrategy> fieldStrategyClass, String... columns) {
         for (String column : columns) {
             columnInsertStrategy.put(column, fieldStrategyClass);
         }
         return this;
     }
 
-    public Generator setColumnUpdateStrategy(Class<? extends FieldStrategy> fieldStrategyClass, String... columns){
+    public Generator setColumnUpdateStrategy(Class<? extends FieldStrategy> fieldStrategyClass, String... columns) {
         for (String column : columns) {
             columnUpdateStrategy.put(column, fieldStrategyClass);
         }
         return this;
     }
 
-    public Generator setColumnConditionStrategy(Class<? extends FieldStrategy> fieldStrategyClass, String... columns){
+    public Generator setColumnConditionStrategy(Class<? extends FieldStrategy> fieldStrategyClass, String... columns) {
         for (String column : columns) {
             columnConditionStrategy.put(column, fieldStrategyClass);
         }
         return this;
     }
 
-    public Generator setColumnConversion(Class<? extends FieldConversion> fieldConversionClass, String... columns){
+    public Generator setColumnConversion(Class<? extends FieldConversion> fieldConversionClass, String... columns) {
         for (String column : columns) {
             columnConversion.put(column, fieldConversionClass);
         }

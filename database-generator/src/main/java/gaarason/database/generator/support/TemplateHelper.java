@@ -1,6 +1,7 @@
 package gaarason.database.generator.support;
 
 import gaarason.database.generator.appointment.Style;
+import gaarason.database.generator.element.base.BaseElement;
 import gaarason.database.generator.exception.GeneratorException;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
@@ -52,6 +53,20 @@ public class TemplateHelper {
         if (!getSharedVariable("style").equals(2)) {
             filePutContent("entity",String.valueOf(parameters.get("${entity_name}")), parameters);
         }
+    }
+
+    public String fillBaseModelWithinBaseEntity(Map<?, ?> parameters) throws GeneratorException {
+        String  templateName = "baseModelWithinBaseEntity";
+        String templateStr = templateCache.computeIfAbsent(templateName,
+            k -> fileGetContent(getAbsoluteReadFileName(templateName)));
+        return fillTemplate(templateStr, parameters);
+    }
+
+    public String fillModelWithinEntity(Map<?, ?> parameters) throws GeneratorException {
+        String  templateName = "modelWithinEntity";
+        String templateStr = templateCache.computeIfAbsent(templateName,
+            k -> fileGetContent(getAbsoluteReadFileName(templateName)));
+        return fillTemplate(templateStr, parameters);
     }
 
     public String fillField(Map<?, ?> parameters) throws GeneratorException {
@@ -121,6 +136,12 @@ public class TemplateHelper {
         return StringUtils.rtrim(configContentStr.toString(), "\n");
     }
 
+    /**
+     * 设置全局变量
+     * @param key 键
+     * @param value 值
+     * @param <V> 值的类型
+     */
     protected <V> void setSharedVariable(String key, V value) {
         try {
             sharedVariableMap.put(key, value);
@@ -129,6 +150,12 @@ public class TemplateHelper {
         }
     }
 
+    /**
+     * 获取全局变量
+     * @param key 键
+     * @return 值
+     * @param <V> 值的类型
+     */
     protected <V> V getSharedVariable(String key) {
         try {
             return ObjectUtils.typeCast(sharedVariableMap.get(key));

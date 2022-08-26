@@ -8,6 +8,7 @@ import gaarason.database.contract.support.FieldFill;
 import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.eloquent.Model;
 import gaarason.database.generator.Generator;
+import gaarason.database.generator.appointment.Style;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -32,6 +33,7 @@ public class GeneratorTests {
         String password = "root";
         Generator generator = new Generator(jdbcUrl, username, password);
 
+        generator.setStyle(Style.NORMAL);
         // set
         generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
 //        generator.setOutputDir("./src/test/java1/");     // 所有生成文件的路径

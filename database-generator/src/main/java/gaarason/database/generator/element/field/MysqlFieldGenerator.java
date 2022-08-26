@@ -6,6 +6,7 @@ import gaarason.database.contract.support.FieldFill;
 import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.generator.element.JavaClassification;
 import gaarason.database.generator.element.JavaVisibility;
+import gaarason.database.generator.element.base.BaseElement;
 import gaarason.database.util.StringUtils;
 
 import java.time.LocalDate;
@@ -215,8 +216,8 @@ public class MysqlFieldGenerator extends BaseFieldGenerator {
      * @return Field
      */
     @Override
-    public Field toField() {
-        Field field = new Field();
+    public Field toField(BaseElement element) {
+        Field field = new Field(element);
         field.setPrimary("PRI".equals(columnKey));
         field.setIncrement(extra != null && extra.contains("auto_increment"));
         field.setDataType(dataType);
@@ -275,35 +276,35 @@ public class MysqlFieldGenerator extends BaseFieldGenerator {
             case "timestamp":
             case "datetime":
             case "year":
-                field.setJavaClassTypeString(cutClassName(LocalDateTime.class));
+                field.setJavaClassTypeString((LocalDateTime.class));
                 field.setJavaClassification(JavaClassification.DATE);
                 break;
             case "date":
-                field.setJavaClassTypeString(cutClassName(LocalDate.class));
+                field.setJavaClassTypeString((LocalDate.class));
                 field.setJavaClassification(JavaClassification.DATE);
                 break;
             case "time":
-                field.setJavaClassTypeString(cutClassName(LocalTime.class));
+                field.setJavaClassTypeString((LocalTime.class));
                 field.setJavaClassification(JavaClassification.DATE);
                 break;
             case "blob":
-                field.setJavaClassTypeString("Byte[]");
+                field.setJavaClassTypeString(Byte[].class);
                 field.setJavaClassification(JavaClassification.OTHER);
                 break;
             case "bit":
-                field.setJavaClassTypeString(cutClassName(Boolean.class));
+                field.setJavaClassTypeString((Boolean.class));
                 field.setJavaClassification(JavaClassification.BOOLEAN);
                 break;
             case "char":
             case "varchar":
                 field.setMax(Long.parseLong(characterMaximumLength));
-                field.setJavaClassTypeString(cutClassName(String.class));
+                field.setJavaClassTypeString((String.class));
                 field.setMin(0);
                 field.setJavaClassification(JavaClassification.STRING);
                 break;
             case "text":
             default:
-                field.setJavaClassTypeString(cutClassName(String.class));
+                field.setJavaClassTypeString((String.class));
                 field.setMin(0);
                 field.setJavaClassification(JavaClassification.STRING);
         }
@@ -321,7 +322,7 @@ public class MysqlFieldGenerator extends BaseFieldGenerator {
         if (matcher.find()) {
             Integer tinyintLength = Integer.valueOf(matcher.group(1));
             if (tinyintLength.equals(1)) {
-                field.setJavaClassTypeString(cutClassName(Boolean.class));
+                field.setJavaClassTypeString((Boolean.class));
                 field.setJavaClassification(JavaClassification.BOOLEAN);
                 return;
             }
@@ -341,7 +342,7 @@ public class MysqlFieldGenerator extends BaseFieldGenerator {
         MysqlNumericRange numericRange = columnType.contains("unsigned") ? somethingUnsigned : something;
         field.setMax(numericRange.getMax());
         field.setMin(numericRange.getMin());
-        field.setJavaClassTypeString(cutClassName(numericRange.getJavaClassType()));
+        field.setJavaClassTypeString((numericRange.getJavaClassType()));
         field.setJavaClassification(JavaClassification.NUMERIC);
     }
 

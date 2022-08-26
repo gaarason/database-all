@@ -1,19 +1,11 @@
 package gaarason.database.generator.element;
 
+import gaarason.database.generator.element.base.BaseElement;
 import gaarason.database.generator.element.field.Field;
 
 import java.util.List;
 
-public class Entity {
-
-    List<Field> fieldList;
+public class Entity extends BaseElement {
 
 
-    public List<Field> getFieldList() {
-        return fieldList;
-    }
-
-    public void setFieldList(List<Field> fieldList) {
-        this.fieldList = fieldList;
-    }
 }

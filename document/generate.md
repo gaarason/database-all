@@ -67,36 +67,46 @@ public class GeneratorTests {
     @Test
     public void run有参构造() {
         String jdbcUrl = "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8" +
-                    "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
+                "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
         String username = "root";
         String password = "root";
         Generator generator = new Generator(jdbcUrl, username, password);
-
+          // 风格切换
+        generator.setStyle(Style.ENTITY);
         // set
         generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
-        generator.setNamespace("data");                 // 所有生成文件的所属命名空间
+  //        generator.setOutputDir("./src/test/java1/");     // 所有生成文件的路径
+        generator.setNamespace("gaarason.database.test.models.relation.pojo");                 // 所有生成文件的所属命名空间
         generator.setCorePoolSize(20);                  // 所用的线程数
-        generator.setSpringBoot(true);                  // 是否生成spring boot相关注解
-//        generator.setSwagger(true);                     // 是否生成swagger相关注解
-//        generator.setValidator(true);                   // 是否生成validator相关注解
-
-        generator.setEntityStaticField(true);           // 是否在实体中生成静态字段
+        generator.setSpringBoot(true);                // 是否生成spring boot相关注解
+        generator.setSwagger(false);                   // 是否生成swagger相关注解
+        generator.setValidator(false);                 // 是否生成validator相关注解
+  
+        generator.setEntityStaticField(false);          // 是否在实体中生成静态字段
         generator.setBaseEntityDir("base");             // 实体父类的相对路径
-//        generator.setBaseEntityFields("id");            // 实体父类存在的字段    (重要, 没有所有表100%满足的字段就请留空)
+        generator.setBaseEntityFields("id");            // 实体父类存在的字段
         generator.setBaseEntityName("BaseEntity");      // 实体父类的类名
         generator.setEntityDir("entity");               // 实体的相对路径
         generator.setEntityPrefix("");                  // 实体的类名前缀
         generator.setEntitySuffix("");                  // 实体的类名后缀
 
-//        generator.setDisInsertable("created_at", "updated_at");     // 新增时,不可通过ORM更改的字段
-//        generator.setDisUpdatable("created_at", "updated_at");      // 更新时,不可通过ORM更改的字段
+//      generator.setColumnDisSelectable("created_at", "updated_at");             // 字段, 不可查询
+//
+//      generator.setColumnFill(FieldFill.NotFill.class, "created_at", "updated_at");  // 字段, 填充方式
+//
+//      generator.setColumnStrategy(FieldStrategy.Default.class, "created_at", "updated_at");   // 字段, 使用策略
+//      generator.setColumnInsertStrategy(FieldStrategy.Never.class, "created_at", "updated_at");   // 字段, 新增使用策略
+//      generator.setColumnUpdateStrategy(FieldStrategy.Never.class, "created_at", "updated_at");   // 字段, 更新使用策略
+//      generator.setColumnConditionStrategy(FieldStrategy.Default.class, "created_at", "updated_at");   // 字段, 条件使用策略
+//
+//      generator.setColumnConversion(FieldConversion.Default.class, "created_at", "updated_at");   // 字段, 序列化与反序列化方式
 
         generator.setBaseModelDir("base");              // 模型父类的相对路径
         generator.setBaseModelName("BaseModel");        // 模型父类的类名
         generator.setModelDir("model");                 // 模型的相对路径
         generator.setModelPrefix("");                   // 模型的类名前缀
         generator.setModelSuffix("Model");              // 模型的类名后缀
-
+  
         // 执行
         generator.run();
     }
@@ -232,23 +242,35 @@ public class TestApplicationTests {
     @Test
     public void 生成代码() {
         // set
+        // 风格切换
+        generator.setStyle(Style.ENTITY);
+        // set
         generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
-        generator.setNamespace("data");                 // 所有生成文件的所属命名空间
+        //        generator.setOutputDir("./src/test/java1/");     // 所有生成文件的路径
+        generator.setNamespace("gaarason.database.test.models.relation.pojo");                 // 所有生成文件的所属命名空间
         generator.setCorePoolSize(20);                  // 所用的线程数
-        generator.setSpringBoot(true);                  // 是否生成spring boot相关注解
-        generator.setSwagger(true);                     // 是否生成swagger相关注解
-        generator.setValidator(true);                   // 是否生成validator相关注解
-
-        generator.setEntityStaticField(true);           // 是否在实体中生成静态字段
+        generator.setSpringBoot(true);                // 是否生成spring boot相关注解
+        generator.setSwagger(false);                   // 是否生成swagger相关注解
+        generator.setValidator(false);                 // 是否生成validator相关注解
+  
+        generator.setEntityStaticField(false);          // 是否在实体中生成静态字段
         generator.setBaseEntityDir("base");             // 实体父类的相对路径
-        generator.setBaseEntityFields("id");            // 实体父类存在的字段    (重要, 没有所有表100%满足的字段就请留空)
+        generator.setBaseEntityFields("id");            // 实体父类存在的字段
         generator.setBaseEntityName("BaseEntity");      // 实体父类的类名
         generator.setEntityDir("entity");               // 实体的相对路径
         generator.setEntityPrefix("");                  // 实体的类名前缀
         generator.setEntitySuffix("");                  // 实体的类名后缀
 
-        generator.setDisInsertable("created_at", "updated_at");     // 新增时,不可通过ORM更改的字段
-        generator.setDisUpdatable("created_at", "updated_at");      // 更新时,不可通过ORM更改的字段
+//      generator.setColumnDisSelectable("created_at", "updated_at");             // 字段, 不可查询
+//
+//      generator.setColumnFill(FieldFill.NotFill.class, "created_at", "updated_at");  // 字段, 填充方式
+//
+//      generator.setColumnStrategy(FieldStrategy.Default.class, "created_at", "updated_at");   // 字段, 使用策略
+//      generator.setColumnInsertStrategy(FieldStrategy.Never.class, "created_at", "updated_at");   // 字段, 新增使用策略
+//      generator.setColumnUpdateStrategy(FieldStrategy.Never.class, "created_at", "updated_at");   // 字段, 更新使用策略
+//      generator.setColumnConditionStrategy(FieldStrategy.Default.class, "created_at", "updated_at");   // 字段, 条件使用策略
+//
+//      generator.setColumnConversion(FieldConversion.Default.class, "created_at", "updated_at");   // 字段, 序列化与反序列化方式
 
         generator.setBaseModelDir("base");              // 模型父类的相对路径
         generator.setBaseModelName("BaseModel");        // 模型父类的类名

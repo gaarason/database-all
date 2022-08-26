@@ -1,5 +1,6 @@
 package gaarason.database.generator.element.field;
 
+import gaarason.database.generator.element.base.BaseElement;
 import gaarason.database.lang.Nullable;
 import gaarason.database.util.StringUtils;
 
@@ -53,5 +54,5 @@ abstract class BaseFieldGenerator {
      * 生成Field
      * @return Field
      */
-    public abstract Field toField();
+    public abstract Field toField(BaseElement element);
 }

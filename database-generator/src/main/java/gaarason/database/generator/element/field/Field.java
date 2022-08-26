@@ -1,11 +1,14 @@
 package gaarason.database.generator.element.field;
 
+import gaarason.database.annotation.Column;
+import gaarason.database.annotation.Primary;
 import gaarason.database.contract.support.FieldConversion;
 import gaarason.database.contract.support.FieldFill;
 import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.generator.element.JavaClassification;
 import gaarason.database.generator.element.JavaElement;
 import gaarason.database.generator.element.JavaVisibility;
+import gaarason.database.generator.element.base.BaseElement;
 import gaarason.database.util.ObjectUtils;
 
 /**
@@ -54,16 +57,6 @@ public class Field extends JavaElement {
      */
     private String defaultValue;
 
-//    /**
-//     * 是否允许新增时赋值
-//     */
-//    private boolean insertable = true;
-//
-//    /**
-//     * 是否允许更新时赋值
-//     */
-//    private boolean updatable = true;
-
     /**
      * 查询时，指定不查询的列
      */
@@ -94,7 +87,6 @@ public class Field extends JavaElement {
      */
     private Class<? extends FieldConversion> columnConversion;
 
-
     /**
      * 字段长度
      */
@@ -119,7 +111,7 @@ public class Field extends JavaElement {
      * java中的类型
      * eg:Date
      */
-    private String javaClassTypeString;
+    private Class<?> javaClassTypeString;
 
     /**
      * java数据类型分类
@@ -128,7 +120,6 @@ public class Field extends JavaElement {
 
     /**
      * 最小值
-     * 当
      */
     private long min;
 
@@ -136,6 +127,12 @@ public class Field extends JavaElement {
      * 最大值
      */
     private long max;
+
+    private final BaseElement element;
+
+    public Field(BaseElement element) {
+        this.element = element;
+    }
 
     /**
      * 缩进
@@ -149,14 +146,14 @@ public class Field extends JavaElement {
      * @return eg:private String name;
      */
     public String toFieldName() {
-        return indentation() + JavaVisibility.PRIVATE.getValue() + javaClassTypeString + " " + name + ";\n\n";
+        return indentation() + JavaVisibility.PRIVATE.getValue() + element.type2Name(javaClassTypeString) + " " + name + ";\n\n";
     }
 
     /**
      * @return eg:@Primary()
      */
     public String toAnnotationDatabasePrimary() {
-        return primary ? indentation() + "@Primary(" +
+        return primary ? indentation() + element.anno2Name(Primary.class) + "(" +
             (!increment ? "increment = " + increment : "") +
             ")\n" : "";
     }
@@ -165,18 +162,18 @@ public class Field extends JavaElement {
      * @return eg:@Column(name = "name", length = 20L, comment = "姓名")
      */
     public String toAnnotationDatabaseColumn() {
-        return indentation() + "@Column(" +
+        return indentation() + element.anno2Name(Column.class)+"(" +
 
             "name = \"" + columnName + "\"" +
             (unsigned ? ", unsigned = " + unsigned : "") +
             (nullable ? ", nullable = " + nullable : "") +
             (!ObjectUtils.isNull(columnDisSelectable) ? ", selectable = " + columnDisSelectable : "") +
-            (!ObjectUtils.isNull(columnFill) ? ", fill = " + class2String(columnFill) : "") +
-            (!ObjectUtils.isNull(columnStrategy) ? ", strategy = " + class2String(columnStrategy) : "") +
-            (!ObjectUtils.isNull(columnInsertStrategy) ? ", insertStrategy = " + class2String(columnInsertStrategy) : "") +
-            (!ObjectUtils.isNull(columnUpdateStrategy) ? ", updateStrategy = " + class2String(columnUpdateStrategy) : "") +
-            (!ObjectUtils.isNull(columnConditionStrategy) ? ", conditionStrategy = " + class2String(columnConditionStrategy) : "") +
-            (!ObjectUtils.isNull(columnConversion) ? ", conversion = " + class2String(columnConversion) : "") +
+            (!ObjectUtils.isNull(columnFill) ? ", fill = " + element.type2Name(columnFill) + ".class" : "") +
+            (!ObjectUtils.isNull(columnStrategy) ? ", strategy = " + element.type2Name(columnStrategy)+ ".class" : "") +
+            (!ObjectUtils.isNull(columnInsertStrategy) ? ", insertStrategy = " + element.type2Name(columnInsertStrategy)+ ".class" : "") +
+            (!ObjectUtils.isNull(columnUpdateStrategy) ? ", updateStrategy = " + element.type2Name(columnUpdateStrategy)+ ".class" : "") +
+            (!ObjectUtils.isNull(columnConditionStrategy) ? ", conditionStrategy = " + element.type2Name(columnConditionStrategy)+ ".class" : "") +
+            (!ObjectUtils.isNull(columnConversion) ? ", conversion = " + element.type2Name(columnConversion)+ ".class" : "") +
             (length != null && length != 255 ? ", length = " + length + "L" : "") +
             (!"".equals(comment) ? ", comment = \"" + comment + "\"" : "") +
 
@@ -190,7 +187,7 @@ public class Field extends JavaElement {
         // 字段没有注释的情况下, 使用字段名
         String value = "".equals(comment) ? columnName : comment;
 
-        return indentation() + "@ApiModelProperty(" +
+        return indentation() + element.anno2Name("io.swagger.annotations.ApiModelProperty") + "(" +
 
             "value = \"" + value + "\"" +
             (defaultValue != null ? ", example = \"" + defaultValue + "\"" : "") +
@@ -211,17 +208,17 @@ public class Field extends JavaElement {
 
         switch (javaClassification) {
             case NUMERIC:
-                return indentation() + "@Max(value = " + max + "L, " +
+                return indentation() + element.anno2Name("javax.validation.constraints.Max") + "(value = " + max + "L, " +
                     "message = \"" + describe + "[" + columnName + "]需要小于等于" + max + "\"" +
                     ")\n" +
-                    indentation() + "@Min(value = " + min + "L, " +
+                    indentation() + element.anno2Name("javax.validation.constraints.Min") + "(value = " + min + "L, " +
                     "message = \"" + describe + "[" + columnName + "]需要大于等于" + min + "\"" +
                     ")\n";
             case STRING:
                 if (max == 0) {
                     return "";
                 } else {
-                    return indentation() + "@Length(" +
+                    return indentation() + element.anno2Name("org.hibernate.validator.constraints.Length") + "(" +
                         "min = " + min + ", " +
                         "max = " + max + ", " +
                         "message = \"" + describe + "[" + columnName + "]长度需要在" + min + "和" + max + "之间" + "\"" +
@@ -231,12 +228,12 @@ public class Field extends JavaElement {
                 return "";
         }
     }
-
-    private String class2String(Class<?> clazz){
-        String classStr = clazz.toString();
-        return classStr.replace("class ", "").replace("$",".") + ".class";
-
-    }
+//
+//    private String class2String(Class<?> clazz){
+//        String classStr = clazz.toString();
+//        return classStr.replace("class ", "").replace("$",".") + ".class";
+//
+//    }
 
     /**
      * 字段是否必填
@@ -403,11 +400,11 @@ public class Field extends JavaElement {
         this.increment = increment;
     }
 
-    public String getJavaClassTypeString() {
+    public Class<?> getJavaClassTypeString() {
         return javaClassTypeString;
     }
 
-    public void setJavaClassTypeString(String javaClassTypeString) {
+    public void setJavaClassTypeString(Class<?> javaClassTypeString) {
         this.javaClassTypeString = javaClassTypeString;
     }
 

@@ -24,6 +24,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 4.1.0
+
+- 实体代码生成时, 增加更多一种的风格作为选择
+
 ### 4.0.0
 
 - 在`Record`中, 增加 `saveByPrimaryKey()`, 更改`fillEntity()`返回值
