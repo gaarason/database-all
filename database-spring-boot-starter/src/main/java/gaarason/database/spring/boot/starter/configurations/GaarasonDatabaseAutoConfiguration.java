@@ -1,6 +1,8 @@
 package gaarason.database.spring.boot.starter.configurations;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
+import gaarason.database.autoconfiguration.MssqlAutoconfiguration;
+import gaarason.database.autoconfiguration.MysqlAutoconfiguration;
 import gaarason.database.bootstrap.ContainerBootstrap;
 import gaarason.database.config.GaarasonDatabaseProperties;
 import gaarason.database.connection.GaarasonDataSourceBuilder;
@@ -11,13 +13,14 @@ import gaarason.database.generator.GeneralGenerator;
 import gaarason.database.logging.Log;
 import gaarason.database.logging.LogFactory;
 import gaarason.database.provider.ModelInstanceProvider;
+import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.spring.boot.starter.annotation.GaarasonDatabaseScanRegistrar;
 import gaarason.database.spring.boot.starter.provider.GaarasonTransactionManager;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -27,14 +30,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 
-import javax.annotation.Resource;
 import javax.sql.DataSource;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * 自动配置
  * @author xt
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter({DruidDataSourceAutoConfigure.class, DataSourceAutoConfiguration.class})
 @Import({GeneralModel.class, GeneralGenerator.class})
 public class GaarasonDatabaseAutoConfiguration {
@@ -59,24 +63,19 @@ public class GaarasonDatabaseAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    public Container container(ApplicationContext applicationContext, GaarasonDatabaseProperties gaarasonDatabaseProperties){
-        // 简单获取 @SpringBootApplication 所在的包名
-        final String springBootApplicationPackage = applicationContext.getBeansWithAnnotation(
-                SpringBootApplication.class)
-            .entrySet()
-            .iterator()
-            .next()
-            .getValue()
-            .getClass()
-            .getPackage().getName();
+    public Container container(ApplicationContext applicationContext,
+        GaarasonDatabaseProperties gaarasonDatabaseProperties) {
+
+        // 获取 spring boot 的包扫描路径
+        List<String> packageOnSpringBoot = AutoConfigurationPackages.get(applicationContext);
 
         /*
          * 将配置合并
          * 认定 GaarasonDatabaseScan 的解析一定在此之前完成了.
-         * 默认使用 @SpringBootApplication 所在的包路径
+         * 默认使用 pring boot 的包扫描路径
          */
         gaarasonDatabaseProperties.mergeScan(GaarasonDatabaseScanRegistrar.getScan())
-            .fillPackageWhenIsEmpty(springBootApplicationPackage)
+            .fillPackageWhenIsEmpty(packageOnSpringBoot)
             .fillAndVerify();
 
         // 从配置创建全新容器
@@ -95,31 +94,64 @@ public class GaarasonDatabaseAutoConfiguration {
         });
         LOGGER.info("Model instance provider has been registered success.");
 
-        container.bootstrapGaarasonAutoconfiguration();
+        bootstrapGaarasonAutoconfiguration(container);
 
-        container.initialization();
+        bootstrapInitialization(container);
 
         LOGGER.info("Container has completed initialization.");
         return container;
     }
 
-    @Configuration
+    /**
+     * 自动配置, 在native时, 手动进行
+     * 在native时, 更多的用户自定的配置, 也需要手动执行, 需要且在任意sql执行前完成
+     * @param container 容器
+     */
+    protected void bootstrapGaarasonAutoconfiguration(ContainerBootstrap container) {
+        if (isNative()) {
+            new MysqlAutoconfiguration().init(container);
+            new MssqlAutoconfiguration().init(container);
+        } else {
+            container.bootstrapGaarasonAutoconfiguration();
+        }
+    }
+
+    /**
+     * 自动配置, 在native时, 手动进行
+     * 在native时, 更多的用户自定的model, 也需要手动执行, 需要且在对应的model使用前完成
+     * 同时也增加了一定的动态的能力 详见 ModelShadowProvider
+     * @param container 容器
+     */
+    protected void bootstrapInitialization(ContainerBootstrap container) {
+        if (isNative()) {
+            container.getBean(ModelShadowProvider.class).loadModels((Collections.singleton(GeneralModel.class)));
+            // 其他均需要手动执行
+        } else {
+            container.initialization();
+        }
+    }
+
+    /**
+     * 是否是 Spring native 环境
+     * @return 是否是 Spring native 环境
+     * @see org.springframework.nativex.NativeListener
+     */
+    protected static boolean isNative() {
+        return "true".equals(System.getProperty("springAot")) ||
+            (System.getProperty("org.graalvm.nativeimage.imagecode") != null);
+    }
+
+    @Configuration(proxyBeanMethods = false)
     public static class GaarasonDataSourceAutoconfigure {
-
-        @Resource
-        private DataSource dataSource;
-
-        @Resource
-        private Container container;
 
         /**
          * 数据源配置
          * @return 数据源
          */
         @Primary
-        @Bean(autowireCandidate = false)
+        @Bean()
         @ConditionalOnMissingBean(GaarasonDataSource.class)
-        public GaarasonDataSource gaarasonDataSource() {
+        public GaarasonDataSource gaarasonDataSource(DataSource dataSource, Container container) {
             LOGGER.info("GaarasonDataSource init with " + dataSource.getClass().getName());
             // 创建 GaarasonDataSource
             return GaarasonDataSourceBuilder.build(dataSource, container);
@@ -132,9 +164,9 @@ public class GaarasonDatabaseAutoConfiguration {
         @Primary
         @Bean
         @ConditionalOnMissingBean(GaarasonTransactionManager.class)
-        public GaarasonTransactionManager gaarasonTransactionManager() {
+        public GaarasonTransactionManager gaarasonTransactionManager(GaarasonDataSource gaarasonDataSource) {
             LOGGER.info("GaarasonTransactionManager init");
-            return new GaarasonTransactionManager(gaarasonDataSource());
+            return new GaarasonTransactionManager(gaarasonDataSource);
         }
     }
 

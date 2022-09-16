@@ -61,6 +61,7 @@ Eloquent ORM for Java
         * [随机抽样](#随机抽样)
 * [关联关系](/document/relationship.md)
 * [生成代码](/document/generate.md)
+* [GraalVM](/document/graalvm.md)
 * [版本信息](/document/version.md)
 
 ## 总览

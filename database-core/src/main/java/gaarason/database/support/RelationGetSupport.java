@@ -86,10 +86,10 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
             ModelMember<T, K> modelMember = modelShadow.get(records.get(0).getModel());
             EntityMember<T> entityMember = modelMember.getEntityMember();
 
-            // 实体类的对象
+            // 实体类的对象 (仅包含数据库字段属性)
             T entity = modelShadow.entityAssignment(entityMember.getEntityClass(), theRecord);
 
-            // 关系属性集合
+            // 关联关系属性集合
             Map<String, FieldRelationMember> relationFieldMap = entityMember.getRelationFieldMap();
             for (Map.Entry<String, FieldRelationMember> entry : relationFieldMap.entrySet()) {
                 // 关系属性信息

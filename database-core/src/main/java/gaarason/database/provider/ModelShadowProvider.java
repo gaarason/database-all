@@ -7,19 +7,19 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.core.Container;
-import gaarason.database.exception.EntityAttributeInvalidException;
-import gaarason.database.exception.EntityInvalidException;
-import gaarason.database.exception.IllegalAccessRuntimeException;
-import gaarason.database.exception.ModelInvalidException;
+import gaarason.database.exception.*;
 import gaarason.database.lang.Nullable;
 import gaarason.database.logging.Log;
 import gaarason.database.logging.LogFactory;
 import gaarason.database.support.*;
+import gaarason.database.util.EntityUtils;
 import gaarason.database.util.LambdaUtils;
 import gaarason.database.util.ObjectUtils;
 
-import java.io.Serializable;
-import java.util.*;
+import java.lang.reflect.Modifier;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -44,23 +44,37 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
 
     /**
      * 通过反射等手段, 得到model信息
+     * @param modelClass model类型
+     * @return 是否成功
+     */
+    public boolean loadModel(Class<? extends Model<?, ?>> modelClass) {
+        return loadModels(Collections.singleton(modelClass)) > 0;
+    }
+
+    /**
+     * 通过反射等手段, 得到model信息
+     * 因为关联关系的相关功能, 需要将存在关系的都提前准备好, 这样才能通过entity找到对应的model
      * @param modelClasses model类型的集合
      * @return 数量
      */
-    public int loadModels(Collection<Class<? extends Model<Serializable, Serializable>>> modelClasses) {
+    public int loadModels(Collection<Class<? extends Model<?, ?>>> modelClasses) {
         synchronized (persistence) {
             int i = 0;
             // 所有 Model 的子类 (含抽象类等)进行初始化分析
             // 初始化模型的基本信息, 并构建索引
-            for (Class<? extends Model<Serializable, Serializable>> modelClass : modelClasses) {
-                ModelMember<?, ?> modelMember;
-                try {
-                    modelMember = new ModelMember<>(container, modelClass);
-                } catch (ClassCastException ignore) {
-                    // 父类, 抽象类跳过
+            for (Class<? extends Model<?, ?>> modelClass : modelClasses) {
+                ModelMember<Object, Object> modelMember;
+                // 接口跳过/抽象类跳过
+                if (modelClass.isInterface() || Modifier.isAbstract(modelClass.getModifiers())) {
                     continue;
                 }
-                i ++;
+                try {
+                    modelMember = new ModelMember<>(container, ObjectUtils.typeCast(modelClass));
+                } catch (TypeNotSupportedException | ClassCastException ignore) {
+                    // 类型失败跳过
+                    continue;
+                }
+                i++;
                 persistence.modelIndexMap.put(modelClass, modelMember);
                 persistence.modelProxyIndexMap.put(modelMember.getModel().getClass(), modelMember);
                 persistence.entityIndexMap.put(modelMember.getEntityClass(), modelMember);
@@ -74,7 +88,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param modelClasses model类型的集合
      * @return 数量
      */
-    public int refreshModels(Collection<Class<? extends Model<Serializable, Serializable>>> modelClasses) {
+    public int refreshModels(Collection<Class<? extends Model<?, ?>>> modelClasses) {
         return loadModels(modelClasses);
     }
 
@@ -83,13 +97,13 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param modelClasses model类型的集合
      * @return 数量
      */
-    public int unloadModels(Collection<Class<? extends Model<Serializable, Serializable>>> modelClasses) {
+    public int unloadModels(Collection<Class<? extends Model<?, ?>>> modelClasses) {
         synchronized (persistence) {
             int i = 0;
-            for (Class<? extends Model<Serializable, Serializable>> modelClass : modelClasses) {
+            for (Class<? extends Model<?, ?>> modelClass : modelClasses) {
                 ModelMember<?, ?> modelMember = persistence.modelIndexMap.remove(modelClass);
                 if (!ObjectUtils.isEmpty(modelMember)) {
-                    i ++;
+                    i++;
                     persistence.entityIndexMap.remove(modelMember.getEntityClass());
                     persistence.modelProxyIndexMap.entrySet().removeIf(entry -> entry.getValue() == modelMember);
                 }
@@ -116,17 +130,28 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param <K> 主键类型
      * @return 格式化后的Model信息
      */
-    public <T, K> ModelMember<T, K> getByModelClass(
-        Class<? extends Model<T, K>> modelClass) {
-        ModelMember<?, ?> result1 = persistence.modelProxyIndexMap.get(modelClass);
-        if (null == result1) {
-            ModelMember<?, ?> result2 = persistence.modelIndexMap.get(modelClass);
-            if (null == result2) {
-                throw new ModelInvalidException(modelClass);
+    public <T, K> ModelMember<T, K> getByModelClass(Class<? extends Model<T, K>> modelClass) {
+        ModelMember<?, ?> result;
+        result = persistence.modelProxyIndexMap.get(modelClass);
+        if (null == result) {
+            result = persistence.modelIndexMap.get(modelClass);
+            if (null == result) {
+                /*
+                 * 尝试动态解析一次
+                 */
+                if (loadModel(modelClass)) {
+                    result = persistence.modelProxyIndexMap.get(modelClass);
+                    if (null == result) {
+                        result = persistence.modelIndexMap.get(modelClass);
+                    }
+                }
             }
-            return ObjectUtils.typeCast(result2);
         }
-        return ObjectUtils.typeCast(result1);
+
+        if (null == result) {
+            throw new ModelInvalidException(modelClass);
+        }
+        return ObjectUtils.typeCast(result);
     }
 
     /**
@@ -135,7 +160,23 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @return 格式化后的Model信息
      */
     public <T> ModelMember<? super T, ?> getByEntityClass(Class<T> clazz) {
-        ModelMember<?, ?> result = persistence.entityIndexMap.get(clazz);
+        ModelMember<?, ?> result;
+
+        result = persistence.entityIndexMap.get(clazz);
+        if (null == result) {
+            /*
+             * 尝试动态解析一次
+             * 仅对, model是其entity的内部类的情况有效, 其他情况下没有办法找(猜测)到对应的model
+             * class SomeEntity {
+             *     public static class Model implements Model<SomeEntity, K> {}
+             * }
+             */
+            Class<? extends Model<?, ?>> modelClass = EntityUtils.inferModelClassOnEntity(clazz);
+            // 似乎找到了
+            if (modelClass != null && loadModel(modelClass)) {
+                result = persistence.entityIndexMap.get(clazz);
+            }
+        }
         if (null == result) {
             throw new EntityInvalidException(clazz);
         }
@@ -246,20 +287,20 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
 
     /**
      * 查询entity 中的指定字段信息
-     * @param entityClass 实体类(可查找泛型)
+     * @param anyEntityClass 实体类(可查找泛型)
      * @param fieldName 实体中的属性
      * @param <T> 实体类型
      * @return 字段信息
      * @throws EntityAttributeInvalidException 无效的字段
      */
-    public <T> FieldMember getFieldByAnyEntityClass(Class<T> entityClass, String fieldName)
+    public <T> FieldMember getFieldByAnyEntityClass(Class<T> anyEntityClass, String fieldName)
         throws EntityAttributeInvalidException, EntityInvalidException {
 
         // 字段信息
-        FieldMember fieldMember = parseAnyEntityWithCache(entityClass).getJavaFieldMap().get(fieldName);
+        FieldMember fieldMember = parseAnyEntityWithCache(anyEntityClass).getJavaFieldMap().get(fieldName);
 
         if (ObjectUtils.isEmpty(fieldMember)) {
-            throw new EntityAttributeInvalidException(fieldName, entityClass);
+            throw new EntityAttributeInvalidException(fieldName, anyEntityClass);
         }
         return fieldMember;
     }
@@ -347,8 +388,8 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      */
     @Nullable
     public <T, K> K getPrimaryKeyValue(T anyEntity, EntityUseType type) {
-        Object primaryKeyValue = parseAnyEntityWithCache(anyEntity.getClass())
-            .getPrimaryKeyMemberOrFail().getFieldMember()
+        Object primaryKeyValue = parseAnyEntityWithCache(anyEntity.getClass()).getPrimaryKeyMemberOrFail()
+            .getFieldMember()
             .fieldGetOrFail(anyEntity, type);
         return primaryKeyValue == null ? null : ObjectUtils.typeCast(primaryKeyValue);
     }

@@ -30,6 +30,7 @@ Eloquent ORM for Java
         * [同步关系](#同步关系)
         * [切换关系](#切换关系)
 * [生成代码](/document/generate.md)
+* [GraalVM](/document/graalvm.md)
 * [版本信息](/document/version.md)
 
 ## 总览

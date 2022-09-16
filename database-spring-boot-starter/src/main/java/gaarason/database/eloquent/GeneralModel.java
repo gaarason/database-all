@@ -3,9 +3,9 @@ package gaarason.database.eloquent;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.logging.Log;
 import gaarason.database.logging.LogFactory;
-import org.springframework.stereotype.Repository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.Collection;
 
@@ -13,12 +13,12 @@ import java.util.Collection;
  * 通用model
  * @author xt
  */
-@Repository
+@Component
 public class GeneralModel extends Model<GeneralModel.Table, Serializable> {
 
     private static final Log log = LogFactory.getLog(GeneralModel.class);
 
-    @Resource
+    @Autowired
     private GaarasonDataSource gaarasonDataSource;
 
     @Override

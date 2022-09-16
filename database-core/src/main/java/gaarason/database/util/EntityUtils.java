@@ -3,12 +3,15 @@ package gaarason.database.util;
 import gaarason.database.annotation.Column;
 import gaarason.database.annotation.Table;
 import gaarason.database.appointment.FinalVariable;
+import gaarason.database.contract.eloquent.Model;
 import gaarason.database.exception.IllegalAccessRuntimeException;
-import gaarason.database.exception.TypeNotSupportedException;
+import gaarason.database.lang.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -160,6 +163,34 @@ public final class EntityUtils {
             }
             throw e;
         }
+    }
+
+    /**
+     * 尝试在entity的内部类中, 找到其对应的model
+     * @param anyEntityClass 实体类
+     * @return model类
+     */
+    @Nullable
+    public static Class<? extends Model<?, ?>> inferModelClassOnEntity(Class<?> anyEntityClass) {
+        // 所有内部类
+        for (Class<?> maybeModelClass : anyEntityClass.getDeclaredClasses()) {
+            // 是否是 Model
+            if (Model.class.isAssignableFrom(maybeModelClass)) {
+                /*
+                 * 进一步检查 Entity
+                 * 不是抽象类, 且泛型参数正确
+                 */
+                if (!Modifier.isAbstract(maybeModelClass.getModifiers())) {
+                    try {
+                        if (anyEntityClass.equals(ObjectUtils.getGenerics(maybeModelClass, 0))) {
+                            return ObjectUtils.typeCast(maybeModelClass);
+                        }
+                    } catch (Throwable ignore) {
+                    }
+                }
+            }
+        }
+        return null;
     }
 
 }

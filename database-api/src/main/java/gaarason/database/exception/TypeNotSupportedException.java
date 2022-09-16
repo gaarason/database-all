@@ -12,6 +12,10 @@ public class TypeNotSupportedException extends BaseException {
         super();
     }
 
+    public TypeNotSupportedException(Class<?> clazz) {
+        super(clazz.getName());
+    }
+
     public TypeNotSupportedException(String message) {
         super(message);
     }

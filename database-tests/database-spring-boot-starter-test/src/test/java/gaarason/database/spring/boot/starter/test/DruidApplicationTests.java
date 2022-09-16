@@ -97,7 +97,7 @@ public class DruidApplicationTests {
     }
 
     @Test
-    public void 简单查询_通用() {
+    public void 简单查询_通用_generalModel() {
         Record<GeneralModel.Table, Serializable> first = generalModel.newQuery()
             .from("student")
             .where("id", "3")

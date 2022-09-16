@@ -2,8 +2,10 @@ package gaarason.database.test;
 
 import gaarason.database.appointment.LambdaInfo;
 import gaarason.database.bootstrap.ContainerBootstrap;
+import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.support.IdGenerator;
+import gaarason.database.eloquent.ModelBean;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.test.models.relation.pojo.Student;
 import gaarason.database.test.models.relation.pojo.Teacher;
@@ -258,4 +260,22 @@ public class DatabaseUtilsTests {
         });
     }
 
+    @Test
+    public void inferModelClassOnEntityTest(){
+        Class<? extends Model<?, ?>> aClass = EntityUtils.inferModelClassOnEntity(TEntity.class);
+        Assert.assertNotNull(aClass);
+        Assert.assertEquals(TEntity.Model.class, aClass);
+    }
+
+    public static class TEntity{
+        public static class Model2 {}
+        public static class Model extends ModelWWW{}
+        public abstract static class ModelWWW extends ModelBean<TEntity, Object>{
+            @Override
+            public GaarasonDataSource getGaarasonDataSource() {
+                return null;
+            }
+        }
+        public static class Model3 {}
+    }
 }

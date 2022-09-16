@@ -14,6 +14,7 @@ Eloquent ORM for Java
     * [总览](#总览)
     * [非spring](#非spring)
     * [spring](#spring)
+* [GraalVM](/document/graalvm.md)
 * [版本信息](/document/version.md)
 
 ## 总览

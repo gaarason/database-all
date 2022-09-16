@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Import;
 import javax.sql.DataSource;
 
 /**
- * com.alibaba:druid-spring-boot-starter:1.2.5 - 1.2.8
+ * com.alibaba:druid-spring-boot-starter:1.2.5 - 1.2.9
  * 将 spring.datasource.type = com.alibaba.druid.pool.DruidDataSource 作为自动配置的必要条件
  */
 @Configuration(proxyBeanMethods = false)
@@ -38,7 +38,7 @@ public class DruidDataSourceAutoConfigure {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DruidDataSourceAutoConfigure.class);
 
-    @Bean(initMethod = "init")
+    @Bean
     @ConfigurationProperties("spring.datasource.druid")
     @ConditionalOnMissingBean(ignored = GaarasonDataSource.class)
     public DataSource dataSource() {

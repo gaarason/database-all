@@ -11,6 +11,7 @@ Eloquent ORM for Java
 * [查询构造器](/document/query.md)
 * [生成代码](/document/generate.md)
 * [关联关系](/document/relationship.md)
+* [GraalVM](/document/graalvm.md)
 * [版本信息](/document/version.md)
     * [版本规范](#版本规范)
     * [版本升级指引](#版本升级指引)
@@ -23,6 +24,10 @@ Eloquent ORM for Java
 修正版本号 c ：第三个数字，修复 BUG，向前兼容
 
 ## 版本升级指引
+
+### 4.2.0
+
+- 在`database-spring-boot-starter` 中支持了graalVM的构建, 需要手动在配置类上增加对应的注解, 详见文档
 
 ### 4.1.0
 

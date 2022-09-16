@@ -2,9 +2,9 @@ package gaarason.database.generator;
 
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.eloquent.Model;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.io.Serializable;
 
 /**
@@ -14,7 +14,7 @@ import java.io.Serializable;
 @Component
 public class GeneralGenerator extends Generator {
 
-    @Resource
+    @Autowired
     GeneralModel generalModel;
 
     @Override

@@ -21,7 +21,7 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <gaarason.database.springboot.version>2.6.7</gaarason.database.springboot.version>
+        <gaarason.database.springboot.version>2.7.3</gaarason.database.springboot.version>
     </properties>
 
     <dependencyManagement>

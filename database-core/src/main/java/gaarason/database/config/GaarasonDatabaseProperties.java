@@ -134,12 +134,12 @@ public class GaarasonDatabaseProperties implements Serializable {
 
     /**
      * 如果Packages为空, 则填充默认值
-     * @param defaultPackage 默认值
+     * @param defaultPackages 默认值
      * @return GaarasonDatabaseProperties
      */
-    public GaarasonDatabaseProperties fillPackageWhenIsEmpty(String defaultPackage) {
+    public GaarasonDatabaseProperties fillPackageWhenIsEmpty(List<String> defaultPackages) {
         if (this.getScan().getPackages().isEmpty()) {
-            this.getScan().getPackages().add(defaultPackage);
+            this.getScan().getPackages().addAll(defaultPackages);
         }
         return this;
     }

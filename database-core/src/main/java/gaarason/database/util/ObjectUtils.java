@@ -31,7 +31,6 @@ public class ObjectUtils {
     private ObjectUtils() {
     }
 
-
     /**
      * 获取指定类中的第index个泛型的类
      * @param clazz 指定类
@@ -39,11 +38,32 @@ public class ObjectUtils {
      * @param <A> 泛型的类
      * @param <B> 指定类型
      * @return 泛型的类
+     * @throws TypeNotSupportedException 不支持的类型
      */
     @SuppressWarnings("unchecked")
-    public static <A, B> Class<A> getGenerics(Class<B> clazz, int index) {
-        return (Class<A>) ((ParameterizedType) clazz.getGenericSuperclass())
-            .getActualTypeArguments()[index];
+    public static <A, B> Class<A> getGenerics(Class<B> clazz, int index) throws TypeNotSupportedException {
+        ParameterizedType parameterizedType = getParameterizedType(clazz);
+        if (null == parameterizedType) {
+            throw new TypeNotSupportedException(clazz);
+        }
+        return (Class<A>) parameterizedType.getActualTypeArguments()[index];
+    }
+
+    /**
+     * 反射泛型参数
+     * @param clazz 指定类
+     * @return ParameterizedType
+     */
+    @Nullable
+    protected static ParameterizedType getParameterizedType(Class<?> clazz) {
+        Type type = clazz.getGenericSuperclass();
+        if (type instanceof Class) {
+            return getParameterizedType((Class<?>) type);
+        } else if (type instanceof ParameterizedType) {
+            return (ParameterizedType) type;
+        } else {
+            return null;
+        }
     }
 
     /**

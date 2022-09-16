@@ -4,8 +4,7 @@ import gaarason.database.bootstrap.def.DefaultReflectionScan;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.config.GaarasonAutoconfiguration;
 import gaarason.database.config.GaarasonDatabaseProperties;
-import gaarason.database.contract.support.IdGenerator;
-import gaarason.database.contract.support.ReflectionScan;
+import gaarason.database.contract.support.*;
 import gaarason.database.exception.TypeCastException;
 import gaarason.database.lang.Nullable;
 import gaarason.database.logging.Log;
@@ -16,7 +15,6 @@ import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.SnowFlakeIdGenerator;
 import gaarason.database.util.ClassUtils;
 import gaarason.database.util.ConverterUtils;
-import gaarason.database.util.ObjectUtils;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
@@ -111,6 +109,13 @@ public class ContainerBootstrap extends ContainerProvider {
         // 类型转化
         // todo better
         register(ConversionConfig.class, clazz -> initConversionConfig());
+        register(FieldFill.NotFill.class, clazz -> new FieldFill.NotFill());
+        register(FieldConversion.Default.class, clazz -> new FieldConversion.Default());
+        register(FieldStrategy.Default.class, clazz -> new FieldStrategy.Default());
+        register(FieldStrategy.Never.class, clazz -> new FieldStrategy.Never());
+        register(FieldStrategy.Always.class, clazz -> new FieldStrategy.Always());
+        register(FieldStrategy.NotNull.class, clazz -> new FieldStrategy.NotNull());
+        register(FieldStrategy.NotEmpty.class, clazz -> new FieldStrategy.NotEmpty());
         // Model的实例化的工厂的提供者
         register(ModelInstanceProvider.class, clazz -> new ModelInstanceProvider(this));
         // Model信息大全
@@ -197,7 +202,7 @@ public class ContainerBootstrap extends ContainerProvider {
      */
     protected ModelShadowProvider initModelShadow() {
         ModelShadowProvider modelShadowProvider = getBean(ModelShadowProvider.class);
-        int i = modelShadowProvider.loadModels(ObjectUtils.typeCast(getBean(ReflectionScan.class).scanModels()));
+        int i = modelShadowProvider.loadModels(getBean(ReflectionScan.class).scanModels());
         LOGGER.debug("All " + i + " Model has been load.");
         return modelShadowProvider;
     }

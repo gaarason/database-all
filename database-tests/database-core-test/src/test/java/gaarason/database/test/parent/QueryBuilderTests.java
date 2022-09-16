@@ -43,7 +43,7 @@ abstract public class QueryBuilderTests extends BaseTests {
 
     @Override
     protected List<TABLE> getInitTables() {
-        return Arrays.asList(TABLE.student);
+        return Collections.singletonList(TABLE.student);
     }
 
     @Test
@@ -1662,6 +1662,7 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void GROUP() {
         List<String> groupList = new ArrayList<>();
         groupList.add("id");
