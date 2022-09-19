@@ -14,6 +14,15 @@ Eloquent ORM for Java
             * [自动主键](#自动主键)
             * [自定义主键](#自定义主键)
         * [Column](#Column)
+            * [使用策略](#使用策略)
+            * [是否查询](#是否查询)
+            * [字段填充](#字段填充)
+            * [类型转化](#类型转化)
+                * [FieldConversion.Default](#FieldConversion.Default)
+                * [FieldConversion.Json](#FieldConversion.Json)
+            * [执行顺序](#执行顺序)
+                * [实体到数据库](#实体到数据库)
+                * [数据库到实体](#数据库到实体)
         * [BelongsTo](#BelongsTo)
         * [BelongsToMany](#BelongsToMany)
         * [HasMany](#HasMany)
@@ -36,42 +45,57 @@ Eloquent ORM for Java
 ```java
 package temp.pojo;
 
-import gaarason.database.eloquent.annotation.Column;
-import gaarason.database.eloquent.annotation.Primary;
-import gaarason.database.eloquent.annotation.Table;
+import gaarason.database.annotation.Column;
+import gaarason.database.annotation.Primary;
+import gaarason.database.annotation.Table;
+import gaarason.database.contract.support.FieldConversion;
+import gaarason.database.contract.support.FieldStrategy;
+import gaarason.database.contract.support.IdGenerator;
+import gaarason.database.lang.Nullable;
 import lombok.Data;
-
 import java.io.Serializable;
 import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Data
-@Table(name = "student")
-public class Student implements Serializable {
+@Table(name = "null_test")
+public class PrimaryKeyEntity implements Serializable {
 
-    @Primary()
-    @Column(name = "id", unsigned = true)
-    private Long id;
+    private static final long serialVersionUID = 1L;
 
-    @Column(name = "name", length = 20, comment = "姓名")
+    @Primary(idGenerator = CustomPrimaryKey.class)
+    private Integer id;
+
+    @Column(length = 20, nullable = true)
     private String name;
 
-    @Column(name = "age", unsigned = true, comment = "年龄")
-    private Integer age;
+    @Column(name = "json_object_column", conversion = FieldConversion.Json.class, strategy = FieldStrategy.Always.class)
+    private Info info;
 
-    @Column(name = "sex", unsigned = true, comment = "性别1男2女")
-    private Integer sex;
+    @Column(name = "json_array_column", conversion = FieldConversion.Json.class, strategy = FieldStrategy.Always.class)
+    private List<Info> infos;
 
-    @Column(name = "teacher_id", unsigned = true, comment = "教师id")
-    private Long teacherId;
+    @Column(name = "time_column", nullable = true)
+    private LocalTime timeColumn;
 
-    @Column(name = "is_deleted")
-    private Boolean isDeleted;
- 
-    @Column(name = "created_at", insertable = false, updatable = false, comment = "新增时间")
-    private Date createdAt;
-    
-    @Column(name = "updated_at", insertable = false, updatable = false, comment = "更新时间")
-    private Date updatedAt;
+    @Column(name = "date_column", nullable = true)
+    private LocalDate dateColumn;
+
+    @Column(name = "datetime_column", nullable = true)
+    private LocalDateTime datetimeColumn;
+
+    @Column(name = "timestamp_column", nullable = true)
+    private Date timestampColumn;
+
+    private boolean isDeleted;
+
+}
+
+public static class Info {
+    public String name;
+    public Integer age;
 }
 
 ```
@@ -134,7 +158,14 @@ private Integer id;
 
 ```java
 final Record<PrimaryKeyTestModel.Entity, Integer> record0 = primaryKeyTestModel.newRecord();
+
+PrimaryKeyTestModel.Entity entity = record0.getEntity();
+
+// 其他属性设置
+entity.setName("www");
+
 record0.save();
+
 Assert.assertEquals(200, record0.getEntity().getId().intValue());
 ```
 
@@ -143,6 +174,150 @@ Assert.assertEquals(200, record0.getEntity().getId().intValue());
 - `gaarason.database.eloquent.annotation.Column` 用于确定每个数据字段的具体属性
 - 当`insertable`以及`updatable`为`false`时, 对应字段的`ORM`操作将被忽略
 - 如果某个数据对象没有`Primary`注解, 则大多数`ORM`操作将被禁用
+
+#### 使用策略
+- strategy
+- 是否在插入/更新/条件时使用本字段的值  
+- 当 insertStrategy() == FieldStrategy.Default.class 时(默认), insertStrategy() = strategy(), 即 FieldStrategy.NotNull.class (默认)
+- 当 updateStrategy() == FieldStrategy.Default.class 时(默认), updateStrategy() = strategy(), 即 FieldStrategy.NotNull.class (默认)
+- 当 conditionStrategy() == FieldStrategy.Default.class 时(默认), conditionStrategy() = strategy(), 即 FieldStrategy.NotNull.class (默认)
+
+#### 是否查询
+- selectable
+- 缺省时是否查询本字段
+- 当 selectable() == false 时, select * 查询将略过本字段, 主要对于大字段使用
+
+#### 字段填充
+- fill
+- 字段填充策略
+- 业务上可以自行实现 `FieldFill` 接口, 已确定在 插入/更新/条件时, 填充的值
+
+#### 类型转化
+- conversion
+- 序列与反序列化
+- 业务上可以自行实现 `FieldConversion` 接口, 已确定本字段特定的序列化与反序列化方式
+```java
+public enum Sex {
+    MAN,
+    WOMAN,
+    OTHER;
+
+    /**
+     * 字段的类型转化
+     */
+    static class SexConversion implements FieldConversion {
+
+        @Nullable
+        @Override
+        public Object serialize(Field field, @Nullable Object originalValue) {
+            if (MAN.equals(originalValue)) {
+                return 1;
+            } else if (WOMAN.equals(originalValue)) {
+                return 2;
+            } else {
+                return 3;
+            }
+        }
+
+        @Nullable
+        @Override
+        public Object deserialize(Field field, ResultSet resultSet, String columnName) throws SQLException {
+            int sex = resultSet.getInt(columnName);
+            if (sex == 1) {
+                return MAN;
+            } else if (sex == 2) {
+                return WOMAN;
+            } else {
+                return OTHER;
+            }
+        }
+
+        @Nullable
+        @Override
+        public Object deserialize(Field field, @Nullable Object originalValue) {
+            String str = String.valueOf(originalValue);
+            if ("1".equals(str)) {
+                return MAN;
+            } else if ("2".equals(str)) {
+                return WOMAN;
+            } else {
+                return OTHER;
+            }
+        }
+    }
+}
+
+@Data
+@Table(name = "student")
+public class EnumEntity implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @Primary
+    private Integer id;
+
+    @Column(length = 20)
+    private String name;
+
+    private Byte age;
+
+    /**
+     * 声明使用自定义的字段类型转化
+     */
+    @Column(conversion = Sex.SexConversion.class)
+    private Sex sex;
+
+    @Column(name = "teacher_id")
+    private Integer teacherId;
+
+    @Column(name = "created_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
+    private Date createdAt;
+
+    @Column(name = "updated_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
+    private Date updatedAt;
+}
+
+/**
+ * 使用
+ */
+String name = "test_people";
+AnnotationTestModel.EnumEntity entity = new AnnotationTestModel.EnumEntity();
+entity.setSex(AnnotationTestModel.Sex.WOMAN);
+entity.setName(name);
+Integer id = annotationTestModel.newQuery().from(entity).insertGetId(entity);
+
+AnnotationTestModel.EnumEntity resultEntity = annotationTestModel.newQuery()
+    .from(entity)
+    .findOrFail(id)
+    .toObject(AnnotationTestModel.EnumEntity.class);
+
+Assert.assertEquals(name, resultEntity.getName());
+Assert.assertEquals(AnnotationTestModel.Sex.WOMAN, resultEntity.getSex());
+
+```
+
+##### FieldConversion.Default
+- conversion() 默认值为 FieldConversion.Default.class, 可以解决绝大多数的基本类型的序列化与反序列化
+
+##### FieldConversion.Json
+- conversion() 可选值为 FieldConversion.Json.class, 以json规范进行序列化与反序列化, 数据的字段应该为合法的json字符串
+- 实现依赖于`jackson`, 需要自行引入 `com.fasterxml.jackson.core: jackson-databind` 以及 `com.fasterxml.jackson.datatype: jackson-datatype-jsr310`依赖项
+- 因为`json规范`的兼容性细节较多, 所以业务上也可以参考`JsonConversion`自行实现, 与使用
+
+
+#### 执行顺序
+##### 实体到数据库
+- 对于实体`entity`的每一个字段
+- 先根据本次的使用用途, 执行`fill()`进行属性填充,    
+- 再根据本次的使用用途, 执行对应的`strategy()`进行有效性判断,  
+- 在有效的前提下, 将`fill()`进行属性填充的值回填到对象, 并使用`conversion()`进行序列化.
+- 最终返回结构, 参与`sql`的执行
+
+##### 数据库到实体
+- 对于实体`entity`的每一个字段
+- 当数据库查询执行成功(sql执行成功)后, 立即使用`conversion()`中的`deserialize(field, resultSet, columnName)`进行数据库结果集的获取  
+- 当在`record`上使用`toObject()/toObject(SomeEntity.class)`等方法时, 使用`conversion()`中的`deserialize(field, originalValue)`进行结果的序列化
+- 最终体现在实体上
 
 ### BelongsTo
 

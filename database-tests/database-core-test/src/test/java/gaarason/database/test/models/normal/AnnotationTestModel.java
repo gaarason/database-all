@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class AnnotationTestModel extends SingleModel<AnnotationTestModel.PrimaryKeyEntity, Integer> {
@@ -39,6 +40,12 @@ public class AnnotationTestModel extends SingleModel<AnnotationTestModel.Primary
         @Column(length = 20, nullable = true)
         private String name;
 
+        @Column(name = "json_object_column", conversion = FieldConversion.Json.class, strategy = FieldStrategy.Always.class)
+        private Info info;
+
+        @Column(name = "json_array_column", conversion = FieldConversion.Json.class, strategy = FieldStrategy.Always.class)
+        private List<Info> infos;
+
         @Column(name = "time_column", nullable = true)
         private LocalTime timeColumn;
 
@@ -55,6 +62,11 @@ public class AnnotationTestModel extends SingleModel<AnnotationTestModel.Primary
 
     }
 
+    public static class Info {
+        public String name;
+        public Integer age;
+    }
+
     public static class CustomPrimaryKey implements IdGenerator<Integer> {
 
         private final static AtomicInteger id = new AtomicInteger(200);
@@ -65,6 +77,9 @@ public class AnnotationTestModel extends SingleModel<AnnotationTestModel.Primary
         }
     }
 
+
+
+
     public enum Sex {
         MAN,
         WOMAN,
@@ -74,7 +89,7 @@ public class AnnotationTestModel extends SingleModel<AnnotationTestModel.Primary
 
             @Nullable
             @Override
-            public Object serialize(@Nullable Object originalValue) {
+            public Object serialize(Field field, @Nullable Object originalValue) {
                 if (MAN.equals(originalValue)) {
                     return 1;
                 } else if (WOMAN.equals(originalValue)) {

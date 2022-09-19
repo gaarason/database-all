@@ -1,5 +1,7 @@
 package gaarason.database.bootstrap;
 
+import gaarason.database.annotation.conversion.DefaultConversion;
+import gaarason.database.annotation.conversion.JsonConversion;
 import gaarason.database.bootstrap.def.DefaultReflectionScan;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.config.GaarasonAutoconfiguration;
@@ -109,9 +111,14 @@ public class ContainerBootstrap extends ContainerProvider {
         // 类型转化
         // todo better
         register(ConversionConfig.class, clazz -> initConversionConfig());
+        //
         register(FieldFill.NotFill.class, clazz -> new FieldFill.NotFill());
-        register(FieldConversion.Default.class, clazz -> new FieldConversion.Default());
+        //
+        register(FieldConversion.Default.class, clazz -> new DefaultConversion(this));
+        register(FieldConversion.Json.class, clazz -> new JsonConversion());
+        //
         register(FieldStrategy.Default.class, clazz -> new FieldStrategy.Default());
+        //
         register(FieldStrategy.Never.class, clazz -> new FieldStrategy.Never());
         register(FieldStrategy.Always.class, clazz -> new FieldStrategy.Always());
         register(FieldStrategy.NotNull.class, clazz -> new FieldStrategy.NotNull());

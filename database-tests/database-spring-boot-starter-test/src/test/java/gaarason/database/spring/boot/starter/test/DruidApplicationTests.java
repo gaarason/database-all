@@ -5,10 +5,13 @@ import gaarason.database.contract.eloquent.Record;
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.generator.GeneralGenerator;
 import gaarason.database.generator.Generator;
+import gaarason.database.spring.boot.starter.test.data.entity.DataType;
 import gaarason.database.spring.boot.starter.test.data.entity.Student;
 import gaarason.database.spring.boot.starter.test.data.entity.Teacher;
+import gaarason.database.spring.boot.starter.test.data.entity.TestEntity;
 import gaarason.database.spring.boot.starter.test.data.repository.StudentQuery;
 import gaarason.database.spring.boot.starter.test.data.repository.TeacherQuery;
+import gaarason.database.support.SnowFlakeIdGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -20,9 +23,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -35,6 +36,9 @@ public class DruidApplicationTests {
 
     @Resource
     GeneralModel generalModel;
+
+    @Resource
+    TestEntity.Model testEntityModel;
 
     @Resource
     StudentQuery<Student, Long> studentQuery;
@@ -140,24 +144,5 @@ public class DruidApplicationTests {
         Student student = teacherQuery.updateName();
         System.out.println("end : " + student);
     }
-
-//    @Test
-//    public void 模型在spring中是容器获取的单例(){
-//        Record<Student, Long> infoFromDB = studentQuery.getInfoFromDB();
-//        Student               student    = infoFromDB.toObject();
-//        System.out.println(student);
-//
-//        Model<Student, Long> model1 = ModelShadowProvider.getByModelClass(StudentModel.class).getModel();
-//        Model<Student, Object> model2 = ModelShadowProvider.getByEntityClass(Student.class).getModel();
-//
-//        System.out.println(model1.getClass());
-//        System.out.println(model2.getClass());
-//        System.out.println(studentModel.getClass());
-//        System.out.println(studentQuery.getClass());
-//        Assert.assertSame(model1, model2);
-//        Assert.assertSame(model2, studentModel);
-//        Assert.assertSame(model2, studentQuery);
-//
-//    }
 
 }

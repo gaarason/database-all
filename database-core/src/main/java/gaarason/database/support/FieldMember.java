@@ -34,20 +34,9 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
     private static final Object DEFAULT_COLUMN_ANNOTATION_FIELD = new Object();
 
     /**
-     * 锁 - 序列化与反序列化默认值
-     */
-    private static final Object LOCK_OF_DEFAULT_CONVERSION = new Object();
-
-    /**
      * 字段无效标记响应
      */
     private static final Object FIELD_INVALID_EXCEPTION = new Object();
-
-    /**
-     * 序列化与反序列化默认值
-     */
-    @Nullable
-    private static FieldConversion DEFAULT_CONVERSION;
 
     /**
      * Column 注解缺省值
@@ -149,7 +138,7 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
         this.conditionStrategy = dealFieldStrategy(EntityUseType.CONDITION);
 
         // 序列化与反序列化
-        this.fieldConversion = dealFieldConversion();
+        this.fieldConversion = container.getBean(column.conversion());
     }
 
     /**
@@ -256,7 +245,7 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
         // 回填
         fieldSet(entity, valueAfterFill);
         // 序列化后返回
-        return fieldConversion.serialize(valueAfterFill);
+        return fieldConversion.serialize(getField(), valueAfterFill);
     }
 
     /**
@@ -421,59 +410,6 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
          */
         else {
             return container.getBean(primary.idGenerator());
-        }
-    }
-
-    /**
-     * 序列与反序列化
-     * @return 类型转化
-     */
-    private FieldConversion dealFieldConversion() {
-        /*
-         * 默认配置
-         */
-        if (FieldConversion.Default.class.equals(column.conversion())) {
-            // 延迟获取默认配置
-            FieldConversion defaultConversion = DEFAULT_CONVERSION;
-            if (defaultConversion == null) {
-                synchronized (LOCK_OF_DEFAULT_CONVERSION) {
-                    defaultConversion = DEFAULT_CONVERSION;
-                    if (defaultConversion == null) {
-                        defaultConversion = DEFAULT_CONVERSION = new DefaultImpl(container);
-                    }
-                }
-            }
-            return defaultConversion;
-        }
-        return container.getBean(column.conversion());
-    }
-
-    /**
-     * 序列化与反序列化
-     * @see gaarason.database.contract.support.FieldConversion.Default
-     */
-    static class DefaultImpl extends Container.SimpleKeeper implements FieldConversion {
-
-        private DefaultImpl(Container container) {
-            super(container);
-        }
-
-        @Nullable
-        @Override
-        public Object serialize(@Nullable Object originalValue) {
-            return originalValue;
-        }
-
-        @Nullable
-        @Override
-        public Object deserialize(Field field, ResultSet resultSet, String column) throws SQLException {
-            return getContainer().getBean(ConversionConfig.class).getValueFromJdbcResultSet(field, resultSet, column);
-        }
-
-        @Nullable
-        @Override
-        public Object deserialize(Field field, @Nullable Object originalValue) {
-            return getContainer().getBean(ConversionConfig.class).castNullable(originalValue, field.getType());
         }
     }
 

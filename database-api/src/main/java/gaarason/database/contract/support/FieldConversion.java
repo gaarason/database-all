@@ -1,6 +1,5 @@
 package gaarason.database.contract.support;
 
-import gaarason.database.exception.OperationNotSupportedException;
 import gaarason.database.lang.Nullable;
 
 import java.lang.reflect.Field;
@@ -17,11 +16,12 @@ public interface FieldConversion {
      * 序列化
      * 当前实体的属性, 以指定的方式拼接到sql (事实上是使用的sql绑定参数的方式).
      * eg: return String.valueOf(originalValue)
+     * @param field 实体的属性
      * @param originalValue 字段的原始值
      * @return 序列化后的值
      */
     @Nullable
-    Object serialize(@Nullable Object originalValue);
+    Object serialize(Field field, @Nullable Object originalValue);
 
     /**
      * 从数据库结果集进行反序列化
@@ -54,21 +54,17 @@ public interface FieldConversion {
      * 默认值
      * 在运行时, 会替换
      */
-    class Default implements FieldConversion {
+    interface Default extends FieldConversion {
 
-        @Override
-        public Object serialize(@Nullable Object originalValue) {
-            throw new OperationNotSupportedException();
-        }
+    }
 
-        @Override
-        public Object deserialize(Field field, ResultSet resultSet, String column) throws SQLException {
-            throw new OperationNotSupportedException();
-        }
+    /**
+     * Json序列化
+     * 实现依赖于jackson
+     * 需要手动引入 com.fasterxml.jackson.core: jackson-databind
+     * 需要手动引入 com.fasterxml.jackson.datatype: jackson-datatype-jsr310
+     */
+    interface Json extends FieldConversion {
 
-        @Override
-        public Object deserialize(Field field, @Nullable Object originalValue) {
-            throw new OperationNotSupportedException();
-        }
     }
 }

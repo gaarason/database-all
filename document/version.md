@@ -25,6 +25,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 4.3.0
+
+- 在`@Column` 中增加了`json`的支持, 需要手动引入下相关的`jackson`依赖
+
 ### 4.2.0
 
 - 在`database-spring-boot-starter` 中支持了graalVM的构建, 需要手动在配置类上增加对应的注解, 详见文档

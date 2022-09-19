@@ -3,10 +3,8 @@ package gaarason.database.spring.boot.starter.test.data.entity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gaarason.database.annotation.Column;
-import gaarason.database.annotation.Primary;
 import gaarason.database.annotation.Table;
 import gaarason.database.contract.support.FieldConversion;
-import gaarason.database.contract.support.FieldFill;
 import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.lang.Nullable;
 import gaarason.database.spring.boot.starter.test.data.model.base.BaseModel;
@@ -17,16 +15,18 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Period;
 import java.util.Date;
 
 @Data
-@Table(name = "data_type")
-public class DataType implements Serializable {
+@Table(name = "test")
+public class TestEntity implements Serializable {
 
-    @Primary()
-    @Column(name = "id", unsigned = true)
-    private Long id;
+    /**
+     * auto generator start
+     **/
+
+    @Column(name = "id", length = 12)
+    private String id;
 
     @Column(name = "name", length = 20, comment = "姓名")
     private String name;
@@ -37,65 +37,14 @@ public class DataType implements Serializable {
     @Column(name = "sex", unsigned = true, comment = "性别1男2女")
     private Integer sex;
 
-    @Column(name = "subject", length = 20, comment = "科目")
-    private String subject;
+    @Column(name = "subject", length = 20, comment = "科目", conversion = JsonFieldConversion.class)
+    private Info subject;
 
     @Column(name = "created_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class, comment = "新增时间")
     private Date createdAt;
 
     @Column(name = "updated_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class, comment = "更新时间")
     private Date updatedAt;
-
-    @Column(name = "created_time")
-    private Date createdTime;
-
-    @Column(name = "updated_time")
-    private Date updatedTime;
-
-    @Column(name = "is_deleted")
-    private Boolean isDeleted;
-
-    @Column(name = "char_char")
-    private String charChar;
-
-    @Column(name = "integer")
-    private Integer integer;
-
-    @Column(name = "numeric")
-    private String numeric;
-
-    @Column(name = "bigint")
-    private Long bigint;
-
-    @Column(name = "binary", length = 0)
-    private String binary;
-
-    @Column(name = "bit")
-    private Boolean bit;
-
-    @Column(name = "blob", length = 65535)
-    private Byte[] blob;
-
-    @Column(name = "date")
-    private Date date;
-
-    @Column(name = "decimal")
-    private String decimal;
-
-    @Column(name = "double_d")
-    private String doubleD;
-
-    @Column(name = "point")
-    private String point;
-
-    @Column(name = "linestring")
-    private String linestring;
-
-    @Column(name = "geometry")
-    private String geometry;
-
-    @Column(name = "text", length = 65535, conversion = JsonFieldConversion.class)
-    private Info text;
 
     /** auto generator end **/
 
@@ -152,7 +101,7 @@ public class DataType implements Serializable {
     }
 
     @Repository
-    public static class Model extends BaseModel<DataType, Long> {
+    public static class Model extends BaseModel<TestEntity, Serializable> {
 
     }
 }

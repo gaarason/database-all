@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -61,5 +62,40 @@ abstract public class AnnotationTests extends BaseTests {
         Assert.assertEquals(name, resultEntity.getName());
         Assert.assertEquals(AnnotationTestModel.Sex.WOMAN, resultEntity.getSex());
     }
+
+    @Test
+    public void Json序列化_普通对象_集合对象(){
+        Record<AnnotationTestModel.PrimaryKeyEntity, Integer> record = annotationTestModel.newRecord();
+        AnnotationTestModel.PrimaryKeyEntity entity = record.getEntity();
+        Integer id = 332144;
+        entity.setId(id);
+        AnnotationTestModel.Info info = new AnnotationTestModel.Info();
+        info.age = 33;
+        info.name = "test -name ";
+        entity.setInfo(info);
+        entity.setInfos(Collections.singletonList(info));
+
+        Assert.assertTrue(record.save());
+
+        AnnotationTestModel.PrimaryKeyEntity res = annotationTestModel.findOrFail(id).toObject();
+        Assert.assertEquals(info.age,res.getInfo().age);
+        Assert.assertEquals(info.name,res.getInfo().name);
+        Assert.assertEquals(info.name,res.getInfos().get(0).name);
+    }
+
+    @Test
+    public void Json序列化_null(){
+        Record<AnnotationTestModel.PrimaryKeyEntity, Integer> record = annotationTestModel.newRecord();
+        AnnotationTestModel.PrimaryKeyEntity entity = record.getEntity();
+        Integer id = 39991443;
+        entity.setId(id);
+        entity.setInfo(null);
+        entity.setInfos(Collections.emptyList());
+        Assert.assertTrue(record.save());
+
+        AnnotationTestModel.PrimaryKeyEntity res = annotationTestModel.findOrFail(id).toObject();
+        Assert.assertEquals(0,res.getInfos().size());
+    }
+
 
 }
