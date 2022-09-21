@@ -142,17 +142,17 @@ abstract public class CollectionTests extends BaseTests {
 
     @Test
     public void every() {
-        final boolean a = records.every((index, e) -> e.getMetadataMap().get("age").getValue() != null);
+        final boolean a = records.every((index, e) -> e.getMetadataMap().get("age") != null);
         Assert.assertTrue(a);
 
         // 每个人的年龄都比1大吗
         final boolean b = records.every(
-            (index, e) -> ConverterUtils.cast(e.getMetadataMap().get("age").getValue(), Byte.class) >
+            (index, e) -> ConverterUtils.cast(e.getMetadataMap().get("age"), Byte.class) >
                 Byte.parseByte("1"));
         Assert.assertTrue(b);
 
         final boolean c = records.every(
-            (index, e) -> ConverterUtils.cast(e.getMetadataMap().get("age").getValue(), Byte.class) >
+            (index, e) -> ConverterUtils.cast(e.getMetadataMap().get("age"), Byte.class) >
                 Byte.parseByte("12"));
         Assert.assertFalse(c);
     }
@@ -164,7 +164,7 @@ abstract public class CollectionTests extends BaseTests {
 
         // 保留 sex = 1 的数据
         final int filter2 = records.filter(
-            (index, e) -> (Byte.valueOf("1")).equals(e.getMetadataMap().get("sex").getValue()));
+            (index, e) -> (Byte.valueOf("1")).equals(e.getMetadataMap().get("sex")));
         Assert.assertEquals(4, filter2);
         Assert.assertEquals(6, records.size());
     }
@@ -172,7 +172,7 @@ abstract public class CollectionTests extends BaseTests {
     @Test
     public void filter_2() {
         final Record<StudentModel.Entity, Integer> integerRecord = records.get(9);
-        integerRecord.getMetadataMap().get("teacher_id").setValue(null);
+        integerRecord.getMetadataMap().put("teacher_id", null);
 
         final int num = records.filter("teacherId");
         Assert.assertEquals(1, num);
@@ -186,7 +186,7 @@ abstract public class CollectionTests extends BaseTests {
     public void reject() {
         // 移除 sex = 1 的数据
         final int reject = records.reject(
-            (index, e) -> (Byte.valueOf("1")).equals(e.getMetadataMap().get("sex").getValue()));
+            (index, e) -> (Byte.valueOf("1")).equals(e.getMetadataMap().get("sex")));
         Assert.assertEquals(6, reject);
         Assert.assertEquals(4, records.size());
     }

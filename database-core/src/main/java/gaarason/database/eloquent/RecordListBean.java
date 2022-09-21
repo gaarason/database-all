@@ -1,6 +1,5 @@
 package gaarason.database.eloquent;
 
-import gaarason.database.appointment.Column;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
@@ -16,7 +15,6 @@ import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.EntityMember;
 import gaarason.database.support.RelationGetSupport;
-import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
 
@@ -70,8 +68,8 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
     }
 
     @Override
-    public List<Map<String, Column>> getOriginalMetadataMapList() {
-        List<Map<String, Column>> metadataMapList = new ArrayList<>();
+    public List<Map<String, Object>> getOriginalMetadataMapList() {
+        List<Map<String, Object>> metadataMapList = new ArrayList<>();
         for (Record<T, K> tkRecord : this) {
             metadataMapList.add(tkRecord.getMetadataMap());
         }
@@ -152,8 +150,8 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
         Map<String, List<Object>> map = new HashMap<>(16);
         for (Record<T, K> theRecord : this) {
             for (String column : theRecord.getMetadataMap().keySet()) {
-                List<Object> list = map.computeIfAbsent(column, (key) -> new ArrayList<>());
-                list.add(theRecord.getMetadataMap().get(column).getValue());
+                List<Object> list = map.computeIfAbsent(column, key -> new ArrayList<>());
+                list.add(theRecord.getMetadataMap().get(column));
             }
         }
         return map;
@@ -180,9 +178,9 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
     @Override
     public List<Object> toOneColumnList() {
         return toList(theRecord -> {
-            Set<Map.Entry<String, Column>> entries = theRecord.getMetadataMap().entrySet();
-            for (Map.Entry<String, Column> entry : entries) {
-                return entry.getValue().getValue();
+            Set<Map.Entry<String, Object>> entries = theRecord.getMetadataMap().entrySet();
+            for (Map.Entry<String, Object> entry : entries) {
+                return entry.getValue();
             }
             return null;
         });
@@ -229,13 +227,9 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
         EntityMember<T> entityMember = modelShadowProvider.parseAnyEntityWithCache(
             theRecord.getModel().getEntityClass());
 
-        final Column column = theRecord.getMetadataMap()
+        final Object value = theRecord.getMetadataMap()
             .get(entityMember.getFieldMemberByFieldName(fieldName).getColumnName());
-        if (column != null) {
-            return column.getValue() == null ? null : ObjectUtils.typeCast(column.getValue());
-        } else {
-            return null;
-        }
+        return value == null ? null : ObjectUtils.typeCast(value);
     }
 
     @Override

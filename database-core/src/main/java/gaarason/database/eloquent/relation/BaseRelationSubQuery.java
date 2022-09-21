@@ -1,6 +1,5 @@
 package gaarason.database.eloquent.relation;
 
-import gaarason.database.appointment.Column;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.RecordList;
@@ -42,14 +41,14 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
 
     /**
      * 将数据源中的某一列,转化为可以使用 where in 查询的 set
-     * @param stringColumnMapList 数据源
+     * @param columnValueMapList 数据源
      * @param column 目标列
      * @return 目标列的集合
      */
-    protected static Set<Object> getColumnInMapList(List<Map<String, Column>> stringColumnMapList, String column) {
+    protected static Set<Object> getColumnInMapList(List<Map<String, Object>> columnValueMapList, String column) {
         Set<Object> result = new HashSet<>();
-        for (Map<String, Column> stringColumnMap : stringColumnMapList) {
-            result.add(stringColumnMap.get(column).getValue());
+        for (Map<String, Object> stringColumnMap : columnValueMapList) {
+            result.add(stringColumnMap.get(column));
         }
         return result;
     }
@@ -90,7 +89,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
     protected List<Object> getTargetRecordPrimaryKeyIds(RecordList<?, ?> targetRecords) {
         // 应该目标表的主键列表
         return targetRecords.toList(
-            recordTemp -> recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName()).getValue());
+            recordTemp -> recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName()));
     }
 
     /**
@@ -123,8 +122,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @param modelClass Model类
      * @return Model实例
      */
-    protected Model<?, ?> getModelInstance(
-        Class<? extends Model<?, ?>> modelClass) {
+    protected Model<?, ?> getModelInstance(Class<? extends Model<?, ?>> modelClass) {
         return modelShadowProvider.getByModelClass(ObjectUtils.typeCast(modelClass)).getModel();
     }
 
@@ -135,8 +133,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @param fieldTargetValue 对象的属性的目标值
      * @return 对象列表
      */
-    protected List<Object> findObjList(List<?> relationshipObjectList,
-        String columnName, Object fieldTargetValue) {
+    protected List<Object> findObjList(List<?> relationshipObjectList, String columnName, Object fieldTargetValue) {
         List<Object> objectList = new ArrayList<>();
         if (!relationshipObjectList.isEmpty()) {
             // 模型信息

@@ -216,7 +216,7 @@ public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T,
                 .limit(num);
             RecordList<T, K> records = cloneBuilder.get();
             if (!records.isEmpty()) {
-                columnValue = records.last().getMetadataMap().get(column).getValue();
+                columnValue = records.last().getMetadataMap().get(column);
             }
             flag = !records.isEmpty() && chunkFunctionalInterface.execute(records) && (records.size() == num);
         } while (flag);

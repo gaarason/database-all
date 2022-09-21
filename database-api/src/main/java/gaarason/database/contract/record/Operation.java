@@ -1,6 +1,5 @@
 package gaarason.database.contract.record;
 
-import gaarason.database.appointment.Column;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.exception.EntityAttributeInvalidException;
 import gaarason.database.lang.Nullable;
@@ -69,7 +68,7 @@ public interface Operation<T, K> {
      * @param metadataMap 使用的元数据
      * @return 执行成功
      */
-    Record<T, K> refresh(Map<String, Column> metadataMap);
+    Record<T, K> refresh(Map<String, Object> metadataMap);
 
     /**
      * 是否有任何属性发生改变

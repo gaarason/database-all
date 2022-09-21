@@ -1,6 +1,5 @@
 package gaarason.database.contract.eloquent;
 
-import gaarason.database.appointment.Column;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.contract.record.Friendly;
@@ -23,7 +22,7 @@ public interface Record<T, K> extends Friendly<T, K>, OperationLambda<T, K>,
      * <数据库字段名 -> 字段信息>
      * @return 本表元数据
      */
-    Map<String, Column> getMetadataMap();
+    Map<String, Object> getMetadataMap();
 
     /**
      * 是否已经绑定具体的数据

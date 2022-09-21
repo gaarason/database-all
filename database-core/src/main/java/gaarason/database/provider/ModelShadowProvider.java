@@ -1,6 +1,5 @@
 package gaarason.database.provider;
 
-import gaarason.database.appointment.Column;
 import gaarason.database.appointment.EntityUseType;
 import gaarason.database.appointment.LambdaInfo;
 import gaarason.database.contract.eloquent.Model;
@@ -329,17 +328,16 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @return 实体
      */
     public <T> T entityAssignment(Class<T> anyEntityClass, Record<?, ?> theRecord) {
-        Map<String, Column> metadataMap = theRecord.getMetadataMap();
+        Map<String, Object> metadataMap = theRecord.getMetadataMap();
         EntityMember<T> entityMember = parseAnyEntityWithCache(anyEntityClass);
-        T entity = entityMember.toEntity(metadataMap,
-            (fieldMember, column) -> column != null ? column.getValue() : null);
+        T entity = entityMember.toEntity(metadataMap, (fieldMember, value) -> value);
 
         // 数据库主键
         PrimaryKeyMember primaryKeyMember = entityMember.getPrimaryKeyMember();
         if (primaryKeyMember != null) {
-            Column primaryKeyColumn = metadataMap.get(primaryKeyMember.getFieldMember().getColumnName());
-            if (primaryKeyColumn != null && primaryKeyColumn.getValue() != null) {
-                theRecord.setOriginalPrimaryKeyValue(ObjectUtils.typeCast(primaryKeyColumn.getValue()));
+            Object primaryKeyValue = metadataMap.get(primaryKeyMember.getFieldMember().getColumnName());
+            if (primaryKeyValue != null) {
+                theRecord.setOriginalPrimaryKeyValue(ObjectUtils.typeCast(primaryKeyValue));
             }
         }
         return entity;

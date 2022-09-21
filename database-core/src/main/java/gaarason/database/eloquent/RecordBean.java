@@ -1,6 +1,5 @@
 package gaarason.database.eloquent;
 
-import gaarason.database.appointment.Column;
 import gaarason.database.appointment.EntityUseType;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
@@ -18,7 +17,6 @@ import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.EntityMember;
 import gaarason.database.support.FieldMember;
-import gaarason.database.support.PrimaryKeyMember;
 import gaarason.database.support.RelationGetSupport;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
@@ -53,7 +51,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      * 本表元数据
      * <数据库字段名 -> 字段信息>
      */
-    protected final transient Map<String, Column> metadataMap = new HashMap<>(16);
+    protected final transient Map<String, Object> metadataMap = new HashMap<>(16);
 
     /**
      * 原Sql
@@ -91,7 +89,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      * @param model 数据模型
      * @param stringColumnMap 元数据
      */
-    public RecordBean(Model<T, K> model, Map<String, Column> stringColumnMap,
+    public RecordBean(Model<T, K> model, Map<String, Object> stringColumnMap,
         String originalSql) {
         this.entityClass = model.getEntityClass();
         this.model = model;
@@ -122,7 +120,7 @@ public class RecordBean<T, K> implements Record<T, K> {
     }
 
     @Override
-    public Map<String, Column> getMetadataMap() {
+    public Map<String, Object> getMetadataMap() {
         return metadataMap;
     }
 
@@ -192,16 +190,16 @@ public class RecordBean<T, K> implements Record<T, K> {
 
     /**
      * 初始化数据
-     * @param stringColumnMap 元数据
+     * @param stringObjectMap 元数据
      */
-    protected void init(Map<String, Column> stringColumnMap) {
+    protected void init(Map<String, Object> stringObjectMap) {
         // 如果不是统同一个(引用相同)对象, 则手动赋值下
-        if (metadataMap != stringColumnMap) {
+        if (metadataMap != stringObjectMap) {
             metadataMap.clear();
-            metadataMap.putAll(stringColumnMap);
+            metadataMap.putAll(stringObjectMap);
         }
         entity = toObjectWithoutRelationship();
-        if (!stringColumnMap.isEmpty()) {
+        if (!stringObjectMap.isEmpty()) {
             hasBind = true;
             // 通知
             model.retrieved(this);
@@ -216,11 +214,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      */
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> map = new LinkedHashMap<>(16);
-        for (Column value : metadataMap.values()) {
-            map.put(value.getName(), value.getValue());
-        }
-        return map;
+        return new LinkedHashMap<>(metadataMap);
     }
 
     /**
@@ -442,7 +436,7 @@ public class RecordBean<T, K> implements Record<T, K> {
         if (originalPrimaryKeyValue == null) {
             throw new PrimaryKeyNotFoundException();
         }
-        Map<String, Column> theMetadataMap = model.withTrashed()
+        Map<String, Object> theMetadataMap = model.withTrashed()
             .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
             .firstOrFail()
             .getMetadataMap();
@@ -452,7 +446,7 @@ public class RecordBean<T, K> implements Record<T, K> {
     }
 
     @Override
-    public Record<T, K> refresh(Map<String, Column> metadataMap) {
+    public Record<T, K> refresh(Map<String, Object> metadataMap) {
         init(metadataMap);
         return this;
     }
@@ -472,9 +466,8 @@ public class RecordBean<T, K> implements Record<T, K> {
         for (Map.Entry<String, FieldMember> entry : columnFieldMap.entrySet()) {
             FieldMember fieldMember = entry.getValue();
             final String columnName = fieldMember.getColumnName();
-            final Column column = metadataMap.get(columnName);
             // 元数据中的值
-            final Object valueInMetadataMap = ObjectUtils.isEmpty(column) ? null : column.getValue();
+            final Object valueInMetadataMap = metadataMap.get(columnName);
             // entity中的值
             final Object valueInEntity = fieldMember.fieldGet(entity);
             // 如果不相等,则加入返回对象对象
@@ -516,8 +509,7 @@ public class RecordBean<T, K> implements Record<T, K> {
             .getFieldMemberByFieldName(fieldName);
 
         // 从元数据中获取字段值
-        final Column column = metadataMap.get(fieldMember.getColumnName());
-        return ObjectUtils.isEmpty(column) ? null : column.getValue();
+        return metadataMap.get(fieldMember.getColumnName());
     }
 
     /**
@@ -609,13 +601,7 @@ public class RecordBean<T, K> implements Record<T, K> {
             Object value = fieldMember.fieldGet(entity);
             if (fieldMember.effective(value, insertType ? EntityUseType.INSERT : EntityUseType.UPDATE)) {
                 String columnName = fieldMember.getColumnName();
-                final Column theColumn = metadataMap.computeIfAbsent(columnName, k -> {
-                    Column column = new Column();
-                    column.setColumnName(columnName);
-                    column.setName(columnName);
-                    return column;
-                });
-                theColumn.setValue(value);
+                metadataMap.put(columnName, value);
             }
         }
         hasBind = true;

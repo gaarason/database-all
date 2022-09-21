@@ -1,6 +1,5 @@
 package gaarason.database.contract.eloquent.relation;
 
-import gaarason.database.appointment.Column;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
@@ -17,11 +16,11 @@ public interface RelationSubQuery {
 
     /**
      * 批量关联查询的sql预生成, 可以作为缓存key
-     * @param stringColumnMapList 当前recordList的元数据
+     * @param columnValueMapList 当前recordList的元数据
      * @param generateSqlPart Builder(目标表可用)
      * @return sql数组 [0 -> 目标表操作, 1 -> 中间表操作]
      */
-    String[] prepareSqlArr(List<Map<String, Column>> stringColumnMapList,
+    String[] prepareSqlArr(List<Map<String, Object>> columnValueMapList,
         GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart);
 
     /**

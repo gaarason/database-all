@@ -1,6 +1,5 @@
 package gaarason.database.support;
 
-import gaarason.database.appointment.Column;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
@@ -12,7 +11,6 @@ import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.ObjectUtils;
 
-import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -49,8 +47,8 @@ public class RecordFactory {
         }
         final ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
 
-        Map<String, Column> stringColumnMap = JDBCResultToMap(model, resultSetMetaData, resultSet);
-        return new RecordBean<>(model, stringColumnMap, sql);
+        Map<String, Object> columnValueMap = JDBCResultToMap(model, resultSetMetaData, resultSet);
+        return new RecordBean<>(model, columnValueMap, sql);
     }
 
     /**
@@ -72,8 +70,8 @@ public class RecordFactory {
 
         while (resultSet.next()) {
             // 拆分的数据源
-            Map<String, Column> stringColumnMap = JDBCResultToMap(model, resultSetMetaData, resultSet);
-            recordList.add(new RecordBean<>(model, stringColumnMap, sql));
+            Map<String, Object> columnValueMap = JDBCResultToMap(model, resultSetMetaData, resultSet);
+            recordList.add(new RecordBean<>(model, columnValueMap, sql));
         }
 
         return recordList;
@@ -138,7 +136,7 @@ public class RecordFactory {
             originalRecordList.getContainer());
         for (Record<T, K> originalRecord : originalRecordList) {
             Model<T, K> model = originalRecord.getModel();
-            Map<String, Column> metadataMap = copy(originalRecord.getMetadataMap());
+            Map<String, Object> metadataMap = copy(originalRecord.getMetadataMap());
             String originalSql = originalRecord.getOriginalSql();
             recordList.add(new RecordBean<>(model, metadataMap, originalSql));
         }
@@ -155,10 +153,10 @@ public class RecordFactory {
      * @return 通用map
      * @throws SQLException 数据库异常
      */
-    public static <T, K> HashMap<String, Column> JDBCResultToMap(
+    public static <T, K> HashMap<String, Object> JDBCResultToMap(
         Model<T, K> model, ResultSetMetaData resultSetMetaData, ResultSet resultSet) throws SQLException {
-        HashMap<String, Column> map = new HashMap<>();
-        return (HashMap<String, Column>) JDBCResultToMap(model, map, resultSetMetaData, resultSet);
+        HashMap<String, Object> map = new HashMap<>();
+        return (HashMap<String, Object>) JDBCResultToMap(model, map, resultSetMetaData, resultSet);
 
     }
 
@@ -171,8 +169,8 @@ public class RecordFactory {
      * @return 通用map
      * @throws SQLException 数据库异常
      */
-    protected static <T, K> Map<String, Column> JDBCResultToMap(
-        Model<T, K> model, Map<String, Column> map, ResultSetMetaData resultSetMetaData, ResultSet resultSet)
+    protected static <T, K> Map<String, Object> JDBCResultToMap(
+        Model<T, K> model, Map<String, Object> map, ResultSetMetaData resultSetMetaData, ResultSet resultSet)
         throws SQLException {
 
         // 字段信息
@@ -183,46 +181,25 @@ public class RecordFactory {
 
         final int columnCountMoreOne = resultSetMetaData.getColumnCount() + 1;
         for (int i = 1; i < columnCountMoreOne; i++) {
-            Column column = new Column();
             // 列名
             String columnName = resultSetMetaData.getColumnLabel(i);
-            column.setName(columnName);
-            
+
             FieldMember fieldMember = columnFieldMap.get(columnName);
 
+            Object value;
             // 值获取
-            if(!ObjectUtils.isNull(fieldMember)){
-                Object valueAfterDeserialize = fieldMember.getFieldConversion()
+            if (!ObjectUtils.isNull(fieldMember)) {
+                value = fieldMember.getFieldConversion()
                     .deserialize(fieldMember.getField(), resultSet, columnName);
-                column.setValue(valueAfterDeserialize);
-            }else {
+
+            } else {
                 // *尽量* 使用同类型赋值
-                column.setValue(model.getContainer()
+                value = model.getContainer()
                     .getBean(ConversionConfig.class)
-                    .getValueFromJdbcResultSet(null, resultSet, columnName));
+                    .getValueFromJdbcResultSet(null, resultSet, columnName);
             }
 
-            column.setType(resultSetMetaData.getColumnType(i));
-            column.setTypeName(resultSetMetaData.getColumnTypeName(i));
-            column.setCount(resultSetMetaData.getColumnCount());
-            column.setCatalogName(resultSetMetaData.getCatalogName(i));
-            column.setClassName(resultSetMetaData.getColumnClassName(i));
-            column.setDisplaySize(resultSetMetaData.getColumnDisplaySize(i));
-            column.setColumnName(resultSetMetaData.getColumnName(i));
-            column.setSchemaName(resultSetMetaData.getSchemaName(i));
-            column.setPrecision(resultSetMetaData.getPrecision(i));
-            column.setScale(resultSetMetaData.getScale(i));
-            column.setTableName(resultSetMetaData.getTableName(i));
-            column.setAutoIncrement(resultSetMetaData.isAutoIncrement(i));
-            column.setCaseSensitive(resultSetMetaData.isCaseSensitive(i));
-            column.setSearchable(resultSetMetaData.isSearchable(i));
-            column.setCurrency(resultSetMetaData.isCurrency(i));
-            column.setNullable(resultSetMetaData.isNullable(i) == ResultSetMetaData.columnNullable);
-            column.setSigned(resultSetMetaData.isSigned(i));
-            column.setReadOnly(resultSetMetaData.isReadOnly(i));
-            column.setWritable(resultSetMetaData.isWritable(i));
-            column.setDefinitelyWritable(resultSetMetaData.isDefinitelyWritable(i));
-            map.put(column.getName(), column);
+            map.put(columnName, value);
         }
         return map;
     }

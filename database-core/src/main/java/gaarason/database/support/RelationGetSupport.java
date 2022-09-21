@@ -1,6 +1,5 @@
 package gaarason.database.support;
 
-import gaarason.database.appointment.Column;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
@@ -76,7 +75,7 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
      */
     public List<T> toObjectList(Map<String, RecordList<?, ?>> cacheRecords) {
         // 同级数据源
-        List<Map<String, Column>> originalMetadataMapList = records.getOriginalMetadataMapList();
+        List<Map<String, Object>> originalMetadataMapList = records.getOriginalMetadataMapList();
         ModelShadowProvider modelShadow = getModelShadow();
 
         List<T> list = new ArrayList<>();

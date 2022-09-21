@@ -1,6 +1,5 @@
 package gaarason.database.contract.eloquent;
 
-import gaarason.database.appointment.Column;
 import gaarason.database.contract.record.CollectionOperationLambda;
 import gaarason.database.contract.record.FriendlyList;
 import gaarason.database.contract.record.RelationshipListLambda;
@@ -20,7 +19,7 @@ public interface RecordList<T, K> extends FriendlyList<T, K>,
      * 元数据
      * @return 元数据
      */
-    List<Map<String, Column>> getOriginalMetadataMapList();
+    List<Map<String, Object>> getOriginalMetadataMapList();
 
     /**
      * 原始sql

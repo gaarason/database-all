@@ -1,7 +1,6 @@
 package gaarason.database.eloquent.relation;
 
 import gaarason.database.annotation.HasOneOrMany;
-import gaarason.database.appointment.Column;
 import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
@@ -41,11 +40,11 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public String[] prepareSqlArr(List<Map<String, Column>> stringColumnMapList,
+    public String[] prepareSqlArr(List<Map<String, Object>> columnValueMapList,
         GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart) {
         return new String[]{generateSqlPart.execute(ObjectUtils.typeCast(hasOneOrManyTemplate.sonModel.newQuery()))
             .whereIn(hasOneOrManyTemplate.sonModelForeignKey,
-                getColumnInMapList(stringColumnMapList, hasOneOrManyTemplate.localModelLocalKey))
+                getColumnInMapList(columnValueMapList, hasOneOrManyTemplate.localModelLocalKey))
             .toSql(SqlType.SELECT), ""};
     }
 
@@ -60,7 +59,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
         // 子表的外键字段名
         String column = hasOneOrManyTemplate.sonModelForeignKey;
         // 本表的关系键值
-        Object value = theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue();
+        Object value = theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey);
 
         assert value != null;
         return findObjList(targetRecordList.toObjectList(cacheRelationRecordList), column, value);
@@ -79,7 +78,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
         }
 
         // 关联键值(当前表关系键(默认当前表主键))(子表外键)
-        Object relationKeyValue = theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue();
+        Object relationKeyValue = theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey);
 
         // 执行更新
         assert relationKeyValue != null;
@@ -92,7 +91,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     @Override
     public int detach(Record<?, ?> theRecord) {
         // 关联键值(当前表关系键(默认当前表主键))(子表外键)
-        Object relationKeyValue = theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue();
+        Object relationKeyValue = theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey);
 
         // 执行更新
         // 目标,必须是关联关系, 才解除
@@ -105,7 +104,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     public int detach(Record<?, ?> theRecord, RecordList<?, ?> targetRecords) {
         // 应该更新的子表的主键列表
         List<Object> targetRecordPrimaryKeyIds = targetRecords.toList(
-            recordTemp -> recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName()).getValue());
+            recordTemp -> recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName()));
         return detach(theRecord, targetRecordPrimaryKeyIds);
     }
 
@@ -116,7 +115,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
         }
 
         // 关联键值(当前表关系键(默认当前表主键))(子表外键)
-        Object relationKeyValue = theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue();
+        Object relationKeyValue = theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey);
 
         // 执行更新
         // 目标,必须是关联关系, 才解除
@@ -135,7 +134,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     public int sync(Record<?, ?> theRecord, Collection<Object> targetPrimaryKeyValues,
         Map<String, Object> relationDataMap) {
         // 关联键值(当前表关系键(默认当前表主键))(子表外键)
-        Object relationKeyValue = theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue();
+        Object relationKeyValue = theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey);
         assert relationKeyValue != null;
 
         return hasOneOrManyTemplate.sonModel.newQuery().transaction(() -> {
@@ -168,7 +167,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
         }
 
         // 关联键值(当前表关系键(默认当前表主键))(子表外键)
-        Object relationKeyValue = theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey).getValue();
+        Object relationKeyValue = theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey);
 
         return hasOneOrManyTemplate.sonModel.newQuery().transaction(() -> {
             // 现存的关联关系 主键值集合
