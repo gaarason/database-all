@@ -2,14 +2,20 @@ package gaarason.database.exception;
 
 import gaarason.database.exception.base.BaseException;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Collection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * sql异常
- * @see java.sql.SQLIntegrityConstraintViolationException SQL完整性约束冲突异常(foreign key, primary key or unique key)
+ * @see SQLIntegrityConstraintViolationException SQL完整性约束冲突异常(foreign key, primary key or unique key)
  * @author xt
  */
 public class SQLRuntimeException extends BaseException {
+
+    private static final Pattern COMPILE = Pattern.compile(" ? ",
+        Pattern.LITERAL);
 
     /**
      * 构造函数
@@ -29,7 +35,8 @@ public class SQLRuntimeException extends BaseException {
      * @param cause 原异常
      */
     public SQLRuntimeException(String sql, Collection<?> parameters, String message, String symbol, Throwable cause) {
-        super("message : [" + message + "] sql : [" + String.format(sql.replace(" ? ", symbol + "%s" + symbol),
+        super("message : [" + message + "] sql : [" + String.format(
+            COMPILE.matcher(sql).replaceAll(Matcher.quoteReplacement(symbol + "%s" + symbol)),
             parameters.toArray()) + "]", cause);
     }
 

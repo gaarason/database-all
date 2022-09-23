@@ -18,8 +18,6 @@ import gaarason.database.util.StringUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 /**
  * 数据库字段信息
@@ -196,7 +194,7 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
      * @param originalValue 原始值
      * @return 是否有效
      */
-    public boolean effective(@Nullable Object originalValue) {
+    public static boolean effective(@Nullable Object originalValue) {
         return !FIELD_INVALID_EXCEPTION.equals(originalValue);
     }
 
@@ -218,7 +216,7 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
     @Nullable
     public Object fieldGet(Object obj) {
         try {
-            return getField().get(obj);
+            return field.get(obj);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessRuntimeException(e);
         }
@@ -237,7 +235,7 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
         // 普通获取
         Object value = fieldGet(entity);
         // 填充
-        Object valueAfterFill = fill(entity, getField(), value, type);
+        Object valueAfterFill = fill(entity, field, value, type);
         // 判断是否有效
         if (!effective(valueAfterFill, type)) {
             return FIELD_INVALID_EXCEPTION;
@@ -245,7 +243,7 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
         // 回填
         fieldSet(entity, valueAfterFill);
         // 序列化后返回
-        return fieldConversion.serialize(getField(), valueAfterFill);
+        return fieldConversion.serialize(field, valueAfterFill);
     }
 
     /**
@@ -273,8 +271,8 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
     public void fieldSet(Object obj, @Nullable Object value) {
         try {
             // 反序列化后
-            Object valueAfterDeserialize = fieldConversion.deserialize(getField(), value);
-            getField().set(obj, valueAfterDeserialize);
+            Object valueAfterDeserialize = fieldConversion.deserialize(field, value);
+            field.set(obj, valueAfterDeserialize);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessRuntimeException(e);
         }
@@ -367,7 +365,7 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
      * @return 主键生成器
      */
     private IdGenerator<?> dealIdGenerator() {
-        Class<?> keyJavaType = getField().getType();
+        Class<?> keyJavaType = field.getType();
         /*
          * 自动化判断
          */
@@ -390,7 +388,7 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
              * 根据String的长度, 选择 UUID36/UUID32
              */
             else if (keyJavaType == String.class) {
-                if (getColumn().length() >= 36) {
+                if (column.length() >= 36) {
                     return container.getBean(IdGenerator.UUID36.class);
                 } else {
                     return container.getBean(IdGenerator.UUID32.class);

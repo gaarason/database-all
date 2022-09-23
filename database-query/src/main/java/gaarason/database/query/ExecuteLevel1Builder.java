@@ -35,7 +35,7 @@ public abstract class ExecuteLevel1Builder<T, K> extends BaseBuilder<T, K> {
         Map<String, Object[]> columnMap = grammar.pullWith();
         for (Map.Entry<String, Object[]> stringEntry : columnMap.entrySet()) {
             Object[] value = stringEntry.getValue();
-            record.with(stringEntry.getKey(), (GenerateSqlPartFunctionalInterface) value[0],
+            record.with(stringEntry.getKey(), (GenerateSqlPartFunctionalInterface<?, ?>) value[0],
                 (RelationshipRecordWithFunctionalInterface) value[1]);
         }
     }

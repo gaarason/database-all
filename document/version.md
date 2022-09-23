@@ -25,6 +25,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 4.3.1
+
+- 代码优化
+
 ### 4.3.0
 
 - 在`@Column` 中增加了`json`的支持, 需要手动引入下相关的`jackson`依赖

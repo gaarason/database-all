@@ -129,7 +129,7 @@ public class ContainerProvider implements Container {
      * @param clazz 类
      * @param <T> 类型
      */
-    protected <T> InstanceCreatorFunctionalInterface<T> defaultNewInstance(Class<T> clazz) {
+    protected static <T> InstanceCreatorFunctionalInterface<T> defaultNewInstance(Class<T> clazz) {
         return c -> {
             LOGGER.info("Instantiate unregistered objects[" + clazz.getName() + "] by default.");
             return ClassUtils.newInstance(clazz);

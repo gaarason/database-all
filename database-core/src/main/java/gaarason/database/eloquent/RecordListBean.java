@@ -97,19 +97,19 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
      */
     @Override
     public List<T> toObjectList() {
-        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(getContainer(), this, true);
+        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(container, this, true);
         return tkRelationGetSupport.toObjectList();
     }
 
     @Override
     public List<T> toObjectListWithoutRelationship() {
-        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(getContainer(), this, false);
+        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(container, this, false);
         return tkRelationGetSupport.toObjectList();
     }
 
     @Override
     public List<T> toObjectList(Map<String, RecordList<?, ?>> cacheRelationRecordList) {
-        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(getContainer(), this, true);
+        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(container, this, true);
         return tkRelationGetSupport.toObjectList(cacheRelationRecordList);
     }
 
@@ -192,12 +192,12 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
     }
 
     @Override
-    public RecordListBean<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface builderClosure) {
+    public RecordListBean<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure) {
         return with(fieldName, builderClosure, theRecord -> theRecord);
     }
 
     @Override
-    public RecordListBean<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface builderClosure,
+    public RecordListBean<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
         RelationshipRecordWithFunctionalInterface recordClosure) {
         String[] columnArr = fieldName.split("\\.");
         // 快捷类型

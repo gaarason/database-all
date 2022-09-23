@@ -49,7 +49,7 @@ abstract public class BaseElement {
         addImports(typeString);
         String[] split = typeString.split("\\.");
         // 兼容内部类
-        return split[split.length - 1].replace("$", ".");
+        return StringUtils.replace(split[split.length - 1], "$", ".");
     }
 
     /**
@@ -63,7 +63,7 @@ abstract public class BaseElement {
         addImports(typeName);
         String[] split = typeName.split("\\.");
         // 兼容内部类
-        return split[split.length - 1].replace("$", ".");
+        return StringUtils.replace(split[split.length - 1], "$", ".");
     }
 
     /**
@@ -113,7 +113,7 @@ abstract public class BaseElement {
         List<String> importsStr = new LinkedList<>();
         for (String typeName : imports) {
             // 处理注解
-            typeName = typeName.replace("@", "");
+            typeName = StringUtils.replace(typeName, "@", "");
 
             // 省略 java.lang.
             if ("java.lang.".equals(getNamespace(typeName))) {
@@ -127,7 +127,7 @@ abstract public class BaseElement {
 
             // 兼容内部类
             if (typeName.contains("$")) {
-                int index = typeName.indexOf("$");
+                int index = typeName.indexOf('$');
                 typeName = typeName.substring(0, index);
             }
 
@@ -175,7 +175,7 @@ abstract public class BaseElement {
             addImports(type.getTypeName());
             String[] split = typeName.split("\\.");
             // 兼容内部类
-            return split[split.length - 1].replace("$", ".");
+            return StringUtils.replace(split[split.length - 1], "$", ".");
         } else if (type instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) type;
             Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
@@ -210,7 +210,7 @@ abstract public class BaseElement {
      * @param typeName eg:java.lang.String
      * @return eg:java.lang.
      */
-    protected String getNamespace(String typeName) {
+    protected static String getNamespace(String typeName) {
         StringBuilder stringBuilder = new StringBuilder();
         String[] strings = typeName.split("\\.");
         for (int i = 0; i < strings.length - 1; i++) {

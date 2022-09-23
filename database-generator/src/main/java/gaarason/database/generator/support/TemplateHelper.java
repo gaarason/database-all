@@ -1,7 +1,6 @@
 package gaarason.database.generator.support;
 
 import gaarason.database.generator.appointment.Style;
-import gaarason.database.generator.element.base.BaseElement;
 import gaarason.database.generator.exception.GeneratorException;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
@@ -33,44 +32,44 @@ public class TemplateHelper {
 
     public void writeBaseModel(Map<?, ?> parameters) throws GeneratorException {
         if (!getSharedVariable("style").equals(1)) {
-            filePutContent("baseModel", String.valueOf(parameters.get("${base_model_name}")),  parameters);
+            filePutContent("baseModel", String.valueOf(parameters.get("${base_model_name}")), parameters);
         }
     }
 
     public void writeBaseEntity(Map<?, ?> parameters) throws GeneratorException {
         if (!getSharedVariable("style").equals(2)) {
-            filePutContent("baseEntity", String.valueOf(parameters.get("${base_entity_name}")),parameters);
+            filePutContent("baseEntity", String.valueOf(parameters.get("${base_entity_name}")), parameters);
         }
     }
 
     public void writeModel(Map<?, ?> parameters) throws GeneratorException {
         if (!getSharedVariable("style").equals(1)) {
-            filePutContent("model", String.valueOf(parameters.get("${model_name}")),parameters);
+            filePutContent("model", String.valueOf(parameters.get("${model_name}")), parameters);
         }
     }
 
     public void writeEntity(Map<?, ?> parameters) throws GeneratorException {
         if (!getSharedVariable("style").equals(2)) {
-            filePutContent("entity",String.valueOf(parameters.get("${entity_name}")), parameters);
+            filePutContent("entity", String.valueOf(parameters.get("${entity_name}")), parameters);
         }
     }
 
     public String fillBaseModelWithinBaseEntity(Map<?, ?> parameters) throws GeneratorException {
-        String  templateName = "baseModelWithinBaseEntity";
+        String templateName = "baseModelWithinBaseEntity";
         String templateStr = templateCache.computeIfAbsent(templateName,
             k -> fileGetContent(getAbsoluteReadFileName(templateName)));
         return fillTemplate(templateStr, parameters);
     }
 
     public String fillModelWithinEntity(Map<?, ?> parameters) throws GeneratorException {
-        String  templateName = "modelWithinEntity";
+        String templateName = "modelWithinEntity";
         String templateStr = templateCache.computeIfAbsent(templateName,
             k -> fileGetContent(getAbsoluteReadFileName(templateName)));
         return fillTemplate(templateStr, parameters);
     }
 
     public String fillField(Map<?, ?> parameters) throws GeneratorException {
-        String  templateName = "field";
+        String templateName = "field";
         String templateStr = templateCache.computeIfAbsent(templateName,
             k -> fileGetContent(getAbsoluteReadFileName(templateName)));
         return fillTemplate(templateStr, parameters);
@@ -120,7 +119,7 @@ public class TemplateHelper {
      * @param fileName 文件名
      * @return 文件内容
      */
-    protected String fileGetContent(String fileName) {
+    protected static String fileGetContent(String fileName) {
         InputStream is = TemplateHelper.class.getResourceAsStream(fileName);
         assert is != null;
         BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
@@ -153,8 +152,8 @@ public class TemplateHelper {
     /**
      * 获取全局变量
      * @param key 键
-     * @return 值
      * @param <V> 值的类型
+     * @return 值
      */
     protected <V> V getSharedVariable(String key) {
         try {

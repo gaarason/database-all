@@ -14,7 +14,7 @@ import java.lang.annotation.*;
  */
 @Documented
 @Inherited
-@Target({ElementType.FIELD, ElementType.METHOD})
+@Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Primary {
 

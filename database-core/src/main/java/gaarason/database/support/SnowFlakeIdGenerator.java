@@ -28,7 +28,7 @@ public class SnowFlakeIdGenerator implements IdGenerator.SnowFlakesID {
      */
     public static final long DATA_CENTER_ID_BITS = 0L;
     /**
-     * 支持的最大机器id，当WORKER_ID_BITS=5时，结果是31 (这个移位算法可以很快的计算出几位二进制数所能表示的最大十进制数)
+     * 支持的最大机器id，当WORKER_ID_BITS=5时，结果是31 (这个移位算法可以很快地计算出几位二进制数所能表示的最大十进制数)
      */
     public static final long MAX_WORKER_ID = ~(-1L << WORKER_ID_BITS);
     /**

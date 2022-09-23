@@ -18,6 +18,7 @@ import gaarason.database.support.PrimaryKeyMember;
 import gaarason.database.support.RecordFactory;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
+import gaarason.database.util.StringUtils;
 
 import java.io.Serializable;
 import java.sql.*;
@@ -87,7 +88,9 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
 
     @Override
     public RecordList<T, K> findMany(Object... ids) throws SQLRuntimeException {
-        return newQuery().select(getEntityClass()).whereIn(getPrimaryKeyColumnName(), new HashSet<>(Arrays.asList(ids))).get();
+        return newQuery().select(getEntityClass())
+            .whereIn(getPrimaryKeyColumnName(), new HashSet<>(Arrays.asList(ids)))
+            .get();
     }
 
     @Override
@@ -331,7 +334,8 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
             // 执行
             return closure.execute(preparedStatement);
         } catch (EntityNotFoundException e) {
-            throw new EntityNotFoundException(String.format(sql.replace(" ? ", "\"%s\""), localParameters.toArray()));
+            throw new EntityNotFoundException(
+                String.format(StringUtils.replace(sql, " ? ", "\"%s\""), localParameters.toArray()));
         } catch (Throwable e) {
             throw new SQLRuntimeException(sql, localParameters, e.getMessage(),
                 gaarasonDataSource.getQueryBuilder().getValueSymbol(), e);
@@ -393,7 +397,8 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
      * @param index 参数索引
      * @param parameter 参数对象
      */
-    protected void setParameter(PreparedStatement preparedStatement, int index, Object parameter) throws SQLException {
+    protected static void setParameter(PreparedStatement preparedStatement, int index, Object parameter)
+        throws SQLException {
         if (parameter instanceof ValueWrapper) {
             // 精确类型
             preparedStatement.setObject(index, ((ValueWrapper) parameter).getValue(),

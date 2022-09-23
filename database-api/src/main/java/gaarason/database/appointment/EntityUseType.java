@@ -17,5 +17,5 @@ public enum EntityUseType {
     /**
      * 更新时的数据
      */
-    UPDATE;
+    UPDATE
 }

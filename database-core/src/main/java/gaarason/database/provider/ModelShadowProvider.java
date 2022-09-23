@@ -360,23 +360,6 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
         }
     }
 
-//    /**
-//     * 格式化值到字符串
-//     * 关键
-//     * @param value 原值 (实体的属性)
-//     * @return 字符串
-//     */
-//    @Nullable
-//    public String valueFormat(@Nullable Object value) {
-//        if (value instanceof Date) {
-//            return LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(value);
-//        } else if (value instanceof Boolean) {
-//            return (boolean) value ? "1" : "0";
-//        } else {
-//            return getContainer().getBean(ConversionConfig.class).castNullable(value, String.class);
-//        }
-//    }
-
     /**
      * 获取 entity 对象的主键值
      * @param anyEntity 数据表实体对象

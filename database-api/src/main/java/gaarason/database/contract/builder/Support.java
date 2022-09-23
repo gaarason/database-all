@@ -75,20 +75,4 @@ public interface Support<T, K> extends LambdaStyle<T, K> {
      */
     int conversionToInt(@Nullable Object value);
 
-    /**
-     * 类型转化到 String集合
-     * @param value 参数
-     * @return String集合
-     */
-//    @Nullable
-//    default Collection<String> conversionToStrings(@Nullable Collection<?> value) {
-//        if (value != null && !value.isEmpty()) {
-//            LinkedList<String> res = new LinkedList<>();
-//            for (Object obj : value) {
-//                res.add(conversionToString(obj));
-//            }
-//            return res;
-//        }
-//        return null;
-//    }
 }

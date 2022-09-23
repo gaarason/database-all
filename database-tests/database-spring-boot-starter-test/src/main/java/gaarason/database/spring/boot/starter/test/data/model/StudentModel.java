@@ -31,11 +31,4 @@ public class StudentModel extends BaseModel<Student, Long> implements StudentQue
     public Student father() {
         return null;
     }
-
-
-//    @Override
-//    protected Builder<Student, Long> apply(Builder<Student, Long> builder) {
-//        // return builder->where("type", "2");
-//        return builder;
-//    }
 }

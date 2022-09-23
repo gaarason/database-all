@@ -182,7 +182,7 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
 
     @Override
     public Builder<T, K> havingLike(String column, @Nullable Object value) {
-        if(ObjectUtils.isEmpty(value) || ObjectUtils.isEmpty(String.valueOf(value).replace("%", ""))){
+        if (ObjectUtils.isEmpty(value) || ObjectUtils.isEmpty(StringUtils.replace(value, "%", ""))) {
             return this;
         }
         return havingIgnoreNull(column, "like", StringUtils.sqlPathLike(value));
@@ -208,7 +208,7 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
 
     @Override
     public Builder<T, K> havingNotLike(String column, @Nullable Object value) {
-        if(ObjectUtils.isEmpty(value) || ObjectUtils.isEmpty(String.valueOf(value).replace("%", ""))){
+        if (ObjectUtils.isEmpty(value) || ObjectUtils.isEmpty(StringUtils.replace(value, "%", ""))) {
             return this;
         }
         return havingIgnoreNull(column, "not like", StringUtils.sqlPathLike(value));

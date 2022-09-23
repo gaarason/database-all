@@ -444,7 +444,7 @@ public interface Having<T, K> {
     Builder<T, K> havingNotIn(String column, GenerateSqlPartFunctionalInterface<T, K> closure);
 
     /**
-     * 列值在2值之间
+     * 列值在两值之间
      * @param column 列名
      * @param min 值1
      * @param max 值2
@@ -453,7 +453,7 @@ public interface Having<T, K> {
     Builder<T, K> havingBetween(String column, Object min, Object max);
 
     /**
-     * 列值在2值之间
+     * 列值在两值之间
      * @param column 列名
      * @param min 值1
      * @param max 值2
@@ -463,7 +463,7 @@ public interface Having<T, K> {
     Builder<T, K> havingBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters);
 
     /**
-     * 列值在2值之间
+     * 列值在两值之间
      * @param column 列名
      * @param min 值1
      * @param max 值2
@@ -472,7 +472,7 @@ public interface Having<T, K> {
     Builder<T, K> havingBetweenRaw(String column, Object min, Object max);
 
     /**
-     * 列值不在2值之间
+     * 列值不在两值之间
      * @param column 列名
      * @param min 值1
      * @param max 值2
@@ -481,7 +481,7 @@ public interface Having<T, K> {
     Builder<T, K> havingNotBetween(String column, Object min, Object max);
 
     /**
-     * 列值不在2值之间
+     * 列值不在两值之间
      * @param column 列名
      * @param min 值1
      * @param max 值2
@@ -491,7 +491,7 @@ public interface Having<T, K> {
     Builder<T, K> havingNotBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters);
 
     /**
-     * 列值不在2值之间
+     * 列值不在两值之间
      * @param column 列名
      * @param min 值1
      * @param max 值2

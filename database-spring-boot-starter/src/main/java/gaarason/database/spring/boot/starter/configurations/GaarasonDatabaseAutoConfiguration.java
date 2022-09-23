@@ -134,7 +134,6 @@ public class GaarasonDatabaseAutoConfiguration {
     /**
      * 是否是 Spring native 环境
      * @return 是否是 Spring native 环境
-     * @see org.springframework.nativex.NativeListener
      */
     protected static boolean isNative() {
         return "true".equals(System.getProperty("springAot")) ||

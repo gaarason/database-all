@@ -10,7 +10,6 @@ import java.math.BigInteger;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Time;
-import java.sql.Timestamp;
 import java.time.*;
 import java.util.Arrays;
 import java.util.Date;
@@ -36,7 +35,7 @@ public class FinalVariable {
      * 不可以接受null的类型
      */
     public static final List<Class<?>> NOT_ACCEPT_NULL_TYPES = Arrays.asList(boolean.class, byte.class, char.class,
-        short.class, int.class, long.class, float.class, double.class);
+        short.class, int.class, long.class, float.class, double.class, void.class);
 
     /**
      * 关联关系声明注解

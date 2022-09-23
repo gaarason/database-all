@@ -1,5 +1,7 @@
 package gaarason.database.contract.support;
 
+import gaarason.database.lang.Nullable;
+
 import java.io.Serializable;
 
 /**
@@ -12,6 +14,7 @@ public interface IdGenerator<K extends Serializable> {
      * 生成主键值
      * @return 主键值
      */
+    @Nullable
     K nextId();
 
     /**

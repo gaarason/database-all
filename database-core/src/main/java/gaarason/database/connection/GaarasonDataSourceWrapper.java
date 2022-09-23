@@ -264,7 +264,7 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
      * @param connection 数据库连接
      * @throws ConnectionCloseException 关闭异常
      */
-    protected void connectionClose(Connection connection) throws ConnectionCloseException {
+    protected static void connectionClose(Connection connection) throws ConnectionCloseException {
         try {
             connection.close();
         } catch (Throwable e) {

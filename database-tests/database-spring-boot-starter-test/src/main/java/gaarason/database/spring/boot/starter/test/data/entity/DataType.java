@@ -6,7 +6,6 @@ import gaarason.database.annotation.Column;
 import gaarason.database.annotation.Primary;
 import gaarason.database.annotation.Table;
 import gaarason.database.contract.support.FieldConversion;
-import gaarason.database.contract.support.FieldFill;
 import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.lang.Nullable;
 import gaarason.database.spring.boot.starter.test.data.model.base.BaseModel;
@@ -17,7 +16,6 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Period;
 import java.util.Date;
 
 @Data

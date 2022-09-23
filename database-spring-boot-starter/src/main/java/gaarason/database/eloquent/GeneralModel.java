@@ -3,6 +3,7 @@ package gaarason.database.eloquent;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.logging.Log;
 import gaarason.database.logging.LogFactory;
+import gaarason.database.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +29,8 @@ public class GeneralModel extends Model<GeneralModel.Table, Serializable> {
 
     public void log(String sql, Collection<?> parameterList) {
         if (log.isDebugEnabled()) {
-            log.debug("SQL complete : " + String.format(sql.replace(" ? ", "\"%s\""), parameterList.toArray()));
+            log.debug(
+                "SQL complete : " + String.format(StringUtils.replace(sql, " ? ", "\"%s\""), parameterList.toArray()));
         }
     }
 

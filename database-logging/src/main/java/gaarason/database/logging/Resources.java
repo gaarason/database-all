@@ -4,7 +4,7 @@ package gaarason.database.logging;
 /**
  * A class to simplify access to resources through the classloader.
  */
-public final class Resources extends Object {
+public final class Resources {
 
     private static ClassLoader defaultClassLoader;
 

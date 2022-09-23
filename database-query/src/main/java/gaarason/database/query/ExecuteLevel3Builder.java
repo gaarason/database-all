@@ -344,7 +344,7 @@ public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T,
      * @param alias 别名
      * @return 拼接后的字符
      */
-    protected String function(String functionName, String parameter, @Nullable String alias) {
+    protected static String function(String functionName, String parameter, @Nullable String alias) {
         return functionName + FormatUtils.bracket(parameter) +
             (alias == null ? "" : " as " + FormatUtils.quotes(alias));
     }

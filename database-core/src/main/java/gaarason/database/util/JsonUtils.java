@@ -99,7 +99,7 @@ public class JsonUtils {
             @Nullable
             @Override
             public Date deserialize(JsonParser parser, DeserializationContext context)
-                throws IOException, JsonProcessingException {
+                throws IOException {
                 if (parser.hasToken(JsonToken.VALUE_STRING) || parser.hasToken(JsonToken.VALUE_NUMBER_INT)) {
                     String dateString = parser.getText();
                     if (!dateString.contains("-")) {
@@ -254,6 +254,7 @@ public class JsonUtils {
         }
 
         @Override
+        @Nullable
         public LocalDateTime deserialize(JsonParser parser, DeserializationContext context) throws IOException {
 
             if (parser.hasTokenId(JsonTokenId.ID_STRING) || parser.hasToken(JsonToken.VALUE_NUMBER_INT)) {

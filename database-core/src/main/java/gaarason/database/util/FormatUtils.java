@@ -43,76 +43,6 @@ public class FormatUtils {
         return StringUtils.rtrim(stringBuilder.toString(), ",");
     }
 
-//    /**
-//     * 值转化为参数绑定?
-//     * @param something 字段 eg:小明
-//     * @return eg:?
-//     */
-//    public static String where(@Nullable String something, Grammar grammar) {
-//        if (something == null) {
-//            return FinalVariable.SQL_NULL;
-//        } else {
-//            grammar.pushWhereParameter(something);
-//            return " ? ";
-//        }
-//    }
-//
-//    /**
-//     * 值转化为参数绑定?
-//     * @param somethingList eg:[1,2,3]
-//     * @return eg: ? , ? , ?
-//     */
-//    public static String where(Collection<?> somethingList, Grammar grammar) {
-//        StringBuilder stringBuilder = new StringBuilder();
-//        for (Object value : somethingList) {
-//            stringBuilder.append(
-//                FormatUtils.where(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class), grammar)).append(',');
-//        }
-//        return StringUtils.rtrim(stringBuilder.toString(), ",");
-//    }
-//
-//    /**
-//     * 值转化为参数绑定?
-//     * @param something 字段 eg:小明
-//     * @return eg:?
-//     */
-//    public static String having(@Nullable String something, Grammar grammar) {
-//        if (something == null) {
-//            return FinalVariable.SQL_NULL;
-//        } else {
-//            grammar.pushHavingParameter(something);
-//            return " ? ";
-//        }
-//    }
-//
-//    /**
-//     * 值转化为参数绑定?
-//     * @param somethingList eg:[1,2,3]
-//     * @return eg: ? , ? , ?
-//     */
-//    public static String having(Collection<?> somethingList, Grammar grammar) {
-//        StringBuilder stringBuilder = new StringBuilder();
-//        for (Object value : somethingList) {
-//            stringBuilder.append(
-//                FormatUtils.having(ContainerProvider.getBean(ConversionConfig.class).castNullable(value, String.class), grammar)).append(',');
-//        }
-//        return StringUtils.rtrim(stringBuilder.toString(), ",");
-//    }
-//
-//    /**
-//     * 值转化为参数绑定?
-//     * @param something 字段 eg:小明
-//     * @return eg:?
-//     */
-//    public static String data(@Nullable String something, Grammar grammar) {
-//        if (something == null) {
-//            return FinalVariable.SQL_NULL;
-//        } else {
-//            grammar.pushDataParameter(something);
-//            return " ? ";
-//        }
-//    }
-
     /**
      * 值加上括号
      * @param something 字段 eg:1765595948
@@ -160,7 +90,9 @@ public class FormatUtils {
         int whereIsQuote = mayBeHasFunc.indexOf('(');
         if (whereIsQuote != -1) {
             String func = mayBeHasFunc.substring(0, whereIsQuote); // eg: sum
-            String someElse = mayBeHasFunc.replace(func, "").replace("(", "").replace(")", ""); // eg: order.amount
+
+            String someElse = StringUtils.replace(
+                StringUtils.replace(StringUtils.replace(mayBeHasFunc, func, ""), "(", ""), ")", ""); // eg: order.amount
 
             int whereIsPoint = someElse.indexOf('.');
             if (whereIsPoint != -1) {

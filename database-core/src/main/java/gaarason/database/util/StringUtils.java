@@ -2,10 +2,13 @@ package gaarason.database.util;
 
 import gaarason.database.exception.MapEncodingException;
 import gaarason.database.exception.base.BaseException;
+import gaarason.database.lang.Nullable;
+import gaarason.database.support.SoftCache;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,7 +27,26 @@ public class StringUtils {
     private static final Pattern LINE_PATTERN = Pattern.compile("_(\\w)");
     private static final Pattern HUMP_PATTERN = Pattern.compile("[A-Z]");
 
+    /**
+     * Pattern 缓存
+     */
+    private static final Map<String, Pattern> PATTERN_MAP = new SoftCache<>();
+
     private StringUtils() {
+    }
+
+    /**
+     * 替换字符
+     * 功能上等于 input.replace(pattern , replacement), 但性能较好
+     * @param input 原始字符
+     * @param pattern 需要匹配的的字符(待替换)的预置规则
+     * @param replacement 新的字符
+     * @return 替换后的字符
+     */
+    public static String replace(Object input, String pattern, String replacement) {
+        return PATTERN_MAP.computeIfAbsent(pattern, k -> Pattern.compile(k, Pattern.LITERAL))
+            .matcher(String.valueOf(input))
+            .replaceAll(replacement);
     }
 
     /**
@@ -91,7 +113,8 @@ public class StringUtils {
 
             // 将得到的字符串进行处理得到目标格式的字符串：utf8处理中文出错
             reString = java.net.URLEncoder.encode(reString, "utf-8");
-            reString = reString.replace("%3D", "=").replace("%26", "&");
+            reString = replace(reString, "%3D", "=");
+            reString = replace(reString, "%26", "&");
             return reString;
         } catch (Exception e) {
             throw new MapEncodingException("原始map对象 : " + paramsMap);
@@ -132,7 +155,7 @@ public class StringUtils {
      * @param input 输入字符串
      * @return 是否
      */
-    public static boolean isJavaIdentifier(String input) {
+    public static boolean isJavaIdentifier(@Nullable String input) {
         if (input != null && input.length() > 0) {
             int pos = 0;
             if (Character.isJavaIdentifierStart(input.charAt(pos))) {
@@ -230,8 +253,8 @@ public class StringUtils {
                 }
             }
         } else if (object instanceof List) {
-            for (int i = 0; i < ((List) object).size(); i++) {
-                r.append(StringUtils.realQueryBuild(((List) object).get(i), parentStr + "[" + i + "]", false, sort));
+            for (int i = 0; i < ((List<?>) object).size(); i++) {
+                r.append(StringUtils.realQueryBuild(((List<?>) object).get(i), parentStr + "[" + i + "]", false, sort));
             }
             // 叶节点是String或者Number
         } else if (object instanceof String) {

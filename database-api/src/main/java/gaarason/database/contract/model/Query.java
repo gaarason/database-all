@@ -18,7 +18,7 @@ import java.util.Collection;
 public interface Query<T, K> {
 
     /**
-     * 新的查询构造器
+     * 新查询构造器
      * @return 查询构造器
      */
     Builder<T, K> newQuery();
@@ -36,7 +36,7 @@ public interface Query<T, K> {
     Builder<T, K> onlyTrashed();
 
     /**
-     * 新的记录对象
+     * 新记录对象
      * @return 记录对象
      */
     Record<T, K> newRecord();

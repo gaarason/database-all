@@ -86,7 +86,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @param targetRecords 目标结果集合
      * @return 目标表的主键集合
      */
-    protected List<Object> getTargetRecordPrimaryKeyIds(RecordList<?, ?> targetRecords) {
+    protected static List<Object> getTargetRecordPrimaryKeyIds(RecordList<?, ?> targetRecords) {
         // 应该目标表的主键列表
         return targetRecords.toList(
             recordTemp -> recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName()));

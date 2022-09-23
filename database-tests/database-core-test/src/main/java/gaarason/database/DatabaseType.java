@@ -51,27 +51,6 @@ public enum DatabaseType {
         }
         return databaseType;
     }
-//
-//    /**
-//     * 根据数据库类型返回查询构造器
-//     * @param gaarasonDataSource 数据源
-//     * @param model              数据模型
-//     * @param entityClass        实体类
-//     * @param <T>                实体类型
-//     * @param <K>                主键类型
-//     * @return 查询构造器
-//     */
-//    public <T extends Serializable, K extends Serializable> Builder<T, K> getBuilderByDatabaseType(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Class<T> entityClass) {
-//        switch (this) {
-//            case MYSQL:
-//                return new MySqlBuilder<>(gaarasonDataSource, model);
-//            case MSSQL:
-//            case MSSQL_V2:
-//                return new MsSqlBuilder<>(gaarasonDataSource, model);
-//            default:
-//                throw new TypeNotSupportedException("Database type not supported.");
-//        }
-//    }
 
     /**
      * 根据数据库类型返回符号

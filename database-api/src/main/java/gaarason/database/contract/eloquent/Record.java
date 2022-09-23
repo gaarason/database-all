@@ -79,13 +79,13 @@ public interface Record<T, K> extends Friendly<T, K>, OperationLambda<T, K>,
      * 关联关系 Builder 补充设置
      * @return <属性 -> GenerateSqlPart>
      */
-    Map<String, GenerateSqlPartFunctionalInterface<T, K>> getRelationBuilderMap();
+    Map<String, GenerateSqlPartFunctionalInterface<?, ?>> getRelationBuilderMap();
 
     /**
      * 关联关系 Builder 补充设置
      * @param relationBuilderMap <属性 -> GenerateSqlPart>
      */
-    void setRelationBuilderMap(HashMap<String, GenerateSqlPartFunctionalInterface<T, K>> relationBuilderMap);
+    void setRelationBuilderMap(HashMap<String, GenerateSqlPartFunctionalInterface<?, ?>> relationBuilderMap);
 
     /**
      * 关联关系 递归 设置

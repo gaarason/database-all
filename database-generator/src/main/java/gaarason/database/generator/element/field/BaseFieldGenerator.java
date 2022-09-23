@@ -29,14 +29,16 @@ abstract class BaseFieldGenerator {
      */
     @Nullable
     protected static String newlineCharactersToReplace(@Nullable String str) {
-        return null != str ? str
-            .replace("\\\r\\\n", "")
-            .replace("\\r\\n", "")
-            .replace("\r\n", "")
-            .replace("\\\n", "")
-            .replace("\\n", "")
-            .replace("\n", "")
-            .replace("\"", "\\\"") : null;
+        if(null != str){
+            str = StringUtils.replace(str,"\\\r\\\n", "");
+            str = StringUtils.replace(str,"\\r\\n", "");
+            str = StringUtils.replace(str,"\r\n", "");
+            str = StringUtils.replace(str,"\\\n", "");
+            str = StringUtils.replace(str,"\\n", "");
+            str = StringUtils.replace(str,"\n", "");
+            return StringUtils.replace(str,"\"", "\\\"");
+        }
+        return null;
     }
 
     /**

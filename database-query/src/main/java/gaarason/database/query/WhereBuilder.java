@@ -167,7 +167,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
 
     @Override
     public Builder<T, K> whereLikeIgnoreNull(String column, @Nullable Object value) {
-        if (ObjectUtils.isEmpty(value) || ObjectUtils.isEmpty(String.valueOf(value).replace("%", ""))) {
+        if (ObjectUtils.isEmpty(value) || ObjectUtils.isEmpty(StringUtils.replace(value, "%", ""))) {
             return this;
         }
         return whereIgnoreNull(column, "like", StringUtils.sqlPathLike(value));
@@ -193,7 +193,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
 
     @Override
     public Builder<T, K> whereNotLikeIgnoreNull(String column, @Nullable Object value) {
-        if (ObjectUtils.isEmpty(value) || ObjectUtils.isEmpty(String.valueOf(value).replace("%", ""))) {
+        if (ObjectUtils.isEmpty(value) || ObjectUtils.isEmpty(StringUtils.replace(value, "%", ""))) {
             return this;
         }
         return whereIgnoreNull(column, "not like", StringUtils.sqlPathLike(value));

@@ -228,12 +228,6 @@ public class Field extends JavaElement {
                 return "";
         }
     }
-//
-//    private String class2String(Class<?> clazz){
-//        String classStr = clazz.toString();
-//        return classStr.replace("class ", "").replace("$",".") + ".class";
-//
-//    }
 
     /**
      * 字段是否必填

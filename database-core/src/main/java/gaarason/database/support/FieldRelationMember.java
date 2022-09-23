@@ -92,7 +92,7 @@ public class FieldRelationMember extends Container.SimpleKeeper implements Seria
     @Nullable
     public Object fieldGet(Object obj) {
         try {
-            return getField().get(obj);
+            return field.get(obj);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessRuntimeException(e);
         }
@@ -106,7 +106,7 @@ public class FieldRelationMember extends Container.SimpleKeeper implements Seria
      */
     public void fieldSet(Object obj, @Nullable Object value) {
         try {
-            getField().set(obj, value);
+            field.set(obj, value);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessRuntimeException(e);
         }

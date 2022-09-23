@@ -7,11 +7,6 @@ public class NoLoggingImpl implements Log {
     private int errorCount;
     private int warnCount;
     private int debugCount;
-    private boolean debugEnable = false;
-
-    private boolean infoEnable = true;
-
-    private boolean warnEnable = true;
 
     private boolean errorEnable = true;
 
@@ -24,7 +19,7 @@ public class NoLoggingImpl implements Log {
     }
 
     public boolean isDebugEnabled() {
-        return debugEnable;
+        return false;
     }
 
     public void error(String s, Throwable e) {
@@ -82,7 +77,7 @@ public class NoLoggingImpl implements Log {
 
     @Override
     public boolean isInfoEnabled() {
-        return infoEnable;
+        return true;
     }
 
     @Override
@@ -92,7 +87,7 @@ public class NoLoggingImpl implements Log {
 
     @Override
     public boolean isWarnEnabled() {
-        return warnEnable;
+        return true;
     }
 
     public int getInfoCount() {

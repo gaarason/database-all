@@ -17,6 +17,7 @@ import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.SnowFlakeIdGenerator;
 import gaarason.database.util.ClassUtils;
 import gaarason.database.util.ConverterUtils;
+import gaarason.database.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
@@ -104,9 +105,8 @@ public class ContainerBootstrap extends ContainerProvider {
         // ID生成 UUID 36
         register(IdGenerator.UUID36.class, clazz -> () -> UUID.randomUUID().toString());
         // ID生成 UUID 32
-        register(IdGenerator.UUID32.class, clazz -> () -> UUID.randomUUID().toString().replace("-", ""));
+        register(IdGenerator.UUID32.class, clazz -> () -> StringUtils.replace(UUID.randomUUID(), "-", ""));
         // ID生成 Never
-        // todo check
         register(IdGenerator.Never.class, clazz -> () -> null);
         // 类型转化
         // todo better
@@ -174,7 +174,7 @@ public class ContainerBootstrap extends ContainerProvider {
      * 类型转化对象
      * @return ConversionConfig
      */
-    protected ConversionConfig initConversionConfig() {
+    protected static ConversionConfig initConversionConfig() {
         return new ConversionConfig() {
             @Nullable
             @Override

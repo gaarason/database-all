@@ -417,7 +417,7 @@ public interface Where<T, K> {
     Builder<T, K> whereNotIn(String column, GenerateSqlPartFunctionalInterface<T, K> closure);
 
     /**
-     * 列值在2值之间
+     * 列值在两值之间
      * @param column 列名
      * @param min 值1
      * @param max 值2
@@ -426,7 +426,7 @@ public interface Where<T, K> {
     Builder<T, K> whereBetween(String column, Object min, Object max);
 
     /**
-     * 列值在2值之间
+     * 列值在两值之间
      * @param column 列名
      * @param min 值1
      * @param max 值2
@@ -436,7 +436,7 @@ public interface Where<T, K> {
     Builder<T, K> whereBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters);
 
     /**
-     * 列值在2值之间
+     * 列值在两值之间
      * @param column 列名
      * @param min 值1
      * @param max 值2
@@ -445,7 +445,7 @@ public interface Where<T, K> {
     Builder<T, K> whereBetweenRaw(String column, Object min, Object max);
 
     /**
-     * 列值不在2值之间
+     * 列值不在两值之间
      * @param column 列名
      * @param min 值1
      * @param max 值2
@@ -454,7 +454,7 @@ public interface Where<T, K> {
     Builder<T, K> whereNotBetween(String column, Object min, Object max);
 
     /**
-     * 列值不在2值之间
+     * 列值不在两值之间
      * @param column 列名
      * @param min 值1
      * @param max 值2
@@ -464,7 +464,7 @@ public interface Where<T, K> {
     Builder<T, K> whereNotBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters);
 
     /**
-     * 列值不在2值之间
+     * 列值不在两值之间
      * @param column 列名
      * @param min 值1
      * @param max 值2

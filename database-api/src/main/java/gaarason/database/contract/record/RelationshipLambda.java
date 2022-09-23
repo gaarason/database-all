@@ -32,7 +32,7 @@ public interface RelationshipLambda<T, K>
      * @return 关联的Model的查询构造器
      */
     default Record<T, K> with(ColumnFunctionalInterface<T> fieldName,
-        GenerateSqlPartFunctionalInterface<T, K> builderClosure) {
+        GenerateSqlPartFunctionalInterface<?, ?> builderClosure) {
         return with(lambda2FieldName(fieldName), builderClosure);
 
     }
@@ -45,7 +45,7 @@ public interface RelationshipLambda<T, K>
      * @return 关联的Model的查询构造器
      */
     default Record<T, K> with(ColumnFunctionalInterface<T> fieldName,
-        GenerateSqlPartFunctionalInterface<T, K> builderClosure,
+        GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
         RelationshipRecordWithFunctionalInterface recordClosure) {
         return with(lambda2FieldName(fieldName), builderClosure, recordClosure);
     }

@@ -5,6 +5,7 @@ import gaarason.database.lang.Nullable;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A memory-sensitive implementation of the <code>Map</code> interface.
@@ -94,7 +95,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
      * factor is less than zero
      */
     public SoftCache(int initialCapacity, float loadFactor) {
-        hash = new HashMap<>(initialCapacity, loadFactor);
+        hash = new ConcurrentHashMap<>(initialCapacity, loadFactor);
     }
 
     /**
@@ -105,7 +106,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
      * or equal to zero
      */
     public SoftCache(int initialCapacity) {
-        hash = new HashMap<>(initialCapacity);
+        hash = new ConcurrentHashMap<>(initialCapacity);
     }
 
     /**
@@ -113,7 +114,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
      * capacity and the default load factor.
      */
     public SoftCache() {
-        hash = new HashMap<>();
+        hash = new ConcurrentHashMap<>();
     }
 
     /* -- Simple queries -- */
@@ -166,7 +167,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
      * @param value The value to which the given <code>key</code> is to be
      * mapped
      * @return The previous value to which this key was mapped, or
-     * <code>null</code> if if there was no mapping for the key
+     * <code>null</code> if is there was no mapping for the key
      */
     public V put(K key, V value) {
         processQueue();
@@ -334,7 +335,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
                     while (hashIterator.hasNext()) {
                         Map.Entry<K, ValueCell<V>> ent = hashIterator.next();
                         ValueCell<V> vc = ent.getValue();
-                        V v = null;
+                        V v;
                         // (vc != null) && ((v = vc.get()) == null)
                         if ((v = vc.get()) == null) {
                             /* Value has been flushed by GC */

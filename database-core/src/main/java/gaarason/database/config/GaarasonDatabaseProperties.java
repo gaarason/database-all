@@ -39,10 +39,10 @@ public class GaarasonDatabaseProperties implements Serializable {
 
         // 雪花算法
         GaarasonDatabaseProperties gaarasonDatabaseProperties = new GaarasonDatabaseProperties();
-        gaarasonDatabaseProperties.getSnowFlake()
+        gaarasonDatabaseProperties.snowFlake
             .setDataId(
                 Integer.parseInt(System.getProperty(GaarasonDatabaseProperties.PREFIX + ".snow-flake.worker-id", "0")));
-        gaarasonDatabaseProperties.getSnowFlake()
+        gaarasonDatabaseProperties.snowFlake
             .setDataId(
                 Integer.parseInt(System.getProperty(GaarasonDatabaseProperties.PREFIX + ".snow-flake.data-id", "0")));
 
@@ -50,26 +50,26 @@ public class GaarasonDatabaseProperties implements Serializable {
         String packages = System.getProperty(GaarasonDatabaseProperties.PREFIX + ".scan.packages");
 
         if (packages != null) {
-            gaarasonDatabaseProperties.getScan().getPackages().addAll(Arrays.asList(packages.split(symbol)));
+            gaarasonDatabaseProperties.scan.getPackages().addAll(Arrays.asList(packages.split(symbol)));
         }
         String filterExcludePackages = System.getProperty(
             GaarasonDatabaseProperties.PREFIX + ".scan.filter-exclude-packages");
         if (filterExcludePackages != null) {
-            gaarasonDatabaseProperties.getScan()
+            gaarasonDatabaseProperties.scan
                 .getFilterExcludePackages()
                 .addAll(Arrays.asList(filterExcludePackages.split(symbol)));
         }
         String filterIncludePatterns = System.getProperty(
             GaarasonDatabaseProperties.PREFIX + ".scan.filter-include-patterns");
         if (filterIncludePatterns != null) {
-            gaarasonDatabaseProperties.getScan()
+            gaarasonDatabaseProperties.scan
                 .getFilterIncludePatterns()
                 .addAll(Arrays.asList(filterIncludePatterns.split(symbol)));
         }
         String filterExcludePatterns = System.getProperty(
             GaarasonDatabaseProperties.PREFIX + ".scan.filter-exclude-patterns");
         if (filterExcludePatterns != null) {
-            gaarasonDatabaseProperties.getScan()
+            gaarasonDatabaseProperties.scan
                 .getFilterExcludePatterns()
                 .addAll(Arrays.asList(filterExcludePatterns.split(symbol)));
         }
@@ -105,10 +105,10 @@ public class GaarasonDatabaseProperties implements Serializable {
      * @return GaarasonDatabaseProperties
      */
     public GaarasonDatabaseProperties fillAndVerify() {
-        if (!ObjectUtils.isEmpty(this.getScan().getPackages())) {
+        if (!ObjectUtils.isEmpty(this.scan.getPackages())) {
             // 固定扫描 gaarason.database
-            if (!this.getScan().getPackages().contains(GaarasonDatabaseProperties.PREFIX)) {
-                this.getScan().getPackages().add(GaarasonDatabaseProperties.PREFIX);
+            if (!this.scan.getPackages().contains(GaarasonDatabaseProperties.PREFIX)) {
+                this.scan.getPackages().add(GaarasonDatabaseProperties.PREFIX);
             }
         } else {
             LOGGER.warn("You should configure for the package scan, as like : " + GaarasonDatabaseProperties.PREFIX +
@@ -122,13 +122,12 @@ public class GaarasonDatabaseProperties implements Serializable {
      * 将自身合并其他来源的Scan配置
      * @param scan 来自包扫描注解的配置
      * @return GaarasonDatabaseProperties
-     * @see gaarason.database.spring.boot.starter.annotation.GaarasonDatabaseScan
      */
     public GaarasonDatabaseProperties mergeScan(GaarasonDatabaseProperties.Scan scan) {
-        this.getScan().getPackages().addAll(scan.getPackages());
-        this.getScan().getFilterExcludePackages().addAll(scan.getFilterExcludePackages());
-        this.getScan().getFilterIncludePatterns().addAll(scan.getFilterIncludePatterns());
-        this.getScan().getFilterExcludePatterns().addAll(scan.getFilterExcludePatterns());
+        this.scan.getPackages().addAll(scan.getPackages());
+        this.scan.getFilterExcludePackages().addAll(scan.getFilterExcludePackages());
+        this.scan.getFilterIncludePatterns().addAll(scan.getFilterIncludePatterns());
+        this.scan.getFilterExcludePatterns().addAll(scan.getFilterExcludePatterns());
         return this;
     }
 
@@ -138,8 +137,8 @@ public class GaarasonDatabaseProperties implements Serializable {
      * @return GaarasonDatabaseProperties
      */
     public GaarasonDatabaseProperties fillPackageWhenIsEmpty(List<String> defaultPackages) {
-        if (this.getScan().getPackages().isEmpty()) {
-            this.getScan().getPackages().addAll(defaultPackages);
+        if (this.scan.getPackages().isEmpty()) {
+            this.scan.getPackages().addAll(defaultPackages);
         }
         return this;
     }

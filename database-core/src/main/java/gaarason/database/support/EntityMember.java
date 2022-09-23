@@ -158,14 +158,14 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
         Map<String, W> columnValueMap = new LinkedHashMap<>();
 
         // 属性信息集合 (ColumnName 为key)
-        Map<String, FieldMember> columnFieldMap = getColumnFieldMap();
+        Map<String, FieldMember> columnFieldMap = this.columnFieldMap;
         for (Map.Entry<String, FieldMember> entry : columnFieldMap.entrySet()) {
             // 属性信息
             FieldMember fieldMember = entry.getValue();
             // 值
             Object value = fieldMember.fieldGet(entity, type);
             // 有效则加入 结果集
-            if (fieldMember.effective(value)) {
+            if (FieldMember.effective(value)) {
                 columnValueMap.put(entry.getKey(), function.apply(fieldMember, value));
             }
         }
@@ -186,7 +186,7 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
         }
 
         // 属性信息集合 (ColumnName 为key)
-        Map<String, FieldMember> columnFieldMap = getColumnFieldMap();
+        Map<String, FieldMember> columnFieldMap = this.columnFieldMap;
         for (Map.Entry<String, FieldMember> entry : columnFieldMap.entrySet()) {
             // 属性信息
             FieldMember fieldMember = entry.getValue();

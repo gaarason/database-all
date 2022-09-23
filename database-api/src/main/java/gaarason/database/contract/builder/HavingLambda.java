@@ -311,7 +311,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
     }
 
     /**
-     * 列值在2值之间
+     * 列值在两值之间
      * @param column 列名表达式
      * @param min 值1
      * @param max 值2
@@ -322,7 +322,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
     }
 
     /**
-     * 列值不在2值之间
+     * 列值不在两值之间
      * @param column 列名表达式
      * @param min 值1
      * @param max 值2

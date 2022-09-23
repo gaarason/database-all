@@ -400,7 +400,7 @@ public class TestModel extends Model<TestModel.Inner, Integer> {
 
     protected final static GaarasonDataSource gaarasonDataSource;
 
-    /**
+    /*
      * `配置`->`DataSource`->`GaarasonDataSource`
      * 一般定义到父类 或者 一个统一的外部即可
      */

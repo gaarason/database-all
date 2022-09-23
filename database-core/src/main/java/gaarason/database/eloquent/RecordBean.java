@@ -71,7 +71,7 @@ public class RecordBean<T, K> implements Record<T, K> {
     /**
      * 关联关系(Builder)
      */
-    protected HashMap<String, GenerateSqlPartFunctionalInterface<T, K>> relationBuilderMap = new HashMap<>();
+    protected HashMap<String, GenerateSqlPartFunctionalInterface<?, ?>> relationBuilderMap = new HashMap<>();
 
     /**
      * 关联关系(Record)
@@ -169,12 +169,12 @@ public class RecordBean<T, K> implements Record<T, K> {
     }
 
     @Override
-    public Map<String, GenerateSqlPartFunctionalInterface<T, K>> getRelationBuilderMap() {
+    public Map<String, GenerateSqlPartFunctionalInterface<?, ?>> getRelationBuilderMap() {
         return relationBuilderMap;
     }
 
     @Override
-    public void setRelationBuilderMap(HashMap<String, GenerateSqlPartFunctionalInterface<T, K>> relationBuilderMap) {
+    public void setRelationBuilderMap(HashMap<String, GenerateSqlPartFunctionalInterface<?, ?>> relationBuilderMap) {
         this.relationBuilderMap = relationBuilderMap;
     }
 
@@ -280,12 +280,12 @@ public class RecordBean<T, K> implements Record<T, K> {
     }
 
     @Override
-    public Record<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<T, K> builderClosure) {
+    public Record<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure) {
         return with(fieldName, builderClosure, theRecord -> theRecord);
     }
 
     @Override
-    public Record<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<T, K> builderClosure,
+    public Record<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
         RelationshipRecordWithFunctionalInterface recordClosure) {
         // 效验参数
         if (!ObjectUtils.checkProperties(entityClass, fieldName)) {
@@ -581,7 +581,7 @@ public class RecordBean<T, K> implements Record<T, K> {
         // 更新元数据
         selfUpdateMetadataMap(entity, insertType);
         // 更新相关对象
-        // 这步操作可以剔除无效的字段
+        // 这一步操作可以剔除无效的字段
         this.entity = toObjectWithoutRelationship();
     }
 

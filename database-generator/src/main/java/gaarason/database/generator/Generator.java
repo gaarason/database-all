@@ -283,8 +283,8 @@ public class Generator {
 
     /**
      * 获取值, 并转化为字符串 or Null
-     * @param fieldStringObjectMap
-     * @param keyName
+     * @param fieldStringObjectMap 键值map
+     * @param keyName 键
      * @return 字符串 or Null
      */
     @Nullable
@@ -671,7 +671,6 @@ public class Generator {
      * 查看表信息
      * @return 表信息
      */
-    @SuppressWarnings("unchecked")
     private Map<String, Object> showTableInfo(String tableName) {
         List<String> parameters = new ArrayList<>();
         parameters.add(DBName());
@@ -684,7 +683,6 @@ public class Generator {
      * 查看有哪些表
      * @return 表列表
      */
-    @SuppressWarnings("unchecked")
     private List<Map<String, Object>> showTables() {
         return getModel().nativeQueryList("show tables", new ArrayList<>()).toMapList();
     }
@@ -694,7 +692,6 @@ public class Generator {
      * @param tableName 表名
      * @return 字段信息
      */
-    @SuppressWarnings("unchecked")
     private List<Map<String, Object>> descTable(String tableName) {
         List<String> parameters = new ArrayList<>();
         parameters.add(DBName());
@@ -708,10 +705,9 @@ public class Generator {
     /**
      * @return 数据库库名
      */
-    @SuppressWarnings("unchecked")
     private String DBName() {
         String name = "";
-        Model model = getModel();
+        Model<?, ?> model = getModel();
         Map<String, Object> map = model.newQuery().queryOrFail("select database()", new ArrayList<>()).toMap();
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             if (entry.getValue() != null) {

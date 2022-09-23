@@ -168,7 +168,7 @@ public class GeneratorTests {
         }
     }
 
-    public class AutoGenerator extends Generator {
+    public static class AutoGenerator extends Generator {
         private Model toolModel;
         public AutoGenerator(Model model) {
             toolModel = model;
