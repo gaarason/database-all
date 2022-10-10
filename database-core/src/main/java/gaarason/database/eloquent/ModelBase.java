@@ -6,6 +6,8 @@ import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.ModelMember;
 
+import java.util.concurrent.ExecutorService;
+
 /**
  * 数据模型对象
  * @author xt
@@ -23,6 +25,10 @@ public abstract class ModelBase<T, K> implements Model<T, K> {
      * @return dataSource代理
      */
     public abstract GaarasonDataSource getGaarasonDataSource();
+
+    public ExecutorService getExecutorService(){
+        return getContainer().getBean(ExecutorService.class);
+    }
 
 
     @Override

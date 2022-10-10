@@ -23,6 +23,7 @@ import gaarason.database.util.StringUtils;
 import java.io.Serializable;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 数据模型对象
@@ -312,6 +313,64 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
         return ObjectUtils.isEmpty(list) ? null : list.get(0);
     }
 
+    @Override
+    public CompletableFuture<Record<T, K>> nativeQueryOrFailAsync(String sql, @Nullable Collection<?> parameters)
+        throws SQLRuntimeException, EntityNotFoundException {
+        CompletableFuture<Record<T, K>> recordCompletableFuture = nativeQueryAsync(sql, parameters);
+        return recordCompletableFuture.thenApply(record -> {
+            if (ObjectUtils.isEmpty(record)) {
+                throw new EntityNotFoundException(sql);
+            }
+            return record;
+        });
+    }
+
+    @Override
+    public CompletableFuture<Record<T, K>> nativeQueryAsync(String sql, @Nullable Collection<?> parameters)
+        throws SQLRuntimeException, EntityNotFoundException {
+        CompletableFuture<RecordList<T, K>> recordListCompletableFuture = nativeQueryListAsync(sql, parameters);
+        return recordListCompletableFuture.thenApply(records -> ObjectUtils.isEmpty(records) ? null : records.get(0));
+    }
+
+    @Override
+    public CompletableFuture<RecordList<T, K>> nativeQueryListAsync(String sql, @Nullable Collection<?> parameters)
+        throws SQLRuntimeException {
+        return doSomethingInConnectionAsync(preparedStatement -> {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            return RecordFactory.newRecordList(getSelf(), resultSet, sql);
+        }, sql, parameters, false);
+    }
+
+    @Override
+    public CompletableFuture<Integer> nativeExecuteAsync(String sql, @Nullable Collection<?> parameters)
+        throws SQLRuntimeException {
+        return doSomethingInConnectionAsync(PreparedStatement::executeUpdate, sql, parameters, true);
+    }
+
+    @Override
+    public CompletableFuture<List<K>> nativeExecuteGetIdsAsync(String sql, @Nullable Collection<?> parameters)
+        throws SQLRuntimeException {
+        return doSomethingInConnectionAsync(preparedStatement -> {
+            List<K> ids = new ArrayList<>();
+            // 执行
+            preparedStatement.executeUpdate();
+            // 执行成功
+            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+            while (generatedKeys.next()) {
+                ids.add(getGeneratedKeys(generatedKeys));
+            }
+            generatedKeys.close();
+            return ids;
+        }, sql, parameters, true);
+    }
+
+    @Override
+    public CompletableFuture<K> nativeExecuteGetIdAsync(String sql, @Nullable Collection<?> parameters)
+        throws SQLRuntimeException {
+        CompletableFuture<List<K>> listCompletableFuture = nativeExecuteGetIdsAsync(sql, parameters);
+        return listCompletableFuture.thenApply(res -> ObjectUtils.isEmpty(res) ? null : res.get(0));
+    }
+
     /**
      * 在连接中执行
      * @param closure 闭包
@@ -324,10 +383,12 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
      */
     protected <U> U doSomethingInConnection(ExecSqlWithinConnectionFunctionalInterface<U> closure, String sql,
         @Nullable Collection<?> parameters, boolean isWrite) throws SQLRuntimeException {
+
         Collection<?> localParameters = parameters == null ? Collections.EMPTY_LIST : parameters;
         GaarasonDataSource gaarasonDataSource = getGaarasonDataSource();
         // 获取连接
         Connection connection = gaarasonDataSource.getLocalConnection(isWrite);
+
         try {
             // 参数准备
             PreparedStatement preparedStatement = executeSql(connection, sql, localParameters);
@@ -342,6 +403,37 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
         } finally {
             // 关闭连接
             gaarasonDataSource.localConnectionClose(connection);
+        }
+    }
+
+    /**
+     * 在连接中异步执行
+     * @param closure 闭包
+     * @param sql 带占位符的sql
+     * @param parameters sql的参数
+     * @param isWrite 是否写(主)链接
+     * @param <U> 响应类型
+     * @return 响应
+     * @throws SQLRuntimeException 数据库异常
+     */
+    protected <U> CompletableFuture<U> doSomethingInConnectionAsync(
+        ExecSqlWithinConnectionFunctionalInterface<U> closure, String sql,
+        @Nullable Collection<?> parameters, boolean isWrite)
+        throws SQLRuntimeException {
+
+        GaarasonDataSource gaarasonDataSource = getGaarasonDataSource();
+
+        // 当前是否在事务中
+        boolean inTransaction = gaarasonDataSource.isLocalThreadInTransaction();
+
+        if (inTransaction) {
+            // 事务中使用同步执行
+            U value = doSomethingInConnection(closure, sql, parameters, isWrite);
+            return CompletableFuture.completedFuture(value);
+        } else {
+            // 非事务中使用异步执行
+            return CompletableFuture.supplyAsync(() -> doSomethingInConnection(closure, sql, parameters, isWrite),
+                getExecutorService());
         }
     }
 

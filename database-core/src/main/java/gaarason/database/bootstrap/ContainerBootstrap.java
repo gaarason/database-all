@@ -14,6 +14,7 @@ import gaarason.database.logging.LogFactory;
 import gaarason.database.provider.ContainerProvider;
 import gaarason.database.provider.ModelInstanceProvider;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.support.NamedThreadFactory;
 import gaarason.database.support.SnowFlakeIdGenerator;
 import gaarason.database.util.ClassUtils;
 import gaarason.database.util.ConverterUtils;
@@ -24,6 +25,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 初始化容器
@@ -127,6 +132,11 @@ public class ContainerBootstrap extends ContainerProvider {
         register(ModelInstanceProvider.class, clazz -> new ModelInstanceProvider(this));
         // Model信息大全
         register(ModelShadowProvider.class, clazz -> new ModelShadowProvider(this));
+        // 异步线程池
+        register(ExecutorService.class, clazz -> new ThreadPoolExecutor(properties.getAsyncPool().getCorePoolSize(),
+            properties.getAsyncPool().getMaximumPoolSize(), properties.getAsyncPool().getKeepAliveTime(),
+            TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(properties.getAsyncPool().getWorkQueueSize()),
+            new NamedThreadFactory("gaarason-async")));
         return this;
     }
 

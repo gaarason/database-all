@@ -18,6 +18,8 @@ import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.ExceptionUtils;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * 基础查询构造器(sql生成器)
  * @param <T>
@@ -193,6 +195,11 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
     }
 
     @Override
+    public <V> CompletableFuture<V> transactionAsync(TransactionFunctionalInterface<V> closure) {
+        return transactionAsync(closure, FinalVariable.DEFAULT_CAUSED_BY_DEADLOCK_RETRY_COUNT);
+    }
+
+    @Override
     public <V> V transaction(TransactionFunctionalInterface<V> closure, int maxAttempts) {
         for (int currentAttempt = 0; currentAttempt <= maxAttempts; currentAttempt++) {
             begin();
@@ -211,8 +218,18 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
     }
 
     @Override
+    public <V> CompletableFuture<V> transactionAsync(TransactionFunctionalInterface<V> closure, int maxAttempts) {
+        return CompletableFuture.supplyAsync(() -> transaction(closure, maxAttempts), model.getExecutorService());
+    }
+
+    @Override
     public void transaction(Runnable closure) {
         transaction(closure, FinalVariable.DEFAULT_CAUSED_BY_DEADLOCK_RETRY_COUNT);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> transactionAsync(Runnable closure) {
+        return transactionAsync(closure, FinalVariable.DEFAULT_CAUSED_BY_DEADLOCK_RETRY_COUNT);
     }
 
     @Override
@@ -233,6 +250,13 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
         throw new AbnormalParameterException("The max attempts should not be less than 0.");
     }
 
+    @Override
+    public CompletableFuture<Boolean> transactionAsync(Runnable closure, int maxAttempts) {
+        return CompletableFuture.supplyAsync(() -> {
+            transaction(closure, maxAttempts);
+            return true;
+        }, model.getExecutorService());
+    }
 
     @Override
     @Nullable

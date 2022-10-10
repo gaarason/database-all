@@ -29,6 +29,11 @@ public class GaarasonDatabaseProperties implements Serializable {
     protected SnowFlake snowFlake = new SnowFlake();
 
     /**
+     * 异步线程池
+     */
+    protected AsyncPool asyncPool = new AsyncPool();
+
+    /**
      * 从 SystemProperties 中创建
      * 对于列表类型的数据,使用,做区分 eg: gaarason.database.scan.packages=gaarason,com.github.gaarason
      * @return GaarasonDatabaseProperties
@@ -91,6 +96,14 @@ public class GaarasonDatabaseProperties implements Serializable {
 
     public void setSnowFlake(SnowFlake snowFlake) {
         this.snowFlake = snowFlake;
+    }
+
+    public AsyncPool getAsyncPool() {
+        return asyncPool;
+    }
+
+    public void setAsyncPool(AsyncPool asyncPool) {
+        this.asyncPool = asyncPool;
     }
 
     @Override
@@ -246,6 +259,66 @@ public class GaarasonDatabaseProperties implements Serializable {
             return "Scan{" + "packages=" + packages + ", filterExcludePackages=" + filterExcludePackages +
                 ", filterIncludePatterns=" + filterIncludePatterns + ", filterExcludePatterns=" +
                 filterExcludePatterns + '}';
+        }
+    }
+
+    /**
+     * 异步线程池配置
+     */
+    public static class AsyncPool implements Serializable{
+
+        private static final long serialVersionUID = 1L;
+
+        /**
+         * 核心线程数
+         */
+        protected Integer corePoolSize = 10;
+
+        /**
+         * 最大线程数
+         */
+        protected Integer maximumPoolSize = 200;
+
+        /**
+         * 线程存活时间 ms
+         */
+        protected Long keepAliveTime = 60000L;
+
+        /**
+         * 阻塞队列大小
+         */
+        protected Integer workQueueSize = 1;
+
+        public Integer getCorePoolSize() {
+            return corePoolSize;
+        }
+
+        public void setCorePoolSize(Integer corePoolSize) {
+            this.corePoolSize = corePoolSize;
+        }
+
+        public Integer getMaximumPoolSize() {
+            return maximumPoolSize;
+        }
+
+        public void setMaximumPoolSize(Integer maximumPoolSize) {
+            this.maximumPoolSize = maximumPoolSize;
+        }
+
+        public Long getKeepAliveTime() {
+            return keepAliveTime;
+        }
+
+        public void setKeepAliveTime(Long keepAliveTime) {
+            this.keepAliveTime = keepAliveTime;
+        }
+
+        public Integer getWorkQueueSize() {
+            return workQueueSize;
+        }
+
+        public void setWorkQueueSize(Integer workQueueSize) {
+            this.workQueueSize = workQueueSize;
         }
     }
 

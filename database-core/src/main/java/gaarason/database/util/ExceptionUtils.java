@@ -1,5 +1,7 @@
 package gaarason.database.util;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  * 异常
  * @author xt
@@ -15,7 +17,8 @@ public class ExceptionUtils {
      * @return 是否为数据库死锁导致的异常
      */
     public static boolean causedByDeadlock(Throwable e) {
-        String message = e.getMessage();
+        // 支持下异步情况
+        String message = e instanceof ExecutionException ? e.getCause().getMessage() : e.getMessage();
         if (message == null) {
             return false;
         }
