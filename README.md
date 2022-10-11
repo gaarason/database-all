@@ -58,6 +58,7 @@ List<Student> Students = studentModel.newQuery().whereIn("id", "1","2","3").get(
 
 // 增加关联 给id为8的学生增加3名老师(id分别为1,2,3)
 studentModel.findOrFail(8).bind("teachers").attach( teacherModel.findMany(1,2,3) );
+studentModel.findOrFail(8).bind("teachers").attach( Arrays.asList(1,2,3) );
 ```
 
 ## spring boot 快速开始
