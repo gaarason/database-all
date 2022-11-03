@@ -66,7 +66,7 @@ abstract public class AsyncTests extends BaseTests {
             "select sleep(" + second + ")",
             null);
         long t2 = System.currentTimeMillis();
-        Assert.assertThrows(TimeoutException.class,() -> {
+        Assert.assertThrows(TimeoutException.class, () -> {
             future.get(timeout, TimeUnit.MILLISECONDS);
         });
 
@@ -201,5 +201,33 @@ abstract public class AsyncTests extends BaseTests {
         Assert.assertTrue(t4 - t3 > second * 1000 * 3);
         Assert.assertTrue(t5 - t4 < 100);
         System.out.println("ok");
+    }
+
+    @Test
+    public void 异步事务() throws ExecutionException, InterruptedException {
+
+        String name0 = studentModel.newQuery().findOrFail(1).toObject().getName();
+
+        String newName = "new name";
+
+        Assert.assertNotEquals(name0, newName);
+
+        CompletableFuture<Boolean> future = studentModel.newQuery()
+            .transactionAsync(() -> {
+                Record<StudentModel.Entity, Integer> record = studentModel.newQuery().findOrFail(1);
+                StudentModel.Entity student = record.getEntity();
+                student.setName(newName);
+                return record.save();
+            });
+
+        String name1 = studentModel.newQuery().findOrFail(1).toObject().getName();
+
+        future.get();
+
+        String name2 = studentModel.newQuery().findOrFail(1).toObject().getName();
+
+        Assert.assertEquals(name0, name1);
+
+        Assert.assertEquals(newName, name2);
     }
 }

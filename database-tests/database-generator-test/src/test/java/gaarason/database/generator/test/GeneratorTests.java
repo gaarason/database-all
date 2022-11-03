@@ -33,7 +33,7 @@ public class GeneratorTests {
         String password = "root";
         Generator generator = new Generator(jdbcUrl, username, password);
 
-        generator.setStyle(Style.NORMAL);
+        generator.setStyle(Style.ENTITY);
         // set
         generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
 //        generator.setOutputDir("./src/test/java1/");     // 所有生成文件的路径
