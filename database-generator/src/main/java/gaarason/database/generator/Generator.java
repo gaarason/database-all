@@ -460,7 +460,7 @@ public class Generator {
 
         parameterMap.put("${model_name}", modelName);
         parameterMap.put("${is_spring_boot}",
-            isSpringBoot ? element.anno2Name("import org.springframework.stereotype.Repository") : "");
+            isSpringBoot ? element.anno2Name("org.springframework.stereotype.Repository") : "");
 
         parameterMap.put("${imports}", element.printImports());
 

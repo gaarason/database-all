@@ -14,6 +14,10 @@ Eloquent ORM for Java
         * [原生查询](#原生查询)
         * [原生更新](#原生更新)
         * [原生新增](#原生新增)
+    * [异步原生语句](#异步原生语句)
+        * [原生异步查询](#原生异步查询)
+        * [原生异步更新](#原生异步更新)
+        * [原生异步新增](#原生异步新增)
     * [获取](#获取)
         * [分块处理](#分块处理)
     * [插入](#插入)
@@ -53,6 +57,7 @@ Eloquent ORM for Java
     * [事务](#事务)
         * [手动事物](#手动事物)
         * [闭包事务](#闭包事务)
+        * [闭包异步事务](#闭包异步事务)
         * [共享锁与排他锁](#共享锁与排他锁)
     * [分页](#分页)
         * [快速分页](#快速分页)
@@ -135,6 +140,52 @@ Object id = studentModel.newQuery()
 // 获取自增id列表
 List<Object> ids = studentModel.newQuery()
     .executeGetIds("insert into `student`(`id`,`name`,`age`,`sex`) values( ? , ? , ? , ? )", "134","testNAme","11","1");
+```
+
+## 异步原生语句
+
+- 异步执行执行SQL语句, 通过`gaarason.database.async-pool.*`配置异步线程池大小
+- 如果当前线程已在事物中, 那么为了保证事务特性的准确, 将会自动降级为同步执行
+- 如果想要异步执行事务, 需要使用"异步事务 `transactionAsync`"
+
+### 原生异步查询
+
+#### nativeQueryListAsync nativeQueryAsync nativeQueryOrFailAsync
+
+```java
+// 查询单条
+CompletableFuture<Record<StudentModel.Entity, Integer>> future = studentModel.nativeQueryAsync(
+    "select sleep(" + second + ")", null);
+
+// 堵塞获取结果
+future.get();
+```
+
+### 原生异步更新
+
+#### nativeExecuteAsync
+
+```java
+// 执行
+CompletableFuture<Integer> future = studentModel.nativeExecuteAsync(
+    "update student set age=1 where id=1", null);
+
+// 堵塞获取结果
+future.get();
+```
+
+
+### 原生异步新增
+
+#### nativeExecuteGetIdsAsync nativeExecuteGetIdAsync
+
+```java
+// 执行
+CompletableFuture<Integer> future = studentModel.nativeExecuteGetIdAsync(
+    "insert student name values (xiaoming)", null);
+
+// 堵塞获取结果
+future.get();
 ```
 
 ## 获取
@@ -1049,7 +1100,7 @@ studentModel.newQuery().rollBack();
 studentModel.newQuery().commit();
 ```
 
-### 闭包事物
+### 闭包事务
 
 - 异常自动回滚, 原样向上抛出
 - 语义表达性更直观
@@ -1077,6 +1128,24 @@ boolean success = studentModel.newQuery().transaction(() -> {
     
     return true;
 }, 3);
+```
+### 闭包异步事务
+
+事务中的语句将和事务一起异步执行
+
+#### transactionAsync
+
+```java
+// 事物中执行
+CompletableFuture<Boolean> future = studentModel.newQuery().transactionAsync(() -> {
+    Record<StudentModel.Entity, Integer> record = studentModel.newQuery().findOrFail(1);
+    StudentModel.Entity student = record.getEntity();
+    student.setName(newName);
+    return record.save();
+});
+
+// 堵塞获取结果
+future.get();
 ```
 
 ### 共享锁与排他锁

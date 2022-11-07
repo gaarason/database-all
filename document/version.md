@@ -25,6 +25,12 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 4.4.0
+
+- 在`Model`中, 增加原生异步执行`nativeQueryListAsync`,`nativeQueryAsync`,`nativeQueryOrFailAsync`,`nativeExecuteAsync`,`nativeExecuteGetIdsAsync`,`nativeExecuteGetIdsAsync`
+- 在`Builder`中, 增加异步闭包事务 `transactionAsync`
+- 修复`Generator`中, 当对于spring环境下生成的代码有误的问题
+
 ### 4.3.1
 
 - 代码优化
@@ -46,8 +52,8 @@ Eloquent ORM for Java
 - 在`Record`中, 增加 `saveByPrimaryKey()`, 更改`fillEntity()`返回值
 - 查询结果集(`RecordList`) 现在是`LinkedList`的子类, 而非之前的的`ArrayList`, 同时更改了`pop()`/`push(element)`的行为, 并移除了`prepend(element)`
 
-- 在Builder中, 增加 `select(anyEntity)`, `select(anyEntityClass)`更改`where(entity)`为`where(anyEntity)`,`having(entity)`为`having(anyEntity)`返回值
-- 在Builder中, 增加 `whereFind(map)`, `whereNotFind(map)`,`whereNotLike(column, value)`,`whereNotLike(anyEntity)`,`whereNotLike(map)`,`whereMayNotLike(column, value)`,`whereMayNotLikeIgnoreNull(column, value)`,`whereMayNotLike(anyEntity)`,
+- 在`Builder`中, 增加 `select(anyEntity)`, `select(anyEntityClass)`更改`where(entity)`为`where(anyEntity)`,`having(entity)`为`having(anyEntity)`返回值
+- 在`Builder`中, 增加 `whereFind(map)`, `whereNotFind(map)`,`whereNotLike(column, value)`,`whereNotLike(anyEntity)`,`whereNotLike(map)`,`whereMayNotLike(column, value)`,`whereMayNotLikeIgnoreNull(column, value)`,`whereMayNotLike(anyEntity)`,
   `whereMayNotLike(map)`,`whereMayNotLikeIgnoreNull(map)`,`whereBetweenRaw()`,`whereNotBetweenRaw()` 以及having与其对应的方法
 - 在`Builder`中, 更改`whereKeywordsIgnoreNull()`的行为, 重命名`whereLike()`为 `whereLikeIgnoreNull()`, 移除 更改`whereKeywords()`
 - 在`@Column`中, 更改`strategy`/`insertStrategy`/`updateStrategy`/`conditionStrategy`的类型为接口类型(`FieldStrategy`)便于业务自定义实现
