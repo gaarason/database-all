@@ -20,6 +20,8 @@ Eloquent ORM for Java
             * [类型转化](#类型转化)
                 * [FieldConversion.Default](#FieldConversion.Default)
                 * [FieldConversion.Json](#FieldConversion.Json)
+                * [FieldConversion.EnumInteger](#FieldConversion.EnumInteger)
+                * [FieldConversion.EnumString](#FieldConversion.EnumString)
             * [执行顺序](#执行顺序)
                 * [实体到数据库](#实体到数据库)
                 * [数据库到实体](#数据库到实体)
@@ -303,7 +305,18 @@ Assert.assertEquals(AnnotationTestModel.Sex.WOMAN, resultEntity.getSex());
 - conversion() 可选值为 FieldConversion.Json.class, 以json规范进行序列化与反序列化, 数据的字段应该为合法的json字符串
 - 实现依赖于`jackson`, 需要自行引入 `com.fasterxml.jackson.core: jackson-databind` 以及 `com.fasterxml.jackson.datatype: jackson-datatype-jsr310`依赖项
 - 因为`json规范`的兼容性细节较多, 所以业务上也可以参考`JsonConversion`自行实现, 与使用
+- 数据库列一般使用 varchar
 
+##### FieldConversion.EnumInteger
+- conversion() 可选值为 FieldConversion.EnumInteger.class, 以枚举类型的`自然次序`进行序列化与反序列化
+- 枚举类型的自然次序从 0 开始
+- 数据库列一般使用 int
+
+##### FieldConversion.EnumString
+- conversion() 可选值为 FieldConversion.EnumString.class, 以枚举类型的`名称`进行序列化与反序列化
+- 实现依赖于`jackson`, 需要自行引入 `com.fasterxml.jackson.core: jackson-databind` 以及 `com.fasterxml.jackson.datatype: jackson-datatype-jsr310`依赖项
+- 因为`json规范`的兼容性细节较多, 所以业务上也可以参考`JsonConversion`自行实现, 与使用
+- 数据库列一般使用 varchar
 
 #### 执行顺序
 ##### 实体到数据库

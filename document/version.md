@@ -25,6 +25,11 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 4.5.0
+- 在`@Column`中, 增加 `conversion` 接口的泛型约束, 并增加通用枚举处理`FieldConversion.EnumInteger`/`FieldConversion.EnumString`
+- 在`Builder`中, 修改使用`entity`作为参数的操作, 在保持相同语义(获取/填充/序列化)的前提下, 不再修改(回填)传入的`entity`
+- 在`Record`中, 保持使用`ORM`风格的操作依然对所持有的`entity`进行同步修改(回填)
+
 ### 4.4.0
 
 - 在`Model`中, 增加原生异步执行`nativeQueryListAsync`,`nativeQueryAsync`,`nativeQueryOrFailAsync`,`nativeExecuteAsync`,`nativeExecuteGetIdsAsync`,`nativeExecuteGetIdsAsync`
