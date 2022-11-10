@@ -112,10 +112,10 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
         if (!objects.isEmpty()) {
             // 实体信息
-            EntityMember<?> entityMember = modelShadowProvider.get(targetRecordList.get(0).getModel())
+            EntityMember<?, ?> entityMember = modelShadowProvider.get(targetRecordList.get(0).getModel())
                 .getEntityMember();
             // 字段信息
-            FieldMember fieldMember = entityMember.getFieldMemberByColumnName(targetModelLocalKey);
+            FieldMember<?> fieldMember = entityMember.getFieldMemberByColumnName(targetModelLocalKey);
 
             for (Object obj : objects) {
                 // 目标值

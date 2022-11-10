@@ -31,10 +31,12 @@ abstract public class IncrementTypeTests extends BaseTests {
     protected GaarasonDataSource getGaarasonDataSource() {
         return peopleModel.getGaarasonDataSource();
     }
+
     @Override
     protected List<TABLE> getInitTables() {
         return Arrays.asList(TABLE.people);
     }
+
     @Data
     @Table(name = "people")
     public static class PeopleSnowFlakesID implements Serializable {
@@ -204,11 +206,13 @@ abstract public class IncrementTypeTests extends BaseTests {
         entity.setCreatedAt(new Date(1312312312));
         entity.setUpdatedAt(new Date(1312312312));
 
-        peopleModel.newQuery().insert(entity);
+        Long id = peopleModel.newQuery().insertGetId(entity);
         System.out.println(entity);
-        Assert.assertTrue(entity.getId() - 170936861320019968L > 0);
+        Assert.assertTrue(id - 170936861320019968L > 0);
+        // 不再回填
+        Assert.assertNull(entity.getId());
 
-        PeopleModel.Entity entity1 = peopleModel.findOrFail(entity.getId()).toObject();
+        PeopleModel.Entity entity1 = peopleModel.findOrFail(id).toObject();
         System.out.println(entity1);
         Assert.assertNotNull(entity1);
         Assert.assertTrue(entity1.getId() - 170936861320019968L > 0);
@@ -227,10 +231,13 @@ abstract public class IncrementTypeTests extends BaseTests {
             entity.setUpdatedAt(new Date(1312312312));
             objects.add(entity);
         }
-        peopleModel.newQuery().insert(objects);
+        List<Long> ids = peopleModel.newQuery().insertGetIds(objects);
         System.out.println(objects);
+        Assert.assertEquals(10, ids.size());
+        Assert.assertEquals(10, ids.stream().distinct().count());
         for (PeopleSnowFlakesID object : objects) {
-            Assert.assertNotNull(object.getId());
+            // 不再回填
+            Assert.assertNull(object.getId());
         }
     }
 

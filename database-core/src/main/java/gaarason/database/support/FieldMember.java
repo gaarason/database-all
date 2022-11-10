@@ -3,6 +3,7 @@ package gaarason.database.support;
 import gaarason.database.annotation.Column;
 import gaarason.database.annotation.Primary;
 import gaarason.database.appointment.EntityUseType;
+import gaarason.database.appointment.JDBCValueWrapper;
 import gaarason.database.appointment.ValueWrapper;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.support.FieldConversion;
@@ -18,11 +19,13 @@ import gaarason.database.util.StringUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * 数据库字段信息
  */
-public class FieldMember extends Container.SimpleKeeper implements Serializable {
+public class FieldMember<F> extends Container.SimpleKeeper implements Serializable {
 
     /**
      * 注解默认值, 所需字段媒介
@@ -30,11 +33,6 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
     @Primary(increment = false, idGenerator = IdGenerator.Never.class)
     @Column(fill = FieldFill.NotFill.class)
     private static final Object DEFAULT_COLUMN_ANNOTATION_FIELD = new Object();
-
-    /**
-     * 字段无效标记响应
-     */
-    private static final Object FIELD_INVALID_EXCEPTION = new Object();
 
     /**
      * Column 注解缺省值
@@ -72,7 +70,7 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
      * 默认值
      */
     @Nullable
-    private final Object defaultValue;
+    private final F defaultValue;
 
     /**
      * 数据库主键信息
@@ -114,7 +112,7 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
     /**
      * 序列化与反序列化
      */
-    private final FieldConversion fieldConversion;
+    private final FieldConversion<?, ?> fieldConversion;
 
     public FieldMember(Container container, Field field) {
         super(container);
@@ -126,7 +124,9 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
         this.columnName = ObjectUtils.isEmpty(column.name()) ? StringUtils.humpToLine(field.getName()) : column.name();
         this.idGenerator = dealIdGenerator();
         // todo 应该优先使用数据库默认值 DatabaseShadowProvider , 当默认值不存在时, 再才使用如下方法
-        this.defaultValue = getContainer().getBean(ConversionConfig.class).getDefaultValueByJavaType(field.getType());
+        Object defaultValueByJavaType = getContainer().getBean(ConversionConfig.class)
+            .getDefaultValueByJavaType(field.getType());
+        this.defaultValue = defaultValueByJavaType == null ? null : ObjectUtils.typeCast(defaultValueByJavaType);
 
         this.fieldFill = container.getBean(column.fill());
 
@@ -148,11 +148,15 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
      * @return 填充的值
      */
     @Nullable
-    public Object fill(Object entity, Field field, @Nullable Object originalValue, EntityUseType type) {
+    public F fill(Object entity, Field field, @Nullable F originalValue, EntityUseType type) {
         switch (type) {
             case INSERT:
                 if (originalValue == null) {
-                    originalValue = idGenerator.nextId();
+                    /*
+                     * 非 @Primary 修饰的字段, 此值等于 null
+                     * 如果类型不一致, 就直接异常即可
+                     */
+                    originalValue = ObjectUtils.typeCastNullable(idGenerator.nextId());
                 }
                 return fieldFill.inserting(entity, field, originalValue);
             case UPDATE:
@@ -190,21 +194,12 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
     }
 
     /**
-     * 根据结果类型判断是否有效
-     * @param originalValue 原始值
-     * @return 是否有效
-     */
-    public static boolean effective(@Nullable Object originalValue) {
-        return !FIELD_INVALID_EXCEPTION.equals(originalValue);
-    }
-
-    /**
      * 包装
      * @param originalValue 原始值
      * @return 包含JDBC类型的参数引用
      */
-    public ValueWrapper wrap(@Nullable Object originalValue) {
-        return new ValueWrapper(originalValue, column.jdbcType());
+    public JDBCValueWrapper wrap(@Nullable F originalValue) {
+        return new JDBCValueWrapper(originalValue, column.jdbcType());
     }
 
     /**
@@ -214,9 +209,10 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
      * @throws IllegalAccessRuntimeException 反射取值异常
      */
     @Nullable
-    public Object fieldGet(Object obj) {
+    public F fieldGet(Object obj) {
         try {
-            return field.get(obj);
+            Object value = field.get(obj);
+            return ObjectUtils.typeCastNullable(value);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessRuntimeException(e);
         }
@@ -224,26 +220,28 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
 
     /**
      * 获取属性的值
-     * 依次进行普通获取/填充/判断是否有效/回填/序列化
-     * 需要使用 effective(res) 对本方法的返回值进行诊断, 以确定响应是否有效
+     * 依次进行普通获取/填充/判断是否有效
+     * 根据情况选择是否, 值有效时, 回填源对象(改变源对象)
+     * 需要对本方法的返回值进行诊断, 以确定响应是否有效
      * @param entity 实体对象
      * @param type 实体的使用目的
-     * @return 值|FIELD_INVALID_EXCEPTION 无效字段
+     * @param backFill 是否回填
+     * @return 值包装
      */
-    @Nullable
-    public Object fieldGet(Object entity, EntityUseType type) throws FieldInvalidException {
+    public ValueWrapper<F> fieldFillGet(Object entity, EntityUseType type, boolean backFill) {
         // 普通获取
-        Object value = fieldGet(entity);
+        F value = fieldGet(entity);
         // 填充
-        Object valueAfterFill = fill(entity, field, value, type);
+        F valueAfterFill = fill(entity, field, value, type);
         // 判断是否有效
         if (!effective(valueAfterFill, type)) {
-            return FIELD_INVALID_EXCEPTION;
+            return new ValueWrapper<>(false, valueAfterFill);
         }
         // 回填
-        fieldSet(entity, valueAfterFill);
-        // 序列化后返回
-        return fieldConversion.serialize(field, valueAfterFill);
+        if (backFill) {
+            fieldSet(entity, valueAfterFill);
+        }
+        return new ValueWrapper<>(true, valueAfterFill);
     }
 
     /**
@@ -254,12 +252,12 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
      * @throws FieldInvalidException 无效字段
      */
     @Nullable
-    public Object fieldGetOrFail(Object entity, EntityUseType type) throws FieldInvalidException {
-        Object res = fieldGet(entity, type);
-        if (!effective(res)) {
-            throw new FieldInvalidException(field, res, type);
+    public F fieldFillGetOrFail(Object entity, EntityUseType type) throws FieldInvalidException {
+        ValueWrapper<F> valueWrapper = fieldFillGet(entity, type, false);
+        if (!valueWrapper.isValid()) {
+            throw new FieldInvalidException(field, valueWrapper.getValue(), type);
         }
-        return res;
+        return valueWrapper.getValue();
     }
 
     /**
@@ -270,39 +268,41 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
      */
     public void fieldSet(Object obj, @Nullable Object value) {
         try {
-            // 反序列化后
-            Object valueAfterDeserialize = fieldConversion.deserialize(field, value);
-            field.set(obj, valueAfterDeserialize);
+            field.set(obj, value);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessRuntimeException(e);
         }
     }
 
     /**
-     * 设置属性的值
-     * @param obj 对象
-     * @param value 值
-     * @param type 实体的使用目的
-     * @throws FieldInvalidException 无效字段
+     * 字段序列化
+     * @param originalValue 字段的原始值
+     * @return 序列化后的值
      */
-    public void fieldSetOrFail(Object obj, @Nullable Object value, EntityUseType type) throws FieldInvalidException {
-        if (!effective(value, type)) {
-            throw new FieldInvalidException();
-        }
-        fieldSet(obj, value);
+    @Nullable
+    public Object serialize(@Nullable F originalValue) {
+        return fieldConversion.serialize(field, ObjectUtils.typeCastNullable(originalValue));
     }
 
     /**
-     * 设置属性的值
-     * @param obj 对象
-     * @param value 值
-     * @param type 实体的使用目的
-     * @throws FieldInvalidException 无效字段
+     * 从任意的结果进行反序列化, 以便赋值到实体属性
+     * @param originalValue 字段的原始值
+     * @return 反序列化后的值
      */
-    public void fieldSet(Object obj, @Nullable Object value, EntityUseType type) {
-        if (effective(value, type)) {
-            fieldSet(obj, value);
-        }
+    @Nullable
+    public F deserialize(@Nullable Object originalValue) {
+        return ObjectUtils.typeCastNullable(
+            fieldConversion.deserialize(field, ObjectUtils.typeCastNullable(originalValue)));
+    }
+
+    /**
+     * 字段反序列化
+     * @param resultSet 数据库结果集
+     * @return 反序列化后的值
+     */
+    @Nullable
+    public Object deserialize(ResultSet resultSet) throws SQLException {
+        return fieldConversion.acquisition(field, resultSet, columnName);
     }
 
     // ---------------------------- simple getter ---------------------------- //
@@ -328,7 +328,7 @@ public class FieldMember extends Container.SimpleKeeper implements Serializable 
         return fieldFill;
     }
 
-    public FieldConversion getFieldConversion() {
+    public FieldConversion<?, ?> getFieldConversion() {
         return fieldConversion;
     }
 

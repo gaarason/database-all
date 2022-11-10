@@ -1,27 +1,28 @@
 package gaarason.database.support;
 
 import gaarason.database.core.Container;
+import gaarason.database.util.ObjectUtils;
 
 import java.io.Serializable;
 
 /**
  * 数据库主键信息
  */
-public class PrimaryKeyMember extends Container.SimpleKeeper implements Serializable {
+public class PrimaryKeyMember<K> extends Container.SimpleKeeper implements Serializable {
 
     /**
      * 数据库字段信息
      */
-    private final FieldMember fieldMember;
+    private final FieldMember<K> fieldMember;
 
-    public PrimaryKeyMember(Container container, FieldMember fieldMember) {
+    public PrimaryKeyMember(Container container, FieldMember<?> fieldMember) {
         super(container);
-        this.fieldMember = fieldMember;
+        this.fieldMember = ObjectUtils.typeCast(fieldMember);
     }
 
     // ---------------------------- simple getter ---------------------------- //
 
-    public FieldMember getFieldMember() {
+    public FieldMember<K> getFieldMember() {
         return fieldMember;
     }
 

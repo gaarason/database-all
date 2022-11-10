@@ -89,10 +89,10 @@ public class AnnotationTestModel extends SingleModel<AnnotationTestModel.Primary
 
             @Nullable
             @Override
-            public Object serialize(Field field, @Nullable Object originalValue) {
-                if (MAN.equals(originalValue)) {
+            public Object serialize(Field field, @Nullable Object fieldValue) {
+                if (MAN.equals(fieldValue)) {
                     return 1;
-                } else if (WOMAN.equals(originalValue)) {
+                } else if (WOMAN.equals(fieldValue)) {
                     return 2;
                 } else {
                     return 3;
@@ -101,7 +101,7 @@ public class AnnotationTestModel extends SingleModel<AnnotationTestModel.Primary
 
             @Nullable
             @Override
-            public Object deserialize(Field field, ResultSet resultSet, String columnName) throws SQLException {
+            public Object acquisition(Field field, ResultSet resultSet, String columnName) throws SQLException {
                 int sex = resultSet.getInt(columnName);
                 if (sex == 1) {
                     return MAN;
@@ -154,5 +154,64 @@ public class AnnotationTestModel extends SingleModel<AnnotationTestModel.Primary
         private Date updatedAt;
     }
 
+    @Data
+    @Table(name = "student")
+    public static class Enum2Entity implements Serializable {
 
+        private static final long serialVersionUID = 1L;
+
+        @Primary
+        private Integer id;
+
+        @Column(length = 20)
+        private String name;
+
+        private Byte age;
+
+        @Column(conversion = FieldConversion.EnumInteger.class)
+        private Sex sex;
+
+        @Column(name = "teacher_id")
+        private Integer teacherId;
+
+        @Column(name = "created_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
+        private Date createdAt;
+
+        @Column(name = "updated_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
+        private Date updatedAt;
+    }
+
+
+    public enum Name {
+        CIAO_LI,
+        ZHANG_SANG,
+        Sayaka;
+    }
+
+    @Data
+    @Table(name = "student")
+    public static class Enum3Entity implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        @Primary
+        private Integer id;
+
+        @Column(length = 20, conversion = FieldConversion.EnumString.class)
+        private Name name;
+
+        private Byte age;
+
+        @Column(conversion = FieldConversion.EnumInteger.class)
+        private Sex sex;
+
+        @Column(name = "teacher_id")
+        private Integer teacherId;
+
+        @Column(name = "created_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
+        private Date createdAt;
+
+        @Column(name = "updated_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
+        private Date updatedAt;
+    }
 }

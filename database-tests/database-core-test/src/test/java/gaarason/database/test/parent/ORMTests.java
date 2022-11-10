@@ -106,7 +106,8 @@ abstract public class ORMTests extends BaseTests {
         StudentORMModel.Entity entity = studentORMModel.findOrFail(8).toObject();
         entity.setName("ddddd");
         // 按entity中的主键存在就更新
-        studentORMModel.newRecord().fillEntity(entity).saveByPrimaryKey();
+        boolean b = studentORMModel.newRecord().fillEntity(entity).saveByPrimaryKey();
+        Assert.assertTrue(b);
 
         StudentORMModel.Entity check = studentORMModel.findOrFail(8).toObject();
         Assert.assertEquals("ddddd", check.getName());

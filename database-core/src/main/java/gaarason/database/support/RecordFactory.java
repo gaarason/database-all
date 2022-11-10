@@ -174,7 +174,7 @@ public class RecordFactory {
         throws SQLException {
 
         // 字段信息
-        Map<String, FieldMember> columnFieldMap = model.getContainer()
+        Map<String, FieldMember<?>> columnFieldMap = model.getContainer()
             .getBean(ModelShadowProvider.class)
             .get(model)
             .getEntityMember().getColumnFieldMap();
@@ -184,13 +184,13 @@ public class RecordFactory {
             // 列名
             String columnName = resultSetMetaData.getColumnLabel(i);
 
-            FieldMember fieldMember = columnFieldMap.get(columnName);
+            FieldMember<?> fieldMember = columnFieldMap.get(columnName);
 
             Object value;
             // 值获取
             if (!ObjectUtils.isNull(fieldMember)) {
                 value = fieldMember.getFieldConversion()
-                    .deserialize(fieldMember.getField(), resultSet, columnName);
+                    .acquisition(fieldMember.getField(), resultSet, columnName);
 
             } else {
                 // *尽量* 使用同类型赋值

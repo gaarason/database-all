@@ -3,6 +3,7 @@ package gaarason.database.support;
 import gaarason.database.annotation.Primary;
 import gaarason.database.appointment.EntityUseType;
 import gaarason.database.appointment.FinalVariable;
+import gaarason.database.appointment.ValueWrapper;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.core.Container;
 import gaarason.database.exception.EntityAttributeInvalidException;
@@ -18,12 +19,11 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.function.BiFunction;
 
 /**
  * 数据库实体信息
  */
-public class EntityMember<T> extends Container.SimpleKeeper implements Serializable {
+public class EntityMember<T, K> extends Container.SimpleKeeper implements Serializable {
 
     /**
      * 实体类型
@@ -38,12 +38,12 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
     /**
      * `属性名`对应的`普通`字段数组
      */
-    private final Map<String, FieldMember> javaFieldMap = new LinkedHashMap<>();
+    private final Map<String, FieldMember<?>> javaFieldMap = new LinkedHashMap<>();
 
     /**
      * `数据库字段`名对应的`普通`字段数组
      */
-    private final Map<String, FieldMember> columnFieldMap = new LinkedHashMap<>();
+    private final Map<String, FieldMember<?>> columnFieldMap = new LinkedHashMap<>();
 
     /**
      * `属性名`对应的`关系`字段数组
@@ -59,7 +59,7 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
      * 主键信息
      */
     @Nullable
-    private PrimaryKeyMember primaryKeyMember;
+    private PrimaryKeyMember<K> primaryKeyMember;
 
     /**
      * 关联关系分析标记
@@ -92,8 +92,8 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
      * @return 字段信息
      * @throws EntityAttributeInvalidException 无效的字段
      */
-    public FieldMember getFieldMemberByFieldName(String fieldName) throws EntityAttributeInvalidException {
-        FieldMember fieldMember = javaFieldMap.get(fieldName);
+    public FieldMember<?> getFieldMemberByFieldName(String fieldName) throws EntityAttributeInvalidException {
+        FieldMember<?> fieldMember = javaFieldMap.get(fieldName);
         if (ObjectUtils.isEmpty(fieldMember)) {
             throw new EntityAttributeInvalidException(fieldName, entityClass);
         }
@@ -106,8 +106,8 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
      * @return 字段信息
      * @throws EntityAttributeInvalidException 无效的字段
      */
-    public FieldMember getFieldMemberByColumnName(String columnName) throws EntityAttributeInvalidException {
-        FieldMember fieldMember = columnFieldMap.get(columnName);
+    public FieldMember<?> getFieldMemberByColumnName(String columnName) throws EntityAttributeInvalidException {
+        FieldMember<?> fieldMember = columnFieldMap.get(columnName);
         if (ObjectUtils.isEmpty(fieldMember)) {
             throw new EntityAttributeInvalidException(columnName, entityClass);
         }
@@ -132,68 +132,80 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
 
     /**
      * 将实体对象中有效的数据库字段, 转化为简单Map
-     * 根据字段上的注解对字段进行填充 (可能会改变原对象)
      * @param entity 实体对象
-     * @param type 实体的使用目的
      * @return 简单Map
      */
-    public Map<String, Object> toSimpleMap(T entity, EntityUseType type) {
-        return toMap(entity, type, (fieldMember, value) -> value);
-    }
-
-    /**
-     * 将实体对象中有效的数据库字段, 转化为指定Map
-     * 根据字段上的注解对字段进行填充 (可能会改变原对象)
-     * @param entity 实体对象
-     * @param type 实体的使用目的
-     * @param function 结果转化方式
-     * @param <W> 结果类型
-     * @return MAP
-     */
-    public <W> Map<String, W> toMap(T entity, EntityUseType type, BiFunction<FieldMember, Object, W> function) {
+    public Map<String, Object> toSimpleMap(@Nullable T entity) {
         if (ObjectUtils.isNull(entity)) {
             return Collections.emptyMap();
         }
         // 结果集
-        Map<String, W> columnValueMap = new LinkedHashMap<>();
+        Map<String, Object> columnValueMap = new LinkedHashMap<>();
+        // 属性信息集合 (ColumnName 为key)
+        Map<String, FieldMember<?>> columnFieldMap = this.columnFieldMap;
+        for (Map.Entry<String, FieldMember<?>> entry : columnFieldMap.entrySet()) {
+            // 属性信息
+            FieldMember<?> fieldMember = entry.getValue();
+            // 值
+            Object value = fieldMember.fieldGet(entity);
+            // 加入 结果集
+            columnValueMap.put(entry.getKey(), value);
+        }
+        return columnValueMap;
+    }
+
+    /**
+     * 将实体对象中有效的数据库字段, 转化为指定Map
+     * 根据字段上的注解对字段进行`填充`及`序列化`
+     * @param entity 实体对象
+     * @param type 实体的使用目的
+     * @param backFill 是否回填
+     * @return MAP
+     */
+    public Map<String, Object> toFillMap(@Nullable T entity, EntityUseType type, boolean backFill) {
+        if (ObjectUtils.isNull(entity)) {
+            return Collections.emptyMap();
+        }
+        // 结果集
+        Map<String, Object> columnValueMap = new LinkedHashMap<>();
 
         // 属性信息集合 (ColumnName 为key)
-        Map<String, FieldMember> columnFieldMap = this.columnFieldMap;
-        for (Map.Entry<String, FieldMember> entry : columnFieldMap.entrySet()) {
+        Map<String, FieldMember<?>> columnFieldMap = this.columnFieldMap;
+        for (Map.Entry<String, FieldMember<?>> entry : columnFieldMap.entrySet()) {
             // 属性信息
-            FieldMember fieldMember = entry.getValue();
+            FieldMember<?> fieldMember = entry.getValue();
             // 值
-            Object value = fieldMember.fieldGet(entity, type);
+            ValueWrapper<?> valueWrapper = fieldMember.fieldFillGet(entity, type, backFill);
             // 有效则加入 结果集
-            if (FieldMember.effective(value)) {
-                columnValueMap.put(entry.getKey(), function.apply(fieldMember, value));
+            if (valueWrapper.isValid()) {
+                // 序列化
+                columnValueMap.put(entry.getKey(), fieldMember.serialize(ObjectUtils.typeCastNullable(valueWrapper.getValue())));
             }
         }
         return columnValueMap;
     }
 
     /**
-     * 将Map中有效的数据库字段, 赋值到全新的实体对象
+     * 将Map中的数据库字段, 反序列化后, 赋值到全新的实体对象
      * @param columnValueMap MAP对象
-     * @param function 结果转化方式
-     * @param <W> 结果类型
      * @return 实体对象
      */
-    public <W> T toEntity(Map<String, W> columnValueMap, BiFunction<FieldMember, W, Object> function) {
+    public T toEntity(Map<String, Object> columnValueMap) {
         T entity = newInstance();
         if (ObjectUtils.isNull(columnValueMap)) {
             return entity;
         }
 
         // 属性信息集合 (ColumnName 为key)
-        Map<String, FieldMember> columnFieldMap = this.columnFieldMap;
-        for (Map.Entry<String, FieldMember> entry : columnFieldMap.entrySet()) {
+        Map<String, FieldMember<?>> columnFieldMap = this.columnFieldMap;
+        for (Map.Entry<String, FieldMember<?>> entry : columnFieldMap.entrySet()) {
             // 属性信息
-            FieldMember fieldMember = entry.getValue();
+            FieldMember<?> fieldMember = entry.getValue();
             // 值
             if (columnValueMap.containsKey(fieldMember.getColumnName())) {
-                W w = columnValueMap.get(fieldMember.getColumnName());
-                Object value = function.apply(fieldMember, w);
+                Object w = columnValueMap.get(fieldMember.getColumnName());
+                // 反序列化
+                Object value = fieldMember.deserialize(w);
                 // 赋值
                 fieldMember.fieldSet(entity, value);
             }
@@ -240,11 +252,11 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
             field.setAccessible(true);
 
             // 字段对象
-            FieldMember fieldMember = new FieldMember(container, field);
+            FieldMember<?> fieldMember = new FieldMember<>(container, field);
 
             // 处理主键@Primary信息, 没有注解的就不是主键
             if (field.isAnnotationPresent(Primary.class)) {
-                primaryKeyMember = new PrimaryKeyMember(container, fieldMember);
+                primaryKeyMember = new PrimaryKeyMember<>(container, fieldMember);
             }
 
             // 属性名 索引键入
@@ -262,7 +274,7 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
      * `属性名`名对应的`普通`字段数组
      * @param fieldMember 数据库字段信息
      */
-    private void dealJavaFieldMap(FieldMember fieldMember) {
+    private void dealJavaFieldMap(FieldMember<?> fieldMember) {
         // 属性重名的情况下, 子类优先
         if (!javaFieldMap.containsKey(fieldMember.getField().getName())) {
             javaFieldMap.put(fieldMember.getField().getName(), fieldMember);
@@ -273,7 +285,7 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
      * `数据库字段`名对应的`普通`字段数组
      * @param fieldMember 数据库字段信息
      */
-    private void dealColumnMap(FieldMember fieldMember) {
+    private void dealColumnMap(FieldMember<?> fieldMember) {
         // 字段重名的情况下, 子类优先
         if (fieldMember.getColumn().inDatabase() && !columnFieldMap.containsKey(fieldMember.getColumnName())) {
             columnFieldMap.put(fieldMember.getColumnName(), fieldMember);
@@ -284,7 +296,7 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
      * 可查询的`数据库字段`数组
      * @param fieldMember 数据库字段信息
      */
-    private void dealSelectColumnList(FieldMember fieldMember) {
+    private void dealSelectColumnList(FieldMember<?> fieldMember) {
         if (fieldMember.getColumn().inDatabase() && fieldMember.getColumn().selectable() &&
             !selectColumnList.contains(fieldMember.getColumnName())) {
             selectColumnList.add(fieldMember.getColumnName());
@@ -312,7 +324,7 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
                 FieldRelationMember fieldRelationMember = new FieldRelationMember(container, field, model);
 
                 // 关联关系记录
-                if(!relationFieldMap.containsKey(fieldRelationMember.getName())){
+                if (!relationFieldMap.containsKey(fieldRelationMember.getName())) {
                     relationFieldMap.put(fieldRelationMember.getName(), fieldRelationMember);
                 }
             }
@@ -346,7 +358,7 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
      * @return 主键信息
      * @throws PrimaryKeyNotFoundException 主键信息未知
      */
-    public PrimaryKeyMember getPrimaryKeyMemberOrFail() throws PrimaryKeyNotFoundException {
+    public PrimaryKeyMember<K> getPrimaryKeyMemberOrFail() throws PrimaryKeyNotFoundException {
         if (primaryKeyMember == null) {
             throw new PrimaryKeyNotFoundException();
         }
@@ -364,15 +376,15 @@ public class EntityMember<T> extends Container.SimpleKeeper implements Serializa
     }
 
     @Nullable
-    public PrimaryKeyMember getPrimaryKeyMember() {
+    public PrimaryKeyMember<K> getPrimaryKeyMember() {
         return primaryKeyMember;
     }
 
-    public Map<String, FieldMember> getJavaFieldMap() {
+    public Map<String, FieldMember<?>> getJavaFieldMap() {
         return javaFieldMap;
     }
 
-    public Map<String, FieldMember> getColumnFieldMap() {
+    public Map<String, FieldMember<?>> getColumnFieldMap() {
         return columnFieldMap;
     }
 

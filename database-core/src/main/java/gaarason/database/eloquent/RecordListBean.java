@@ -224,7 +224,7 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
     @Override
     @Nullable
     public <W> W elementGetValueByFieldName(Record<T, K> theRecord, String fieldName) {
-        EntityMember<T> entityMember = modelShadowProvider.parseAnyEntityWithCache(
+        EntityMember<T, K> entityMember = modelShadowProvider.parseAnyEntityWithCache(
             theRecord.getModel().getEntityClass());
 
         final Object value = theRecord.getMetadataMap()

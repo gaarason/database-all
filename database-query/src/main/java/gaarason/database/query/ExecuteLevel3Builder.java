@@ -14,7 +14,6 @@ import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.InsertNotSuccessException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
-import gaarason.database.support.EntityMember;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.MapUtils;
 import gaarason.database.util.ObjectUtils;
@@ -92,11 +91,8 @@ public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T,
     @Override
     public K insertGetId(Object anyEntity) throws SQLRuntimeException {
         Map<String, Object> simpleMap = modelShadowProvider.entityToMap(anyEntity, EntityUseType.INSERT);
-        K primaryKeyValue = insertGetIdMapStyle(simpleMap);
-        // 赋值主键
-        modelShadowProvider.setPrimaryKeyValue(anyEntity, primaryKeyValue);
         // 返回主键
-        return primaryKeyValue;
+        return insertGetIdMapStyle(simpleMap);
     }
 
     @Override
@@ -304,13 +300,8 @@ public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T,
      */
     protected void beforeBatchInsert(List<?> entityList) {
         List<Map<String, Object>> mapList = new LinkedList<>();
-        EntityMember<Object> entityMember = null;
         for (Object entity : entityList) {
-            // 初始化 entityMember
-            if (entityMember == null) {
-                entityMember = modelShadowProvider.parseAnyEntityWithCache(entity);
-            }
-            mapList.add( modelShadowProvider.entityToMap(entity, EntityUseType.INSERT));
+            mapList.add(modelShadowProvider.entityToMap(entity, EntityUseType.INSERT));
         }
         // 转入mapList处理
         beforeBatchInsertMapStyle(mapList);

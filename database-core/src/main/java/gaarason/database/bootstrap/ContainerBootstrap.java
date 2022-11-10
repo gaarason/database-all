@@ -1,6 +1,8 @@
 package gaarason.database.bootstrap;
 
 import gaarason.database.annotation.conversion.DefaultConversion;
+import gaarason.database.annotation.conversion.EnumIntegerConversion;
+import gaarason.database.annotation.conversion.EnumStringConversion;
 import gaarason.database.annotation.conversion.JsonConversion;
 import gaarason.database.bootstrap.def.DefaultReflectionScan;
 import gaarason.database.config.ConversionConfig;
@@ -121,6 +123,8 @@ public class ContainerBootstrap extends ContainerProvider {
         //
         register(FieldConversion.Default.class, clazz -> new DefaultConversion(this));
         register(FieldConversion.Json.class, clazz -> new JsonConversion());
+        register(FieldConversion.EnumInteger.class, clazz -> new EnumIntegerConversion());
+        register(FieldConversion.EnumString.class, clazz -> new EnumStringConversion());
         //
         register(FieldStrategy.Default.class, clazz -> new FieldStrategy.Default());
         //

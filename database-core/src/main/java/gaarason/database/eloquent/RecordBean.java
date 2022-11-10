@@ -1,6 +1,7 @@
 package gaarason.database.eloquent;
 
 import gaarason.database.appointment.EntityUseType;
+import gaarason.database.appointment.ValueWrapper;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
@@ -10,13 +11,13 @@ import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.eloquent.record.BindBean;
 import gaarason.database.exception.EntityAttributeInvalidException;
-import gaarason.database.exception.FieldInvalidException;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.RelationNotFoundException;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.EntityMember;
 import gaarason.database.support.FieldMember;
+import gaarason.database.support.PrimaryKeyMember;
 import gaarason.database.support.RelationGetSupport;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
@@ -89,8 +90,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      * @param model 数据模型
      * @param stringColumnMap 元数据
      */
-    public RecordBean(Model<T, K> model, Map<String, Object> stringColumnMap,
-        String originalSql) {
+    public RecordBean(Model<T, K> model, Map<String, Object> stringColumnMap, String originalSql) {
         this.entityClass = model.getEntityClass();
         this.model = model;
         this.modelShadow = model.getGaarasonDataSource().getContainer().getBean(ModelShadowProvider.class);
@@ -153,7 +153,7 @@ public class RecordBean<T, K> implements Record<T, K> {
     @Override
     public Record<T, K> fillEntity(T entity) {
         // 合并属性
-        EntityUtils.entityMergeReference(this.entity, entity);
+        EntityUtils.entityMergeReference(this.entity, entity, true);
         return this;
     }
 
@@ -337,17 +337,20 @@ public class RecordBean<T, K> implements Record<T, K> {
         if (!model.saving(this)) {
             return false;
         }
-        boolean success;
+        boolean success = false;
+        boolean flag = false;
         // 兼容主键为nul, 且有效的情况
-        try {
-            // 实体中的主键
-            Object primaryKeyValue = modelShadow.parseAnyEntityWithCache(entityClass)
-                .getPrimaryKeyMemberOrFail()
-                .getFieldMember()
-                .fieldGetOrFail(entity, EntityUseType.CONDITION);
-
-            success = updateByPrimaryKey(primaryKeyValue);
-        } catch (FieldInvalidException e) {
+        PrimaryKeyMember<?> primaryKeyMember = modelShadow.parseAnyEntityWithCache(entityClass).getPrimaryKeyMember();
+        if (primaryKeyMember != null) {
+            // 获取主键值
+            ValueWrapper<?> valueWrapper = primaryKeyMember.getFieldMember()
+                .fieldFillGet(entity, EntityUseType.CONDITION, false);
+            if (valueWrapper.isValid()) {
+                flag = true;
+                success = updateByPrimaryKey(valueWrapper.getValue());
+            }
+        }
+        if (!flag) {
             success = insert();
         }
 
@@ -458,13 +461,13 @@ public class RecordBean<T, K> implements Record<T, K> {
 
     @Override
     public Map<String, Object> getDirtyMap() {
-        EntityMember<T> entityMember = modelShadow.parseAnyEntityWithCache(entityClass);
+        EntityMember<T, K> entityMember = modelShadow.parseAnyEntityWithCache(entityClass);
 
         Map<String, Object> theMap = new HashMap<>(16);
-        Map<String, FieldMember> columnFieldMap = entityMember.getColumnFieldMap();
+        Map<String, FieldMember<?>> columnFieldMap = entityMember.getColumnFieldMap();
         // 逐个比较, 注意null的处理
-        for (Map.Entry<String, FieldMember> entry : columnFieldMap.entrySet()) {
-            FieldMember fieldMember = entry.getValue();
+        for (Map.Entry<String, FieldMember<?>> entry : columnFieldMap.entrySet()) {
+            FieldMember<?> fieldMember = entry.getValue();
             final String columnName = fieldMember.getColumnName();
             // 元数据中的值
             final Object valueInMetadataMap = metadataMap.get(columnName);
@@ -480,7 +483,7 @@ public class RecordBean<T, K> implements Record<T, K> {
 
     @Override
     public boolean isDirty(String fieldName) {
-        FieldMember fieldMember = modelShadow.parseAnyEntityWithCache(entityClass)
+        FieldMember<?> fieldMember = modelShadow.parseAnyEntityWithCache(entityClass)
             .getFieldMemberByFieldName(fieldName);
         // 获取所有变更属性组成的map
         final Map<String, Object> dirtyMap = getDirtyMap();
@@ -505,7 +508,7 @@ public class RecordBean<T, K> implements Record<T, K> {
     @Override
     @Nullable
     public Object getOriginal(String fieldName) throws EntityAttributeInvalidException {
-        FieldMember fieldMember = modelShadow.parseAnyEntityWithCache(entityClass)
+        FieldMember<?> fieldMember = modelShadow.parseAnyEntityWithCache(entityClass)
             .getFieldMemberByFieldName(fieldName);
 
         // 从元数据中获取字段值
@@ -522,11 +525,18 @@ public class RecordBean<T, K> implements Record<T, K> {
         if (!model.creating(this)) {
             return false;
         }
-        // 执行
-        boolean success = model.newQuery().insertGetId(entity) != null;
+        // entity 2 map
+        Map<String, Object> entityMap = modelShadow.entityBackFillToMap(entity, EntityUseType.INSERT);
+        // 执行并, 返回主键
+        K primaryKeyValue = model.newQuery().insertGetIdMapStyle(entityMap);
+
+        boolean success = primaryKeyValue != null;
         // 成功插入后,刷新自身属性
         if (success) {
-            selfUpdate(entity, true);
+            // 主键准备
+            entityMap.put(model.getPrimaryKeyColumnName(), primaryKeyValue);
+
+            selfUpdate(entityMap);
             // 通知
             model.created(this);
         }
@@ -559,12 +569,14 @@ public class RecordBean<T, K> implements Record<T, K> {
         if (!model.updating(this)) {
             return false;
         }
+        // entity 2 map
+        Map<String, Object> entityMap = modelShadow.entityBackFillToMap(entity, EntityUseType.UPDATE);
         // 执行
         boolean success =
-            model.newQuery().where(model.getPrimaryKeyColumnName(), primaryKeyValue).update(entity) > 0;
+            model.newQuery().where(model.getPrimaryKeyColumnName(), primaryKeyValue).data(entityMap).update() > 0;
         // 成功更新后,刷新自身属性
         if (success) {
-            selfUpdate(entity, false);
+            selfUpdate(entityMap);
             // aop通知
             model.updated(this);
         }
@@ -574,36 +586,24 @@ public class RecordBean<T, K> implements Record<T, K> {
 
     /**
      * 更新自身数据
-     * @param entity 新的实体
-     * @param insertType 是否新增
+     * @param entityMap 新的实体所对应的MAP
      */
-    protected void selfUpdate(T entity, boolean insertType) {
+    protected void selfUpdate(Map<String, Object> entityMap) {
         // 更新元数据
-        selfUpdateMetadataMap(entity, insertType);
+        selfUpdateMetadataMap(entityMap);
         // 更新相关对象
         // 这一步操作可以剔除无效的字段
-        this.entity = toObjectWithoutRelationship();
+        T entity = toObjectWithoutRelationship();
+        // 保持引用不变
+        EntityUtils.entityMergeReference(this.entity, entity, false);
     }
 
     /**
      * 更新元数据
-     * @param entity 数据实体
-     * @param insertType 是否为更新操作
+     * @param entityMap 新的实体所对应的MAP
      */
-    protected void selfUpdateMetadataMap(T entity, boolean insertType) {
-
-        EntityMember<?> entityMember = modelShadow.parseAnyEntityWithCache(entity.getClass());
-
-        Map<String, FieldMember> columnFieldMap = entityMember.getColumnFieldMap();
-
-        for (Map.Entry<String, FieldMember> entry : columnFieldMap.entrySet()) {
-            FieldMember fieldMember = entry.getValue();
-            Object value = fieldMember.fieldGet(entity);
-            if (fieldMember.effective(value, insertType ? EntityUseType.INSERT : EntityUseType.UPDATE)) {
-                String columnName = fieldMember.getColumnName();
-                metadataMap.put(columnName, value);
-            }
-        }
+    protected void selfUpdateMetadataMap(Map<String, Object> entityMap) {
+        metadataMap.putAll(entityMap);
         hasBind = true;
     }
 
