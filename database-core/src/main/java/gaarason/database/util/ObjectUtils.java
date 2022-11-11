@@ -127,6 +127,22 @@ public class ObjectUtils {
     }
 
     /**
+     * 强制类型转换, 支持null
+     * @param original 原始对象
+     * @param <T> 原始类型
+     * @param <N> 目标类型
+     * @return 目标对象
+     * @throws TypeCastException 类型转化失败
+     */
+    @Nullable
+    public static <T, N> N typeCastNullable(@Nullable T original) throws TypeCastException {
+        if (original == null) {
+            return null;
+        }
+        return typeCast(original);
+    }
+
+    /**
      * 属性是否在类中存在(多层级)
      * 集合类型的属性,将会使用第一个泛型类型
      * @param detectedClass 待检测的类

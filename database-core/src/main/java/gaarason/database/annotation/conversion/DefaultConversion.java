@@ -20,13 +20,13 @@ public class DefaultConversion extends Container.SimpleKeeper implements FieldCo
 
     @Nullable
     @Override
-    public Object serialize(Field field, @Nullable Object originalValue) {
-        return originalValue;
+    public Object serialize(Field field, @Nullable Object fieldValue) {
+        return fieldValue;
     }
 
     @Nullable
     @Override
-    public Object deserialize(Field field, ResultSet resultSet, String column) throws SQLException {
+    public Object acquisition(Field field, ResultSet resultSet, String column) throws SQLException {
         return getContainer().getBean(ConversionConfig.class).getValueFromJdbcResultSet(field, resultSet, column);
     }
 

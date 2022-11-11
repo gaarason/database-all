@@ -145,11 +145,13 @@ abstract public class QueryBuilderTests extends BaseTests {
         entity.setUpdatedAt(new Date(1312312312));
         Object insert = studentModel.newQuery().insertGetId(entity);
         Assert.assertEquals(insert, 20);
+        // 不再回填
+        Assert.assertNull(entity.getId());
 
         StudentModel.Entity entityFirst = studentModel.newQuery().where("id", "20").firstOrFail().toObject();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Assert.assertNotNull(entityFirst);
-        Assert.assertEquals(entity.getId(), entityFirst.getId());
+        Assert.assertEquals(insert, entityFirst.getId());
         Assert.assertEquals(entity.getAge(), entityFirst.getAge());
         Assert.assertEquals(entity.getName(), entityFirst.getName());
         Assert.assertEquals(entity.getTeacherId(), entityFirst.getTeacherId());

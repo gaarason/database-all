@@ -1,5 +1,6 @@
     public abstract static class ${base_model_name}<T extends ${base_entity_name}, K> extends Model<T, K> {
 
+        ${spring_lazy}
         @Resource
         protected GaarasonDataSource gaarasonDataSource;
 

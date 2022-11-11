@@ -83,7 +83,7 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
         for (Record<T, K> theRecord : records) {
             // 模型信息
             ModelMember<T, K> modelMember = modelShadow.get(records.get(0).getModel());
-            EntityMember<T> entityMember = modelMember.getEntityMember();
+            EntityMember<T, K> entityMember = modelMember.getEntityMember();
 
             // 实体类的对象 (仅包含数据库字段属性)
             T entity = modelShadow.entityAssignment(entityMember.getEntityClass(), theRecord);

@@ -126,7 +126,7 @@ public interface Execute<T, K> {
     K insertGetId() throws SQLRuntimeException;
 
     /**
-     * 插入数据(会将数据库自增id更新到entity)
+     * 插入数据
      * @param anyEntity 任意数据实体对象
      * @return 数据库自增id|null
      * @throws SQLRuntimeException 数据库异常
@@ -144,7 +144,7 @@ public interface Execute<T, K> {
     K insertGetIdMapStyle(Map<String, Object> entityMap) throws SQLRuntimeException;
 
     /**
-     * 插入数据(会将数据库自增id更新到entity)
+     * 插入数据
      * @return 数据库自增id
      * @throws SQLRuntimeException 数据库异常
      * @throws InsertNotSuccessException 新增失败

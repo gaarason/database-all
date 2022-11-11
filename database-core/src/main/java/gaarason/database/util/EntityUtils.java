@@ -89,24 +89,25 @@ public final class EntityUtils {
      */
     public static <T> T entityMerge(T baseEntity, T complementEntity) {
         final T copyEntity = ObjectUtils.deepCopy(baseEntity);
-        entityMergeReference(copyEntity, complementEntity);
+        entityMergeReference(copyEntity, complementEntity, true);
         return copyEntity;
     }
 
     /**
      * 将 complementEntity 中的属性赋值到 baseEntity 上
-     * 1. 针对于非静态属性 2. complementEntity中所有的null属性都会跳过 (所以一定要使用包装类型来声明 entity)
+     * 1. 针对于非静态属性
      * @param baseEntity 基本实体对象(会被直接修改)
      * @param complementEntity 合并实体对象
+     * @param skipNull 是否跳过complementEntity中值为null的属性
      * @param <T> 实体类型
      */
-    public static <T> void entityMergeReference(T baseEntity, T complementEntity) {
+    public static <T> void entityMergeReference(T baseEntity, T complementEntity, boolean skipNull) {
         try {
             List<Field> fields = getDeclaredFieldsContainParentWithoutStatic(complementEntity.getClass());
             for (Field field : fields) {
                 field.setAccessible(true);
                 final Object val = field.get(complementEntity);
-                if (val != null) {
+                if (!skipNull || val != null) {
                     field.set(baseEntity, val);
                 }
             }

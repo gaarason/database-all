@@ -32,7 +32,7 @@ public class ModelMember<T, K> extends Container.SimpleKeeper
     /**
      * entity 信息
      */
-    private final EntityMember<T> entityMember;
+    private final EntityMember<T, K> entityMember;
 
     /**
      * model对象
@@ -56,7 +56,7 @@ public class ModelMember<T, K> extends Container.SimpleKeeper
      * 一个简单的检测, 可以避免大量的问题
      */
     private void typeCheck() {
-        PrimaryKeyMember primaryKeyMember = entityMember.getPrimaryKeyMember();
+        PrimaryKeyMember<K> primaryKeyMember = entityMember.getPrimaryKeyMember();
 
         // 主键类型检测( 实体上的主键的类型是否与模型上的泛型一致)
         if (primaryKeyMember != null &&
@@ -77,7 +77,7 @@ public class ModelMember<T, K> extends Container.SimpleKeeper
         return entityClass;
     }
 
-    public EntityMember<T> getEntityMember() {
+    public EntityMember<T, K> getEntityMember() {
         return entityMember;
     }
 

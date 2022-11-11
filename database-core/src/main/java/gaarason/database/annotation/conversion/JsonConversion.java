@@ -17,27 +17,28 @@ public class JsonConversion implements FieldConversion.Json {
 
     @Nullable
     @Override
-    public Object serialize(Field field, @Nullable Object originalValue) {
+    public String serialize(Field field, @Nullable Object fieldValue) {
         boolean collection = ObjectUtils.isCollection(field.getType());
-        if(collection && ObjectUtils.isEmpty(originalValue)){
+        if (collection && ObjectUtils.isEmpty(fieldValue)) {
             return "[]";
         }
-        return JsonUtils.objectToJson(originalValue);
+        return JsonUtils.objectToJson(fieldValue);
     }
 
     @Nullable
     @Override
-    public Object deserialize(Field field, ResultSet resultSet, String columnName) throws SQLException {
+    public String acquisition(Field field, ResultSet resultSet, String columnName) throws SQLException {
         return resultSet.getString(columnName);
     }
 
     @Nullable
     @Override
-    public Object deserialize(Field field, @Nullable Object originalValue) {
+    public Object deserialize(Field field, @Nullable String originalValue) {
         Type type = field.getGenericType();
-        if(originalValue instanceof CharSequence){
-            return JsonUtils.jsonToObject(String.valueOf(originalValue), type);
-        }
-        return JsonUtils.ObjectToObject(originalValue, type);
+        return JsonUtils.jsonToObject(originalValue, type);
+//        if (originalValue instanceof CharSequence) {
+//            return JsonUtils.jsonToObject(String.valueOf(originalValue), type);
+//        }
+//        return JsonUtils.ObjectToObject(originalValue, type);
     }
 }

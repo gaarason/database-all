@@ -1,7 +1,8 @@
 package gaarason.database.eloquent;
 
 import gaarason.database.appointment.EntityUseType;
-import gaarason.database.appointment.ValueWrapper;
+import gaarason.database.appointment.JDBCValueWrapper;
+import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
@@ -14,13 +15,13 @@ import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.PrimaryKeyTypeNotSupportException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
+import gaarason.database.support.FieldMember;
 import gaarason.database.support.PrimaryKeyMember;
 import gaarason.database.support.RecordFactory;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
 
-import java.io.Serializable;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -123,8 +124,9 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
         // 获取 entity 中的主键的值
 
         final Object primaryKeyValue = getModelShadow().parseAnyEntityWithCache(entity.getClass())
-            .getPrimaryKeyMemberOrFail().getFieldMember()
-            .fieldGetOrFail(entity, EntityUseType.CONDITION);
+            .getPrimaryKeyMemberOrFail()
+            .getFieldMember()
+            .fieldFillGetOrFail(entity, EntityUseType.CONDITION);
 
         // 查询是否存在满足条件的一条记录
         final Record<T, K> first = find(primaryKeyValue);
@@ -232,7 +234,7 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
 
     @Override
     public String getPrimaryKeyColumnName() throws PrimaryKeyNotFoundException {
-        PrimaryKeyMember primaryKeyMember = getModelMember().getEntityMember().getPrimaryKeyMember();
+        PrimaryKeyMember<K> primaryKeyMember = getModelMember().getEntityMember().getPrimaryKeyMember();
         if (null == primaryKeyMember) {
             throw new PrimaryKeyNotFoundException();
         }
@@ -417,9 +419,8 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
      * @throws SQLRuntimeException 数据库异常
      */
     protected <U> CompletableFuture<U> doSomethingInConnectionAsync(
-        ExecSqlWithinConnectionFunctionalInterface<U> closure, String sql,
-        @Nullable Collection<?> parameters, boolean isWrite)
-        throws SQLRuntimeException {
+        ExecSqlWithinConnectionFunctionalInterface<U> closure, String sql, @Nullable Collection<?> parameters,
+        boolean isWrite) throws SQLRuntimeException {
 
         GaarasonDataSource gaarasonDataSource = getGaarasonDataSource();
 
@@ -444,20 +445,22 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
      * @throws SQLException 数据库异常
      * @throws PrimaryKeyTypeNotSupportException 不支持的主键类型
      */
+    @Nullable
     private K getGeneratedKeys(ResultSet generatedKeys) throws SQLException, PrimaryKeyTypeNotSupportException {
+        PrimaryKeyMember<K> primaryKeyMember = getModelMember().getEntityMember().getPrimaryKeyMember();
+        // *尽量* 使用同类型赋值
         Class<K> primaryKeyClass = getSelf().getPrimaryKeyClass();
-        if (Byte.class.equals(primaryKeyClass) || byte.class.equals(primaryKeyClass)) {
-            return ObjectUtils.typeCast(generatedKeys.getByte(1));
-        } else if (Integer.class.equals(primaryKeyClass) || int.class.equals(primaryKeyClass)) {
-            return ObjectUtils.typeCast(generatedKeys.getInt(1));
-        } else if (Long.class.equals(primaryKeyClass) || long.class.equals(primaryKeyClass)) {
-            return ObjectUtils.typeCast(generatedKeys.getLong(1));
-        } else if (String.class.equals(primaryKeyClass) || Object.class.equals(primaryKeyClass) ||
-            Serializable.class.equals(primaryKeyClass)) {
-            return ObjectUtils.typeCast(generatedKeys.getString(1));
+        // 数据库获取
+        Object value = generatedKeys.getObject(1);
+        // 值获取
+        if (!ObjectUtils.isNull(primaryKeyMember)) {
+            FieldMember<K> fieldMember = primaryKeyMember.getFieldMember();
+            // 按照字段类型进行转化
+            return fieldMember.deserialize(value);
+        } else {
+            // 按照字段类型进行转化
+            return getContainer().getBean(ConversionConfig.class).castNullable(value, primaryKeyClass);
         }
-        throw new PrimaryKeyTypeNotSupportException(
-            "Primary key type [" + primaryKeyClass + "] not support get " + "generated keys yet.");
     }
 
     /**
@@ -491,10 +494,10 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
      */
     protected static void setParameter(PreparedStatement preparedStatement, int index, Object parameter)
         throws SQLException {
-        if (parameter instanceof ValueWrapper) {
+        if (parameter instanceof JDBCValueWrapper) {
             // 精确类型
-            preparedStatement.setObject(index, ((ValueWrapper) parameter).getValue(),
-                ((ValueWrapper) parameter).getType());
+            preparedStatement.setObject(index, ((JDBCValueWrapper) parameter).getValue(),
+                ((JDBCValueWrapper) parameter).getType());
         } else {
             // 全凭运气
             preparedStatement.setObject(index, parameter);

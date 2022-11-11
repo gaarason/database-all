@@ -5,6 +5,7 @@ import gaarason.database.logging.Log;
 import gaarason.database.logging.LogFactory;
 import gaarason.database.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
@@ -19,6 +20,7 @@ public class GeneralModel extends Model<GeneralModel.Table, Serializable> {
 
     private static final Log log = LogFactory.getLog(GeneralModel.class);
 
+    @Lazy
     @Autowired
     private GaarasonDataSource gaarasonDataSource;
 

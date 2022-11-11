@@ -2,29 +2,51 @@ package gaarason.database.appointment;
 
 import gaarason.database.lang.Nullable;
 
-import java.sql.JDBCType;
-
 /**
- * 包含JDBC类型的参数引用
+ * 值包装
+ * 1. 避免异常堆栈造成的性能降低
+ * 2. 避免返回结果的歧义性
+ * @param <V> 原始结果类型
  */
-public class ValueWrapper {
-
+public class ValueWrapper<V> {
+    /**
+     * 是否有效
+     */
+    private final boolean valid;
+    /**
+     * 有效值
+     */
     @Nullable
-    Object value;
+    private final V value;
 
-    JDBCType type;
-
-    public ValueWrapper(@Nullable Object value, JDBCType type) {
+    public ValueWrapper(boolean valid, @Nullable V value) {
+        this.valid = valid;
         this.value = value;
-        this.type = type;
+    }
+
+    public boolean isValid() {
+        return valid;
     }
 
     @Nullable
-    public Object getValue() {
+    public V getValue() {
         return value;
     }
 
-    public JDBCType getType() {
-        return type;
+    /**
+     * 结果包装
+     * 不可以为 null
+     * @param <V> 原始结果类型
+     */
+    public static class NotNull<V> extends ValueWrapper<V> {
+
+        public NotNull(boolean valid, @Nullable V value) {
+            super(valid, value);
+        }
+
+        @Override
+        public V getValue() {
+            return super.getValue();
+        }
     }
 }

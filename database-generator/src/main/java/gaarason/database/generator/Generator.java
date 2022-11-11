@@ -372,11 +372,17 @@ public class Generator {
     }
 
     private void processBaseModel() {
+        BaseElement element = new BaseElement() {};
         Map<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("${namespace}", baseModelNamespace);
         parameterMap.put("${base_model_name}", baseModelName);
         parameterMap.put("${base_entity_name}", baseEntityName);
         parameterMap.put("${base_entity_namespace}", baseEntityNamespace);
+
+        parameterMap.put("${spring_lazy}",
+            isSpringBoot ? element.anno2Name("org.springframework.context.annotation.Lazy") : "");
+        parameterMap.put("${imports}", element.printImports());
+
         templateHelper.writeBaseModel(parameterMap);
     }
 
@@ -477,6 +483,8 @@ public class Generator {
 
             // 模板替换参数
             Map<String, String> parameterMap = new HashMap<>(16);
+            parameterMap.put("${spring_lazy}",
+                isSpringBoot ? element.anno2Name("org.springframework.context.annotation.Lazy") : "");
             parameterMap.put("${base_entity_name}", baseEntityName);
             parameterMap.put("${base_model_name}", element.type2Name(baseEntityNamespace + "." + baseModelName));
             return templateHelper.fillBaseModelWithinBaseEntity(parameterMap);

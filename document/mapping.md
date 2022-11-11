@@ -18,8 +18,10 @@ Eloquent ORM for Java
             * [是否查询](#是否查询)
             * [字段填充](#字段填充)
             * [类型转化](#类型转化)
-                * [FieldConversion.Default](#FieldConversion.Default)
-                * [FieldConversion.Json](#FieldConversion.Json)
+                * [Default](#Default)
+                * [Json](#Json)
+                * [EnumInteger](#EnumInteger)
+                * [EnumString](#EnumString)
             * [执行顺序](#执行顺序)
                 * [实体到数据库](#实体到数据库)
                 * [数据库到实体](#数据库到实体)
@@ -296,22 +298,31 @@ Assert.assertEquals(AnnotationTestModel.Sex.WOMAN, resultEntity.getSex());
 
 ```
 
-##### FieldConversion.Default
+##### Default
 - conversion() 默认值为 FieldConversion.Default.class, 可以解决绝大多数的基本类型的序列化与反序列化
 
-##### FieldConversion.Json
+##### Json
 - conversion() 可选值为 FieldConversion.Json.class, 以json规范进行序列化与反序列化, 数据的字段应该为合法的json字符串
 - 实现依赖于`jackson`, 需要自行引入 `com.fasterxml.jackson.core: jackson-databind` 以及 `com.fasterxml.jackson.datatype: jackson-datatype-jsr310`依赖项
 - 因为`json规范`的兼容性细节较多, 所以业务上也可以参考`JsonConversion`自行实现, 与使用
+- 数据库列一般使用 varchar
 
+##### EnumInteger
+- conversion() 可选值为 FieldConversion.EnumInteger.class, 以枚举类型的`自然次序`进行序列化与反序列化
+- 枚举类型的自然次序从 0 开始
+- 数据库列一般使用 int
+
+##### EnumString
+- conversion() 可选值为 FieldConversion.EnumString.class, 以枚举类型的`名称`进行序列化与反序列化
+- 数据库列一般使用 varchar
 
 #### 执行顺序
 ##### 实体到数据库
-- 对于实体`entity`的每一个字段
-- 先根据本次的使用用途, 执行`fill()`进行属性填充,    
-- 再根据本次的使用用途, 执行对应的`strategy()`进行有效性判断,  
-- 在有效的前提下, 将`fill()`进行属性填充的值回填到对象, 并使用`conversion()`进行序列化.
-- 最终返回结构, 参与`sql`的执行
+- 对于实体`entity`的每一个字段  
+- 先根据本次的使用用途, 执行`fill()`进行属性填充    
+- 再根据本次的使用用途, 执行对应的`strategy()`进行有效性判断  
+- 在有效的前提下, 使用`conversion()`进行序列化, 并准备参与`sql`的执行
+- 执行成功后, 在是`ORM`的场景下, 还会将有效的值( `strategy()`通过, 且未进行`conversion()` )回填到对象`entity`
 
 ##### 数据库到实体
 - 对于实体`entity`的每一个字段

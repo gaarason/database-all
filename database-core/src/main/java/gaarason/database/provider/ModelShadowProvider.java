@@ -187,7 +187,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param anyEntity 任意实体类(可查找泛型)
      * @return 格式化后的Entity信息
      */
-    public <T> EntityMember<T> parseAnyEntityWithCache(T anyEntity) {
+    public <T, K> EntityMember<T, K> parseAnyEntityWithCache(T anyEntity) {
         return ObjectUtils.typeCast(parseAnyEntityWithCache(anyEntity.getClass()));
     }
 
@@ -196,8 +196,8 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param anyEntityClass 任意实体类(可查找泛型)
      * @return 格式化后的Entity信息
      */
-    public <T> EntityMember<T> parseAnyEntityWithCache(Class<T> anyEntityClass) {
-        EntityMember<?> entityMember = cache.entity.get(anyEntityClass);
+    public <T, K> EntityMember<T, K> parseAnyEntityWithCache(Class<T> anyEntityClass) {
+        EntityMember<?, ?> entityMember = cache.entity.get(anyEntityClass);
         if (entityMember == null) {
             synchronized (cache.entity) {
                 entityMember = cache.entity.get(anyEntityClass);
@@ -279,7 +279,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
         // 属性名
         String fieldNameLocal = lambdaInfo.getFieldName();
         // 字段信息
-        FieldMember fieldMember = getFieldByAnyEntityClass(entityClass, fieldNameLocal);
+        FieldMember<?> fieldMember = getFieldByAnyEntityClass(entityClass, fieldNameLocal);
         // 优先使用缓存的字段信息
         return ObjectUtils.isEmpty(fieldMember) ? lambdaInfo.getColumnName() : fieldMember.getColumnName();
     }
@@ -292,11 +292,11 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @return 字段信息
      * @throws EntityAttributeInvalidException 无效的字段
      */
-    public <T> FieldMember getFieldByAnyEntityClass(Class<T> anyEntityClass, String fieldName)
+    public <T> FieldMember<?> getFieldByAnyEntityClass(Class<T> anyEntityClass, String fieldName)
         throws EntityAttributeInvalidException, EntityInvalidException {
 
         // 字段信息
-        FieldMember fieldMember = parseAnyEntityWithCache(anyEntityClass).getJavaFieldMap().get(fieldName);
+        FieldMember<?> fieldMember = parseAnyEntityWithCache(anyEntityClass).getJavaFieldMap().get(fieldName);
 
         if (ObjectUtils.isEmpty(fieldMember)) {
             throw new EntityAttributeInvalidException(fieldName, anyEntityClass);
@@ -306,7 +306,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
 
     /**
      * 通过entity解析对应的字段和值组成的map, 忽略不符合规则的字段
-     * 会根据字段上的注解对字段进行填充 (可能会改变原对象)
+     * 根据字段上的注解对字段进行填充以及序列化
      * @param anyEntity 数据表实体对象
      * @param type 实体的使用目的
      * @param <T> 数据表实体类
@@ -316,8 +316,22 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
         if (ObjectUtils.isNull(anyEntity)) {
             return Collections.emptyMap();
         }
-        EntityMember<?> entityMember = parseAnyEntityWithCache(anyEntity.getClass());
-        return entityMember.toSimpleMap(ObjectUtils.typeCast(anyEntity), type);
+        return parseAnyEntityWithCache(anyEntity).toFillMap(anyEntity, type, false);
+    }
+
+    /**
+     * 通过entity解析对应的字段和值组成的map, 忽略不符合规则的字段
+     * 根据字段上的注解对字段进行填充/回填以及序列化
+     * @param anyEntity 数据表实体对象
+     * @param type 实体的使用目的
+     * @param <T> 数据表实体类
+     * @return 字段对值的映射
+     */
+    public <T> Map<String, Object> entityBackFillToMap(@Nullable T anyEntity, EntityUseType type) {
+        if (ObjectUtils.isNull(anyEntity)) {
+            return Collections.emptyMap();
+        }
+        return parseAnyEntityWithCache(anyEntity).toFillMap(anyEntity, type, true);
     }
 
     /**
@@ -329,11 +343,11 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      */
     public <T> T entityAssignment(Class<T> anyEntityClass, Record<?, ?> theRecord) {
         Map<String, Object> metadataMap = theRecord.getMetadataMap();
-        EntityMember<T> entityMember = parseAnyEntityWithCache(anyEntityClass);
-        T entity = entityMember.toEntity(metadataMap, (fieldMember, value) -> value);
+        EntityMember<T, ?> entityMember = parseAnyEntityWithCache(anyEntityClass);
+        T entity = entityMember.toEntity(metadataMap);
 
         // 数据库主键
-        PrimaryKeyMember primaryKeyMember = entityMember.getPrimaryKeyMember();
+        PrimaryKeyMember<?> primaryKeyMember = entityMember.getPrimaryKeyMember();
         if (primaryKeyMember != null) {
             Object primaryKeyValue = metadataMap.get(primaryKeyMember.getFieldMember().getColumnName());
             if (primaryKeyValue != null) {
@@ -352,9 +366,9 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      */
     public <T, K> void setPrimaryKeyValue(T anyEntity, @Nullable K id) {
         // 属性信息集合
-        EntityMember<?> entityMember = parseAnyEntityWithCache(anyEntity.getClass());
+        EntityMember<?, ?> entityMember = parseAnyEntityWithCache(anyEntity.getClass());
 
-        PrimaryKeyMember primaryKeyMember = entityMember.getPrimaryKeyMember();
+        PrimaryKeyMember<?> primaryKeyMember = entityMember.getPrimaryKeyMember();
         if (null != primaryKeyMember) {
             primaryKeyMember.getFieldMember().fieldSet(anyEntity, id);
         }
@@ -371,8 +385,8 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
     public <T, K> K getPrimaryKeyValue(T anyEntity, EntityUseType type) {
         Object primaryKeyValue = parseAnyEntityWithCache(anyEntity.getClass()).getPrimaryKeyMemberOrFail()
             .getFieldMember()
-            .fieldGetOrFail(anyEntity, type);
-        return primaryKeyValue == null ? null : ObjectUtils.typeCast(primaryKeyValue);
+            .fieldFillGetOrFail(anyEntity, type);
+        return ObjectUtils.typeCastNullable(primaryKeyValue);
     }
 
     /**
@@ -405,7 +419,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
         /**
          * Entity 缓存
          */
-        private final SoftCache<Class<?>, EntityMember<?>> entity = new SoftCache<>();
+        private final SoftCache<Class<?>, EntityMember<?, ?>> entity = new SoftCache<>();
 
         /**
          * 缓存lambda风格的列名, 与为String风格的列名的映射

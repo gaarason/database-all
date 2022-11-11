@@ -61,12 +61,12 @@ public class TestEntity implements Serializable {
 
         @Nullable
         @Override
-        public Object serialize(Field field, @Nullable Object originalValue) {
-            if (originalValue == null) {
+        public Object serialize(Field field, @Nullable Object fieldValue) {
+            if (fieldValue == null) {
                 return null;
             }
             try {
-                return MAPPER.writeValueAsString(originalValue);
+                return MAPPER.writeValueAsString(fieldValue);
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
@@ -74,7 +74,7 @@ public class TestEntity implements Serializable {
 
         @Nullable
         @Override
-        public Object deserialize(Field field, ResultSet resultSet, String columnName) throws SQLException {
+        public Object acquisition(Field field, ResultSet resultSet, String columnName) throws SQLException {
             String valueOfDB = resultSet.getString(columnName);
             if (valueOfDB == null || valueOfDB.equals("")) {
                 return valueOfDB;
