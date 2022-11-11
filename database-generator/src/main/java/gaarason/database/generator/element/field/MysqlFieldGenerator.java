@@ -227,9 +227,9 @@ public class MysqlFieldGenerator extends BaseFieldGenerator {
         field.setUnique("UNI".equals(columnKey));
         field.setUnsigned(columnType.contains("unsigned"));
         field.setNullable("YES".equals(isNullable));
-        field.setDefaultValue(newlineCharactersToReplace(columnDefault));
+        field.setDefaultValue(safeCharactersToReplace(columnDefault));
         field.setLength(characterMaximumLength != null ? Long.valueOf(characterMaximumLength) : null);
-        field.setComment(newlineCharactersToReplace(columnComment));
+        field.setComment(safeCharactersToReplace(columnComment));
         field.setJavaDocLines(new ArrayList<>());
         field.setVisibility(JavaVisibility.PRIVATE);
 

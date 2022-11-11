@@ -52,8 +52,8 @@ public class DruidApplicationTests {
     @Test
     public void 生成代码() {
         // set
-//        generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
-        generator.setOutputDir("./src/test/java1/");     // 所有生成文件的路径
+        generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
+//        generator.setOutputDir("./src/test/java1/");     // 所有生成文件的路径
         generator.setNamespace("data");                 // 所有生成文件的所属命名空间
         generator.setCorePoolSize(20);                  // 所用的线程数
         generator.setSpringBoot(true);                  // 是否生成spring boot相关注解

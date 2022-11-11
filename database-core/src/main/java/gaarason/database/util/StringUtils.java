@@ -38,6 +38,7 @@ public class StringUtils {
     /**
      * 替换字符
      * 功能上等于 input.replace(pattern , replacement), 但性能较好
+     * 注意 : 因为对于每个 pattern 不会释放内存, 所以使用时要确保 pattern 是有限的
      * @param input 原始字符
      * @param pattern 需要匹配的的字符(待替换)的预置规则
      * @param replacement 新的字符

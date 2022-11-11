@@ -393,6 +393,7 @@ public class Generator {
 
         element.type2Name(Serializable.class);
         element.type2Name("lombok.Data");
+        element.type2Name("lombok.experimental.Accessors");
 
         Map<String, String> parameterMap = new HashMap<>();
         parameterMap.put("${namespace}", baseEntityNamespace);
@@ -417,6 +418,7 @@ public class Generator {
         element.setClassName(entityName);
         element.type2Name("lombok.Data");
         element.type2Name("lombok.EqualsAndHashCode");
+        element.type2Name("lombok.experimental.Accessors");
         element.type2Name(Table.class);
 
         Map<String, String> parameterMap = new HashMap<>();
@@ -427,7 +429,7 @@ public class Generator {
         parameterMap.put("${table}", tableName);
 
         parameterMap.put("${swagger_annotation}",
-            isSwagger ? element.anno2Name("io.swagger.annotations.ApiModel") + "(\"" + comment + "\")\n" : "");
+            isSwagger ? element.anno2Name("io.swagger.annotations.ApiModel") + "(\"" + comment + "\")" : "");
         parameterMap.put("${static_fields}", entityStaticField ? fillStaticFieldsTemplate(tableName, false) : "");
         parameterMap.put("${fields}", fillFieldsTemplate(element, tableName, false));
 

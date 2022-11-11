@@ -3,6 +3,7 @@ package ${namespace};
 ${imports}
 
 @Data
+@Accessors(chain = true)
 public abstract class ${base_entity_name} implements Serializable {
     private static final long serialVersionUID = 1L;
     

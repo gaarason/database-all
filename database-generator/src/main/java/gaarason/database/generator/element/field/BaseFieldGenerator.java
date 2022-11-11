@@ -23,20 +23,18 @@ abstract class BaseFieldGenerator {
     }
 
     /**
-     * 将换行符替换
+     * 字符符替换与转义
      * @param str 原字符串
      * @return 换行符替换后的字符串
      */
     @Nullable
-    protected static String newlineCharactersToReplace(@Nullable String str) {
+    protected static String safeCharactersToReplace(@Nullable String str) {
         if(null != str){
-            str = StringUtils.replace(str,"\\\r\\\n", "");
-            str = StringUtils.replace(str,"\\r\\n", "");
-            str = StringUtils.replace(str,"\r\n", "");
-            str = StringUtils.replace(str,"\\\n", "");
-            str = StringUtils.replace(str,"\\n", "");
+            str = StringUtils.replace(str,"\r", "");
             str = StringUtils.replace(str,"\n", "");
-            return StringUtils.replace(str,"\"", "\\\"");
+            str = StringUtils.replace(str,"\\\r", "");
+            str = StringUtils.replace(str,"\\\n", "");
+            return StringUtils.replace(str,"\"", "");
         }
         return null;
     }
