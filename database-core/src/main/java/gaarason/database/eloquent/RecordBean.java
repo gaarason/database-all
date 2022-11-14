@@ -88,14 +88,21 @@ public class RecordBean<T, K> implements Record<T, K> {
     /**
      * 根据查询结果集生成
      * @param model 数据模型
-     * @param stringColumnMap 元数据
+     * @param stringObjectMap 元数据
      */
-    public RecordBean(Model<T, K> model, Map<String, Object> stringColumnMap, String originalSql) {
+    public RecordBean(Model<T, K> model, Map<String, Object> stringObjectMap, String originalSql) {
         this.entityClass = model.getEntityClass();
         this.model = model;
         this.modelShadow = model.getGaarasonDataSource().getContainer().getBean(ModelShadowProvider.class);
         this.originalSql = originalSql;
-        init(stringColumnMap);
+        this.entity = init(stringObjectMap);
+        if (!stringObjectMap.isEmpty()) {
+            hasBind = true;
+            // 通知
+            model.retrieved(this);
+        } else {
+            hasBind = false;
+        }
     }
 
     /**
@@ -106,7 +113,8 @@ public class RecordBean<T, K> implements Record<T, K> {
         this.entityClass = model.getEntityClass();
         this.model = model;
         this.modelShadow = model.getGaarasonDataSource().getContainer().getBean(ModelShadowProvider.class);
-        init(new HashMap<>());
+        this.entity = init(new HashMap<>());
+        hasBind = false;
     }
 
     @Override
@@ -192,20 +200,13 @@ public class RecordBean<T, K> implements Record<T, K> {
      * 初始化数据
      * @param stringObjectMap 元数据
      */
-    protected void init(Map<String, Object> stringObjectMap) {
+    protected T init(Map<String, Object> stringObjectMap) {
         // 如果不是统同一个(引用相同)对象, 则手动赋值下
         if (metadataMap != stringObjectMap) {
             metadataMap.clear();
             metadataMap.putAll(stringObjectMap);
         }
-        entity = toObjectWithoutRelationship();
-        if (!stringObjectMap.isEmpty()) {
-            hasBind = true;
-            // 通知
-            model.retrieved(this);
-        } else {
-            hasBind = false;
-        }
+        return toObjectWithoutRelationship();
     }
 
     /**
@@ -450,7 +451,14 @@ public class RecordBean<T, K> implements Record<T, K> {
 
     @Override
     public Record<T, K> refresh(Map<String, Object> metadataMap) {
-        init(metadataMap);
+        this.entity = init(metadataMap);
+        if (!metadataMap.isEmpty()) {
+            hasBind = true;
+            // 通知
+            model.retrieved(this);
+        } else {
+            hasBind = false;
+        }
         return this;
     }
 
@@ -526,7 +534,7 @@ public class RecordBean<T, K> implements Record<T, K> {
             return false;
         }
         // entity 2 map
-        Map<String, Object> entityMap = modelShadow.entityBackFillToMap(entity, EntityUseType.INSERT);
+        Map<String, Object> entityMap = modelShadow.entityToMap(entity, EntityUseType.INSERT);
         // 执行并, 返回主键
         K primaryKeyValue = model.newQuery().insertGetIdMapStyle(entityMap);
 
@@ -535,7 +543,7 @@ public class RecordBean<T, K> implements Record<T, K> {
         if (success) {
             // 主键准备
             entityMap.put(model.getPrimaryKeyColumnName(), primaryKeyValue);
-
+            // 更新自身
             selfUpdate(entityMap);
             // 通知
             model.created(this);
@@ -570,12 +578,13 @@ public class RecordBean<T, K> implements Record<T, K> {
             return false;
         }
         // entity 2 map
-        Map<String, Object> entityMap = modelShadow.entityBackFillToMap(entity, EntityUseType.UPDATE);
+        Map<String, Object> entityMap = modelShadow.entityToMap(entity, EntityUseType.UPDATE);
         // 执行
         boolean success =
             model.newQuery().where(model.getPrimaryKeyColumnName(), primaryKeyValue).data(entityMap).update() > 0;
         // 成功更新后,刷新自身属性
         if (success) {
+            // 更新自身
             selfUpdate(entityMap);
             // aop通知
             model.updated(this);
