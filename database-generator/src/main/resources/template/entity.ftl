@@ -4,6 +4,7 @@ ${imports}
 
 ${swagger_annotation}
 @Data
+@Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
 @Table(name = "${table}")
 public class ${entity_name} extends ${base_entity_name} {

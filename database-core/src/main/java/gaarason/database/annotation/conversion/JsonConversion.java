@@ -36,9 +36,5 @@ public class JsonConversion implements FieldConversion.Json {
     public Object deserialize(Field field, @Nullable String originalValue) {
         Type type = field.getGenericType();
         return JsonUtils.jsonToObject(originalValue, type);
-//        if (originalValue instanceof CharSequence) {
-//            return JsonUtils.jsonToObject(String.valueOf(originalValue), type);
-//        }
-//        return JsonUtils.ObjectToObject(originalValue, type);
     }
 }

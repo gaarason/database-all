@@ -25,6 +25,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 4.5.1
+- 优化`FieldConversion.EnumInteger`/`FieldConversion.EnumString`的实现
+- 优化`代码生成`, 在生成的`entity`上增加`@Accessors(chain = true)`
+
 ### 4.5.0
 - 在`@Column`中, 增加 `conversion` 接口的泛型约束, 并增加通用枚举处理`FieldConversion.EnumInteger`/`FieldConversion.EnumString`
 - 在`Builder`中, 修改使用`entity`作为参数的操作, 在保持相同语义(获取/填充/序列化)的前提下, 不再修改(回填)传入的`entity`
