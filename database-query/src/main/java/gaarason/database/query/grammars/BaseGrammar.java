@@ -23,14 +23,14 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     /**
      * 处理时, 需要用括号()包裹的
      */
-    protected final static List<SQLPartType> PARENTHESES_ARE_REQUIRED = Arrays.asList(SQLPartType.FORCE_INDEX,
+    protected final static Set<SQLPartType> PARENTHESES_ARE_REQUIRED = EnumSet.of(SQLPartType.FORCE_INDEX,
         SQLPartType.IGNORE_INDEX, SQLPartType.COLUMN);
     /**
      * column -> [ GenerateSqlPart , RelationshipRecordWith ]
      * @see RelationshipRecordWithFunctionalInterface
      * @see GenerateSqlPartFunctionalInterface
      */
-    protected final HashMap<String, Object[]> withMap;
+    protected final Map<String, Object[]> withMap;
     /**
      * 表名
      */
@@ -286,5 +286,15 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     @Override
     public Grammar deepCopy() throws CloneNotSupportedRuntimeException {
         return ObjectUtils.deepCopy(this);
+    }
+
+    @Override
+    public void merger(Grammar grammar) {
+        withMap.putAll(grammar.pullWith());
+
+        for (SQLPartType type : SQLPartType.values()) {
+            SQLPartInfo partInfo = grammar.get(type);
+            add(type, partInfo.getSqlString(), partInfo.getParameters());
+        }
     }
 }

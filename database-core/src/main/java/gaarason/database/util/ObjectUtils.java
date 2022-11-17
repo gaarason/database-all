@@ -84,9 +84,23 @@ public class ObjectUtils {
      * @return 是否
      */
     public static boolean isCollection(Class<?> clazz) {
-        return Arrays.asList(clazz.getInterfaces()).contains(Collection.class);
+        return getInterfaces(clazz).contains(Collection.class);
     }
 
+    /**
+     * 递归找到目标类实现的所有接口
+     * @param clazz 目标类
+     * @return 接口集合
+     */
+    public static Set<Class<?>> getInterfaces(Class<?> clazz) {
+        Set<Class<?>> interfaceSet = new HashSet<>();
+        Class<?>[] interfaces = clazz.getInterfaces();
+        for (Class<?> anInterface : interfaces) {
+            interfaceSet.add(anInterface);
+            interfaceSet.addAll(getInterfaces(anInterface));
+        }
+        return interfaceSet;
+    }
 
     /**
      * 通过序列化对普通对象进行递归copy

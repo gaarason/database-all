@@ -1,5 +1,6 @@
 package gaarason.database.contract.eloquent.relation;
 
+import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
@@ -15,28 +16,28 @@ import java.util.Map;
 public interface RelationSubQuery {
 
     /**
-     * 批量关联查询的sql预生成, 可以作为缓存key
+     * 批量关联查询的Builder预生成, toSql(select)后可以作为缓存的key
      * @param columnValueMapList 当前recordList的元数据
      * @param generateSqlPart Builder(目标表可用)
-     * @return sql数组 [0 -> 目标表操作, 1 -> 中间表操作]
+     * @return Builder数组 [0 -> 中间表操作 , 1 -> 目标表操作]
      */
-    String[] prepareSqlArr(List<Map<String, Object>> columnValueMapList,
+    Builder<?, ?>[] prepareBuilderArr(List<Map<String, Object>> columnValueMapList,
         GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart);
 
     /**
-     * 批量关联查询
-     * @param sql1 sql
+     * 批量关联查询 (中间表)
+     * @param builderForRelation 中间表查询构造器
      * @return 查询结果集
      */
-    RecordList<?, ?> dealBatchPrepare(String sql1);
+    RecordList<?, ?> dealBatchForRelation(Builder<?, ?> builderForRelation);
 
     /**
-     * 批量关联查询
-     * @param sql0 sql
+     * 批量关联查询 (目标表)
+     * @param builderForTarget 目标表查询构造器
      * @param relationRecordList @BelongsToMany 中间表数据
      * @return 查询结果集
      */
-    RecordList<?, ?> dealBatch(String sql0, RecordList<?, ?> relationRecordList);
+    RecordList<?, ?> dealBatchForTarget(Builder<?, ?> builderForTarget, RecordList<?, ?> relationRecordList);
 
     /**
      * 筛选批量关联查询结果对象

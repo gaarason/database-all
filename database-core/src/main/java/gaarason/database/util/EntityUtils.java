@@ -9,6 +9,7 @@ import gaarason.database.lang.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -62,6 +63,23 @@ public final class EntityUtils {
      */
     public static boolean isFieldCanBeNull(Field field) {
         return !FinalVariable.NOT_ACCEPT_NULL_TYPES.contains(field.getType());
+    }
+
+    /**
+     * 获取字段的真实类型
+     * eg: List<String> -> String
+     * @param field 字段 (合集/数组/普通对象/基本类型)
+     * @return 真实类型
+     */
+    public static Class<?> getRealClass(Field field) {
+        Class<?> type = field.getType();
+        if (type.isArray()) {
+            return type.getComponentType();
+        }
+        if (ObjectUtils.isCollection(type)) {
+            return ObjectUtils.getGenerics((ParameterizedType) field.getGenericType(), 0);
+        }
+        return type;
     }
 
     /**

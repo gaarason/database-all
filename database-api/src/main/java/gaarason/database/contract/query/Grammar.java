@@ -130,6 +130,12 @@ public interface Grammar {
     Grammar deepCopy() throws CloneNotSupportedRuntimeException;
 
     /**
+     * 将目标grammar合并到自身
+     * @param grammar 目标grammar
+     */
+    void merger(Grammar grammar);
+
+    /**
      * 记录with信息
      * @param column 所关联的Model(当前模块的属性名)
      * @param builderClosure 所关联的Model的查询构造器约束

@@ -1,7 +1,7 @@
 package gaarason.database.query.grammars;
 
 /**
- * mysql 语法分析基类
+ * mysql 语法分析
  * @author xt
  */
 public class MySqlGrammar extends BaseGrammar {

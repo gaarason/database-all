@@ -1,5 +1,7 @@
 package gaarason.database.support;
 
+import gaarason.database.appointment.SqlType;
+import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
@@ -7,9 +9,13 @@ import gaarason.database.contract.function.GenerateRecordListFunctionalInterface
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.core.Container;
+import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 关联关系获取
@@ -107,23 +113,24 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
                 // 关联关系字段处理
                 RelationSubQuery relationSubQuery = fieldRelationMember.getRelationSubQuery();
 
-                // sql数组
-                String[] sqlArr = relationSubQuery.prepareSqlArr(originalMetadataMapList, generateSqlPart);
+                // Builder数组 [0 -> 中间表操作 , 1 -> 目标表操作]
+                Builder<?, ?>[] builderArr = relationSubQuery.prepareBuilderArr(originalMetadataMapList,
+                    generateSqlPart);
 
                 // 中间表数据
-                RecordList<?, ?> relationRecords = getRelationRecordsInCache(cacheRecords, sqlArr[1],
-                    () -> relationSubQuery.dealBatchPrepare(sqlArr[1]));
+                RecordList<?, ?> relationRecords = getRelationRecordsInCache(cacheRecords, builderArr[0],
+                    () -> relationSubQuery.dealBatchForRelation(builderArr[0]));
 
                 // 本级关系查询
-                RecordList<?, ?> targetRecordList = getTargetRecordsInCache(cacheRecords, sqlArr,
-                    relationshipRecordWith, () -> relationSubQuery.dealBatch(sqlArr[0], relationRecords));
+                RecordList<?, ?> targetRecordList = getTargetRecordsInCache(cacheRecords, builderArr,
+                    relationshipRecordWith, () -> relationSubQuery.dealBatchForTarget(builderArr[1], relationRecords));
 
                 // 递归处理下级关系, 并筛选当前 record 所需要的属性
                 List<?> objects = relationSubQuery.filterBatchRecord(theRecord, targetRecordList,
                     cacheRecords);
 
                 // 是否是集合
-                if (fieldRelationMember.isCollection()) {
+                if (fieldRelationMember.isPlural()) {
                     // 关系属性赋值
                     fieldRelationMember.fieldSet(entity, objects);
                 } else {
@@ -139,33 +146,31 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
     /**
      * 在内存缓存中优先查找目标值
      * @param cacheRecords 缓存map
-     * @param sql sql
+     * @param builder 关系表查询构造器
      * @param closure 真实业务逻辑实现
      * @return 批量结果集
      */
-    protected RecordList<?, ?> getRelationRecordsInCache(Map<String, RecordList<?, ?>> cacheRecords,
-        String sql, GenerateRecordListFunctionalInterface closure) {
+    protected static RecordList<?, ?> getRelationRecordsInCache(Map<String, RecordList<?, ?>> cacheRecords,
+        @Nullable Builder<?, ?> builder, GenerateRecordListFunctionalInterface closure) {
         // 有缓存有直接返回, 没有就执行后返回
         // 因为没有更新操作, 所以直接返回原对象
-        // new String[]{sql, ""} 很关键
-        return getRecordsInCache(cacheRecords, new String[]{sql, ""}, closure);
+        // new Builder<?, ?>[]{builder, null} 很关键
+        return getRecordsInCache(cacheRecords, new Builder<?, ?>[]{builder, null}, closure);
     }
-
 
     /**
      * 在内存缓存中优先查找目标值
      * @param cacheRecords 缓存map
-     * @param sqlArr sql数组
+     * @param builderArr 查询构造器数组 [0 -> 中间表操作 , 1 -> 目标表操作]
      * @param relationshipRecordWith record 实现
      * @param closure 真实业务逻辑实现
      * @return 批量结果集
      */
-    protected RecordList<?, ?> getTargetRecordsInCache(Map<String, RecordList<?, ?>> cacheRecords,
-        String[] sqlArr,
-        RelationshipRecordWithFunctionalInterface relationshipRecordWith,
+    protected static RecordList<?, ?> getTargetRecordsInCache(Map<String, RecordList<?, ?>> cacheRecords,
+        Builder<?, ?>[] builderArr, RelationshipRecordWithFunctionalInterface relationshipRecordWith,
         GenerateRecordListFunctionalInterface closure) {
         // 有缓存有直接返回, 没有就执行后返回
-        RecordList<?, ?> recordList = getRecordsInCache(cacheRecords, sqlArr, closure);
+        RecordList<?, ?> recordList = getRecordsInCache(cacheRecords, builderArr, closure);
         // 使用复制结果
         RecordList<?, ?> recordsCopy = RecordFactory.copyRecordList(recordList);
         // 赋值关联关系
@@ -175,20 +180,24 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
         return recordsCopy;
     }
 
-
     /**
      * 在内存缓存中优先查找目标值
      * @param cacheRecords 缓存map
-     * @param sqlArr sql数组
+     * @param builderArr 查询构造器数组 [0 -> 中间表操作 , 1 -> 目标表操作]
      * @param closure 真实业务逻辑实现
      * @return 批量结果集
      */
-    protected RecordList<?, ?> getRecordsInCache(Map<String, RecordList<?, ?>> cacheRecords, String[] sqlArr,
-        GenerateRecordListFunctionalInterface closure) {
+    protected static RecordList<?, ?> getRecordsInCache(Map<String, RecordList<?, ?>> cacheRecords,
+        Builder<?, ?>[] builderArr, GenerateRecordListFunctionalInterface closure) {
         // 缓存keyName
-        String cacheKeyName = Arrays.toString(sqlArr);
+        StringBuilder cacheKey = new StringBuilder();
+        for (Builder<?, ?> builder : builderArr) {
+            cacheKey.append(builder == null ? "" : builder.toSql(SqlType.SELECT));
+            cacheKey.append('|');
+        }
+
         // 有缓存有直接返回, 没有就执行后返回
-        return cacheRecords.computeIfAbsent(cacheKeyName,
+        return cacheRecords.computeIfAbsent(cacheKey.toString(),
             theKey -> closure.execute());
     }
 

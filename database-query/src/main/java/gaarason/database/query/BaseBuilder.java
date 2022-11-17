@@ -83,6 +83,11 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
         this.grammar = grammar;
     }
 
+    @Override
+    public void mergerGrammar(Grammar grammar) {
+        this.grammar.merger(grammar);
+    }
+
     /**
      * 得到一个全新的查询构造器
      * @return 查询构造器

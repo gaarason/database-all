@@ -20,10 +20,16 @@ public interface Support<T, K> extends LambdaStyle<T, K> {
     Grammar getGrammar();
 
     /**
-     * sql生成器
-     * @param grammar sql生成器
+     * 覆盖 语法分析
+     * @param grammar 语法分析
      */
     void setGrammar(Grammar grammar);
+
+    /**
+     * 合并 语法分析
+     * @param grammar 语法分析
+     */
+    void mergerGrammar(Grammar grammar);
 
     /**
      * 得到一个全新的查询构造器
@@ -36,6 +42,26 @@ public interface Support<T, K> extends LambdaStyle<T, K> {
      * @return 查询构造器
      */
     Builder<T, K> getSelf();
+
+    /**
+     * 覆盖 查询构造器
+     * @param builder 查询构造器
+     * @return 查询构造器
+     */
+    default Builder<T, K> setBuilder(Builder<T, K> builder) {
+        setGrammar(builder.getGrammar().deepCopy());
+        return getSelf();
+    }
+
+    /**
+     * 合并 查询构造器
+     * @param builder 查询构造器
+     * @return 查询构造器
+     */
+    default Builder<T, K> mergerBuilder(Builder<T, K> builder) {
+        mergerGrammar(builder.getGrammar().deepCopy());
+        return getSelf();
+    }
 
     /**
      * 执行闭包生成完整sql, 含绑定参数的合并
