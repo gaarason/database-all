@@ -1,9 +1,7 @@
 package gaarason.database.query;
 
 import gaarason.database.appointment.EntityUseType;
-import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
@@ -23,10 +21,6 @@ import java.util.Map;
  * @author xt
  */
 public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
-
-    protected WhereBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
-        super(gaarasonDataSource, model, grammar);
-    }
 
     protected Builder<T, K> whereGrammar(String sqlPart, @Nullable Collection<Object> parameters, String separator) {
         grammar.addSmartSeparator(Grammar.SQLPartType.WHERE, sqlPart, parameters, separator);
@@ -84,8 +78,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
 
     @Override
     public Builder<T, K> where(Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity,
-            EntityUseType.CONDITION);
+        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity, EntityUseType.CONDITION);
         return where(columnValueMap);
     }
 
@@ -175,8 +168,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
 
     @Override
     public Builder<T, K> whereLikeIgnoreNull(@Nullable Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity,
-            EntityUseType.CONDITION);
+        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity, EntityUseType.CONDITION);
         return whereLikeIgnoreNull(columnValueMap);
     }
 
@@ -201,8 +193,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
 
     @Override
     public Builder<T, K> whereNotLikeIgnoreNull(@Nullable Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity,
-            EntityUseType.CONDITION);
+        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity, EntityUseType.CONDITION);
         return whereNotLikeIgnoreNull(columnValueMap);
     }
 
@@ -255,15 +246,13 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
 
     @Override
     public Builder<T, K> whereMayLike(@Nullable Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity,
-            EntityUseType.CONDITION);
+        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity, EntityUseType.CONDITION);
         return whereMayLike(columnValueMap);
     }
 
     @Override
     public Builder<T, K> whereMayNotLike(@Nullable Object anyEntity) {
-        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity,
-            EntityUseType.CONDITION);
+        final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity, EntityUseType.CONDITION);
         return whereMayNotLike(columnValueMap);
     }
 

@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
  */
 public abstract class BaseGrammar implements Grammar, Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     /**
      * 处理时, 需要用括号()包裹的
      */

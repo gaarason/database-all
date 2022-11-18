@@ -9,7 +9,6 @@ import gaarason.database.exception.base.BaseException;
 import gaarason.database.test.utils.DatabaseTypeUtil;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -50,7 +49,9 @@ public class SingleModel<T, K> extends Model<T, K> {
         properties.setProperty("druid.stat.slowSqlMillis", "5000");
         druidDataSource.setConnectProperties(properties);
         druidDataSource.setUseGlobalDataSourceStat(true);
-        return GaarasonDataSourceBuilder.build(druidDataSource);
+        GaarasonDataSource gaarasonDataSource = GaarasonDataSourceBuilder.build(druidDataSource);
+        gaarasonDataSource.getContainer().signUpIdentification("mysql");
+        return gaarasonDataSource;
     }
 
     private static GaarasonDataSource mssqlDataSource() {
@@ -81,7 +82,9 @@ public class SingleModel<T, K> extends Model<T, K> {
         properties.setProperty("druid.stat.slowSqlMillis", "5000");
         druidDataSource.setConnectProperties(properties);
         druidDataSource.setUseGlobalDataSourceStat(true);
-        return GaarasonDataSourceBuilder.build(druidDataSource);
+        GaarasonDataSource dataSource = GaarasonDataSourceBuilder.build(druidDataSource);
+        dataSource.getContainer().signUpIdentification("mssql");
+        return dataSource;
     }
 
     @Override

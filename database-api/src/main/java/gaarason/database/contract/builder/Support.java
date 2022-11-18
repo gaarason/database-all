@@ -1,7 +1,9 @@
 package gaarason.database.contract.builder;
 
 import gaarason.database.appointment.SqlType;
+import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
+import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.contract.support.LambdaStyle;
@@ -12,6 +14,15 @@ import gaarason.database.lang.Nullable;
  * @author xt
  */
 public interface Support<T, K> extends LambdaStyle<T, K> {
+
+    /**
+     * 构造函数
+     * @param gaarasonDataSource 数据源
+     * @param model 数据模型
+     * @param grammar 语法
+     * @return 查询构造器
+     */
+    Builder<T, K> initBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar);
 
     /**
      * sql生成器

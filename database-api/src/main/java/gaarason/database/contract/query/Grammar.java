@@ -153,10 +153,12 @@ public interface Grammar {
     /**
      * SQL片段类型
      */
-    enum SQLPartType {
+    enum SQLPartType implements Serializable {
         SELECT("select "), COLUMN(""), DATA(" set "), VALUE(" values "), FROM(" from "), TABLE(""),
         FORCE_INDEX(" force index "), IGNORE_INDEX(" ignore index "), ORDER(" order by "), LIMIT(" limit "),
         GROUP(" group by "), JOIN(""), WHERE(" where "), HAVING(" having "), LOCK(""), UNION("");
+
+        private static final long serialVersionUID = 1L;
 
         private final String keyword;
 
@@ -173,6 +175,9 @@ public interface Grammar {
      * SQL片段信息
      */
     class SQLPartInfo implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
         private final String sqlString;
 
         @Nullable

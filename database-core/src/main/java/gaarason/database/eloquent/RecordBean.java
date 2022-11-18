@@ -9,20 +9,27 @@ import gaarason.database.contract.eloquent.extra.Bind;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
+import gaarason.database.core.Container;
 import gaarason.database.eloquent.record.BindBean;
 import gaarason.database.exception.EntityAttributeInvalidException;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.exception.RelationNotFoundException;
 import gaarason.database.lang.Nullable;
+import gaarason.database.provider.GodProvider;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.EntityMember;
 import gaarason.database.support.FieldMember;
 import gaarason.database.support.PrimaryKeyMember;
 import gaarason.database.support.RelationGetSupport;
+import gaarason.database.util.ClassUtils;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -34,25 +41,22 @@ import java.util.Map;
 public class RecordBean<T, K> implements Record<T, K> {
 
     /**
-     * 数据模型
-     */
-    protected final transient Model<T, K> model;
-
-    /**
-     * Model信息大全
-     */
-    protected final transient ModelShadowProvider modelShadow;
-
-    /**
-     * 数据实体类
-     */
-    protected final Class<T> entityClass;
-
-    /**
      * 本表元数据
      * <数据库字段名 -> 字段信息>
      */
-    protected final transient Map<String, Object> metadataMap = new HashMap<>(16);
+    protected final Map<String, Object> metadataMap = new HashMap<>(16);
+    /**
+     * 数据模型
+     */
+    protected Model<T, K> model;
+    /**
+     * Model信息大全
+     */
+    protected ModelShadowProvider modelShadow;
+    /**
+     * 数据实体类
+     */
+    protected Class<T> entityClass;
 
     /**
      * 原Sql
@@ -86,11 +90,30 @@ public class RecordBean<T, K> implements Record<T, K> {
     protected K originalPrimaryKeyValue;
 
     /**
+     * 仅反序列化时使用
+     */
+    public RecordBean() {
+
+    }
+
+    /**
      * 根据查询结果集生成
      * @param model 数据模型
      * @param stringObjectMap 元数据
      */
     public RecordBean(Model<T, K> model, Map<String, Object> stringObjectMap, String originalSql) {
+        initRecordBean(model, stringObjectMap, originalSql);
+    }
+
+    /**
+     * 凭空生成
+     * @param model 数据模型
+     */
+    public RecordBean(Model<T, K> model) {
+        initRecordBean(model, Collections.emptyMap(), "");
+    }
+
+    public void initRecordBean(Model<T, K> model, Map<String, Object> stringObjectMap, String originalSql) {
         this.entityClass = model.getEntityClass();
         this.model = model;
         this.modelShadow = model.getGaarasonDataSource().getContainer().getBean(ModelShadowProvider.class);
@@ -103,18 +126,6 @@ public class RecordBean<T, K> implements Record<T, K> {
         } else {
             hasBind = false;
         }
-    }
-
-    /**
-     * 凭空生成
-     * @param model 数据模型
-     */
-    public RecordBean(Model<T, K> model) {
-        this.entityClass = model.getEntityClass();
-        this.model = model;
-        this.modelShadow = model.getGaarasonDataSource().getContainer().getBean(ModelShadowProvider.class);
-        this.entity = init(new HashMap<>());
-        hasBind = false;
     }
 
     @Override
@@ -625,4 +636,32 @@ public class RecordBean<T, K> implements Record<T, K> {
         return toMap().toString();
     }
 
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        String identification = model.getContainer().getIdentification();
+        out.writeUTF(identification);
+        out.writeUTF(model.getClass().getName());
+        out.writeObject(metadataMap);
+        out.writeUTF(originalSql);
+        out.writeObject(relationBuilderMap);
+        out.writeObject(relationRecordMap);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        String identification = in.readUTF();
+        String modelName = in.readUTF();
+        Object map = in.readObject();
+        String sql = in.readUTF();
+        relationBuilderMap = ObjectUtils.typeCast(in.readObject());
+        relationRecordMap = ObjectUtils.typeCast(in.readObject());
+
+        Container container = GodProvider.get(identification);
+        Class<?> modelClass = ClassUtils.forName(modelName);
+        Model<?, ?> model = container.getBean(ModelShadowProvider.class)
+            .getByModelClass(ObjectUtils.typeCast(modelClass))
+            .getModel();
+
+        initRecordBean(ObjectUtils.typeCast(model), ObjectUtils.typeCast(map), sql);
+    }
 }

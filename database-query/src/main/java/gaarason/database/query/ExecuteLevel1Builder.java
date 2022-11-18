@@ -1,18 +1,17 @@
 package gaarason.database.query;
 
-import gaarason.database.contract.connection.GaarasonDataSource;
-import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
-import gaarason.database.contract.query.Grammar;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
 import gaarason.database.util.ObjectUtils;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 查询构造器(sql执行的部分)
@@ -23,15 +22,11 @@ import java.util.*;
  */
 public abstract class ExecuteLevel1Builder<T, K> extends BaseBuilder<T, K> {
 
-    protected ExecuteLevel1Builder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
-        super(gaarasonDataSource, model, grammar);
-    }
-
     /**
      * 传递有效的with信息
      * @param record 查询结果集
      */
-    protected void with(Record<T, K> record){
+    protected void with(Record<T, K> record) {
         Map<String, Object[]> columnMap = grammar.pullWith();
         for (Map.Entry<String, Object[]> stringEntry : columnMap.entrySet()) {
             Object[] value = stringEntry.getValue();
@@ -44,7 +39,7 @@ public abstract class ExecuteLevel1Builder<T, K> extends BaseBuilder<T, K> {
      * 传递有效的with信息
      * @param records 查询结果集
      */
-    protected void with(RecordList<T, K> records){
+    protected void with(RecordList<T, K> records) {
         Map<String, Object[]> columnMap = grammar.pullWith();
         for (Map.Entry<String, Object[]> stringEntry : columnMap.entrySet()) {
             records.with(stringEntry.getKey(), (GenerateSqlPartFunctionalInterface<?, ?>) stringEntry.getValue()[0],
@@ -55,8 +50,8 @@ public abstract class ExecuteLevel1Builder<T, K> extends BaseBuilder<T, K> {
     @Nullable
     @Override
     public Record<T, K> query(String sql, @Nullable Collection<?> parameters) throws SQLRuntimeException {
-        Record<T, K> record =  model.nativeQuery(sql, parameters);
-        if(!ObjectUtils.isEmpty(record)){
+        Record<T, K> record = model.nativeQuery(sql, parameters);
+        if (!ObjectUtils.isEmpty(record)) {
             with(record);
         }
         return record;

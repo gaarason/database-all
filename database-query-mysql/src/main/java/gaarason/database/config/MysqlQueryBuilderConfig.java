@@ -20,7 +20,7 @@ public class MysqlQueryBuilderConfig implements QueryBuilderConfig {
 
     @Override
     public <T, K> Builder<T, K> newBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model) {
-        return new MySqlBuilder<>(gaarasonDataSource, model, new MySqlGrammar(model.getTableName()));
+        return new MySqlBuilder<T, K>().initBuilder(gaarasonDataSource, model, new MySqlGrammar(model.getTableName()));
     }
 
 }

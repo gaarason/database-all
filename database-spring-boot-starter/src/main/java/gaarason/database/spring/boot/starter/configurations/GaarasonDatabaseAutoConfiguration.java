@@ -72,7 +72,7 @@ public class GaarasonDatabaseAutoConfiguration {
         /*
          * 将配置合并
          * 认定 GaarasonDatabaseScan 的解析一定在此之前完成了.
-         * 默认使用 pring boot 的包扫描路径
+         * 默认使用 spring boot 的包扫描路径
          */
         gaarasonDatabaseProperties.mergeScan(GaarasonDatabaseScanRegistrar.getScan())
             .fillPackageWhenIsEmpty(packageOnSpringBoot)
@@ -80,6 +80,11 @@ public class GaarasonDatabaseAutoConfiguration {
 
         // 从配置创建全新容器
         ContainerBootstrap container = ContainerBootstrap.build(gaarasonDatabaseProperties);
+
+        /*
+         * 序列化的必要步骤
+         */
+        container.signUpIdentification("primary-container");
 
         container.defaultRegister();
 

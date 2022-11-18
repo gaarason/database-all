@@ -1,8 +1,6 @@
 package gaarason.database.query;
 
-import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
 import gaarason.database.util.ObjectUtils;
@@ -16,10 +14,6 @@ import java.util.Collection;
  * @author xt
  */
 public abstract class GroupBuilder<T, K> extends DataBuilder<T, K> {
-
-    protected GroupBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
-        super(gaarasonDataSource, model, grammar);
-    }
 
     protected Builder<T, K> groupGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
         grammar.addSmartSeparator(Grammar.SQLPartType.GROUP, sqlPart, parameters, ",");
