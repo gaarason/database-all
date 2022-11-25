@@ -1,10 +1,12 @@
 package gaarason.database.query.grammars;
 
 /**
- * mssql 语法分析基类
+ * mssql 语法分析
  * @author xt
  */
 public class MsSqlGrammar extends BaseGrammar {
+
+    private static final long serialVersionUID = 1L;
 
     public MsSqlGrammar(String tableName) {
         super(tableName);

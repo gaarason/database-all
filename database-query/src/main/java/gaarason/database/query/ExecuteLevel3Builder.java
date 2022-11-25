@@ -2,13 +2,10 @@ package gaarason.database.query;
 
 import gaarason.database.appointment.EntityUseType;
 import gaarason.database.appointment.Paginate;
-import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.ChunkFunctionalInterface;
-import gaarason.database.contract.query.Grammar;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.InsertNotSuccessException;
@@ -27,11 +24,6 @@ import java.util.*;
  * @author xt
  */
 public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T, K> {
-
-    protected ExecuteLevel3Builder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
-        super(gaarasonDataSource, model, grammar);
-    }
-
 
     @Override
     public Record<T, K> find(@Nullable Object id) throws SQLRuntimeException {

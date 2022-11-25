@@ -130,6 +130,12 @@ public interface Grammar {
     Grammar deepCopy() throws CloneNotSupportedRuntimeException;
 
     /**
+     * 将目标grammar合并到自身
+     * @param grammar 目标grammar
+     */
+    void merger(Grammar grammar);
+
+    /**
      * 记录with信息
      * @param column 所关联的Model(当前模块的属性名)
      * @param builderClosure 所关联的Model的查询构造器约束
@@ -147,10 +153,12 @@ public interface Grammar {
     /**
      * SQL片段类型
      */
-    enum SQLPartType {
+    enum SQLPartType implements Serializable {
         SELECT("select "), COLUMN(""), DATA(" set "), VALUE(" values "), FROM(" from "), TABLE(""),
         FORCE_INDEX(" force index "), IGNORE_INDEX(" ignore index "), ORDER(" order by "), LIMIT(" limit "),
         GROUP(" group by "), JOIN(""), WHERE(" where "), HAVING(" having "), LOCK(""), UNION("");
+
+        private static final long serialVersionUID = 1L;
 
         private final String keyword;
 
@@ -167,6 +175,9 @@ public interface Grammar {
      * SQL片段信息
      */
     class SQLPartInfo implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
         private final String sqlString;
 
         @Nullable

@@ -1,9 +1,7 @@
 package gaarason.database.query;
 
 import gaarason.database.appointment.EntityUseType;
-import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
@@ -23,10 +21,6 @@ import java.util.Map;
  * @author xt
  */
 public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
-
-    protected HavingBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
-        super(gaarasonDataSource, model, grammar);
-    }
 
     protected Builder<T, K> havingGrammar(String sqlPart, @Nullable Collection<Object> parameters, String separator) {
         grammar.addSmartSeparator(Grammar.SQLPartType.HAVING, sqlPart, parameters, separator);

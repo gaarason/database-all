@@ -9,12 +9,13 @@ import gaarason.database.test.models.relation.model.RelationshipStudentTeacherMo
 import gaarason.database.test.models.relation.pojo.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Data
+@ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Table(name = "teacher")
 public class Teacher extends BaseEntity implements Serializable {
@@ -47,15 +48,43 @@ public class Teacher extends BaseEntity implements Serializable {
     @HasOneOrMany(sonModelForeignKey = "teacher_id")
     private List<Student> students;
 
+    @HasOneOrMany(sonModelForeignKey = "teacher_id")
+    private Student[] studentArray;
+
+    @HasOneOrMany(sonModelForeignKey = "teacher_id")
+    private ArrayList<Student> studentArrayList;
+
+    @HasOneOrMany(sonModelForeignKey = "teacher_id")
+    private LinkedList<Student> studentLinkedList;
+
+    @HasOneOrMany(sonModelForeignKey = "teacher_id")
+    private Set<Student> studentSet;
+
+    @HasOneOrMany(sonModelForeignKey = "teacher_id")
+    private LinkedHashSet<Student> studentLinkedHashSet;
+
     @HasOneOrMany(sonModelForeignKey = "teacher_id", localModelLocalKey = "id")
     private Student student;
 
     @HasOneOrMany(sonModelForeignKey = "teacher_id")
     private List<RelationshipStudentTeacher> relationshipStudentTeachers;
 
-    @BelongsToMany(relationModel = RelationshipStudentTeacherModel.class,
-        foreignKeyForLocalModel = "teacher_id", foreignKeyForTargetModel = "student_id", localModelLocalKey = "id",
-        targetModelLocalKey = "id")
+    @BelongsToMany(relationModel = RelationshipStudentTeacherModel.class, foreignKeyForLocalModel = "teacher_id", foreignKeyForTargetModel = "student_id", localModelLocalKey = "id", targetModelLocalKey = "id")
     private List<Student> studentsBelongsToMany;
+
+    @BelongsToMany(relationModel = RelationshipStudentTeacherModel.class, foreignKeyForLocalModel = "teacher_id", foreignKeyForTargetModel = "student_id", localModelLocalKey = "id", targetModelLocalKey = "id")
+    private Student[] studentsBelongsToManyArray;
+
+    @BelongsToMany(relationModel = RelationshipStudentTeacherModel.class, foreignKeyForLocalModel = "teacher_id", foreignKeyForTargetModel = "student_id", localModelLocalKey = "id", targetModelLocalKey = "id")
+    private ArrayList<Student> studentsBelongsToManyArrayList;
+
+    @BelongsToMany(relationModel = RelationshipStudentTeacherModel.class, foreignKeyForLocalModel = "teacher_id", foreignKeyForTargetModel = "student_id", localModelLocalKey = "id", targetModelLocalKey = "id")
+    private Set<Student> studentsBelongsToManySet;
+
+    @BelongsToMany(relationModel = RelationshipStudentTeacherModel.class, foreignKeyForLocalModel = "teacher_id", foreignKeyForTargetModel = "student_id", localModelLocalKey = "id", targetModelLocalKey = "id")
+    private LinkedHashSet<Student> studentsBelongsToManyLinkedHashSet;
+
+    @BelongsToMany(relationModel = RelationshipStudentTeacherModel.class, foreignKeyForLocalModel = "teacher_id", foreignKeyForTargetModel = "student_id", localModelLocalKey = "id", targetModelLocalKey = "id")
+    private LinkedList<Student> studentsBelongsToManyLinkedList;
 
 }

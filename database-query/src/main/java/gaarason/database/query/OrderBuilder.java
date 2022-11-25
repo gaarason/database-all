@@ -1,9 +1,7 @@
 package gaarason.database.query;
 
 import gaarason.database.appointment.OrderBy;
-import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
@@ -18,10 +16,6 @@ import java.util.Collection;
  * @author xt
  */
 public abstract class OrderBuilder<T, K> extends HavingBuilder<T, K> {
-
-    protected OrderBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
-        super(gaarasonDataSource, model, grammar);
-    }
 
     protected Builder<T, K> orderGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
         grammar.addSmartSeparator(Grammar.SQLPartType.ORDER, sqlPart, parameters, ",");

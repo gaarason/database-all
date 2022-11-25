@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.reflections.Reflections;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 @Slf4j
@@ -265,6 +266,17 @@ public class DatabaseUtilsTests {
         Class<? extends Model<?, ?>> aClass = EntityUtils.inferModelClassOnEntity(TEntity.class);
         Assert.assertNotNull(aClass);
         Assert.assertEquals(TEntity.Model.class, aClass);
+    }
+
+    @Test
+    public void isCollection(){
+        Assert.assertEquals(Model.class, Model[].class.getComponentType());
+        Assert.assertTrue(ObjectUtils.isCollection(List.class));
+        Assert.assertTrue(ObjectUtils.isCollection(ArrayList.class));
+        Assert.assertTrue(ObjectUtils.isCollection(LinkedList.class));
+        Assert.assertTrue(ObjectUtils.isCollection(Set.class));
+        Assert.assertTrue(ObjectUtils.isCollection(LinkedHashSet.class));
+        Assert.assertTrue(Object[].class.isArray());
     }
 
     public static class TEntity{

@@ -49,7 +49,9 @@ abstract public class BaseModel<T extends Serializable, K extends Serializable> 
         properties.setProperty("druid.stat.slowSqlMillis", "5000");
         druidDataSource.setConnectProperties(properties);
         druidDataSource.setUseGlobalDataSourceStat(true);
-        return GaarasonDataSourceBuilder.build(druidDataSource);
+        GaarasonDataSource dataSource = GaarasonDataSourceBuilder.build(druidDataSource);
+        dataSource.getContainer().signUpIdentification("mysql2");
+        return dataSource;
     }
 
     private static GaarasonDataSource mssqlDataSource() {

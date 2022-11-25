@@ -1308,5 +1308,68 @@ abstract public class RelationTests extends BaseTests {
 
     }
 
+    @Test
+    public void 一对多_关联关系属性类型支持(){
+        Teacher teacher = teacherModel.findOrFail(1)
+            .with(Teacher::getStudents)
+            .with(Teacher::getStudentArray)
+            .with(Teacher::getStudentArrayList)
+            // 使用 orWhere 更改查询范围
+            .with(Teacher::getStudentLinkedList, builder -> builder.where("id",3).orWhere(builder1 -> builder1.where("id",1)))
+            .with(Teacher::getStudentLinkedHashSet)
+            .with(Teacher::getStudentSet)
+            .toObject();
+        System.out.println(teacher);
+        Assert.assertNotNull(teacher.getStudents());
+        Assert.assertEquals(2, teacher.getStudents().size());
 
+        Assert.assertNotNull(teacher.getStudentArray());
+        Assert.assertEquals(2, teacher.getStudentArray().length);
+
+        Assert.assertNotNull(teacher.getStudentArrayList());
+        Assert.assertEquals(2, teacher.getStudentArrayList().size());
+
+        // 使用 orWhere 更改查询范围, 但是在数据后续处理中, 没有对应关系键, 所以绑定不成功.
+        Assert.assertNotNull(teacher.getStudentLinkedList());
+        Assert.assertEquals(0, teacher.getStudentLinkedList().size());
+
+        Assert.assertNotNull(teacher.getStudentLinkedHashSet());
+        Assert.assertEquals(2, teacher.getStudentLinkedHashSet().size());
+
+        Assert.assertNotNull(teacher.getStudentSet());
+        Assert.assertEquals(2, teacher.getStudentSet().size());
+    }
+
+    @Test
+    public void 多对多_关联关系属性类型支持(){
+        Teacher teacher = teacherModel.findOrFail(1)
+            .with(Teacher::getStudentsBelongsToMany)
+            .with(Teacher::getStudentsBelongsToManyArray)
+            .with(Teacher::getStudentsBelongsToManyLinkedHashSet)
+            // 使用 orWhere 更改查询范围
+            .with(Teacher::getStudentsBelongsToManySet, builder -> builder.where("id",3).orWhere(builder1 -> builder1.where("id",1)))
+            .with(Teacher::getStudentsBelongsToManyArrayList)
+            .with(Teacher::getStudentsBelongsToManyLinkedList)
+            .toObject();
+        System.out.println(teacher);
+        Assert.assertNotNull(teacher.getStudentsBelongsToMany());
+        Assert.assertEquals(3, teacher.getStudentsBelongsToMany().size());
+
+        Assert.assertNotNull(teacher.getStudentsBelongsToManyArray());
+        Assert.assertEquals(3, teacher.getStudentsBelongsToManyArray().length);
+
+        Assert.assertNotNull(teacher.getStudentsBelongsToManyLinkedHashSet());
+        Assert.assertEquals(3, teacher.getStudentsBelongsToManyLinkedHashSet().size());
+
+        // 使用 orWhere 更改查询范围
+        Assert.assertNotNull(teacher.getStudentsBelongsToManySet());
+        Assert.assertEquals(2, teacher.getStudentsBelongsToManySet().size());
+
+        Assert.assertNotNull(teacher.getStudentsBelongsToManyArrayList());
+        Assert.assertEquals(3, teacher.getStudentsBelongsToManyArrayList().size());
+
+        Assert.assertNotNull(teacher.getStudentsBelongsToManyLinkedList());
+        Assert.assertEquals(3, teacher.getStudentsBelongsToManyLinkedList().size());
+
+    }
 }

@@ -1,9 +1,7 @@
 package gaarason.database.query;
 
 import gaarason.database.appointment.EntityUseType;
-import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
 import gaarason.database.util.ObjectUtils;
@@ -19,10 +17,6 @@ import java.util.Map;
  * @author xt
  */
 public abstract class DataBuilder<T, K> extends ExecuteLevel3Builder<T, K> {
-
-    protected DataBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
-        super(gaarasonDataSource, model, grammar);
-    }
 
     protected Builder<T, K> dataGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
         grammar.addSmartSeparator(Grammar.SQLPartType.DATA, sqlPart, parameters, ",");

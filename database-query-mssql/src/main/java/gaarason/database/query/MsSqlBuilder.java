@@ -1,8 +1,6 @@
 package gaarason.database.query;
 
-import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.util.FormatUtils;
 
@@ -16,10 +14,6 @@ import java.util.Collection;
  * @author xt
  */
 public class MsSqlBuilder<T, K> extends OtherBuilder<T, K> {
-
-    public MsSqlBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
-        super(gaarasonDataSource, model, grammar);
-    }
 
     @Override
     public Builder<T, K> limit(Object offset, Object take) {

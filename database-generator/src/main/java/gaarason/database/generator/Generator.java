@@ -419,6 +419,7 @@ public class Generator {
         element.type2Name("lombok.Data");
         element.type2Name("lombok.EqualsAndHashCode");
         element.type2Name("lombok.experimental.Accessors");
+        element.type2Name("lombok.ToString");
         element.type2Name(Table.class);
 
         Map<String, String> parameterMap = new HashMap<>();

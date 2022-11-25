@@ -4,6 +4,7 @@ ${imports}
 
 ${swagger_annotation}
 @Data
+@ToString(callSuper = true)
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
 @Table(name = "${table}")

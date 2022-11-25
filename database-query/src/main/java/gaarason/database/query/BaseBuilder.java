@@ -15,9 +15,15 @@ import gaarason.database.exception.AbnormalParameterException;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
+import gaarason.database.provider.GodProvider;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.util.ClassUtils;
 import gaarason.database.util.ExceptionUtils;
+import gaarason.database.util.ObjectUtils;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -31,39 +37,44 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
     /**
      * 数据库连接
      */
-    protected final GaarasonDataSource gaarasonDataSource;
+    protected GaarasonDataSource gaarasonDataSource;
 
     /**
      * 数据模型
      */
-    protected final Model<T, K> model;
+    protected Model<T, K> model;
 
     /**
      * 容器
      */
-    protected final Container container;
+    protected Container container;
 
     /**
      * Model信息大全
      */
-    protected final ModelShadowProvider modelShadowProvider;
+    protected ModelShadowProvider modelShadowProvider;
 
     /**
      * 类型转化
      */
-    protected final ConversionConfig conversion;
+    protected ConversionConfig conversion;
 
     /**
      * 数据实体类
      */
-    final Class<T> entityClass;
+    Class<T> entityClass;
 
     /**
      * sql生成器
      */
     Grammar grammar;
 
-    protected BaseBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
+    public BaseBuilder() {
+
+    }
+
+    @Override
+    public Builder<T, K> initBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
         this.gaarasonDataSource = gaarasonDataSource;
         this.container = gaarasonDataSource.getContainer();
         this.modelShadowProvider = container.getBean(ModelShadowProvider.class);
@@ -71,6 +82,7 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
         this.model = model;
         this.entityClass = model.getEntityClass();
         this.grammar = grammar;
+        return this;
     }
 
     @Override
@@ -81,6 +93,11 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
     @Override
     public void setGrammar(Grammar grammar) {
         this.grammar = grammar;
+    }
+
+    @Override
+    public void mergerGrammar(Grammar grammar) {
+        this.grammar.merger(grammar);
     }
 
     /**
@@ -270,4 +287,27 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
         return integer == null ? 0 : integer;
     }
 
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        String identification = container.getIdentification();
+        out.writeUTF(identification);
+        out.writeUTF(model.getClass().getName());
+        out.writeObject(grammar);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        String identification = in.readUTF();
+        String modelName = in.readUTF();
+        Object grammar = in.readObject();
+
+        Container container = GodProvider.get(identification);
+        Class<?> modelClass = ClassUtils.forName(modelName);
+        Model<?, ?> model = container.getBean(ModelShadowProvider.class)
+            .getByModelClass(ObjectUtils.typeCast(modelClass))
+            .getModel();
+        GaarasonDataSource gaarasonDataSource = model.getGaarasonDataSource();
+
+        initBuilder(gaarasonDataSource, ObjectUtils.typeCast(model), ObjectUtils.typeCast(grammar));
+    }
 }

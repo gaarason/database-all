@@ -1,21 +1,19 @@
 package gaarason.database.eloquent.relation;
 
 import gaarason.database.config.ConversionConfig;
+import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.core.Container;
 import gaarason.database.eloquent.RecordListBean;
-import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.FieldMember;
 import gaarason.database.support.ModelMember;
-import gaarason.database.support.PrimaryKeyMember;
+import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
 
-import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
 /**
@@ -54,7 +52,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
     }
 
     @Override
-    public RecordList<?, ?> dealBatchPrepare(String sql1) {
+    public RecordList<?, ?> dealBatchForRelation(Builder<?, ?> builderForRelation) {
         return new RecordListBean<>(getContainer());
     }
 
@@ -98,9 +96,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @return Model实例
      */
     protected Model<?, ?> getModelInstance(Field field) {
-        Class<? extends Serializable> clazz = ObjectUtils.isCollection(field.getType()) ?
-            ObjectUtils.getGenerics((ParameterizedType) field.getGenericType(), 0) :
-            ObjectUtils.typeCast(field.getType());
+        Class<?> clazz = EntityUtils.getRealClass(field);
         return modelShadowProvider.getByEntityClass(clazz).getModel();
     }
 
@@ -110,11 +106,11 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @return 主键列名
      */
     protected String getPrimaryKeyColumnName(Model<?, ?> model) {
-        PrimaryKeyMember primaryKeyMember = modelShadowProvider.get(model).getEntityMember().getPrimaryKeyMember();
-        if (null == primaryKeyMember) {
-            throw new PrimaryKeyNotFoundException();
-        }
-        return primaryKeyMember.getFieldMember().getColumnName();
+        return modelShadowProvider.get(model)
+            .getEntityMember()
+            .getPrimaryKeyMemberOrFail()
+            .getFieldMember()
+            .getColumnName();
     }
 
     /**
@@ -141,7 +137,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
                 relationshipObjectList.get(0).getClass());
 
             // 字段信息
-            FieldMember fieldMember = modelMember.getEntityMember().getColumnFieldMap().get(columnName);
+            FieldMember<?> fieldMember = modelMember.getEntityMember().getColumnFieldMap().get(columnName);
 
             for (Object o : relationshipObjectList) {
                 // 值

@@ -12,12 +12,16 @@ import gaarason.database.exception.AbnormalParameterException;
 import gaarason.database.exception.NoSuchAlgorithmException;
 import gaarason.database.exception.OperationNotSupportedException;
 import gaarason.database.lang.Nullable;
+import gaarason.database.provider.GodProvider;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.EntityMember;
 import gaarason.database.support.RelationGetSupport;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.*;
 
 /**
@@ -32,11 +36,11 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
     /**
      * 容器
      */
-    protected final transient Container container;
+    protected transient Container container;
     /**
      * Model信息
      */
-    protected final transient ModelShadowProvider modelShadowProvider;
+    protected transient ModelShadowProvider modelShadowProvider;
     /**
      * 原始sql
      */
@@ -46,14 +50,25 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
      */
     protected transient HashMap<Object, Set<Object>> cacheMap = new HashMap<>();
 
+    /**
+     * 仅反序列化时使用
+     */
+    public RecordListBean() {
+
+    }
+
     public RecordListBean(Container container) {
-        this.container = container;
-        this.modelShadowProvider = container.getBean(ModelShadowProvider.class);
+        initRecordListBean("", container);
     }
 
     public RecordListBean(String originalSql, Container container) {
-        this(container);
+        initRecordListBean(originalSql, container);
+    }
+
+    protected void initRecordListBean(String originalSql, Container container) {
         this.originalSql = originalSql;
+        this.container = container;
+        this.modelShadowProvider = container.getBean(ModelShadowProvider.class);
     }
 
     @Override
@@ -287,5 +302,26 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
     @Override
     public Container getContainer() {
         return container;
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        String identification = container.getIdentification();
+        out.writeUTF(identification);
+        out.writeUTF(originalSql);
+        out.writeObject(toArray(new Record<?, ?>[0]));
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        String identification = in.readUTF();
+        String sql = in.readUTF();
+        Record<?, ?>[] array = ObjectUtils.typeCast(in.readObject());
+
+        Container container = GodProvider.get(identification);
+        initRecordListBean(sql, container);
+        for (Record<?, ?> record : array) {
+            add(ObjectUtils.typeCast(record));
+        }
     }
 }

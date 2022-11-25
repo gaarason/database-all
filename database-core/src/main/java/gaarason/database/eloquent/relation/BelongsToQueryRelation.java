@@ -1,7 +1,7 @@
 package gaarason.database.eloquent.relation;
 
 import gaarason.database.annotation.BelongsTo;
-import gaarason.database.appointment.SqlType;
+import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
@@ -39,17 +39,18 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public String[] prepareSqlArr(List<Map<String, Object>> columnValueMapList,
+    public Builder<?, ?>[] prepareBuilderArr(List<Map<String, Object>> columnValueMapList,
         GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart) {
-        return new String[]{generateSqlPart.execute(ObjectUtils.typeCast(belongsToTemplate.parentModel.newQuery()))
-            .whereIn(belongsToTemplate.parentModelLocalKey,
-                getColumnInMapList(columnValueMapList, belongsToTemplate.localModelForeignKey)).toSql(SqlType.SELECT),
-            ""};
+        Builder<?, ?> targetBuilder = generateSqlPart.execute(ObjectUtils.typeCast(
+            belongsToTemplate.parentModel.newQuery()
+                .whereIn(belongsToTemplate.parentModelLocalKey,
+                    getColumnInMapList(columnValueMapList, belongsToTemplate.localModelForeignKey))));
+        return new Builder<?, ?>[]{null, targetBuilder};
     }
 
     @Override
-    public RecordList<?, ?> dealBatch(String sql0, RecordList<?, ?> relationRecordList) {
-        return belongsToTemplate.parentModel.nativeQueryList(sql0, new ArrayList<>());
+    public RecordList<?, ?> dealBatchForTarget(Builder<?, ?> builderForTarget, RecordList<?, ?> relationRecordList) {
+        return belongsToTemplate.parentModel.newQuery().setBuilder(ObjectUtils.typeCast(builderForTarget)).get();
     }
 
     @Override

@@ -1,8 +1,6 @@
 package gaarason.database.query;
 
 import gaarason.database.appointment.SqlType;
-import gaarason.database.contract.connection.GaarasonDataSource;
-import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.query.Grammar;
@@ -20,10 +18,6 @@ import java.util.List;
  * @author xt
  */
 public abstract class ExecuteLevel2Builder<T, K> extends ExecuteLevel1Builder<T, K> {
-
-    protected ExecuteLevel2Builder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
-        super(gaarasonDataSource, model, grammar);
-    }
 
     /**
      * sql生成

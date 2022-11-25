@@ -3,9 +3,7 @@ package gaarason.database.query;
 import gaarason.database.appointment.AggregatesType;
 import gaarason.database.appointment.JoinType;
 import gaarason.database.appointment.SqlType;
-import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.ToSqlFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
@@ -26,10 +24,6 @@ import java.util.Map;
  * @author xt
  */
 public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
-
-    protected OtherBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
-        super(gaarasonDataSource, model, grammar);
-    }
 
     @Override
     public <R> R aggregate(AggregatesType op, String column) {

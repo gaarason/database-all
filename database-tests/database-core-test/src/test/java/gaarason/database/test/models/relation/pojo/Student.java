@@ -6,12 +6,14 @@ import gaarason.database.test.models.relation.model.RelationshipStudentTeacherMo
 import gaarason.database.test.models.relation.pojo.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
 @Data
+@ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Table(name = "student")
 public class Student extends BaseEntity implements Serializable {

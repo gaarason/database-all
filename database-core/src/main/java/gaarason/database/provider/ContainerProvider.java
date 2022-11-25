@@ -2,8 +2,11 @@ package gaarason.database.provider;
 
 import gaarason.database.contract.function.InstanceCreatorFunctionalInterface;
 import gaarason.database.core.Container;
+import gaarason.database.exception.AbnormalParameterException;
 import gaarason.database.exception.InvalidConfigException;
 import gaarason.database.exception.ObjectNewInstanceException;
+import gaarason.database.exception.SerializeException;
+import gaarason.database.lang.Nullable;
 import gaarason.database.logging.Log;
 import gaarason.database.logging.LogFactory;
 import gaarason.database.util.ClassUtils;
@@ -33,6 +36,28 @@ public class ContainerProvider implements Container {
      */
     protected final ConcurrentHashMap<Class<?>, LinkedList<Object>> INSTANCE_MAP = new ConcurrentHashMap<>();
 
+    /**
+     * 唯一标识
+     */
+    @Nullable
+    protected String identification;
+
+    public synchronized void signUpIdentification(String identification) {
+        if (this.identification != null || ObjectUtils.isEmpty(identification)) {
+            throw new AbnormalParameterException();
+        }
+        GodProvider.add(identification, this);
+        // 记录一下, 没什么别的作用
+        this.identification = identification;
+    }
+
+    @Override
+    public String getIdentification() {
+        if (ObjectUtils.isEmpty(identification)) {
+            throw new SerializeException("未找到容器的唯一标识, 请手动调用一次 model.getContainer().signUpIdentification(\"唯一值\");");
+        }
+        return identification;
+    }
 
     /**
      * 注册 实例化工厂
