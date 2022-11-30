@@ -37,17 +37,20 @@ Eloquent ORM for Java
 
 ```java
 // 查询id为4的一条数据 select * from student where id = 4 limit 1
-Student student = studentModel.find(4).toObject();
+Student student=studentModel.find(4).toObject();
+
+// 查询id为4的一条数据 select * from student where id = 4 limit 1
+        Student student= =studentModel.newQuery().query("select * from student where id= ? limit ? ",4,1).toObject();
 
 // 表达式列名风格 select name,age from student where id in (1,2,3)
-List<Student> Students = studentModel.newQuery().whereIn(Student::getId, 1,2,3)
-    .select(Student::getName).select(Student::getAge)
-    .get().toObjectList();
+        List<Student> Students=studentModel.newQuery().whereIn(Student::getId,1,2,3)
+        .select(Student::getName).select(Student::getAge)
+        .get().toObjectList();
 
 // 稍复杂嵌套的语句 select id,name from student where id=3 or(age>11 and id=7 and(id between 4 and 10 and age>11))
-List<Student> Students = studentModel.newQuery().where("id", "3").orWhere(
-    builder -> builder.where("age", ">", "11").where("id", "7").andWhere(
-        builder2 -> builder2.whereBetween("id", "4", "10").where("age", ">", "11")
+        List<Student> Students=studentModel.newQuery().where("id","3").orWhere(
+        builder->builder.where("age",">","11").where("id","7").andWhere(
+        builder2->builder2.whereBetween("id","4","10").where("age",">","11")
     )
 ).select("id", "name").get().toObjectList();
 
@@ -95,10 +98,10 @@ spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 spring.datasource.type=com.alibaba.druid.pool.DruidDataSource
 
 # 雪花算法工作id, 默认是0
-gaarason.database.snow-flake.worker-id=1
+# gaarason.database.snow-flake.worker-id=1
 
 # 包扫描路径, 默认是`@SpringBootApplication`所在的包
-gaarason.database.scan.packages=you.package1,you.package2
+# gaarason.database.scan.packages=you.package1,you.package2
 ```
 
 4.快速开始

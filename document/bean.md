@@ -90,6 +90,11 @@ public class GaarasonDatabaseAutoConfiguration {
         // 从配置创建全新容器
         ContainerBootstrap container = ContainerBootstrap.build(gaarasonDatabaseProperties);
 
+        /*
+         * 序列化的必要步骤
+         */
+        container.signUpIdentification("primary-container");
+
         container.defaultRegister();
 
         // 注册 model实例获取方式

@@ -12,6 +12,7 @@ Eloquent ORM for Java
     * [普通java对象](#普通java对象)
     * [通用map对象](#通用map对象)
     * [自定list对象](#自定list对象)
+    * [序列化](#序列化)
     * [ORM](#ORM)
         * [基本操作](#基本操作)
             * [新增](#新增)
@@ -94,6 +95,26 @@ Eloquent ORM for Java
 List<Object> list = studentModel.newQuery().get().toList(
     theRecord -> theRecord.toObject().getId();
 )
+```
+
+## 序列化
+
+`RecordList`/`Record`可以序列化到`String`或者`byte[]`
+
+### serializeToString serialize deserialize
+
+```java
+Record<Student, Long> record=studentModel.findOrFail(2).with("teachersBelongsToMany",b->{
+    return b.limit(student1.getAge());
+    });
+
+// 序列化
+// byte[] serialize = record.serialize();
+    String serialize=record.serializeToString();
+
+// 反序列化
+    Record<Student, Long> recordCopy=Record.deserialize(serialize);
+
 ```
 
 ## ORM

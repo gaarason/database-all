@@ -96,7 +96,8 @@ public class Teacher implements Serializable {
 
 ### 一对多
 
-同样使用`@HasOneOrMany()`注解, 用法也是一致的, 唯一要注意的是使用此注解的属性需要是`List<?>`类型
+同样使用`@HasOneOrMany()`注解, 用法也是一致的, 要注意的是使用此注解的属性需要是`List<F>`/`F[]`/`ArrayList<F>`/`LinkedHashSet<F>`/`LinkedList<F>`
+/`Set<F>`类型
 
 以下是一个`teacher`包含多个`student`的例子
 
@@ -197,6 +198,8 @@ public class Student implements Serializable {
 - `foreignKeyForLocalModel`表示`关系表`中`关联本表的外键`
 - `foreignKeyForTargetModel`表示`关系表`中`关联目标表的外键`
 - `targetModelLocalKey`表示`目标表`中`关联键`
+
+- 使用此注解的属性需要是`List<F>`/`F[]`/`ArrayList<F>`/`LinkedHashSet<F>`/`LinkedList<F>`/`Set<F>`类型
 
 以下是一个`teacher`包含多个`student`,同时, 一个`student`包含多个`teacher`的场景, 关系表使用`relationship_student_teacher`
 
