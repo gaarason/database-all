@@ -37,31 +37,31 @@ Eloquent ORM for Java
 
 ```java
 // 查询id为4的一条数据 select * from student where id = 4 limit 1
-Student student=studentModel.find(4).toObject();
+Student student = studentModel.find(4).toObject();
 
 // 查询id为4的一条数据 select * from student where id = 4 limit 1
-        Student student=studentModel.newQuery().query("select * from student where id= ? limit ? ",4,1).toObject();
+Student student = studentModel.newQuery().query("select * from student where id= ? limit ? ", 4, 1).toObject();
 
 // 表达式列名风格 select name,age from student where id in (1,2,3)
-        List<Student> students=studentModel.newQuery()
+List<Student> students = studentModel.newQuery()
         .select(Student::getName).select(Student::getAge)
         .whereIn(Student::getId,1,2,3)
         .get().toObjectList();
 
 // 稍复杂嵌套的语句 select id,name from student where id=3 or(age>11 and id=7 and(id between 4 and 10 and age>11))
-        List<Student> students=studentModel.newQuery().where("id","3").orWhere(
-        builder->builder.where("age",">","11").where("id","7").andWhere(
-        builder2->builder2.whereBetween("id","4","10").where("age",">","11")
+List<Student> students = studentModel.newQuery().where("id","3").orWhere(
+                builder->builder.where("age",">","11").where("id","7").andWhere(
+            builder2->builder2.whereBetween("id","4","10").where("age",">","11")
         )
 ).select("id", "name").get().toObjectList();
 
 
 // 关联查询 找出学生们的老师们的父亲们的那些房子
-        List<Student> students=studentModel.newQuery().whereIn("id","1","2","3").get().with("teacher.father.house").toObjectList();
+List<Student> students = studentModel.newQuery().whereIn("id", 1, 2, 3).get().with("teacher.father.house").toObjectList();
 
 
 // 增加关联 给id为8的学生增加3名老师(id分别为1,2,3)
-studentModel.findOrFail(8).bind("teachers").attach( teacherModel.findMany(1,2,3) );
+studentModel.findOrFail(8).bind("teachers").attach( teacherModel.findMany(1, 2, 3) );
 ```
 
 ## spring boot 快速开始

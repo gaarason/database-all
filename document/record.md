@@ -104,16 +104,16 @@ List<Object> list = studentModel.newQuery().get().toList(
 ### serializeToString serialize deserialize
 
 ```java
-Record<Student, Long> record=studentModel.findOrFail(2).with("teachersBelongsToMany",b->{
+Record<Student, Long> record = studentModel.findOrFail(2).with("teachersBelongsToMany", b-> {
     return b.limit(student1.getAge());
-    });
+});
 
 // 序列化
 // byte[] serialize = record.serialize();
-    String serialize=record.serializeToString();
+String serialize = record.serializeToString();
 
 // 反序列化
-    Record<Student, Long> recordCopy=Record.deserialize(serialize);
+Record<Student, Long> recordCopy = Record.deserialize(serialize);
 
 ```
 
@@ -153,7 +153,7 @@ findOrFail
 Record<Student, Long> record = studentModel.findOrFail(3);
 
 // 查找id=3的记录, 记录不存在则返回null
-    Record<Student, Long> record = studentModel.newQuery().where("id","3").first();
+Record<Student, Long> record = studentModel.newQuery().where("id","3").first();
 ```
 
 findAll

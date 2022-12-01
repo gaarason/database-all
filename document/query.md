@@ -1205,7 +1205,7 @@ Paginate<Map<String, Object>> paginate = studentModel.newQuery().orderBy("id").p
 ```java
 studentModel.newQuery().where("sex","1").orderBy("RAND()").limit(5).get().toObjectList();
 
-    studentModel.newQuery().where("sex","1").inRandomOrder("id").limit(5).get().toObjectList();
+studentModel.newQuery().where("sex","1").inRandomOrder("id").limit(5).get().toObjectList();
 ```
 
 ### 构造器序列化
@@ -1215,16 +1215,16 @@ studentModel.newQuery().where("sex","1").orderBy("RAND()").limit(5).get().toObje
 #### serializeToString serialize deserialize
 
 ```java
-Builder<Student, Integer> builder=studentModel.newQuery().with("teachersBelongsToMany",b->{
+Builder<Student, Integer> builder = studentModel.newQuery().with("teachersBelongsToMany",b->{
     return b.limit(student1.getAge());
-    });
+});
 
 // 序列化
 // byte[] serialize = builder.serialize();
-    String serialize=builder.serializeToString();
+String serialize = builder.serializeToString();
 
 // 反序列化
-    Builder<Student, Integer> builderCopy=Builder.deserialize(serialize);
+    Builder<Student, Integer> builderCopy = Builder.deserialize(serialize);
 ```
 
 ### 构造器传递
@@ -1232,13 +1232,13 @@ Builder<Student, Integer> builder=studentModel.newQuery().with("teachersBelongsT
 #### setBuilder mergerBuilder
 
 ```java
-Builder<Student, Integer> builder=studentModel.newQuery().where("sex","1");
+Builder<Student, Integer> builder = studentModel.newQuery().where("sex","1");
 
 // 覆盖 setBuilder
 // select * from student where sex=1
-    studentModel.newQuery().limit(5).setBuilder(builder).get().toObjectList();
+studentModel.newQuery().limit(5).setBuilder(builder).get().toObjectList();
 
 // 合并 mergerBuilder
 // select * from student where sex=1 limit 5
-    studentModel.newQuery().limit(5).mergerBuilder(builder).get().toObjectList();
+studentModel.newQuery().limit(5).mergerBuilder(builder).get().toObjectList();
 ```
