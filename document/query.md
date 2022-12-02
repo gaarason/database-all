@@ -1224,7 +1224,7 @@ Builder<Student, Integer> builder = studentModel.newQuery().with("teachersBelong
 String serialize = builder.serializeToString();
 
 // 反序列化
-    Builder<Student, Integer> builderCopy = Builder.deserialize(serialize);
+Builder<Student, Integer> builderCopy = Builder.deserialize(serialize);
 ```
 
 ### 构造器传递

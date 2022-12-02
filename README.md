@@ -113,12 +113,14 @@ GeneralModel generalModel;
 
 @Test
 public void 简单查询(){
-        // select * from student where id= 3 limit 1
-        Record<GeneralModel.Table,Object>record=generalModel.newQuery().from("student").where("id",3).firstOrFail();
 
-        Map<String, Object> stringObjectMap=record.toMap();
+        // select * from student where id= 3 limit 1
+        Record<GeneralModel.Table,Object> record = generalModel.newQuery().from("student").where("id",3).firstOrFail();
+
+        // 结果转化到map
+        Map<String, Object> stringObjectMap = record.toMap();
 
         System.out.println(stringObjectMap);
-        }
+}
 
 ```
