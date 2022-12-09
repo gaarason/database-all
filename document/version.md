@@ -25,18 +25,28 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 4.6.0
+
+- 优化`@HasOneOrMany(),@BelongsTo(),@BelongsToMany()`的实现
+- 关联关系定义时, 对于复数关系, 在原本仅支持`List<F>`的基础上, 增加数据类型支持`F[]`/`ArrayList<F>`/`LinkedHashSet<F>`/`LinkedList<F>`/`Set<F>`
+- 在`Builder`中, 增加`setBuilder(builder)`/`mergerBuilder(builder)`
+- 接口（`Record`/`RecordList`/`Builder`）实现序列化接口，以支持 RPC 传递
+
 ### 4.5.1
+
 - 优化`FieldConversion.EnumInteger`/`FieldConversion.EnumString`的实现
 - 优化`代码生成`, 在生成的`entity`上增加`@Accessors(chain = true)`
 
 ### 4.5.0
+
 - 在`@Column`中, 增加 `conversion` 接口的泛型约束, 并增加通用枚举处理`FieldConversion.EnumInteger`/`FieldConversion.EnumString`
 - 在`Builder`中, 修改使用`entity`作为参数的操作, 在保持相同语义(获取/填充/序列化)的前提下, 不再修改(回填)传入的`entity`
 - 在`Record`中, 保持使用`ORM`风格的操作依然对所持有的`entity`进行同步修改(回填)
 
 ### 4.4.0
 
-- 在`Model`中, 增加原生异步执行`nativeQueryListAsync`,`nativeQueryAsync`,`nativeQueryOrFailAsync`,`nativeExecuteAsync`,`nativeExecuteGetIdsAsync`,`nativeExecuteGetIdsAsync`
+- 在`Model`中, 增加原生异步执行`nativeQueryListAsync`,`nativeQueryAsync`,`nativeQueryOrFailAsync`,`nativeExecuteAsync`
+  ,`nativeExecuteGetIdsAsync`,`nativeExecuteGetIdsAsync`
 - 在`Builder`中, 增加异步闭包事务 `transactionAsync`
 - 修复`Generator`中, 当对于spring环境下生成的代码有误的问题
 
@@ -61,13 +71,17 @@ Eloquent ORM for Java
 - 在`Record`中, 增加 `saveByPrimaryKey()`, 更改`fillEntity()`返回值
 - 查询结果集(`RecordList`) 现在是`LinkedList`的子类, 而非之前的的`ArrayList`, 同时更改了`pop()`/`push(element)`的行为, 并移除了`prepend(element)`
 
-- 在`Builder`中, 增加 `select(anyEntity)`, `select(anyEntityClass)`更改`where(entity)`为`where(anyEntity)`,`having(entity)`为`having(anyEntity)`返回值
-- 在`Builder`中, 增加 `whereFind(map)`, `whereNotFind(map)`,`whereNotLike(column, value)`,`whereNotLike(anyEntity)`,`whereNotLike(map)`,`whereMayNotLike(column, value)`,`whereMayNotLikeIgnoreNull(column, value)`,`whereMayNotLike(anyEntity)`,
+- 在`Builder`中, 增加 `select(anyEntity)`, `select(anyEntityClass)`更改`where(entity)`为`where(anyEntity)`,`having(entity)`
+  为`having(anyEntity)`返回值
+- 在`Builder`中, 增加 `whereFind(map)`, `whereNotFind(map)`,`whereNotLike(column, value)`,`whereNotLike(anyEntity)`
+  ,`whereNotLike(map)`,`whereMayNotLike(column, value)`,`whereMayNotLikeIgnoreNull(column, value)`
+  ,`whereMayNotLike(anyEntity)`,
   `whereMayNotLike(map)`,`whereMayNotLikeIgnoreNull(map)`,`whereBetweenRaw()`,`whereNotBetweenRaw()` 以及having与其对应的方法
 - 在`Builder`中, 更改`whereKeywordsIgnoreNull()`的行为, 重命名`whereLike()`为 `whereLikeIgnoreNull()`, 移除 更改`whereKeywords()`
 - 在`@Column`中, 更改`strategy`/`insertStrategy`/`updateStrategy`/`conditionStrategy`的类型为接口类型(`FieldStrategy`)便于业务自定义实现
 - 在`@Column`中, 增加 `conversion` 属性便于业务自定义实现序列化与反序列化;
-- 在`Builder`中, 修改`find(id)`/`findOrFail(id)`/`insert(entity)`/`insert(list<entity>)`/`insertGetId(entity)`/`insertGetIdOrFail(entity)`/`insertGetIds(list<entity>)`/`update(entity)`等方法的参数类型为Object;
+- 在`Builder`中, 修改`find(id)`/`findOrFail(id)`/`insert(entity)`/`insert(list<entity>)`/`insertGetId(entity)`
+  /`insertGetIdOrFail(entity)`/`insertGetIds(list<entity>)`/`update(entity)`等方法的参数类型为Object;
 - 在`Builder`中, 新增 `form(entity)`;
 - 现在`Container`不再是全局静态, 而是使用对象生命周期管理, 便于同个进程下多个容器之间进行隔离
 - 现在`ModelShadow`不再是全局静态的, 而是使用`Container`进行管理
@@ -248,20 +262,20 @@ Eloquent ORM for Java
 - 将关联关系`Bind`中部分方法， 手动指定目标表的主键， 参数类型由`String`、`Collection<String> ids`变更到`Object`、`Collection<Object> ids`
 
 ```java
-int attach(Record<?, ?> targetRecord, Map<String, Object> relationDataMap);
-int attach(RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap);
-int attach(Object id, Map<String, Object> relationDataMap);
-int attach(Collection<Object> ids, Map<String, Object> relationDataMap);
+int attach(Record<?, ?> targetRecord,Map<String, Object> relationDataMap);
+        int attach(RecordList<?, ?> targetRecords,Map<String, Object> relationDataMap);
+        int attach(Object id,Map<String, Object> relationDataMap);
+        int attach(Collection<Object> ids,Map<String, Object> relationDataMap);
 
-int sync(Record<?, ?> targetRecord, Map<String, Object> relationDataMap);
-int sync(RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap);
-int sync(Object id, Map<String, Object> relationDataMap);
-int sync(Collection<Object> ids, Map<String, Object> relationDataMap);
+        int sync(Record<?, ?> targetRecord,Map<String, Object> relationDataMap);
+        int sync(RecordList<?, ?> targetRecords,Map<String, Object> relationDataMap);
+        int sync(Object id,Map<String, Object> relationDataMap);
+        int sync(Collection<Object> ids,Map<String, Object> relationDataMap);
 
-int toggle(Record<?, ?> targetRecord, Map<String, Object> relationDataMap);
-int toggle(RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap);
-int toggle(Object id, Map<String, Object> relationDataMap);
-int toggle(Collection<Object> ids, Map<String, Object> relationDataMap);
+        int toggle(Record<?, ?> targetRecord,Map<String, Object> relationDataMap);
+        int toggle(RecordList<?, ?> targetRecords,Map<String, Object> relationDataMap);
+        int toggle(Object id,Map<String, Object> relationDataMap);
+        int toggle(Collection<Object> ids,Map<String, Object> relationDataMap);
 ```
 
 ### 2.5.0
@@ -269,22 +283,22 @@ int toggle(Collection<Object> ids, Map<String, Object> relationDataMap);
 - 将`Builder`中部分方法, 参数类型由`String`变更为`Object`
 
 ```java
-Builder<T, K> where(String column, String symbol, Object value);
-Builder<T, K> where(String column, Object value);
-Builder<T, K> whereIn(String column, Object... valueArray);
-Builder<T, K> whereNotIn(String column, Object... valueArray);
-Builder<T, K> whereBetween(String column, Object min, Object max);
-Builder<T, K> whereNotBetween(String column, Object min, Object max);
+Builder<T, K> where(String column,String symbol,Object value);
+        Builder<T, K> where(String column,Object value);
+        Builder<T, K> whereIn(String column,Object...valueArray);
+        Builder<T, K> whereNotIn(String column,Object...valueArray);
+        Builder<T, K> whereBetween(String column,Object min,Object max);
+        Builder<T, K> whereNotBetween(String column,Object min,Object max);
 
-Builder<T, K> having(String column, String symbol, Object value);
-Builder<T, K> having(String column, Object value);
-Builder<T, K> havingIn(String column, Object... valueArray);
-Builder<T, K> havingNotIn(String column, Object... valueArray);
-Builder<T, K> havingBetween(String column, Object min, Object max);
-Builder<T, K> havingNotBetween(String column, Object min, Object max);
+        Builder<T, K> having(String column,String symbol,Object value);
+        Builder<T, K> having(String column,Object value);
+        Builder<T, K> havingIn(String column,Object...valueArray);
+        Builder<T, K> havingNotIn(String column,Object...valueArray);
+        Builder<T, K> havingBetween(String column,Object min,Object max);
+        Builder<T, K> havingNotBetween(String column,Object min,Object max);
 
-Builder<T, K> data(String column, Object value);
-Builder<T, K> data(Map<String, Object> map);
+        Builder<T, K> data(String column,Object value);
+        Builder<T, K> data(Map<String, Object> map);
 ```
 
 ### 2.4.0

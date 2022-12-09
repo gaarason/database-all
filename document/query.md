@@ -64,6 +64,8 @@ Eloquent ORM for Java
         * [总数分页](#总数分页)
     * [功能](#功能)
         * [随机抽样](#随机抽样)
+        * [构造器序列化](#构造器序列化)
+        * [构造器传递](#构造器传递)
 * [关联关系](/document/relationship.md)
 * [生成代码](/document/generate.md)
 * [GraalVM](/document/graalvm.md)
@@ -1201,7 +1203,42 @@ Paginate<Map<String, Object>> paginate = studentModel.newQuery().orderBy("id").p
 在300w数据量下,效率约是`order by rand()`的5倍,任何情况下均有优越表现
 
 ```java
-studentModel.newQuery().where("sex", "1").orderBy("RAND()").limit(5).get().toObjectList();
+studentModel.newQuery().where("sex","1").orderBy("RAND()").limit(5).get().toObjectList();
 
-studentModel.newQuery().where("sex", "1").inRandomOrder("id").limit(5).get().toObjectList();
+studentModel.newQuery().where("sex","1").inRandomOrder("id").limit(5).get().toObjectList();
+```
+
+### 构造器序列化
+
+`builder`可以序列化到`String`或者`byte[]`
+
+#### serializeToString serialize deserialize
+
+```java
+Builder<Student, Integer> builder = studentModel.newQuery().with("teachersBelongsToMany",b->{
+    return b.limit(student1.getAge());
+});
+
+// 序列化
+// byte[] serialize = builder.serialize();
+String serialize = builder.serializeToString();
+
+// 反序列化
+Builder<Student, Integer> builderCopy = Builder.deserialize(serialize);
+```
+
+### 构造器传递
+
+#### setBuilder mergerBuilder
+
+```java
+Builder<Student, Integer> builder = studentModel.newQuery().where("sex","1");
+
+// 覆盖 setBuilder
+// select * from student where sex=1
+studentModel.newQuery().limit(5).setBuilder(builder).get().toObjectList();
+
+// 合并 mergerBuilder
+// select * from student where sex=1 limit 5
+studentModel.newQuery().limit(5).mergerBuilder(builder).get().toObjectList();
 ```

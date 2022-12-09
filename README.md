@@ -39,26 +39,29 @@ Eloquent ORM for Java
 // 查询id为4的一条数据 select * from student where id = 4 limit 1
 Student student = studentModel.find(4).toObject();
 
+// 查询id为4的一条数据 select * from student where id = 4 limit 1
+Student student = studentModel.newQuery().query("select * from student where id= ? limit ? ", 4, 1).toObject();
+
 // 表达式列名风格 select name,age from student where id in (1,2,3)
-List<Student> Students = studentModel.newQuery().whereIn(Student::getId, 1,2,3)
-    .select(Student::getName).select(Student::getAge)
-    .get().toObjectList();
+List<Student> students = studentModel.newQuery()
+        .select(Student::getName).select(Student::getAge)
+        .whereIn(Student::getId,1,2,3)
+        .get().toObjectList();
 
 // 稍复杂嵌套的语句 select id,name from student where id=3 or(age>11 and id=7 and(id between 4 and 10 and age>11))
-List<Student> Students = studentModel.newQuery().where("id", "3").orWhere(
-    builder -> builder.where("age", ">", "11").where("id", "7").andWhere(
-        builder2 -> builder2.whereBetween("id", "4", "10").where("age", ">", "11")
-    )
+List<Student> students = studentModel.newQuery().where("id","3").orWhere(
+                builder->builder.where("age",">","11").where("id","7").andWhere(
+            builder2->builder2.whereBetween("id","4","10").where("age",">","11")
+        )
 ).select("id", "name").get().toObjectList();
 
 
 // 关联查询 找出学生们的老师们的父亲们的那些房子
-List<Student> Students = studentModel.newQuery().whereIn("id", "1","2","3").get().with("teacher.father.house").toObjectList();
+List<Student> students = studentModel.newQuery().whereIn("id", 1, 2, 3).get().with("teacher.father.house").toObjectList();
 
 
 // 增加关联 给id为8的学生增加3名老师(id分别为1,2,3)
-studentModel.findOrFail(8).bind("teachers").attach( teacherModel.findMany(1,2,3) );
-studentModel.findOrFail(8).bind("teachers").attach( Arrays.asList(1,2,3) );
+studentModel.findOrFail(8).bind("teachers").attach( teacherModel.findMany(1, 2, 3) );
 ```
 
 ## spring boot 快速开始
@@ -96,10 +99,10 @@ spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 spring.datasource.type=com.alibaba.druid.pool.DruidDataSource
 
 # 雪花算法工作id, 默认是0
-gaarason.database.snow-flake.worker-id=1
+# gaarason.database.snow-flake.worker-id=1
 
 # 包扫描路径, 默认是`@SpringBootApplication`所在的包
-gaarason.database.scan.packages=you.package1,you.package2
+# gaarason.database.scan.packages=you.package1,you.package2
 ```
 
 4.快速开始
@@ -109,13 +112,15 @@ gaarason.database.scan.packages=you.package1,you.package2
 GeneralModel generalModel;
 
 @Test
-public void 简单查询() {
-    // select * from student where id=3 limit 1
-    Record<GeneralModel.Table, Object> record = generalModel.newQuery().from("student").where("id", "3").firstOrFail();
-    
-    Map<String, Object> stringObjectMap = record.toMap();
-    
-    System.out.println(stringObjectMap);
+public void 简单查询(){
+
+        // select * from student where id= 3 limit 1
+        Record<GeneralModel.Table,Object> record = generalModel.newQuery().from("student").where("id",3).firstOrFail();
+
+        // 结果转化到map
+        Map<String, Object> stringObjectMap = record.toMap();
+
+        System.out.println(stringObjectMap);
 }
 
 ```

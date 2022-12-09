@@ -12,6 +12,7 @@ Eloquent ORM for Java
     * [普通java对象](#普通java对象)
     * [通用map对象](#通用map对象)
     * [自定list对象](#自定list对象)
+    * [序列化](#序列化)
     * [ORM](#ORM)
         * [基本操作](#基本操作)
             * [新增](#新增)
@@ -96,6 +97,26 @@ List<Object> list = studentModel.newQuery().get().toList(
 )
 ```
 
+## 序列化
+
+`RecordList`/`Record`可以序列化到`String`或者`byte[]`
+
+### serializeToString serialize deserialize
+
+```java
+Record<Student, Long> record = studentModel.findOrFail(2).with("teachersBelongsToMany", b-> {
+    return b.limit(student1.getAge());
+});
+
+// 序列化
+// byte[] serialize = record.serialize();
+String serialize = record.serializeToString();
+
+// 反序列化
+Record<Student, Long> recordCopy = Record.deserialize(serialize);
+
+```
+
 ## ORM
 
 对于`gaarason.database.eloquent.Record<T, K>`对象提供ORM相关的能力  
@@ -132,7 +153,7 @@ findOrFail
 Record<Student, Long> record = studentModel.findOrFail(3);
 
 // 查找id=3的记录, 记录不存在则返回null
-    Record<Student, Long> record = studentModel.newQuery().where("id","3").first();
+Record<Student, Long> record = studentModel.newQuery().where("id","3").first();
 ```
 
 findAll
