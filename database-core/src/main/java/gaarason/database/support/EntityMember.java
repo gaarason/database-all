@@ -1,6 +1,7 @@
 package gaarason.database.support;
 
 import gaarason.database.annotation.Primary;
+import gaarason.database.annotation.base.Relation;
 import gaarason.database.appointment.EntityUseType;
 import gaarason.database.appointment.FinalVariable;
 import gaarason.database.appointment.ValueWrapper;
@@ -179,7 +180,8 @@ public class EntityMember<T, K> extends Container.SimpleKeeper implements Serial
             // 有效则加入 结果集
             if (valueWrapper.isValid()) {
                 // 序列化
-                columnValueMap.put(entry.getKey(), fieldMember.serialize(ObjectUtils.typeCastNullable(valueWrapper.getValue())));
+                columnValueMap.put(entry.getKey(),
+                    fieldMember.serialize(ObjectUtils.typeCastNullable(valueWrapper.getValue())));
             }
         }
         return columnValueMap;
@@ -337,20 +339,31 @@ public class EntityMember<T, K> extends Container.SimpleKeeper implements Serial
      * @return yes/no
      */
     private static boolean effectiveRelationField(Field field) {
-        // 非静态类型
-        boolean isNotStatic = !EntityUtils.isStaticField(field);
-        // 非基础类型
-        boolean isNotBasicType = !EntityUtils.isBasicField(field);
-        // 有相应的注解
-        boolean hasRelationAnnotation = false;
+        // 静态类型
+        if (EntityUtils.isStaticField(field)) {
+            return false;
+        }
+        // 基础类型
+        if (EntityUtils.isBasicField(field)) {
+            return false;
+        }
 
-        for (Class<? extends Annotation> relationAnnotation : FinalVariable.RELATION_ANNOTATIONS) {
-            if (field.isAnnotationPresent(relationAnnotation)) {
-                hasRelationAnnotation = true;
-                break;
+        // 注解查找
+        Annotation[] annotations = field.getDeclaredAnnotations();
+        for (Annotation annotation : annotations) {
+            Class<? extends Annotation> annotationType = annotation.annotationType();
+
+            // 预置注解
+            if(FinalVariable.RELATION_ANNOTATIONS.contains(annotationType)){
+                return true;
+            }
+
+            // 自定义注解
+            if (null != annotationType.getAnnotation(Relation.class)) {
+                return true;
             }
         }
-        return isNotStatic && isNotBasicType && hasRelationAnnotation;
+        return false;
     }
 
     /**

@@ -25,6 +25,9 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 4.7.0
+- 支持自定义关联关系, 增加`@Relation`用于标注自定义的关联关系注解, 并指明其解析器
+
 ### 4.6.0
 
 - 优化`@HasOneOrMany(),@BelongsTo(),@BelongsToMany()`的实现

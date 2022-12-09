@@ -33,6 +33,8 @@ import java.util.*;
 public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
     implements RecordList<T, K> {
 
+    private static final long serialVersionUID = 1L;
+
     /**
      * 容器
      */

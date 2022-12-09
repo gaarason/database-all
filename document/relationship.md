@@ -16,6 +16,10 @@ Eloquent ORM for Java
         * [一对多](#一对多)
         * [反向一对多/一对一](#反向一对多/一对一)
         * [多对多](#多对多)
+        * [自定义关系](#自定义关系)
+            * [自定义注解](#自定义注解)
+            * [自定义注解解析器](#自定义注解解析器)
+            * [使用自定义注解](#使用自定义注解)
     * [关联查询](#关联查询)
         * [关联方法](#关联方法)
             * [示例一对一](#示例一对一)
@@ -244,6 +248,72 @@ public class Student implements Serializable {
 ```
 
 以上是`student`维度的建立, `teacher`维度的类似, 暂略
+
+
+### 自定义关系
+
+用于自定义不同的数据模型之间的关系
+
+#### 自定义注解
+
+自定义的注解可以和预置的注解一样使用
+
+```java
+
+@Documented
+@Inherited
+@Target({ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+// 使用 @Relation 标注这是一个关联关系的注解, 并指明其解析器
+@Relation(HasOneQueryRelation.class)
+public @interface HasOneCustom {
+    /**
+     * `子表`中的`关联本表的外键`
+     * @return `子表`中的`关联本表的外键`
+     */
+    String sonModelForeignKey();
+
+    /**
+     * `本表`中的`关联键`, 默认值为`本表`的主键(`@Primary()`修饰的键)
+     * @return `本表`中的`关联键`
+     */
+    String localModelLocalKey() default "";
+
+}
+
+```
+
+#### 自定义注解解析器
+
+- 实现 `RelationSubQuery` 的各个方法, 建议参考预置的解析器, 这部分的逻辑比较复杂与繁琐
+- 提供此构造函数 `public constructor(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model)`
+```java
+public static class HasOneQueryRelation extends BaseRelationSubQuery implements RelationSubQuery {
+
+    // 提供此构造函数
+    
+    public HasOneQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
+        super(modelShadowProvider, model);
+    }
+    
+    
+    // ... 实现 RelationSubQuery 的各个方法
+}
+```
+
+#### 使用自定义注解
+- 在实体中, 和预置的注解一样的使用方式
+```java
+public class Entity implements Serializable {
+    
+    // .. 其他数据库字段
+
+    // 和预置的注解一样的使用方式
+    @HasOneCustom(sonModelForeignKey = "student_id")
+    private RelationshipStudentTeacher relationshipStudentTeacher;
+}
+
+```
 
 ## 关联查询
 

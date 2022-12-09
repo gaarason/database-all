@@ -15,6 +15,8 @@ import java.util.Collection;
  */
 public class MySqlBuilder<T, K> extends OtherBuilder<T, K> {
 
+    private static final long serialVersionUID = 1L;
+
     @Override
     public Builder<T, K> limit(Object offset, Object take) {
         Collection<Object> parameters = new ArrayList<>(2);
