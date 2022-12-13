@@ -57,6 +57,24 @@ public class ClassUtils {
         }
     }
 
+    /**
+     * 实例化对象
+     * @param clazz 目标类
+     * @param parameterTypes 形参
+     * @param parameters 实参
+     * @param <T> 目标类型
+     * @return 实例
+     */
+    public static <T> T newInstance(Class<T> clazz, Class<?>[] parameterTypes, Object[] parameters) {
+        try {
+            Constructor<T> constructor = clazz.getDeclaredConstructor(parameterTypes);
+            constructor.setAccessible(true);
+            return constructor.newInstance(parameters);
+        } catch (Throwable e) {
+            throw new ObjectNewInstanceException(clazz, e);
+        }
+    }
+
 
     /**
      * 类加载

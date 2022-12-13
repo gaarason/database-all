@@ -96,6 +96,22 @@ abstract public class RelationTests extends BaseTests {
         Assert.assertNull(student2.getTeacher());
     }
 
+
+    @Test
+    public void 自定义关系() {
+        // 声明且使用
+        Student student = studentModel.findOrFail(2)
+            .with(Student::getTeachersBelongsToMany)
+            .with(Student::getRelationshipStudentTeachers)
+            .with(Student::getRelationshipStudentTeacher)
+            .toObject();
+
+        Assert.assertEquals(2, student.getTeachersBelongsToMany().size());
+        Assert.assertEquals(2, student.getRelationshipStudentTeachers().size());
+        Assert.assertNotNull( student.getRelationshipStudentTeacher());
+        Assert.assertEquals(2, student.getRelationshipStudentTeacher().getStudentId().intValue());
+    }
+
     @Test
     public void 一对一关系_builder筛选() {
         Student student2 =

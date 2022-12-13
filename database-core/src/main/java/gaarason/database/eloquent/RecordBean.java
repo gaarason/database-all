@@ -40,6 +40,8 @@ import java.util.Map;
  */
 public class RecordBean<T, K> implements Record<T, K> {
 
+    private static final long serialVersionUID = 1L;
+
     /**
      * 本表元数据
      * <数据库字段名 -> 字段信息>

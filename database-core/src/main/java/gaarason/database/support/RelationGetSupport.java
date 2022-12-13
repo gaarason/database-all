@@ -154,8 +154,8 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
         @Nullable Builder<?, ?> builder, GenerateRecordListFunctionalInterface closure) {
         // 有缓存有直接返回, 没有就执行后返回
         // 因为没有更新操作, 所以直接返回原对象
-        // new Builder<?, ?>[]{builder, null} 很关键
-        return getRecordsInCache(cacheRecords, new Builder<?, ?>[]{builder, null}, closure);
+        // new Builder<?, ?>[]{null, builder} 很关键
+        return getRecordsInCache(cacheRecords, new Builder<?, ?>[]{null, builder}, closure);
     }
 
     /**

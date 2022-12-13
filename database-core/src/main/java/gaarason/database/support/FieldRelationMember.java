@@ -3,6 +3,7 @@ package gaarason.database.support;
 import gaarason.database.annotation.BelongsTo;
 import gaarason.database.annotation.BelongsToMany;
 import gaarason.database.annotation.HasOneOrMany;
+import gaarason.database.annotation.base.Relation;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.core.Container;
@@ -12,10 +13,12 @@ import gaarason.database.eloquent.relation.HasOneOrManyQueryRelation;
 import gaarason.database.exception.IllegalAccessRuntimeException;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.util.ClassUtils;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -60,7 +63,7 @@ public class FieldRelationMember extends Container.SimpleKeeper implements Seria
     private final Object[] javaRealTypeEmptyArray;
 
     /**
-     * 关联关系注解
+     * 关联关系注解处理器
      */
     private final RelationSubQuery relationSubQuery;
 
@@ -82,7 +85,7 @@ public class FieldRelationMember extends Container.SimpleKeeper implements Seria
 
         this.javaRealTypeEmptyArray = ObjectUtils.typeCast(Array.newInstance(javaRealType, 0));
 
-
+        // 预置注解
         if (field.isAnnotationPresent(BelongsTo.class)) {
             relationSubQuery = new BelongsToQueryRelation(field, modelShadowProvider, model);
         } else if (field.isAnnotationPresent(BelongsToMany.class)) {
@@ -90,7 +93,23 @@ public class FieldRelationMember extends Container.SimpleKeeper implements Seria
         } else if (field.isAnnotationPresent(HasOneOrMany.class)) {
             relationSubQuery = new HasOneOrManyQueryRelation(field, modelShadowProvider, model);
         } else {
-            throw new RuntimeException();
+            // 自定义注解
+            flag:
+            {
+                Annotation[] annotations = field.getDeclaredAnnotations();
+                for (Annotation annotation : annotations) {
+                    Class<? extends Annotation> annotationClass = annotation.annotationType();
+                    // 自定义注解
+                    Relation annotationClassAnnotation = annotationClass.getAnnotation(Relation.class);
+                    if (null != annotationClassAnnotation) {
+                        relationSubQuery = ClassUtils.newInstance(annotationClassAnnotation.value(),
+                            new Class<?>[]{Field.class, ModelShadowProvider.class, Model.class},
+                            new Object[]{field, modelShadowProvider, model});
+                        break flag;
+                    }
+                }
+                throw new RuntimeException();
+            }
         }
     }
 
