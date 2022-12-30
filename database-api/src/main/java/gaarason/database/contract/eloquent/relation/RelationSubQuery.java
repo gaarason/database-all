@@ -4,6 +4,7 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.lang.Nullable;
 
 import java.util.Collection;
 import java.util.List;
@@ -29,7 +30,7 @@ public interface RelationSubQuery {
      * @param builderForRelation 中间表查询构造器
      * @return 查询结果集
      */
-    RecordList<?, ?> dealBatchForRelation(Builder<?, ?> builderForRelation);
+    RecordList<?, ?> dealBatchForRelation(@Nullable Builder<?, ?> builderForRelation);
 
     /**
      * 批量关联查询 (目标表)
@@ -37,7 +38,7 @@ public interface RelationSubQuery {
      * @param relationRecordList @BelongsToMany 中间表数据
      * @return 查询结果集
      */
-    RecordList<?, ?> dealBatchForTarget(Builder<?, ?> builderForTarget, RecordList<?, ?> relationRecordList);
+    RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?> builderForTarget, RecordList<?, ?> relationRecordList);
 
     /**
      * 筛选批量关联查询结果对象

@@ -138,7 +138,7 @@ abstract public class BaseTests {
     }
 
     public enum TABLE {
-        data_type,datetime_test,null_test,people,relationship_student_teacher,student,teacher,test
+        data_type,datetime_test,null_test,people,relationship_student_teacher,student,teacher,test,comment,image,post,super_relation
     }
 
 }
