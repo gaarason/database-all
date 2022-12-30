@@ -7,6 +7,7 @@ import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.core.Container;
 import gaarason.database.eloquent.RecordListBean;
+import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.FieldMember;
 import gaarason.database.support.ModelMember;
@@ -51,8 +52,27 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
         return result;
     }
 
+    /**
+     * 将数据源中的某一列,转化为可以使用 where in 查询的 set
+     * @param columnValueMapList 数据源
+     * @param column 目标列
+     * @param morphKey 多态key
+     * @param morphValue 多态value
+     * @return 目标列的集合
+     */
+    protected static Set<Object> getColumnInMapList(List<Map<String, Object>> columnValueMapList, String column, String morphKey, String morphValue) {
+        Set<Object> result = new HashSet<>();
+        for (Map<String, Object> stringColumnMap : columnValueMapList) {
+            Object mKeyValue = stringColumnMap.get(morphKey);
+            if(mKeyValue != null && mKeyValue.equals(morphValue)){
+                result.add(stringColumnMap.get(column));
+            }
+        }
+        return result;
+    }
+
     @Override
-    public RecordList<?, ?> dealBatchForRelation(Builder<?, ?> builderForRelation) {
+    public RecordList<?, ?> dealBatchForRelation(@Nullable Builder<?, ?> builderForRelation) {
         return new RecordListBean<>(getContainer());
     }
 

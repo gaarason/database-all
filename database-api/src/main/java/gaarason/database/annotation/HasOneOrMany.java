@@ -21,9 +21,25 @@ public @interface HasOneOrMany {
     String sonModelForeignKey();
 
     /**
-     * `本表`中的`关联键`, 默认值为`本表`的主键(`@Primary()`修饰的键)
+     * `本表`中的`关联键`
+     * 默认值为`本表`的主键(`@Primary()`修饰的键)
      * @return `本表`中的`关联键`
      */
     String localModelLocalKey() default "";
+
+    /**
+     * `子表`中的`多态类型键`
+     * 默认空, 表示不启用多态
+     * @return `子表`中的`多态类型键`
+     */
+    String sonModelMorphKey() default "";
+
+    /**
+     * `子表`中的`多态类型键`的值
+     * 默认值为`本表`的表名
+     * sonModelMorphKey 为空时, 表示不启用多态
+     * @return `子表`中的`多态类型键`的值
+     */
+    String sonModelMorphValue() default "";
 
 }

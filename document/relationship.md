@@ -12,10 +12,16 @@ Eloquent ORM for Java
 * [关联关系](/document/relationship.md)
     * [总览](#总览)
     * [关系定义](#关系定义)
-        * [一对一](#一对一)
-        * [一对多](#一对多)
-        * [反向一对多/一对一](#反向一对多/一对一)
-        * [多对多](#多对多)
+        * [常规](#常规)
+            * [一对一](#一对一)
+            * [一对多](#一对多)
+            * [反向一对多/一对一](#反向一对多/一对一)
+            * [多对多](#多对多)
+        * [多态](#多态)
+            * [多态一对一](#多态一对一)
+            * [多态一对多](#多态一对多)
+            * [多态反向一对多/一对一](#多态反向一对多/一对一)
+            * [多态多对多](#多态多对多)
         * [自定义关系](#自定义关系)
             * [自定义注解](#自定义注解)
             * [自定义注解解析器](#自定义注解解析器)
@@ -50,205 +56,347 @@ Eloquent 让组织和处理这些关联关系变得简单，并且支持多种�
 
 **重要：所有`对应的关系键`的java类型必须严格一致**
 
-### 一对一
+### 常规
+
+最常见的关系场景
+
+#### 一对一
 
 `@HasOneOrMany()` 其中包含2个属性:
 
 - `sonModelForeignKey`表示子表的外键
-- `localModelLocalKey`表示本表的关联键,默认值为本表的主键(`@Primary()`修饰的键)
+- `localModelLocalKey`表示本表的关联键, 默认值为本表的主键(`@Primary()`修饰的键)
 
 以下是一个`teacher`包含一个`pet`(宠物)的例子
+```
+teacher
+    id - integer
 
+pet
+    id - integer
+    master_id - integer
+```
 ```java
-package gaarason.database.test.models.relation.pojo;
-
-import gaarason.database.eloquent.annotation.*;
-import gaarason.database.test.models.relation.model.RelationshipStudentTeacherModel;
-import gaarason.database.test.models.relation.model.StudentModel;
-import lombok.Data;
-
-import java.io.Serializable;
-
-@Data
-@Table(name = "teacher")
 public class Teacher implements Serializable {
+    // ...
 
-    @Primary()
-    @Column(name = "id")
-    private Integer id;
-
-    @Column(name = "name", length = 20, comment = "姓名")
-    private String name;
-
-    @Column(name = "age", unsigned = true, comment = "年龄")
-    private Integer age;
-
-    @Column(name = "sex", unsigned = true, comment = "性别1男2女")
-    private Integer sex;
-
-    @Column(name = "subject", length = 20, comment = "科目")
-    private String subject;
-
-    // 一对一关联关系声明
-    @HasOneOrMany(sonModelForeignKey = "master_id", localModelLocalKey = "id")
+    // 省略了`localModelLocalKey`, 表示本表关系键为主键(`@Primary()`修饰的键)
+    @HasOneOrMany(sonModelForeignKey = "master_id")
     private Pet pet;
-
 }
-
-
 ```
 
-### 一对多
+#### 一对多
 
 同样使用`@HasOneOrMany()`注解, 用法也是一致的, 要注意的是使用此注解的属性需要是`List<F>`/`F[]`/`ArrayList<F>`/`LinkedHashSet<F>`/`LinkedList<F>`
 /`Set<F>`类型
 
 以下是一个`teacher`包含多个`student`的例子
+```
+teacher
+    id - integer
 
+student
+    id - integer
+    teacher_id - integer
+```
 ```java
-package gaarason.database.test.models.relation.pojo;
-
-import gaarason.database.eloquent.annotation.*;
-import gaarason.database.test.models.relation.model.RelationshipStudentTeacherModel;
-import gaarason.database.test.models.relation.model.StudentModel;
-import lombok.Data;
-
-import java.io.Serializable;
-import java.util.List;
-
-@Data
-@Table(name = "teacher")
 public class Teacher implements Serializable {
+    // ...
 
-    @Primary()
-    @Column(name = "id")
-    private Integer id;
-
-    @Column(name = "name", length = 20, comment = "姓名")
-    private String name;
-
-    @Column(name = "age", unsigned = true, comment = "年龄")
-    private Integer age;
-
-    @Column(name = "sex", unsigned = true, comment = "性别1男2女")
-    private Integer sex;
-
-    @Column(name = "subject", length = 20, comment = "科目")
-    private String subject;
-
-    // 一对多关联关系声明
-    @HasOneOrMany(sonModelForeignKey = "teacher_id", localModelLocalKey = "id")
+    // 省略了`localModelLocalKey`, 表示本表关系键为主键(`@Primary()`修饰的键)
+    @HasOneOrMany(sonModelForeignKey = "teacher_id")
     private List<Student> students;
-
 }
-
 ```
 
-### 反向一对多/一对一
+#### 反向一对多/一对一
 
 `@BelongsTo()` 其中包含2个属性:
 
 - `localModelForeignKey`表示本表的外键
-- `parentModelLocalKey`表示父表的关联键,默认值为父表的主键(`@Primary()`修饰的键)
+- `parentModelLocalKey`表示父表的关联键, 默认值为父表的主键(`@Primary()`修饰的键)
 
 以下是一个`teacher`包含多个`student`的场景下, 需要从`student`找到`teacher`的例子
+```
+teacher
+    id - integer
 
+student
+    id - integer
+    teacher_id - integer
+```
 ```java
-package gaarason.database.test.models.relation.pojo;
-
-import gaarason.database.eloquent.annotation.*;
-import gaarason.database.test.models.relation.model.RelationshipStudentTeacherModel;
-import gaarason.database.test.models.relation.model.TeacherModel;
-import lombok.Data;
-
-import java.io.Serializable;
-
-@Data
-@Table(name = "student")
 public class Student implements Serializable {
+    // ...
 
-    @Primary()
-    @Column(name = "id", unsigned = true)
-    private Long id;
-
-    @Column(name = "name", length = 20, comment = "姓名")
-    private String name;
-
-    @Column(name = "age", unsigned = true, comment = "年龄")
-    private Integer age;
-
-    @Column(name = "sex", unsigned = true, comment = "性别1男2女")
-    private Integer sex;
-
-    @Column(name = "teacher_id", unsigned = true, comment = "教师id")
-    private Long teacherId;
-
-    @Column(name = "is_deleted")
-    private Boolean isDeleted;
-
-    @BelongsTo(localModelForeignKey = "teacher_id", parentModelLocalKey = "id")
+    // 省略了`parentModelLocalKey`, 表示父表的关联键为父表主键(`@Primary()`修饰的键)
+    @BelongsTo(localModelForeignKey = "teacher_id")
     private Teacher teacher;
-
 }
-
 ```
 
-### 多对多
+#### 多对多
 
 `@BelongsToMany()` 其中包含5个属性:
 
 - `relationModel`表示`关系表`的模型
-- `localModelLocalKey`表示`本表`中`关联键`
+- `localModelLocalKey`表示`本表`中`关联键`, 默认值为`本表`的主键(`@Primary()`修饰的键)
 - `foreignKeyForLocalModel`表示`关系表`中`关联本表的外键`
 - `foreignKeyForTargetModel`表示`关系表`中`关联目标表的外键`
-- `targetModelLocalKey`表示`目标表`中`关联键`
+- `targetModelLocalKey`表示`目标表`中`关联键`, 默认值为`目标表`的主键(`@Primary()`修饰的键)
 
 - 使用此注解的属性需要是`List<F>`/`F[]`/`ArrayList<F>`/`LinkedHashSet<F>`/`LinkedList<F>`/`Set<F>`类型
 
 以下是一个`teacher`包含多个`student`,同时, 一个`student`包含多个`teacher`的场景, 关系表使用`relationship_student_teacher`
+```
+teacher
+    id - integer
+
+student
+    id - integer
+    
+relationship_student_teacher
+    teacher_id - integer
+    student_id - integer
+```
 
 ```java
-package gaarason.database.test.models.relation.pojo;
-
-import gaarason.database.eloquent.annotation.*;
-import gaarason.database.test.models.relation.model.RelationshipStudentTeacherModel;
-import gaarason.database.test.models.relation.model.TeacherModel;
-import lombok.Data;
-
-import java.io.Serializable;
-import java.util.List;
-
-@Data
-@Table(name = "student")
 public class Student implements Serializable {
+    // ...
 
-    @Primary()
-    @Column(name = "id", unsigned = true)
-    private Long id;
-
-    @Column(name = "name", length = 20, comment = "姓名")
-    private String name;
-
-    @Column(name = "age", unsigned = true, comment = "年龄")
-    private Integer age;
-
-    @Column(name = "sex", unsigned = true, comment = "性别1男2女")
-    private Integer sex;
-
-    @Column(name = "is_deleted")
-    private Boolean isDeleted;
-
+    // 省略了`localModelLocalKey`, 表示`本表`中`关联键`, 默认值为`本表`的主键(`@Primary()`修饰的键)
+    // 省略了`targetModelLocalKey`, 表示`目标表`中`关联键`, 默认值为`目标表`的主键(`@Primary()`修饰的键)
+    // 当上述均成立时, 关系成立
     @BelongsToMany(relationModel = RelationshipStudentTeacherModel.class,
-            foreignKeyForLocalModel = "teacher_id", foreignKeyForTargetModel = "student_id", localModelLocalKey = "id",
-            targetModelLocalKey = "id")
+            foreignKeyForLocalModel = "teacher_id", foreignKeyForTargetModel = "student_id")
     private List<Student> students;
-
 }
-
 ```
 
 以上是`student`维度的建立, `teacher`维度的类似, 暂略
 
+### 多态
+
+灵活的关系场景  
+多态关联允许目标模型借助单个关联从属于多个模型    
+例如，你正在构建一个允许用户共享博客文章和视频的应用程序，其中 Comment 模型可能**同时**从属于 Post 和 Video 模型, 甚至包括他自己 Comment。
+  
+用法上, 相比较于`常规`关系, 复用了对应的注解, 但在注解中增加了额外的`多态属性`, 用于指明其多态的规则实现  
+
+#### 多态一对一
+
+`@HasOneOrMany()` 其中包含2个多态属性:
+
+- `sonModelMorphKey`表示`子表`中的`多态类型键`
+- `sonModelMorphValue`表示`子表`中的`多态类型键`的值, 默认值为`本表`的表名
+
+以下是`Comment`同时从属于 `Post` 和 他自己的场景
+```
+post
+    id - integer
+
+comment
+    id - integer
+    p_type - string
+    p_id - integer
+```
+以下是一个`Post`包含一个`Comment`的场景的定义
+
+```java
+public class Post extends BaseEntity {
+    // ...
+
+    // 省略了`sonModelMorphValue`, 表示当 p_type 的值为 Post的表名时, 关系成立
+    @HasOneOrMany(sonModelForeignKey = "p_id", sonModelMorphKey = "p_type")
+    private Comment comment;
+}
+```
+以下是一个`Comment`包含一个`Comment`的场景的定义
+
+```java
+public class Comment extends BaseEntity {
+    // ...
+
+    // 省略了`sonModelMorphValue`, 表示当 p_type 的值为 Comment的表名时, 关系成立
+    @HasOneOrMany(sonModelForeignKey = "p_id", sonModelMorphKey = "p_type")
+    private Comment comment;
+}
+```
+
+#### 多态一对多
+
+同样使用`@HasOneOrMany()`注解, 用法也是一致的, 要注意的是使用此注解的属性需要是`List<F>`/`F[]`/`ArrayList<F>`/`LinkedHashSet<F>`/`LinkedList<F>`
+/`Set<F>`类型
+
+
+以下是`Comment`同时从属于 `Post` 和 他自己的场景
+```
+post
+    id - integer
+
+comment
+    id - integer
+    p_type - string
+    p_id - integer
+```
+以下是一个`Post`包含多个`Comment`的场景的定义
+
+```java
+public class Post extends BaseEntity {
+    // ...
+
+    // 省略了`sonModelMorphValue`, 表示当 p_type 的值为 Post的表名时, 关系成立
+    @HasOneOrMany(sonModelForeignKey = "p_id", sonModelMorphKey = "p_type")
+    private List<Comment> comments;
+}
+```
+以下是一个`Comment`包含多个`Comment`的场景的定义
+
+```java
+public class Comment extends BaseEntity {
+    // ...
+
+    // 省略了`sonModelMorphValue`, 表示当 p_type 的值为 Comment的表名时, 关系成立
+    @HasOneOrMany(sonModelForeignKey = "p_id", sonModelMorphKey = "p_type")
+    private List<Comment> comments;
+}
+```
+#### 多态反向一对多/一对一
+
+`@BelongsTo()` 其中包含2个多态属性:
+
+- `localModelMorphKey`表示`本表`中的`多态类型键`
+- `localModelMorphValue`表示`本表`中的`多态类型键`的值, 默认值为`父表`的表名
+
+以下是`Comment`同时从属于 `Post` 和 他自己的场景
+```
+post
+    id - integer
+
+comment
+    id - integer
+    p_type - string
+    p_id - integer
+```
+
+以下是一个`Comment`从属与`Comment`以及`Post`的场景的定义
+
+```java
+public class Comment extends BaseEntity {
+    // ...
+
+    // 省略了`localModelMorphValue`, 表示当 p_type 的值为 Post的表名时, 关系成立
+    @BelongsTo(localModelForeignKey = "p_id", localModelMorphKey = "p_type")
+    private Post post;
+
+    // 省略了`localModelMorphValue`, 表示当 p_type 的值为 Comment的表名时, 关系成立
+    @BelongsTo(localModelForeignKey = "p_id", localModelMorphKey = "p_type")
+    private Comment pcomment;
+}
+```
+
+#### 多态多对多
+
+`@BelongsToMany()` 其中包含4个多态属性:
+
+- `morphKeyForLocalModel`表示`关系表`中的`本表`的`多态类型键`
+- `morphValueForLocalModel`表示`关系表`中的`本表`的`多态类型键`的值, 默认值为`本表`的表名
+- `morphKeyForTargetModel`表示`关系表`中的`目标表`的`多态类型键`
+- `morphValueForTargetModel``关系表`中的`目标表`的`多态类型键`的值, 默认值为`目标表`的表名
+
+以下是`Comment`和`Post`同时与`Image`存在多对多关系的场景, 其中`Relation`为中间表, 用于实现多态
+```
+post
+    id - integer
+
+comment
+    id - integer
+
+image
+    id - integer
+    
+relation
+    relation_one_type - string
+    relation_one_value - integer
+    relation_two_type - string
+    relation_two_value - integer
+```
+
+以下是一个`Post`与`Image`多对多关系的定义
+
+```java
+public class Post extends BaseEntity {
+    // ...
+
+    // 省略了`morphValueForLocalModel`, 表示当 relation_one_value 的值为 Post的表名时, 和本表(post)关系成立
+    // 省略了`morphValueForTargetModel`, 表示当 relation_two_value 的值为 Image的表名时, 和目标表(image)关系成立
+    // 当上述均成立时, 关系成立
+    @BelongsToMany(relationModel = SuperRelation.Model.class, foreignKeyForLocalModel = "relation_one_value", foreignKeyForTargetModel = "relation_two_value",
+        morphKeyForLocalModel = "relation_one_type", morphKeyForTargetModel = "relation_two_type")
+    private List<Image> imagesWithMorph;
+
+}
+```
+
+以下是一个`Comment`与`Image`多对多关系的定义
+
+```java
+public class Comment extends BaseEntity {
+    // ...
+
+    // 省略了`morphValueForLocalModel`, 表示当 relation_one_value 的值为 Comment的表名时, 和本表(comment)关系成立
+    // 省略了`morphValueForTargetModel`, 表示当 relation_two_value 的值为 Image的表名时, 和目标表(image)关系成立
+    // 当上述均成立时, 关系成立
+    @BelongsToMany(relationModel = SuperRelation.Model.class, foreignKeyForLocalModel = "relation_one_value", foreignKeyForTargetModel = "relation_two_value",
+        morphKeyForLocalModel = "relation_one_type", morphKeyForTargetModel = "relation_two_type")
+    private List<Image> imagesWithMorph;
+
+}
+```
+以下是一个`Image`同时与`Comment`以及`Post`多对多关系的定义
+
+```java
+public class Image extends BaseEntity {
+    // ...
+
+    // 省略了`morphValueForLocalModel`, 表示当 relation_two_value 的值为 Image的表名时, 和本表(image)关系成立
+    // 省略了`morphValueForTargetModel`, 表示当 relation_one_value 的值为 Post的表名时, 和目标表(post)关系成立
+    // 当上述均成立时, 关系成立
+    @BelongsToMany(relationModel = SuperRelation.Model.class, foreignKeyForLocalModel = "relation_two_value", foreignKeyForTargetModel = "relation_one_value",
+        morphKeyForLocalModel = "relation_two_type", morphKeyForTargetModel = "relation_one_type")
+    private List<Post> posts;
+
+    // 省略了`morphValueForLocalModel`, 表示当 relation_two_value 的值为 Image的表名时, 和本表(image)关系成立
+    // 省略了`morphValueForTargetModel`, 表示当 relation_one_value 的值为 Comment的表名时, 和目标表(comment)关系成立
+    // 当上述均成立时, 关系成立
+    @BelongsToMany(relationModel = SuperRelation.Model.class, foreignKeyForLocalModel = "relation_two_value", foreignKeyForTargetModel = "relation_one_value",
+        morphKeyForLocalModel = "relation_two_type", morphKeyForTargetModel = "relation_one_type")
+    private List<Comment> comments;
+}
+```
+以下是中间表`SuperRelation`以及其`model`的定义 (普通的定义)
+```java
+public class SuperRelation extends BaseEntity {
+    // ...
+    
+    @Column(name = "relation_one_type", length = 200L)
+    private String relationOneType;
+
+    @Column(name = "relation_one_value", unsigned = true)
+    private Long relationOneValue;
+
+    @Column(name = "relation_two_type", length = 200L)
+    private String relationTwoType;
+
+    @Column(name = "relation_two_value", unsigned = true)
+    private Long relationTwoValue;
+
+    public static class Model extends BaseEntity.BaseModel<SuperRelation, Long> {
+
+    }
+}
+```
 
 ### 自定义关系
 
@@ -470,9 +618,9 @@ userRecord.bind("roles").detach(1,2);
 
 有时候有要将用户更新到指定的角色, 任何不在指定范围对应记录将会移除, 使用 sync 方法。
 
-- @HasOneOrMany : 针对每个范围内的值, 将会调用 `attach` 与 `attach`
-- @BelongsTo : 针对每个范围内的值, 将会调用 `attach` 与 `attach`
-- @BelongsToMany : 针对每个范围内的值, 将会调用 `attach` 与 `attach`，两个模型在数据库中都保持不变, 可以指定附加的字段在增加关系时生效
+- @HasOneOrMany : 针对每个范围内的值, 将会调用 `attach` 与 `detach`
+- @BelongsTo : 针对每个范围内的值, 将会调用 `attach` 与 `detach`
+- @BelongsToMany : 针对每个范围内的值, 将会调用 `attach` 与 `detach`，两个模型在数据库中都保持不变, 可以指定附加的字段在增加关系时生效
 
 ```java
 
@@ -488,9 +636,9 @@ userRecord.bind("roles").sync(1,2);
 
 多对多关联还提供了一个 toggle 方法用于切换给定 ID 的附加状态，如果给定ID当前被附加，则取消附加，类似的，如果当前没有附加，则附加, 使用 toggle 方法。
 
-- @HasOneOrMany : 针对每个范围内的值, 将会调用 `attach` 与 `attach`
-- @BelongsTo : 针对每个范围内的值, 将会调用 `attach` 与 `attach`
-- @BelongsToMany : 针对每个范围内的值, 将会调用 `attach` 与 `attach`，两个模型在数据库中都保持不变, 可以指定附加的字段在增加关系时生效
+- @HasOneOrMany : 针对每个范围内的值, 将会调用 `attach` 与 `detach`
+- @BelongsTo : 针对每个范围内的值, 将会调用 `attach` 与 `detach`
+- @BelongsToMany : 针对每个范围内的值, 将会调用 `attach` 与 `detach`，两个模型在数据库中都保持不变, 可以指定附加的字段在增加关系时生效
 
 ```java
 

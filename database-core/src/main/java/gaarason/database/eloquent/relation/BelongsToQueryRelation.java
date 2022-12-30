@@ -10,6 +10,7 @@ import gaarason.database.core.Container;
 import gaarason.database.exception.RelationAttachException;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.support.RecordFactory;
 import gaarason.database.util.ObjectUtils;
 
 import java.lang.reflect.Field;
@@ -24,10 +25,21 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     private final BelongsToTemplate belongsToTemplate;
 
     /**
+     * 是否多态
+     */
+    private boolean enableMorph;
+
+    /**
      * 关系键的默认值, 仅在解除关系时使用
      */
     @Nullable
     private final Object defaultLocalModelForeignKeyValue;
+
+    /**
+     * 多态的默认值, 仅在解除关系时使用
+     */
+    @Nullable
+    private final Object defaultLocalModelMorphValue;
 
     public BelongsToQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
         super(modelShadowProvider, model);
@@ -36,20 +48,34 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
         defaultLocalModelForeignKeyValue = modelShadowProvider.parseAnyEntityWithCache(field.getDeclaringClass())
             .getFieldMemberByColumnName(belongsToTemplate.localModelForeignKey)
             .getDefaultValue();
+
+        defaultLocalModelMorphValue = enableMorph ?
+            modelShadowProvider.parseAnyEntityWithCache(field.getDeclaringClass())
+                .getFieldMemberByColumnName(belongsToTemplate.localModelMorphKey)
+                .getDefaultValue() : null;
     }
 
     @Override
     public Builder<?, ?>[] prepareBuilderArr(List<Map<String, Object>> columnValueMapList,
         GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart) {
-        Builder<?, ?> targetBuilder = generateSqlPart.execute(ObjectUtils.typeCast(
-            belongsToTemplate.parentModel.newQuery()
-                .whereIn(belongsToTemplate.parentModelLocalKey,
-                    getColumnInMapList(columnValueMapList, belongsToTemplate.localModelForeignKey))));
+
+        Set<Object> objectSet = enableMorph ?
+            getColumnInMapList(columnValueMapList, belongsToTemplate.localModelForeignKey,
+                belongsToTemplate.localModelMorphKey, belongsToTemplate.localModelMorphValue) :
+            getColumnInMapList(columnValueMapList, belongsToTemplate.localModelForeignKey);
+
+        Builder<?, ?> targetBuilder = ObjectUtils.isEmpty(objectSet) ? null :
+            generateSqlPart.execute(ObjectUtils.typeCast(belongsToTemplate.parentModel.newQuery()))
+                .whereIn(belongsToTemplate.parentModelLocalKey, objectSet);
         return new Builder<?, ?>[]{null, targetBuilder};
     }
 
     @Override
-    public RecordList<?, ?> dealBatchForTarget(Builder<?, ?> builderForTarget, RecordList<?, ?> relationRecordList) {
+    public RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?> builderForTarget,
+        RecordList<?, ?> relationRecordList) {
+        if (builderForTarget == null) {
+            return RecordFactory.newRecordList(getContainer());
+        }
         return belongsToTemplate.parentModel.newQuery().setBuilder(ObjectUtils.typeCast(builderForTarget)).get();
     }
 
@@ -146,11 +172,18 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
                     .from(belongsToTemplate.parentModel.getTableName())
                     .whereIn(belongsToTemplate.parentModel.getPrimaryKeyColumnName(),
                         compatibleTargetPrimaryKeyValues)))
+            .when(enableMorph,
+                builder -> builder.where(belongsToTemplate.localModelMorphKey, belongsToTemplate.localModelMorphValue))
             .data(belongsToTemplate.localModelForeignKey, defaultLocalModelForeignKeyValue)
+            .when(enableMorph,
+                builder -> builder.data(belongsToTemplate.localModelMorphKey, defaultLocalModelMorphValue))
             .update();
         if (successNum > 0) {
             Map<String, Object> metadataMap = theRecord.getMetadataMap();
             metadataMap.put(belongsToTemplate.localModelForeignKey, defaultLocalModelForeignKeyValue);
+            if (enableMorph) {
+                metadataMap.put(belongsToTemplate.localModelMorphKey, defaultLocalModelMorphValue);
+            }
             theRecord.refresh(metadataMap);
         }
         return successNum;
@@ -217,7 +250,9 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
             // 关系已经存在, 切换就是解除
             if (Objects.equals(theRecord.getMetadataMap().get(belongsToTemplate.localModelForeignKey),
-                parentModelLocalKeyValue)) {
+                parentModelLocalKeyValue) && (!enableMorph ||
+                Objects.equals(theRecord.getMetadataMap().get(belongsToTemplate.localModelMorphKey),
+                    belongsToTemplate.localModelMorphValue))) {
                 return detach(theRecord, compatibleTargetPrimaryKeyValues);
             }
             // 关系不存在, 切换就是增加
@@ -262,7 +297,13 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
             .newQuery()
             .where(theRecord.getModel().getPrimaryKeyColumnName(),
                 String.valueOf(theRecord.getOriginalPrimaryKeyValue()))
+            .andWhere(builder -> builder.where(belongsToTemplate.localModelForeignKey, "!=", localModelForeignKeyValue)
+                .when(enableMorph, builder1 -> builder1.orWhere(
+                    builder2 -> builder2.where(belongsToTemplate.localModelMorphKey, "!=",
+                        belongsToTemplate.localModelMorphValue))))
             .data(belongsToTemplate.localModelForeignKey, localModelForeignKeyValue)
+            .when(enableMorph,
+                builder -> builder.data(belongsToTemplate.localModelMorphKey, belongsToTemplate.localModelMorphValue))
             .update();
         if (successNum > 0) {
             Map<String, Object> metadataMap = theRecord.getMetadataMap();
@@ -285,12 +326,20 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
         final String parentModelLocalKey;
 
+        final String localModelMorphKey;
+
+        final String localModelMorphValue;
+
         BelongsToTemplate(Field field) {
             BelongsTo belongsTo = field.getAnnotation(BelongsTo.class);
             parentModel = getModelInstance(field);
             localModelForeignKey = belongsTo.localModelForeignKey();
             parentModelLocalKey = "".equals(belongsTo.parentModelLocalKey()) ? getPrimaryKeyColumnName(parentModel) :
                 belongsTo.parentModelLocalKey();
+            localModelMorphKey = belongsTo.localModelMorphKey();
+            localModelMorphValue = "".equals(belongsTo.localModelMorphValue()) ? parentModel.getTableName() :
+                belongsTo.localModelMorphValue();
+            enableMorph = !"".equals(localModelMorphKey);
         }
     }
 }

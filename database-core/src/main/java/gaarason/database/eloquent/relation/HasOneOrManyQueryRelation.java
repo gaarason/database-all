@@ -9,6 +9,7 @@ import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.core.Container;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.support.RecordFactory;
 import gaarason.database.util.ObjectUtils;
 
 import java.lang.reflect.Field;
@@ -25,10 +26,21 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     private final HasOneOrManyTemplate hasOneOrManyTemplate;
 
     /**
+     * 是否多态
+     */
+    private boolean enableMorph;
+
+    /**
      * 目标模型外键的默认值, 仅在解除关系时使用
      */
     @Nullable
     private final Object defaultSonModelForeignKeyValue;
+
+    /**
+     * 目标模型多态的默认值, 仅在解除关系时使用
+     */
+    @Nullable
+    private final Object defaultSonModelMorphValue;
 
     public HasOneOrManyQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
         super(modelShadowProvider, model);
@@ -38,19 +50,29 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
             .getEntityMember()
             .getFieldMemberByColumnName(hasOneOrManyTemplate.sonModelForeignKey)
             .getDefaultValue();
+
+        defaultSonModelMorphValue = enableMorph ? modelShadowProvider.get(hasOneOrManyTemplate.sonModel)
+            .getEntityMember()
+            .getFieldMemberByColumnName(hasOneOrManyTemplate.sonModelMorphKey)
+            .getDefaultValue() : null;
     }
 
     @Override
     public Builder<?, ?>[] prepareBuilderArr(List<Map<String, Object>> columnValueMapList,
         GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart) {
         return new Builder<?, ?>[]{null,
-            generateSqlPart.execute(ObjectUtils.typeCast(hasOneOrManyTemplate.sonModel.newQuery())).whereIn(
-                hasOneOrManyTemplate.sonModelForeignKey,
-                getColumnInMapList(columnValueMapList, hasOneOrManyTemplate.localModelLocalKey))};
+            generateSqlPart.execute(ObjectUtils.typeCast(hasOneOrManyTemplate.sonModel.newQuery()))
+                .whereIn(hasOneOrManyTemplate.sonModelForeignKey,
+                    getColumnInMapList(columnValueMapList, hasOneOrManyTemplate.localModelLocalKey))
+                .when(enableMorph,
+                    builder -> builder.where(hasOneOrManyTemplate.sonModelMorphKey, hasOneOrManyTemplate.sonModelMorphValue))};
     }
 
     @Override
-    public RecordList<?, ?> dealBatchForTarget(Builder<?, ?> builderForTarget, RecordList<?, ?> relationRecordList) {
+    public RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?> builderForTarget, RecordList<?, ?> relationRecordList) {
+        if(builderForTarget == null){
+            return RecordFactory.newRecordList(getContainer());
+        }
         return hasOneOrManyTemplate.sonModel.newQuery().setBuilder(ObjectUtils.typeCast(builderForTarget)).get();
     }
 
@@ -85,8 +107,13 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
         assert relationKeyValue != null;
         return hasOneOrManyTemplate.sonModel.newQuery()
             .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
-            .where(hasOneOrManyTemplate.sonModelForeignKey, "!=", relationKeyValue)
+            .andWhere(builder -> builder.where(hasOneOrManyTemplate.sonModelForeignKey, "!=", relationKeyValue)
+                .when(enableMorph, builder1 -> builder1.orWhere(
+                    builder2 -> builder2.where(hasOneOrManyTemplate.sonModelMorphKey, "!=",
+                        hasOneOrManyTemplate.sonModelMorphValue))))
             .data(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
+            .when(enableMorph,
+                builder -> builder.data(hasOneOrManyTemplate.sonModelMorphKey, hasOneOrManyTemplate.sonModelMorphValue))
             .update();
     }
 
@@ -96,10 +123,14 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
         Object relationKeyValue = theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey);
 
         // 执行更新
-        // 目标,必须是关联关系, 才解除
+        // 目标, 必须是关联关系, 才解除
         return hasOneOrManyTemplate.sonModel.newQuery()
             .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
+            .when(enableMorph, builder -> builder.where(hasOneOrManyTemplate.sonModelMorphKey,
+                hasOneOrManyTemplate.sonModelMorphValue))
             .data(hasOneOrManyTemplate.sonModelForeignKey, defaultSonModelForeignKeyValue)
+            .when(enableMorph,
+                builder -> builder.data(hasOneOrManyTemplate.sonModelMorphKey, defaultSonModelMorphValue))
             .update();
     }
 
@@ -125,7 +156,11 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
         return hasOneOrManyTemplate.sonModel.newQuery()
             .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
             .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
+            .when(enableMorph, builder -> builder.where(hasOneOrManyTemplate.sonModelMorphKey,
+                hasOneOrManyTemplate.sonModelMorphValue))
             .data(hasOneOrManyTemplate.sonModelForeignKey, defaultSonModelForeignKeyValue)
+            .when(enableMorph,
+                builder -> builder.data(hasOneOrManyTemplate.sonModelMorphKey, defaultSonModelMorphValue))
             .update();
     }
 
@@ -146,15 +181,15 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
             int detachNum = hasOneOrManyTemplate.sonModel.newQuery()
                 .whereNotIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
                 .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
+                .when(enableMorph, builder -> builder.where(hasOneOrManyTemplate.sonModelMorphKey,
+                    hasOneOrManyTemplate.sonModelMorphValue))
                 .data(hasOneOrManyTemplate.sonModelForeignKey, defaultSonModelForeignKeyValue)
+                .when(enableMorph,
+                    builder -> builder.data(hasOneOrManyTemplate.sonModelMorphKey, defaultSonModelMorphValue))
                 .update();
 
             // 执行更新
-            int attachNum = hasOneOrManyTemplate.sonModel.newQuery()
-                .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
-                .where(hasOneOrManyTemplate.sonModelForeignKey, "!=", relationKeyValue)
-                .data(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
-                .update();
+            int attachNum = attach(theRecord, targetPrimaryKeyValues, relationDataMap);
 
             return detachNum + attachNum;
         });
@@ -181,15 +216,13 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
                 .select(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName())
                 .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
                 .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
+                .when(enableMorph, builder -> builder.where(hasOneOrManyTemplate.sonModelMorphKey,
+                    hasOneOrManyTemplate.sonModelMorphValue))
                 .get()
                 .toOneColumnList();
 
             // 现存的关联关系, 解除关系
-            int detachNum = hasOneOrManyTemplate.sonModel.newQuery()
-                .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), targetPrimaryKeyValues)
-                .where(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
-                .data(hasOneOrManyTemplate.sonModelForeignKey, defaultSonModelForeignKeyValue)
-                .update();
+            int detachNum = detach(theRecord, targetPrimaryKeyValues);
 
             // 需要增加的关系 主键值集合
             Collection<Object> compatibleTargetPrimaryKeyValues = compatibleCollection(targetPrimaryKeyValues,
@@ -197,10 +230,8 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
             compatibleTargetPrimaryKeyValues.removeAll(alreadyExistSonModelPrimaryKeyValues);
 
             // 不存在的关系, 新增关系
-            int attachNum = !compatibleTargetPrimaryKeyValues.isEmpty() ? hasOneOrManyTemplate.sonModel.newQuery()
-                .whereIn(hasOneOrManyTemplate.sonModel.getPrimaryKeyColumnName(), compatibleTargetPrimaryKeyValues)
-                .data(hasOneOrManyTemplate.sonModelForeignKey, relationKeyValue)
-                .update() : 0;
+            int attachNum = !compatibleTargetPrimaryKeyValues.isEmpty() ?
+                attach(theRecord, compatibleTargetPrimaryKeyValues, relationDataMap) : 0;
 
             return detachNum + attachNum;
         });
@@ -219,13 +250,20 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
         final String localModelLocalKey;
 
+        final String sonModelMorphKey;
+
+        final String sonModelMorphValue;
+
         HasOneOrManyTemplate(Field field) {
             HasOneOrMany hasOneOrMany = field.getAnnotation(HasOneOrMany.class);
             sonModel = getModelInstance(field);
             sonModelForeignKey = hasOneOrMany.sonModelForeignKey();
             localModelLocalKey = "".equals(hasOneOrMany.localModelLocalKey()) ? getPrimaryKeyColumnName(sonModel) :
                 hasOneOrMany.localModelLocalKey();
-
+            sonModelMorphKey = hasOneOrMany.sonModelMorphKey();
+            sonModelMorphValue = "".equals(hasOneOrMany.sonModelMorphValue()) ? localModel.getTableName() :
+                hasOneOrMany.sonModelMorphValue();
+            enableMorph = !"".equals(sonModelMorphKey);
         }
     }
 

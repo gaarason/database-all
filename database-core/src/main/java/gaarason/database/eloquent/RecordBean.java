@@ -310,7 +310,7 @@ public class RecordBean<T, K> implements Record<T, K> {
         // 快捷类型
         if (columnArr.length > 1) {
             String lastLevelColumn = columnArr[columnArr.length - 1];
-            String otherLevelColumn = StringUtils.rtrim(fieldName, "." + lastLevelColumn);
+            String otherLevelColumn = fieldName.substring(0, fieldName.length() - (lastLevelColumn.length() + 1));
             return with(otherLevelColumn, builder -> builder,
                 thrRecord -> thrRecord.with(lastLevelColumn, ObjectUtils.typeCast(builderClosure), recordClosure));
         }
