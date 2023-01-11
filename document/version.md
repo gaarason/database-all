@@ -19,6 +19,7 @@ Eloquent ORM for Java
 修正版本号 c ：第三个数字，修复 BUG 或优化代码，一般没有添加新功能，向前兼容   
 
 ## 版本升级指引
+
 ### 1.0.x->2.0.x
 不兼容
 - `gaarason.database.eloquent.Model<T>` 升级为 `gaarason.database.eloquent.Model<T, K>`, 
