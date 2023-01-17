@@ -1,10 +1,7 @@
 package gaarason.database.generator.element;
 
-import lombok.Data;
-
 import java.util.List;
 
-@Data
 public class JavaElement {
 
     /**
@@ -20,12 +17,12 @@ public class JavaElement {
     /**
      * 静态
      */
-    protected boolean isStatic = false;
+    protected boolean isStatic;
 
     /**
      * 不可变
      */
-    protected boolean isFinal = false;
+    protected boolean isFinal;
 
     /**
      * 注解
@@ -41,7 +38,7 @@ public class JavaElement {
         // 对齐用的空格
         StringBuilder spaceBuilder = new StringBuilder();
         for (int i = 0; i < numberOfSpaces; i++) {
-            spaceBuilder.append(" ");
+            spaceBuilder.append(' ');
         }
         String spaces = spaceBuilder.toString();
 
@@ -49,7 +46,7 @@ public class JavaElement {
         StringBuilder stringBuilder = new StringBuilder();
         for (Annotation annotation : annotations) {
             // eg:        @ApiModelProperty(
-            stringBuilder.append(spaces).append("@").append(annotation.getName()).append("(");
+            stringBuilder.append(spaces).append('@').append(annotation.getName()).append('(');
 
             for (Annotation.Attribute attribute : annotation.getAttributes()) {
                 // eg:value = "消息id",
@@ -63,10 +60,49 @@ public class JavaElement {
         return stringBuilder.toString();
     }
 
+    public List<String> getJavaDocLines() {
+        return javaDocLines;
+    }
+
+    public void setJavaDocLines(List<String> javaDocLines) {
+        this.javaDocLines = javaDocLines;
+    }
+
+    public JavaVisibility getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(JavaVisibility visibility) {
+        this.visibility = visibility;
+    }
+
+    public boolean isStatic() {
+        return isStatic;
+    }
+
+    public void setStatic(boolean aStatic) {
+        isStatic = aStatic;
+    }
+
+    public boolean isFinal() {
+        return isFinal;
+    }
+
+    public void setFinal(boolean aFinal) {
+        isFinal = aFinal;
+    }
+
+    public List<Annotation> getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(List<Annotation> annotations) {
+        this.annotations = annotations;
+    }
+
     /**
      * 注解
      */
-    @Data
     public static class Annotation {
 
         /**
@@ -84,11 +120,35 @@ public class JavaElement {
          */
         protected List<Attribute> attributes;
 
+        public String getFullyQualifiedClassName() {
+            return fullyQualifiedClassName;
+        }
+
+        public void setFullyQualifiedClassName(String fullyQualifiedClassName) {
+            this.fullyQualifiedClassName = fullyQualifiedClassName;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public List<Attribute> getAttributes() {
+            return attributes;
+        }
+
+        public void setAttributes(List<Attribute> attributes) {
+            this.attributes = attributes;
+        }
+
         /**
          * 注解的属性
          */
-        @Data
         public static class Attribute {
+
             /**
              * 注解的属性键
              */
@@ -98,6 +158,22 @@ public class JavaElement {
              * 注解的属性值(目前只支持String)
              */
             protected String value;
+
+            public String getName() {
+                return name;
+            }
+
+            public void setName(String name) {
+                this.name = name;
+            }
+
+            public String getValue() {
+                return value;
+            }
+
+            public void setValue(String value) {
+                this.value = value;
+            }
         }
     }
 

@@ -1,0 +1,30 @@
+# noinspection SqlNoDataSourceInspectionForFile
+
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS `image`;
+CREATE TABLE `image`
+(
+    `id`         bigint(1) unsigned NOT NULL AUTO_INCREMENT,
+    `url`       varchar(200) NOT NULL DEFAULT '' COMMENT '图片地址',
+    `created_at` timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '新增时间',
+    `updated_at` timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB
+  AUTO_INCREMENT = 18
+  DEFAULT CHARSET = utf8mb4 COMMENT ='图片表';
+INSERT INTO `image`
+VALUES ('1', 'url111111111', '2009-03-14 20:15:23', '2009-04-24 22:11:03');
+INSERT INTO `image`
+VALUES ('2', 'url222222', '2009-03-14 20:15:23', '2009-04-24 22:11:03');
+INSERT INTO `image`
+VALUES ('3', 'url3333333333333', '2009-03-14 20:15:23', '2009-04-24 22:11:03');
+INSERT INTO `image`
+VALUES ('4', 'url44444', '2009-03-14 20:15:23', '2009-04-24 22:11:03');
+INSERT INTO `image`
+VALUES ('5', 'url555', '2009-03-14 20:15:23', '2009-04-24 22:11:03');
+INSERT INTO `image`
+VALUES ('6', 'url6666', '2009-03-14 20:15:23', '2009-04-24 22:11:03');
+INSERT INTO `image`
+VALUES ('7', 'url777777777', '2009-03-14 20:15:23', '2009-04-24 22:11:03');
+INSERT INTO `image`
+VALUES ('8', 'url8888', '2009-03-14 20:15:23', '2009-04-24 22:11:03');

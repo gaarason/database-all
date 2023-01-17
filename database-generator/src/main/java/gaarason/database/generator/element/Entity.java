@@ -1,14 +1,8 @@
 package gaarason.database.generator.element;
 
-import gaarason.database.generator.element.field.Field;
-import lombok.Data;
+import gaarason.database.generator.element.base.BaseElement;
 
-import java.util.List;
-
-@Data
-public class Entity {
-
-    List<Field> fieldList;
+public class Entity extends BaseElement {
 
 
 }

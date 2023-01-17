@@ -1,13 +1,20 @@
 package gaarason.database.generator.element.field;
 
+import gaarason.database.annotation.Column;
+import gaarason.database.annotation.Primary;
+import gaarason.database.contract.support.FieldConversion;
+import gaarason.database.contract.support.FieldFill;
+import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.generator.element.JavaClassification;
 import gaarason.database.generator.element.JavaElement;
 import gaarason.database.generator.element.JavaVisibility;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import gaarason.database.generator.element.base.BaseElement;
+import gaarason.database.util.ObjectUtils;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
+/**
+ * 数据库列属性
+ * @author xt
+ */
 public class Field extends JavaElement {
 
     /**
@@ -33,32 +40,52 @@ public class Field extends JavaElement {
     /**
      * 是否唯一
      */
-    private Boolean unique = false;
+    private Boolean unique;
 
     /**
      * 是否,仅为正数
      */
-    private Boolean unsigned = false;
+    private Boolean unsigned;
 
     /**
      * 字段可否为 null
      */
-    private Boolean nullable = false;
+    private Boolean nullable;
 
     /**
      * 字段默认值
      */
-    private String defaultValue = null;
+    private String defaultValue;
 
     /**
-     * 是否允许新增时赋值
+     * 查询时，指定不查询的列
      */
-    private Boolean insertable = true;
+    private Boolean columnDisSelectable;
+    /**
+     * 字段, 填充方式
+     */
+    private Class<? extends FieldFill> columnFill;
+    /**
+     * 字段, 使用策略
+     */
+    private Class<? extends FieldStrategy> columnStrategy;
+    /**
+     * 字段, 新增使用策略
+     */
+    private Class<? extends FieldStrategy> columnInsertStrategy;
+    /**
+     * 字段, 更新使用策略
+     */
+    private Class<? extends FieldStrategy> columnUpdateStrategy;
+    /**
+     * 字段, 条件使用策略
+     */
+    private Class<? extends FieldStrategy> columnConditionStrategy;
 
     /**
-     * 是否允许更新时赋值
+     * 字段, 序列化与反序列化方式
      */
-    private Boolean updatable = true;
+    private Class<? extends FieldConversion> columnConversion;
 
     /**
      * 字段长度
@@ -73,18 +100,18 @@ public class Field extends JavaElement {
     /**
      * 是否主键
      */
-    private Boolean primary = false;
+    private boolean primary;
 
     /**
      * 是否自增
      */
-    private Boolean increment = false;
+    private boolean increment;
 
     /**
      * java中的类型
      * eg:Date
      */
-    private String javaClassTypeString;
+    private Class<?> javaClassTypeString;
 
     /**
      * java数据类型分类
@@ -93,14 +120,19 @@ public class Field extends JavaElement {
 
     /**
      * 最小值
-     * 当
      */
-    private long min = 0;
+    private long min;
 
     /**
      * 最大值
      */
-    private long max = 0;
+    private long max;
+
+    private final BaseElement element;
+
+    public Field(BaseElement element) {
+        this.element = element;
+    }
 
     /**
      * 缩进
@@ -114,14 +146,14 @@ public class Field extends JavaElement {
      * @return eg:private String name;
      */
     public String toFieldName() {
-        return indentation() + JavaVisibility.PRIVATE.getValue() + javaClassTypeString + " " + name + ";\n\n";
+        return indentation() + JavaVisibility.PRIVATE.getValue() + element.type2Name(javaClassTypeString) + " " + name + ";\n\n";
     }
 
     /**
      * @return eg:@Primary()
      */
     public String toAnnotationDatabasePrimary() {
-        return primary ? indentation() + "@Primary(" +
+        return primary ? indentation() + element.anno2Name(Primary.class) + "(" +
             (!increment ? "increment = " + increment : "") +
             ")\n" : "";
     }
@@ -130,14 +162,18 @@ public class Field extends JavaElement {
      * @return eg:@Column(name = "name", length = 20L, comment = "姓名")
      */
     public String toAnnotationDatabaseColumn() {
-        return indentation() + "@Column(" +
+        return indentation() + element.anno2Name(Column.class)+"(" +
 
             "name = \"" + columnName + "\"" +
-            (unique ? ", unique = " + unique : "") +
             (unsigned ? ", unsigned = " + unsigned : "") +
             (nullable ? ", nullable = " + nullable : "") +
-            (!insertable ? ", insertable = " + insertable : "") +
-            (!updatable ? ", updatable = " + updatable : "") +
+            (!ObjectUtils.isNull(columnDisSelectable) ? ", selectable = " + columnDisSelectable : "") +
+            (!ObjectUtils.isNull(columnFill) ? ", fill = " + element.type2Name(columnFill) + ".class" : "") +
+            (!ObjectUtils.isNull(columnStrategy) ? ", strategy = " + element.type2Name(columnStrategy)+ ".class" : "") +
+            (!ObjectUtils.isNull(columnInsertStrategy) ? ", insertStrategy = " + element.type2Name(columnInsertStrategy)+ ".class" : "") +
+            (!ObjectUtils.isNull(columnUpdateStrategy) ? ", updateStrategy = " + element.type2Name(columnUpdateStrategy)+ ".class" : "") +
+            (!ObjectUtils.isNull(columnConditionStrategy) ? ", conditionStrategy = " + element.type2Name(columnConditionStrategy)+ ".class" : "") +
+            (!ObjectUtils.isNull(columnConversion) ? ", conversion = " + element.type2Name(columnConversion)+ ".class" : "") +
             (length != null && length != 255 ? ", length = " + length + "L" : "") +
             (!"".equals(comment) ? ", comment = \"" + comment + "\"" : "") +
 
@@ -151,7 +187,7 @@ public class Field extends JavaElement {
         // 字段没有注释的情况下, 使用字段名
         String value = "".equals(comment) ? columnName : comment;
 
-        return indentation() + "@ApiModelProperty(" +
+        return indentation() + element.anno2Name("io.swagger.annotations.ApiModelProperty") + "(" +
 
             "value = \"" + value + "\"" +
             (defaultValue != null ? ", example = \"" + defaultValue + "\"" : "") +
@@ -172,21 +208,22 @@ public class Field extends JavaElement {
 
         switch (javaClassification) {
             case NUMERIC:
-                return indentation() + "@Max(value = " + max + "L, " +
+                return indentation() + element.anno2Name("javax.validation.constraints.Max") + "(value = " + max + "L, " +
                     "message = \"" + describe + "[" + columnName + "]需要小于等于" + max + "\"" +
                     ")\n" +
-                    indentation() + "@Min(value = " + min + "L, " +
+                    indentation() + element.anno2Name("javax.validation.constraints.Min") + "(value = " + min + "L, " +
                     "message = \"" + describe + "[" + columnName + "]需要大于等于" + min + "\"" +
                     ")\n";
             case STRING:
-                if (max == 0)
+                if (max == 0) {
                     return "";
-                else
-                    return indentation() + "@Length(" +
+                } else {
+                    return indentation() + element.anno2Name("org.hibernate.validator.constraints.Length") + "(" +
                         "min = " + min + ", " +
                         "max = " + max + ", " +
                         "message = \"" + describe + "[" + columnName + "]长度需要在" + min + "和" + max + "之间" + "\"" +
                         ")\n";
+                }
             default:
                 return "";
         }
@@ -201,4 +238,191 @@ public class Field extends JavaElement {
         return (!nullable) && (defaultValue == null);
     }
 
+    public String getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
+    }
+
+    public String getColumnType() {
+        return columnType;
+    }
+
+    public void setColumnType(String columnType) {
+        this.columnType = columnType;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getColumnName() {
+        return columnName;
+    }
+
+    public void setColumnName(String columnName) {
+        this.columnName = columnName;
+    }
+
+    public boolean isUnique() {
+        return unique;
+    }
+
+    public void setUnique(boolean unique) {
+        this.unique = unique;
+    }
+
+    public boolean isUnsigned() {
+        return unsigned;
+    }
+
+    public void setUnsigned(boolean unsigned) {
+        this.unsigned = unsigned;
+    }
+
+    public boolean isNullable() {
+        return nullable;
+    }
+
+    public void setNullable(boolean nullable) {
+        this.nullable = nullable;
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
+    public Boolean getColumnDisSelectable() {
+        return columnDisSelectable;
+    }
+
+    public void setColumnDisSelectable(Boolean columnDisSelectable) {
+        this.columnDisSelectable = columnDisSelectable;
+    }
+
+    public Class<? extends FieldFill> getColumnFill() {
+        return columnFill;
+    }
+
+    public void setColumnFill(Class<? extends FieldFill> columnFill) {
+        this.columnFill = columnFill;
+    }
+
+    public Class<? extends FieldStrategy> getColumnStrategy() {
+        return columnStrategy;
+    }
+
+    public void setColumnStrategy(Class<? extends FieldStrategy> columnStrategy) {
+        this.columnStrategy = columnStrategy;
+    }
+
+    public Class<? extends FieldStrategy> getColumnInsertStrategy() {
+        return columnInsertStrategy;
+    }
+
+    public void setColumnInsertStrategy(
+        Class<? extends FieldStrategy> columnInsertStrategy) {
+        this.columnInsertStrategy = columnInsertStrategy;
+    }
+
+    public Class<? extends FieldStrategy> getColumnUpdateStrategy() {
+        return columnUpdateStrategy;
+    }
+
+    public void setColumnUpdateStrategy(
+        Class<? extends FieldStrategy> columnUpdateStrategy) {
+        this.columnUpdateStrategy = columnUpdateStrategy;
+    }
+
+    public Class<? extends FieldStrategy> getColumnConditionStrategy() {
+        return columnConditionStrategy;
+    }
+
+    public void setColumnConditionStrategy(
+        Class<? extends FieldStrategy> columnConditionStrategy) {
+        this.columnConditionStrategy = columnConditionStrategy;
+    }
+
+    public Class<? extends FieldConversion> getColumnConversion() {
+        return columnConversion;
+    }
+
+    public void setColumnConversion(
+        Class<? extends FieldConversion> columnConversion) {
+        this.columnConversion = columnConversion;
+    }
+
+    public Long getLength() {
+        return length;
+    }
+
+    public void setLength(Long length) {
+        this.length = length;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public boolean isPrimary() {
+        return primary;
+    }
+
+    public void setPrimary(boolean primary) {
+        this.primary = primary;
+    }
+
+    public boolean isIncrement() {
+        return increment;
+    }
+
+    public void setIncrement(boolean increment) {
+        this.increment = increment;
+    }
+
+    public Class<?> getJavaClassTypeString() {
+        return javaClassTypeString;
+    }
+
+    public void setJavaClassTypeString(Class<?> javaClassTypeString) {
+        this.javaClassTypeString = javaClassTypeString;
+    }
+
+    public JavaClassification getJavaClassification() {
+        return javaClassification;
+    }
+
+    public void setJavaClassification(JavaClassification javaClassification) {
+        this.javaClassification = javaClassification;
+    }
+
+    public long getMin() {
+        return min;
+    }
+
+    public void setMin(long min) {
+        this.min = min;
+    }
+
+    public long getMax() {
+        return max;
+    }
+
+    public void setMax(long max) {
+        this.max = max;
+    }
 }

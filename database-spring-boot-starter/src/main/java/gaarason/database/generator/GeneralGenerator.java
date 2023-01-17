@@ -1,21 +1,24 @@
 package gaarason.database.generator;
 
-import gaarason.database.core.lang.NonNull;
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.eloquent.Model;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
+import java.io.Serializable;
 
+/**
+ * 生成器
+ * @author xt
+ */
 @Component
 public class GeneralGenerator extends Generator {
 
-    @Resource
+    @Autowired
     GeneralModel generalModel;
 
     @Override
-    @NonNull
-    public Model<?, ?> getModel() {
+    public Model<GeneralModel.Table, Serializable> getModel() {
         return generalModel;
     }
 }

@@ -6,7 +6,7 @@ public enum JavaVisibility {
     PROTECTED("protected "),
     DEFAULT("");
 
-    private String value;
+    private final String value;
 
     JavaVisibility(String value) {
         this.value = value;

@@ -11,14 +11,34 @@
 
     <artifactId>database-spring-boot-starter</artifactId>
 
+    <properties>
+        <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <gaarason.database.springboot.version>2.7.3</gaarason.database.springboot.version>
+        <gaarason.database.druid.version>1.2.9</gaarason.database.druid.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${gaarason.database.springboot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
-            <groupId>com.github.gaarason</groupId>
-            <artifactId>database-core</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>database-query-mysql</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.gaarason</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>database-generator</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -30,6 +50,7 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid-spring-boot-starter</artifactId>
+            <version>${gaarason.database.druid.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

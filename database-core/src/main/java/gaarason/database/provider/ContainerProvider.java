@@ -1,90 +1,164 @@
 package gaarason.database.provider;
 
-import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.InstanceCreatorFunctionalInterface;
-import gaarason.database.contract.support.IdGenerator;
-import gaarason.database.contract.support.ReflectionScan;
+import gaarason.database.core.Container;
+import gaarason.database.exception.AbnormalParameterException;
 import gaarason.database.exception.InvalidConfigException;
-import gaarason.database.exception.ModelNewInstanceException;
-import gaarason.database.support.SnowFlakeIdGenerator;
-import gaarason.database.util.ObjectUtil;
-import org.reflections8.Reflections;
+import gaarason.database.exception.ObjectNewInstanceException;
+import gaarason.database.exception.SerializeException;
+import gaarason.database.lang.Nullable;
+import gaarason.database.logging.Log;
+import gaarason.database.logging.LogFactory;
+import gaarason.database.util.ClassUtils;
+import gaarason.database.util.ObjectUtils;
 
-import java.util.Set;
-import java.util.UUID;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 容器化对象实例
+ * 容器
+ * 对于简单对象(存在无参构造), 可以省略注册步骤
+ * @author xt
  */
-final public class ContainerProvider {
+public class ContainerProvider implements Container {
+
+    private static final Log LOGGER = LogFactory.getLog(ContainerProvider.class);
 
     /**
      * 实例化工厂 MAP
      */
-    private final static ConcurrentHashMap<Class<?>, InstanceCreatorFunctionalInterface<?>> instanceCreatorMap = new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<Class<?>, LinkedList<InstanceCreatorFunctionalInterface<?>>> INSTANCE_CREATOR_MAP = new ConcurrentHashMap<>();
 
     /**
      * 实例对象 MAP
      */
-    private final static ConcurrentHashMap<Class<?>, Object> instanceMap = new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<Class<?>, LinkedList<Object>> INSTANCE_MAP = new ConcurrentHashMap<>();
 
-    static {
-        // ID生成 雪花算法
-        register(IdGenerator.SnowFlakesID.class, (clazz -> new SnowFlakeIdGenerator(0, 0)));
-        // ID生成 UUID 36
-        register(IdGenerator.UUID36.class, clazz -> () -> UUID.randomUUID().toString());
-        // ID生成 UUID 32
-        register(IdGenerator.UUID32.class, clazz -> () -> UUID.randomUUID().toString().replace("-", ""));
-        // ID生成 Never
-        register(IdGenerator.Never.class, clazz -> () -> null);
-        // ID生成 自定义
-        register(IdGenerator.Custom.class, clazz -> () -> null);
-        // 包扫描
-        register(ReflectionScan.class, clazz -> new ReflectionScan() {
-            public final Reflections reflections = new Reflections("", "gaarason.database");
+    /**
+     * 唯一标识
+     */
+    @Nullable
+    protected String identification;
 
-            @Override
-            public Set<Class<? extends Model<?, ?>>> scanModels() {
-                return ObjectUtil.typeCast(reflections.getSubTypesOf(Model.class));
-            }
-        });
+    public synchronized void signUpIdentification(String identification) {
+        if (this.identification != null || ObjectUtils.isEmpty(identification)) {
+            throw new AbnormalParameterException();
+        }
+        GodProvider.add(identification, this);
+        // 记录一下, 没什么别的作用
+        this.identification = identification;
+    }
+
+    @Override
+    public String getIdentification() {
+        if (ObjectUtils.isEmpty(identification)) {
+            throw new SerializeException("未找到容器的唯一标识, 请手动调用一次 model.getContainer().signUpIdentification(\"唯一值\");");
+        }
+        return identification;
     }
 
     /**
      * 注册 实例化工厂
-     * 只要没有实例化, 那么可以重复注册, 且后注册的覆盖先注册的
+     * 只要没有实例化, 那么可以重复注册, 且后注册的优先级更高
      * @param closure 实例化工厂
      */
-    public static synchronized <T> void register(Class<T> interfaceClass, InstanceCreatorFunctionalInterface<T> closure) {
-        if (instanceMap.get(interfaceClass) != null) {
+    @Override
+    public synchronized <T> void register(Class<T> interfaceClass, InstanceCreatorFunctionalInterface<T> closure) {
+        if (INSTANCE_MAP.get(interfaceClass) != null) {
             throw new InvalidConfigException(interfaceClass + " should be registered before get bean.");
         }
-        instanceCreatorMap.put(interfaceClass, closure);
+        // 添加到头部
+        LinkedList<InstanceCreatorFunctionalInterface<?>> instanceCreators = INSTANCE_CREATOR_MAP.computeIfAbsent(
+            interfaceClass, k -> new LinkedList<>());
+        instanceCreators.push(closure);
+        instanceCreators.sort(Comparator.comparing(InstanceCreatorFunctionalInterface::getOrder));
     }
 
+    /**
+     * 返回一个对象列表, 其中的每个对象必然单例
+     * @param interfaceClass 接口类型
+     * @return 对象列表
+     */
+    @Override
+    public <T> List<T> getBeans(Class<T> interfaceClass) {
+        return getBeansInside(interfaceClass, false);
+    }
 
     /**
      * 返回一个对象, 必然单例
+     * @param interfaceClass 接口类型
      * @return 对象
      */
-    public static <T> T getBean(Class<T> interfaceClass) {
-        if (instanceMap.get(interfaceClass) == null) {
-            synchronized (interfaceClass) {
-                if (instanceMap.get(interfaceClass) == null) {
-                    InstanceCreatorFunctionalInterface<?> instanceCreatorFunctionalInterface = instanceCreatorMap.get(interfaceClass);
-                    if (null == instanceCreatorFunctionalInterface) {
-                        throw new InvalidConfigException("The interface[" + interfaceClass + "] has not been registered before get bean.");
+    @Override
+    public <T> T getBean(Class<T> interfaceClass) {
+        return getBeansInside(interfaceClass, true).get(0);
+    }
+
+    /**
+     * 返回一个对象列表, 其中的每个对象必然单例
+     * @param interfaceClass 接口类型
+     * @param fastReturn 获取一个实例对象, 就快速返回
+     * @param <T> 类型
+     * @return 对象
+     */
+    protected <T> List<T> getBeansInside(Class<T> interfaceClass, boolean fastReturn) {
+        LinkedList<Object> objects = INSTANCE_MAP.getOrDefault(interfaceClass, new LinkedList<>());
+        List<InstanceCreatorFunctionalInterface<?>> instanceCreators = INSTANCE_CREATOR_MAP.getOrDefault(interfaceClass,
+            new LinkedList<>());
+        /*
+         * 对象列表没有值 || 在非快速返回的情况下, 对象列表没有足够的对象
+         * 以上的2种情况, 都需要进行实例化 ( 不重复的进行实例化 )
+         */
+        if (objects.isEmpty() || (!fastReturn && objects.size() < instanceCreators.size())) {
+            synchronized (interfaceClass.getName()) {
+                objects = INSTANCE_MAP.getOrDefault(interfaceClass, new LinkedList<>());
+                instanceCreators = INSTANCE_CREATOR_MAP.getOrDefault(interfaceClass, new LinkedList<>());
+                // 串行检查
+                if (objects.isEmpty() || (!fastReturn && objects.size() < instanceCreators.size())) {
+                    /*
+                     * 优先 使用注册的方式
+                     * 保底 使用默认的方式
+                     * 仅仅改变局部变量
+                     */
+                    if (instanceCreators.isEmpty()) {
+                        instanceCreators.add(defaultNewInstance(interfaceClass));
                     }
+
                     try {
-                        Object bean = instanceCreatorFunctionalInterface.execute(ObjectUtil.typeCast(interfaceClass));
-                        instanceMap.put(interfaceClass, bean);
+                        int numberOfObjectsAlreadyExist = objects.size();
+                        for (InstanceCreatorFunctionalInterface<?> instanceCreator : instanceCreators) {
+                            // 略过已经实例化过的对象.
+                            if (numberOfObjectsAlreadyExist-- > 0) {
+                                continue;
+                            }
+                            objects.add(instanceCreator.execute(ObjectUtils.typeCast(interfaceClass)));
+                            if (fastReturn) {
+                                break;
+                            }
+                        }
+
+                        INSTANCE_MAP.put(interfaceClass, objects);
                     } catch (Throwable e) {
-                        throw new ModelNewInstanceException(interfaceClass, e.getMessage(), e);
+                        throw new ObjectNewInstanceException(interfaceClass, e.getMessage(), e);
                     }
                 }
             }
         }
-        return ObjectUtil.typeCast(instanceMap.get(interfaceClass));
+        return ObjectUtils.typeCast(objects);
     }
+
+    /**
+     * 缺省实例化方式
+     * @param clazz 类
+     * @param <T> 类型
+     */
+    protected static <T> InstanceCreatorFunctionalInterface<T> defaultNewInstance(Class<T> clazz) {
+        return c -> {
+            LOGGER.info("Instantiate unregistered objects[" + clazz.getName() + "] by default.");
+            return ClassUtils.newInstance(clazz);
+        };
+    }
+
 }

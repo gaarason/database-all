@@ -2,63 +2,27 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <modules>
-        <module>database-core</module>
-        <module>database-spring-boot-starter</module>
-        <module>database-spring-boot-starter-test</module>
-        <module>database-core-test</module>
-        <module>database-generator</module>
-        <module>database-generator-test</module>
-        <module>database-dependencies</module>
-    </modules>
     <groupId>com.github.gaarason</groupId>
     <artifactId>database-all</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>Eloquent ORM</description>
-
+    <modules>
+        <module>database-api</module>
+        <module>database-logging</module>
+        <module>database-core</module>
+        <module>database-generator</module>
+        <module>database-spring-boot-starter</module>
+        <module>database-tests</module>
+        <module>database-query-mysql</module>
+        <module>database-query-mssql</module>
+        <module>database-query</module>
+    </modules>
     <properties>
         <java.version>1.8</java.version>
-        <gaarason.database.springboot.version>2.3.5.RELEASE</gaarason.database.springboot.version>
-        <gaarason.database.druid.version>1.2.1</gaarason.database.druid.version>
-        <gaarason.database.reflections8.version>0.11.7</gaarason.database.reflections8.version>
-        <gaarason.database.jsr305.version>3.0.2</gaarason.database.jsr305.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${gaarason.database.springboot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.google.code.findbugs</groupId>
-                <artifactId>jsr305</artifactId>
-                <version>${gaarason.database.jsr305.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.oneandone.reflections8</groupId>
-                <artifactId>reflections8</artifactId>
-                <version>${gaarason.database.reflections8.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>druid</artifactId>
-                <version>${gaarason.database.druid.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>druid-spring-boot-starter</artifactId>
-                <version>${gaarason.database.druid.version}</version>
-            </dependency>
-        </dependencies>
-
-    </dependencyManagement>
 
     <build>
         <plugins>

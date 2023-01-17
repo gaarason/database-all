@@ -1,7 +1,8 @@
 package gaarason.database.generator.element.field;
 
-import gaarason.database.core.lang.Nullable;
-import gaarason.database.util.StringUtil;
+import gaarason.database.generator.element.base.BaseElement;
+import gaarason.database.lang.Nullable;
+import gaarason.database.util.StringUtils;
 
 import java.util.regex.Pattern;
 
@@ -10,7 +11,7 @@ import java.util.regex.Pattern;
  */
 abstract class BaseFieldGenerator {
 
-    final protected static Pattern tinyintPattern = Pattern.compile("tinyint\\((\\d)\\)");
+    protected static final Pattern tinyintPattern = Pattern.compile("tinyint\\((\\d)\\)");
 
     /**
      * 将不合法的java标识符转换
@@ -18,24 +19,24 @@ abstract class BaseFieldGenerator {
      * @return 合法的java标识符
      */
     protected static String nameConverter(String name) {
-        return StringUtil.isJavaIdentifier(name) ? name : "a" + StringUtil.md5(name);
+        return StringUtils.isJavaIdentifier(name) ? name : "a" + StringUtils.md5(name);
     }
 
     /**
-     * 将换行符替换
+     * 字符符替换与转义
      * @param str 原字符串
      * @return 换行符替换后的字符串
      */
     @Nullable
-    protected static String newlineCharactersToReplace(@Nullable String str) {
-        return null != str ? str
-            .replace("\\\r\\\n", "")
-            .replace("\\r\\n", "")
-            .replace("\r\n", "")
-            .replace("\\\n", "")
-            .replace("\\n", "")
-            .replace("\n", "")
-            .replace("\"", "\\\"") : null;
+    protected static String safeCharactersToReplace(@Nullable String str) {
+        if(null != str){
+            str = StringUtils.replace(str,"\r", "");
+            str = StringUtils.replace(str,"\n", "");
+            str = StringUtils.replace(str,"\\\r", "");
+            str = StringUtils.replace(str,"\\\n", "");
+            return StringUtils.replace(str,"\"", "");
+        }
+        return null;
     }
 
     /**
@@ -43,17 +44,15 @@ abstract class BaseFieldGenerator {
      * @param classType 全限定类名(类)
      * @return 类名
      */
-    protected static String cutClassName(Class classType) {
-        String   className = classType.getName();
-        String[] split     = className.split("\\.");
+    protected static String cutClassName(Class<?> classType) {
+        String className = classType.getName();
+        String[] split = className.split("\\.");
         return split[split.length - 1];
     }
 
     /**
      * 生成Field
-     * @param disInsertable 不可新增的字段
-     * @param disUpdatable  不可更新的字段
      * @return Field
      */
-    abstract public Field toField(String[] disInsertable, String[] disUpdatable);
+    public abstract Field toField(BaseElement element);
 }

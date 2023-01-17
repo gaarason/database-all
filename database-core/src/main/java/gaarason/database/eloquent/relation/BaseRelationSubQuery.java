@@ -1,36 +1,102 @@
 package gaarason.database.eloquent.relation;
 
+import gaarason.database.config.ConversionConfig;
+import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
+import gaarason.database.core.Container;
 import gaarason.database.eloquent.RecordListBean;
+import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
-import gaarason.database.support.Column;
-import gaarason.database.util.ObjectUtil;
+import gaarason.database.support.FieldMember;
+import gaarason.database.support.ModelMember;
+import gaarason.database.util.EntityUtils;
+import gaarason.database.util.ObjectUtils;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
 /**
  * 关联关系
+ * @author xt
  */
-abstract public class BaseRelationSubQuery implements RelationSubQuery {
+public abstract class BaseRelationSubQuery implements RelationSubQuery {
 
-    @Override
-    public RecordList<?, ?> dealBatchPrepare(String sql1) {
-        return new RecordListBean<>();
+    /**
+     * model 信息
+     */
+    protected final ModelShadowProvider modelShadowProvider;
+
+    /**
+     * 当前模型
+     */
+    protected final Model<?, ?> localModel;
+
+    protected BaseRelationSubQuery(ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
+        this.modelShadowProvider = modelShadowProvider;
+        this.localModel = model;
     }
 
     /**
-     * 集合兼容处理
-     * 用于解决AbstractList不实现removeAll的情况
-     * @param mayBeInstanceOfAbstractList 原集合
-     * @return 集合(不保证引用关系)
+     * 将数据源中的某一列,转化为可以使用 where in 查询的 set
+     * @param columnValueMapList 数据源
+     * @param column 目标列
+     * @return 目标列的集合
      */
-    protected Collection<String> compatibleCollection(Collection<String> mayBeInstanceOfAbstractList){
-        return mayBeInstanceOfAbstractList instanceof AbstractList ?
-                new HashSet<>(mayBeInstanceOfAbstractList) : mayBeInstanceOfAbstractList;
+    protected static Set<Object> getColumnInMapList(List<Map<String, Object>> columnValueMapList, String column) {
+        Set<Object> result = new HashSet<>();
+        for (Map<String, Object> stringColumnMap : columnValueMapList) {
+            result.add(stringColumnMap.get(column));
+        }
+        return result;
+    }
+
+    /**
+     * 将数据源中的某一列,转化为可以使用 where in 查询的 set
+     * @param columnValueMapList 数据源
+     * @param column 目标列
+     * @param morphKey 多态key
+     * @param morphValue 多态value
+     * @return 目标列的集合
+     */
+    protected static Set<Object> getColumnInMapList(List<Map<String, Object>> columnValueMapList, String column, String morphKey, String morphValue) {
+        Set<Object> result = new HashSet<>();
+        for (Map<String, Object> stringColumnMap : columnValueMapList) {
+            Object mKeyValue = stringColumnMap.get(morphKey);
+            if(mKeyValue != null && mKeyValue.equals(morphValue)){
+                result.add(stringColumnMap.get(column));
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public RecordList<?, ?> dealBatchForRelation(@Nullable Builder<?, ?> builderForRelation) {
+        return new RecordListBean<>(getContainer());
+    }
+
+    /**
+     * 容器
+     * @return 容器
+     */
+    protected abstract Container getContainer();
+
+    /**
+     * 集合兼容处理
+     * 1. 用于解决AbstractList不实现removeAll的情况; 2. 产生全新对象; 3. 将集合类数据的类型,转化成model的主键类型
+     * @param mayBeInstanceOfAbstractList 原集合
+     * @param model 模型对象
+     * @return 集合
+     */
+    protected Collection<Object> compatibleCollection(Collection<Object> mayBeInstanceOfAbstractList,
+        Model<?, ?> model) {
+        final Class<?> javaType = model.getPrimaryKeyClass();
+        HashSet<Object> tempHashSet = new HashSet<>();
+        for (Object old : mayBeInstanceOfAbstractList) {
+            tempHashSet.add(getContainer().getBean(ConversionConfig.class).cast(old, javaType));
+        }
+        return tempHashSet;
     }
 
     /**
@@ -38,10 +104,10 @@ abstract public class BaseRelationSubQuery implements RelationSubQuery {
      * @param targetRecords 目标结果集合
      * @return 目标表的主键集合
      */
-    protected List<String> getTargetRecordPrimaryKeyIds(RecordList<?, ?> targetRecords) {
+    protected static List<Object> getTargetRecordPrimaryKeyIds(RecordList<?, ?> targetRecords) {
         // 应该目标表的主键列表
-        return targetRecords.toList(recordTemp -> String.valueOf(
-                recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName()).getValue()));
+        return targetRecords.toList(
+            recordTemp -> recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName()));
     }
 
     /**
@@ -49,11 +115,22 @@ abstract public class BaseRelationSubQuery implements RelationSubQuery {
      * @param field 属性信息
      * @return Model实例
      */
-    protected static Model<?, ?> getModelInstance(Field field) {
-        Class<?> clazz = ObjectUtil.isCollection(field.getType()) ?
-                ObjectUtil.getGenerics((ParameterizedType) field.getGenericType(), 0) :
-                field.getType();
-        return ModelShadowProvider.getByEntityClass(clazz).getModel();
+    protected Model<?, ?> getModelInstance(Field field) {
+        Class<?> clazz = EntityUtils.getRealClass(field);
+        return modelShadowProvider.getByEntityClass(clazz).getModel();
+    }
+
+    /**
+     * 获取model主键列名
+     * @param model Model实例
+     * @return 主键列名
+     */
+    protected String getPrimaryKeyColumnName(Model<?, ?> model) {
+        return modelShadowProvider.get(model)
+            .getEntityMember()
+            .getPrimaryKeyMemberOrFail()
+            .getFieldMember()
+            .getColumnName();
     }
 
     /**
@@ -61,49 +138,35 @@ abstract public class BaseRelationSubQuery implements RelationSubQuery {
      * @param modelClass Model类
      * @return Model实例
      */
-    protected static Model<?, ?> getModelInstance(Class<? extends Model<?, ?>> modelClass) {
-        return ModelShadowProvider.getByModelClass(ObjectUtil.typeCast(modelClass)).getModel();
-    }
-
-    /**
-     * 将数据源中的某一列,转化为可以使用 where in 查询的 set
-     * @param stringColumnMapList 数据源
-     * @param column              目标列
-     * @return 目标列的集合
-     */
-    protected static Set<Object> getColumnInMapList(List<Map<String, Column>> stringColumnMapList, String column) {
-        Set<Object> result = new HashSet<>();
-        for (Map<String, Column> stringColumnMap : stringColumnMapList) {
-            result.add(stringColumnMap.get(column).getValue());
-        }
-        return result;
+    protected Model<?, ?> getModelInstance(Class<? extends Model<?, ?>> modelClass) {
+        return modelShadowProvider.getByModelClass(ObjectUtils.typeCast(modelClass)).getModel();
     }
 
     /**
      * 将满足条件的对象筛选并返回
      * @param relationshipObjectList 待筛选的对象列表
-     * @param columnName             对象的属性的名
-     * @param fieldTargetValue       对象的属性的目标值
+     * @param columnName 对象的属性的名
+     * @param fieldTargetValue 对象的属性的目标值
      * @return 对象列表
      */
-    protected static List<?> findObjList(List<?> relationshipObjectList, String columnName, String fieldTargetValue) {
+    protected List<Object> findObjList(List<?> relationshipObjectList, String columnName, Object fieldTargetValue) {
         List<Object> objectList = new ArrayList<>();
-        if (relationshipObjectList.size() > 0) {
+        if (!relationshipObjectList.isEmpty()) {
             // 模型信息
-            ModelShadowProvider.ModelInfo<?, Object> modelInfo = ModelShadowProvider.getByEntityClass(
-                    relationshipObjectList.get(0).getClass());
+            ModelMember<?, ?> modelMember = modelShadowProvider.getByEntityClass(
+                relationshipObjectList.get(0).getClass());
+
             // 字段信息
-            ModelShadowProvider.FieldInfo fieldInfo = modelInfo.getColumnFieldMap().get(columnName);
+            FieldMember<?> fieldMember = modelMember.getEntityMember().getColumnFieldMap().get(columnName);
 
             for (Object o : relationshipObjectList) {
                 // 值
-                Object fieldValue = ModelShadowProvider.fieldGet(fieldInfo, o);
+                Object fieldValue = fieldMember.fieldGet(o);
                 // 满足则加入
-                if (fieldTargetValue.equals(String.valueOf(fieldValue))) {
+                if (fieldTargetValue.equals(fieldValue)) {
                     objectList.add(o);
                 }
             }
-
         }
         return objectList;
     }

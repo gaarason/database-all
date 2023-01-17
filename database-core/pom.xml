@@ -11,27 +11,49 @@
 
     <artifactId>database-core</artifactId>
 
+    <properties>
+        <java.version>1.8</java.version>
+        <gaarason.database.druid.version>1.2.9</gaarason.database.druid.version>
+        <gaarason.database.reflections.version>0.10.2</gaarason.database.reflections.version>
+        <gaarason.database.jackson.version>2.13.3</gaarason.database.jackson.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
     <dependencies>
         <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>database-logging</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <scope>runtime</scope>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>database-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
+            <version>${gaarason.database.druid.version}</version>
+        </dependency>
+        <!-- https://github.com/ronmamo/reflections -->
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>${gaarason.database.reflections.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${gaarason.database.jackson.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.oneandone.reflections8</groupId>
-            <artifactId>reflections8</artifactId>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${gaarason.database.jackson.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

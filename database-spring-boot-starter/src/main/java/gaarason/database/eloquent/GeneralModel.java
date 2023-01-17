@@ -1,14 +1,27 @@
 package gaarason.database.eloquent;
 
 import gaarason.database.contract.connection.GaarasonDataSource;
-import org.springframework.stereotype.Repository;
+import gaarason.database.logging.Log;
+import gaarason.database.logging.LogFactory;
+import gaarason.database.util.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
+import java.io.Serializable;
+import java.util.Collection;
 
-@Repository
-public class GeneralModel extends Model<GeneralModel.Table, Object> {
+/**
+ * 通用model
+ * @author xt
+ */
+@Component
+public class GeneralModel extends Model<GeneralModel.Table, Serializable> {
 
-    @Resource
+    private static final Log log = LogFactory.getLog(GeneralModel.class);
+
+    @Lazy
+    @Autowired
     private GaarasonDataSource gaarasonDataSource;
 
     @Override
@@ -16,7 +29,15 @@ public class GeneralModel extends Model<GeneralModel.Table, Object> {
         return gaarasonDataSource;
     }
 
-    public static class Table {
+    public void log(String sql, Collection<?> parameterList) {
+        if (log.isDebugEnabled()) {
+            log.debug(
+                "SQL complete : " + String.format(StringUtils.replace(sql, " ? ", "\"%s\""), parameterList.toArray()));
+        }
+    }
+
+    @gaarason.database.annotation.Table(name = "@@GeneralModel.Table@@")
+    public static class Table implements Serializable {
 
     }
 
