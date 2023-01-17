@@ -13,7 +13,7 @@ import gaarason.database.lang.Nullable;
  * 支持
  * @author xt
  */
-public interface Support<T, K> extends LambdaStyle<T, K> {
+public interface Support<T, K> extends LambdaStyle {
 
     /**
      * 构造函数

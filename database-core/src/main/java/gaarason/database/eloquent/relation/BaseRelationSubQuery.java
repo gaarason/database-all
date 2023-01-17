@@ -151,21 +151,23 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      */
     protected List<Object> findObjList(List<?> relationshipObjectList, String columnName, Object fieldTargetValue) {
         List<Object> objectList = new ArrayList<>();
-        if (!relationshipObjectList.isEmpty()) {
-            // 模型信息
-            ModelMember<?, ?> modelMember = modelShadowProvider.getByEntityClass(
-                relationshipObjectList.get(0).getClass());
+        if(ObjectUtils.isEmpty(relationshipObjectList)){
+            // 不建议使用 Collections.emptyList()
+            return objectList;
+        }
+        // 模型信息
+        ModelMember<?, ?> modelMember = modelShadowProvider.getByEntityClass(
+            relationshipObjectList.get(0).getClass());
 
-            // 字段信息
-            FieldMember<?> fieldMember = modelMember.getEntityMember().getColumnFieldMap().get(columnName);
+        // 字段信息
+        FieldMember<?> fieldMember = modelMember.getEntityMember().getColumnFieldMap().get(columnName);
 
-            for (Object o : relationshipObjectList) {
-                // 值
-                Object fieldValue = fieldMember.fieldGet(o);
-                // 满足则加入
-                if (fieldTargetValue.equals(fieldValue)) {
-                    objectList.add(o);
-                }
+        for (Object o : relationshipObjectList) {
+            // 值
+            Object fieldValue = fieldMember.fieldGet(o);
+            // 满足则加入
+            if (fieldTargetValue.equals(fieldValue)) {
+                objectList.add(o);
             }
         }
         return objectList;

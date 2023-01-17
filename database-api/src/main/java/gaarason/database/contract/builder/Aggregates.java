@@ -23,40 +23,54 @@ public interface Aggregates {
      * count(*) 条数统计,兼容 group
      * @return 计数
      */
-    Long count();
+    default Long count() {
+        return count("*");
+    }
 
     /**
      * count 条数统计,兼容 group
      * @param column 统计字段
      * @return 计数
      */
-    Long count(String column);
+    default Long count(String column) {
+        return aggregate(AggregatesType.count, column);
+    }
 
     /**
      * 求最大值
      * @param column 统计字段
      * @return 最大值
      */
-    String max(String column);
+    default String max(String column) {
+        Object aggregate = aggregate(AggregatesType.max, column);
+        return String.valueOf(aggregate);
+    }
 
     /**
      * 求最小值
      * @param column 统计字段
      * @return 最小值
      */
-    String min(String column);
+    default String min(String column) {
+        Object aggregate = aggregate(AggregatesType.min, column);
+        return String.valueOf(aggregate);
+    }
 
     /**
      * 求平均值
      * @param column 统计字段
      * @return 平均值
      */
-    BigDecimal avg(String column);
+    default BigDecimal avg(String column) {
+        return aggregate(AggregatesType.avg, column);
+    }
 
     /**
      * 求和
      * @param column 统计字段
      * @return 总和
      */
-    BigDecimal sum(String column);
+    default BigDecimal sum(String column) {
+        return aggregate(AggregatesType.sum, column);
+    }
 }

@@ -13,7 +13,7 @@ import gaarason.database.contract.support.LambdaStyle;
  * @author xt
  */
 public interface RelationshipListLambda<T, K>
-    extends RelationshipList<T, K>, LambdaStyle<T, K> {
+    extends RelationshipList<T, K>, LambdaStyle {
 
     /**
      * 渴求式关联

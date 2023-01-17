@@ -140,12 +140,12 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
     }
 
     @Override
-    public String lambda2FieldName(ColumnFunctionalInterface<T> column) {
+    public String lambda2FieldName(ColumnFunctionalInterface<?, ?> column) {
         return modelShadowProvider.parseFieldNameByLambdaWithCache(column);
     }
 
     @Override
-    public String lambda2ColumnName(ColumnFunctionalInterface<T> column) {
+    public String lambda2ColumnName(ColumnFunctionalInterface<?, ?> column) {
         return modelShadowProvider.parseColumnNameByLambdaWithCache(column);
     }
 

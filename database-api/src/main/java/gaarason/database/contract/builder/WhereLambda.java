@@ -44,7 +44,10 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    default Builder<T, K> where(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+    default <F> Builder<T, K> where(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
+        return where(lambda2ColumnName(column), value);
+    }
+    default <F> Builder<T, K> where(ColumnFunctionalInterface.Collection<T, F> column, @Nullable Object value) {
         return where(lambda2ColumnName(column), value);
     }
 

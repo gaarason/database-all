@@ -131,12 +131,12 @@ public class RecordBean<T, K> implements Record<T, K> {
     }
 
     @Override
-    public String lambda2FieldName(ColumnFunctionalInterface<T> column) {
+    public String lambda2FieldName(ColumnFunctionalInterface<?, ?> column) {
         return modelShadow.parseFieldNameByLambdaWithCache(column);
     }
 
     @Override
-    public String lambda2ColumnName(ColumnFunctionalInterface<T> column) {
+    public String lambda2ColumnName(ColumnFunctionalInterface<?, ?> column) {
         return modelShadow.parseColumnNameByLambdaWithCache(column);
     }
 

@@ -87,60 +87,107 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
         List<T> list = new ArrayList<>();
         // 关联关系的临时性缓存
         for (Record<T, K> theRecord : records) {
-            // 模型信息
-            ModelMember<T, K> modelMember = modelShadow.get(records.get(0).getModel());
-            EntityMember<T, K> entityMember = modelMember.getEntityMember();
-
-            // 实体类的对象 (仅包含数据库字段属性)
-            T entity = modelShadow.entityAssignment(entityMember.getEntityClass(), theRecord);
-
-            // 关联关系属性集合
-            Map<String, FieldRelationMember> relationFieldMap = entityMember.getRelationFieldMap();
-            for (Map.Entry<String, FieldRelationMember> entry : relationFieldMap.entrySet()) {
-                // 关系属性信息
-                FieldRelationMember fieldRelationMember = entry.getValue();
-
-                // 获取关系的预处理
-                GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart = theRecord.getRelationBuilderMap()
-                    .get(fieldRelationMember.getName());
-                RelationshipRecordWithFunctionalInterface relationshipRecordWith = theRecord.getRelationRecordMap()
-                    .get(fieldRelationMember.getName());
-
-                if (generateSqlPart == null || relationshipRecordWith == null || !attachedRelationship) {
-                    continue;
-                }
-
-                // 关联关系字段处理
-                RelationSubQuery relationSubQuery = fieldRelationMember.getRelationSubQuery();
-
-                // Builder数组 [0 -> 中间表操作 , 1 -> 目标表操作]
-                Builder<?, ?>[] builderArr = relationSubQuery.prepareBuilderArr(originalMetadataMapList,
-                    generateSqlPart);
-
-                // 中间表数据
-                RecordList<?, ?> relationRecords = getRelationRecordsInCache(cacheRecords, builderArr[0],
-                    () -> relationSubQuery.dealBatchForRelation(builderArr[0]));
-
-                // 本级关系查询
-                RecordList<?, ?> targetRecordList = getTargetRecordsInCache(cacheRecords, builderArr,
-                    relationshipRecordWith, () -> relationSubQuery.dealBatchForTarget(builderArr[1], relationRecords));
-
-                // 递归处理下级关系, 并筛选当前 record 所需要的属性
-                List<?> objects = relationSubQuery.filterBatchRecord(theRecord, targetRecordList,
-                    cacheRecords);
-
-                // 是否是集合
-                if (fieldRelationMember.isPlural()) {
-                    // 关系属性赋值
-                    fieldRelationMember.fieldSet(entity, objects);
-                } else {
-                    // 关系属性赋值
-                    fieldRelationMember.fieldSet(entity, objects.size() == 0 ? null : objects.get(0));
-                }
-            }
+            // 生成对象
+            T entity = generateEntity(theRecord, cacheRecords, originalMetadataMapList, modelShadow);
             list.add(entity);
         }
         return list;
+    }
+
+    /**
+     * 生成对象
+     * @param record 查询结果集
+     * @param cacheRecords 结果集缓存(用于优化递归算法)
+     * @param originalMetadataMapList 同级数据源
+     * @param modelShadow Model信息大全
+     */
+    protected T generateEntity(Record<T, K> record, Map<String, RecordList<?, ?>> cacheRecords,
+        List<Map<String, Object>> originalMetadataMapList, ModelShadowProvider modelShadow) {
+
+        // 模型信息
+        ModelMember<T, K> modelMember = modelShadow.get(records.get(0).getModel());
+        EntityMember<T, K> entityMember = modelMember.getEntityMember();
+
+        // 实体类的对象 (仅包含数据库字段属性)
+        T entity = modelShadow.entityAssignment(entityMember.getEntityClass(), record);
+
+        // 处理关联关系属性
+        dealRelationField(entity, record, entityMember, cacheRecords, originalMetadataMapList);
+
+        // 处理关联关系"操作"属性
+        dealRelationOperationField();
+
+        return entity;
+    }
+
+    private void dealRelationOperationField(T entity, Record<T, K> record, EntityMember<T, K> entityMember, Map<String, RecordList<?, ?>> cacheRecords, List<Map<String, Object>> originalMetadataMapList) {
+        Map<String, GenerateSqlPartFunctionalInterface<?, ?>> relationOperationFieldMap = record.getRelationOperationBuilderMap();
+
+        // 关联关系属性集合
+        Map<String, FieldRelationMember> relationFieldMap = entityMember.getRelationFieldMap();
+
+        for (Map.Entry<String, GenerateSqlPartFunctionalInterface<?, ?>> entry : relationOperationFieldMap.entrySet()) {
+            FieldRelationMember fieldRelationMember = relationFieldMap.get(entry.getKey());
+
+
+
+        }
+    }
+
+    /**
+     * 处理entity的关联关系属性
+     * @param entity 实体对象
+     * @param record 查询结果集
+     * @param entityMember 数据库实体信息
+     * @param cacheRecords 结果集缓存(用于优化递归算法)
+     * @param originalMetadataMapList 同级数据源
+     */
+    private void dealRelationField(T entity, Record<T, K> record, EntityMember<T, K> entityMember, Map<String, RecordList<?, ?>> cacheRecords, List<Map<String, Object>> originalMetadataMapList){
+
+        // 关联关系属性集合
+        Map<String, FieldRelationMember> relationFieldMap = entityMember.getRelationFieldMap();
+
+        // 遍历关联关系属性
+        for (Map.Entry<String, FieldRelationMember> entry : relationFieldMap.entrySet()) {
+            // 关系属性信息
+            FieldRelationMember fieldRelationMember = entry.getValue();
+
+            // 获取关系的预处理
+            GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart = record.getRelationBuilderMap()
+                .get(fieldRelationMember.getName());
+            RelationshipRecordWithFunctionalInterface relationshipRecordWith = record.getRelationRecordMap()
+                .get(fieldRelationMember.getName());
+
+            if (generateSqlPart == null || relationshipRecordWith == null || !attachedRelationship) {
+                continue;
+            }
+
+            // 关联关系字段处理
+            RelationSubQuery relationSubQuery = fieldRelationMember.getRelationSubQuery();
+
+            // Builder数组 [0 -> 中间表操作 , 1 -> 目标表操作]
+            Builder<?, ?>[] builderArr = relationSubQuery.prepareBuilderArr(originalMetadataMapList, generateSqlPart);
+
+            // 中间表数据
+            RecordList<?, ?> relationRecords = getRelationRecordsInCache(cacheRecords, builderArr[0],
+                () -> relationSubQuery.dealBatchForRelation(builderArr[0]));
+
+            // 本级关系查询
+            RecordList<?, ?> targetRecordList = getTargetRecordsInCache(cacheRecords, builderArr,
+                relationshipRecordWith, () -> relationSubQuery.dealBatchForTarget(builderArr[1], relationRecords));
+
+            // 递归处理下级关系, 并筛选当前 record 所需要的属性
+            List<?> objects = relationSubQuery.filterBatchRecord(record, targetRecordList, cacheRecords);
+
+            // 是否是集合
+            if (fieldRelationMember.isPlural()) {
+                // 关系属性赋值
+                fieldRelationMember.fieldSet(entity, objects);
+            } else {
+                // 关系属性赋值
+                fieldRelationMember.fieldSet(entity, objects.size() == 0 ? null : objects.get(0));
+            }
+        }
     }
 
     /**
@@ -197,8 +244,7 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
         }
 
         // 有缓存有直接返回, 没有就执行后返回
-        return cacheRecords.computeIfAbsent(cacheKey.toString(),
-            theKey -> closure.execute());
+        return cacheRecords.computeIfAbsent(cacheKey.toString(), theKey -> closure.execute());
     }
 
     /**

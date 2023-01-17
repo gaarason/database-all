@@ -12,7 +12,6 @@ import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -40,38 +39,6 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
         }
         Map<String, Object> resMap = builder.selectFunction(op.toString(), column, alias).firstOrFail().toMap();
         return ObjectUtils.typeCast(resMap.get(alias));
-    }
-
-    @Override
-    public Long count() {
-        return count("*");
-    }
-
-    @Override
-    public Long count(String column) {
-        return aggregate(AggregatesType.count, column);
-    }
-
-    @Override
-    public String max(String column) {
-        Object aggregate = aggregate(AggregatesType.max, column);
-        return String.valueOf(aggregate);
-    }
-
-    @Override
-    public String min(String column) {
-        Object aggregate = aggregate(AggregatesType.min, column);
-        return String.valueOf(aggregate);
-    }
-
-    @Override
-    public BigDecimal avg(String column) {
-        return aggregate(AggregatesType.avg, column);
-    }
-
-    @Override
-    public BigDecimal sum(String column) {
-        return aggregate(AggregatesType.sum, column);
     }
 
     @Override

@@ -9,7 +9,7 @@ import gaarason.database.lang.Nullable;
  * ORM 操作
  * @author xt
  */
-public interface OperationLambda<T, K> extends Operation<T, K>, LambdaStyle<T, K> {
+public interface OperationLambda<T, K> extends Operation<T, K>, LambdaStyle {
 
     /**
      * 指定属性是否有发生改变

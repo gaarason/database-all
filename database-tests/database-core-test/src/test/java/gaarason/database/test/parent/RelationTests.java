@@ -1,9 +1,11 @@
 package gaarason.database.test.parent;
 
+import gaarason.database.appointment.AggregatesType;
 import gaarason.database.appointment.OrderBy;
 import gaarason.database.appointment.Paginate;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
+import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.test.models.relation.model.RelationshipStudentTeacherModel;
 import gaarason.database.test.models.relation.model.StudentModel;
 import gaarason.database.test.models.relation.model.TeacherModel;
@@ -1321,12 +1323,13 @@ abstract public class RelationTests extends BaseTests {
             .getStudent()
             .getId()
             .intValue(), 10);
-
     }
 
     @Test
     public void 一对多_关联关系属性类型支持(){
-        Teacher teacher = teacherModel.findOrFail(1)
+        Teacher teacher = teacherModel.newQuery()
+            .withAggregate(AggregatesType.min, Teacher::getStudents, Student::getAge, builder -> builder.where("sss",231), null)
+            .withMany(Teacher::getStudentArray, builder -> builder.where(Student::getAge, "12")).findOrFail(1)
             .with(Teacher::getStudents)
             .with(Teacher::getStudentArray)
             .with(Teacher::getStudentArrayList)
@@ -1387,5 +1390,23 @@ abstract public class RelationTests extends BaseTests {
         Assert.assertNotNull(teacher.getStudentsBelongsToManyLinkedList());
         Assert.assertEquals(3, teacher.getStudentsBelongsToManyLinkedList().size());
 
+    }
+
+    @Test
+    public void notHas_ (){
+        RecordList<Student, Long> teacherRecords = studentModel.newQuery()
+            .whereNotExists(builder -> builder.from("teacher").whereColumn("student.teacher_id", "teacher.id"))
+            .get();
+        List<Student> students = teacherRecords.toObjectList();
+        System.out.println(students);
+    }
+
+    @Test
+    public void notHas_1 (){
+        RecordList<Student, Long> teacherRecords = studentModel.newQuery()
+            .whereNotExists(builder -> builder.from("relationship_student_teacher").whereColumn("student.id", "relationship_student_teacher.student_id"))
+            .get();
+        List<Student> students = teacherRecords.toObjectList();
+        System.out.println(students);
     }
 }

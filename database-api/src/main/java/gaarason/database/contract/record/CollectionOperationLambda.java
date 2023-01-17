@@ -15,7 +15,7 @@ import java.util.Map;
  * @param <K> 主键类型
  */
 public interface CollectionOperationLambda<T, K>
-    extends CollectionOperation<Record<T, K>>, LambdaStyle<T, K> {
+    extends CollectionOperation<Record<T, K>>, LambdaStyle {
 
     /**
      * 根据元素中的属性名获取值

@@ -1,5 +1,6 @@
 package gaarason.database.query;
 
+import gaarason.database.appointment.AggregatesType;
 import gaarason.database.appointment.FinalVariable;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
@@ -115,12 +116,12 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
     }
 
     @Override
-    public String lambda2FieldName(ColumnFunctionalInterface<T> column) {
+    public String lambda2FieldName(ColumnFunctionalInterface<?, ?> column) {
         return modelShadowProvider.parseFieldNameByLambdaWithCache(column);
     }
 
     @Override
-    public String lambda2ColumnName(ColumnFunctionalInterface<T> column) {
+    public String lambda2ColumnName(ColumnFunctionalInterface<?, ?> column) {
         return modelShadowProvider.parseColumnNameByLambdaWithCache(column);
     }
 
@@ -160,7 +161,7 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
      * @return 关联的Model的查询构造器
      */
     @Override
-    public Builder<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure) {
+    public <F> Builder<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<F, ?> builderClosure) {
         return with(fieldName, builderClosure, theRecord -> theRecord);
     }
 
@@ -172,10 +173,21 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
      * @return 关联的Model的查询构造器
      */
     @Override
-    public Builder<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
+    public <F> Builder<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<F, ?> builderClosure,
         RelationshipRecordWithFunctionalInterface recordClosure) {
         grammar.pushWith(fieldName, builderClosure, recordClosure);
         return this;
+    }
+
+    @Override
+    public Builder<T, K> withOperation(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure) {
+
+    }
+
+    @Override
+    public Builder<T, K> withAggregate(AggregatesType op, String fieldName, String column,
+        GenerateSqlPartFunctionalInterface<?, ?> builderClosure, @Nullable String alisaFieldName) {
+
     }
 
 
