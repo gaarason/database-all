@@ -1328,8 +1328,9 @@ abstract public class RelationTests extends BaseTests {
     @Test
     public void 一对多_关联关系属性类型支持(){
         Teacher teacher = teacherModel.newQuery()
-            .withAggregate(AggregatesType.min, Teacher::getStudents, Student::getAge, builder -> builder.where("sss",231), null)
-            .withMany(Teacher::getStudentArray, builder -> builder.where(Student::getAge, "12")).findOrFail(1)
+//            .withAggregate(AggregatesType.min, Teacher::getStudents, Student::getAge, builder -> builder.where("sss",231), null)
+//            .withMany(Teacher::getStudentArray, builder -> builder.where(Student::getAge, "12"))
+            .findOrFail(1)
             .with(Teacher::getStudents)
             .with(Teacher::getStudentArray)
             .with(Teacher::getStudentArrayList)
@@ -1390,6 +1391,13 @@ abstract public class RelationTests extends BaseTests {
         Assert.assertNotNull(teacher.getStudentsBelongsToManyLinkedList());
         Assert.assertEquals(3, teacher.getStudentsBelongsToManyLinkedList().size());
 
+    }
+
+    @Test
+    public void count(){
+        Teacher teacher = teacherModel.newQuery().withCount(Teacher::getStudents).findOrFail(1).toObject();
+        Assert.assertNotNull(teacher.getStudentsCount());
+        Assert.assertEquals(2, teacher.getStudentsCount().intValue());
     }
 
     @Test

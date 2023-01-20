@@ -19,9 +19,10 @@ public interface RelationshipLambda<T, K>
     /**
      * 渴求式关联
      * @param fieldName 所关联的Model(当前模块的属性名)表达式
+     * @param <F> 属性类型
      * @return 关联的Model的查询构造器
      */
-    default Record<T, K> with(ColumnFunctionalInterface<T> fieldName) {
+    default <F> Record<T, K> with(ColumnFunctionalInterface<T, F> fieldName) {
         return with(lambda2FieldName(fieldName));
     }
 
@@ -29,10 +30,11 @@ public interface RelationshipLambda<T, K>
      * 渴求式关联
      * @param fieldName 所关联的Model(当前模块的属性名)表达式
      * @param builderClosure 所关联的Model的查询构造器约束
+     * @param <F> 属性类型
      * @return 关联的Model的查询构造器
      */
-    default Record<T, K> with(ColumnFunctionalInterface<T> fieldName,
-        GenerateSqlPartFunctionalInterface<?, ?> builderClosure) {
+    default <F> Record<T, K> with(ColumnFunctionalInterface<T, F> fieldName,
+        GenerateSqlPartFunctionalInterface<F, ?> builderClosure) {
         return with(lambda2FieldName(fieldName), builderClosure);
 
     }
@@ -42,9 +44,10 @@ public interface RelationshipLambda<T, K>
      * @param fieldName 所关联的Model(当前模块的属性名)表达式
      * @param builderClosure 所关联的Model的查询构造器约束
      * @param recordClosure 所关联的Model的再一级关联
+     * @param <F> 属性类型
      * @return 关联的Model的查询构造器
      */
-    default Record<T, K> with(ColumnFunctionalInterface<T> fieldName,
+    default <F> Record<T, K> with(ColumnFunctionalInterface<T, F> fieldName,
         GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
         RelationshipRecordWithFunctionalInterface recordClosure) {
         return with(lambda2FieldName(fieldName), builderClosure, recordClosure);
@@ -53,9 +56,10 @@ public interface RelationshipLambda<T, K>
     /**
      * 关系绑定操作对象
      * @param fieldName 关系操作的字段(当前模块的属性名)表达式
+     * @param <F> 属性类型
      * @return 关系绑定操作对象
      */
-    default Bind bind(ColumnFunctionalInterface<T> fieldName) {
+    default <F> Bind bind(ColumnFunctionalInterface<T, F> fieldName) {
         return bind(lambda2FieldName(fieldName));
     }
 }

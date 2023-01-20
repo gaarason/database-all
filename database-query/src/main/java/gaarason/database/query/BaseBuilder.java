@@ -6,6 +6,7 @@ import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
+import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
@@ -21,10 +22,12 @@ import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.ClassUtils;
 import gaarason.database.util.ExceptionUtils;
 import gaarason.database.util.ObjectUtils;
+import gaarason.database.util.StringUtils;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -151,7 +154,7 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
      */
     @Override
     public Builder<T, K> with(String fieldName) {
-        return with(fieldName, builder -> builder, theRecord -> theRecord);
+        return with(fieldName, GenerateSqlPartFunctionalInterface.empty(), RelationshipRecordWithFunctionalInterface.empty());
     }
 
     /**
@@ -162,7 +165,7 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
      */
     @Override
     public <F> Builder<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<F, ?> builderClosure) {
-        return with(fieldName, builderClosure, theRecord -> theRecord);
+        return with(fieldName, builderClosure, RelationshipRecordWithFunctionalInterface.empty());
     }
 
     /**
@@ -175,19 +178,41 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
     @Override
     public <F> Builder<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<F, ?> builderClosure,
         RelationshipRecordWithFunctionalInterface recordClosure) {
-        grammar.pushWith(fieldName, builderClosure, recordClosure);
+        grammar.pushRelation(fieldName, new Record.Relation(fieldName, false, builderClosure, recordClosure));
         return this;
     }
 
     @Override
     public Builder<T, K> withOperation(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure) {
-
+        return null;
     }
 
     @Override
     public Builder<T, K> withAggregate(AggregatesType op, String fieldName, String column,
         GenerateSqlPartFunctionalInterface<?, ?> builderClosure, @Nullable String alisaFieldName) {
 
+        // 别名
+        String alisaField = alisaFieldName != null ? alisaFieldName : StringUtils.lineToHump(fieldName + "_" + op + "_" + column);
+
+        GenerateSqlPartFunctionalInterface<Object, Object> generateSqlPartFunctionalInterface = builder -> {
+            Builder<?, ?> builder1 = builderClosure.execute(ObjectUtils.typeCast(builder));
+            Grammar grammar = builder1.getGrammar();
+            // todo check
+            if (!grammar.isEmpty(Grammar.SQLPartType.GROUP)) {
+                String tableAlias = StringUtils.getRandomString(6);
+
+                if (grammar.isEmpty(Grammar.SQLPartType.SELECT)) {
+                    Grammar.SQLPartInfo groupInfo = grammar.get(Grammar.SQLPartType.GROUP);
+                    builder1.selectRaw(groupInfo.getSqlString(), groupInfo.getParameters());
+                }
+                model.newQuery().from(tableAlias + "sub", subBuilder -> ObjectUtils.typeCast(builder1));
+            }
+            return builder.selectFunction(op.toString(), column, alisaField);
+        };
+
+        grammar.pushRelation(alisaField, new Record.Relation(fieldName, true, generateSqlPartFunctionalInterface, RelationshipRecordWithFunctionalInterface.empty()));
+
+        return this;
     }
 
 

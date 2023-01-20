@@ -102,7 +102,8 @@ public interface With<T, K> {
     }
 
     default Builder<T, K> withCount(String fieldName) {
-        return withCount(fieldName, "*", GenerateSqlPartFunctionalInterface.empty(), null);
+        String alisaFieldName = fieldName + "Count";
+        return withCount(fieldName, "*", GenerateSqlPartFunctionalInterface.empty(), alisaFieldName);
     }
 
     default Builder<T, K> withCount(String fieldName, String column) {

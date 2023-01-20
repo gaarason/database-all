@@ -87,4 +87,7 @@ public class Teacher extends BaseEntity implements Serializable {
     @BelongsToMany(relationModel = RelationshipStudentTeacherModel.class, foreignKeyForLocalModel = "teacher_id", foreignKeyForTargetModel = "student_id", localModelLocalKey = "id", targetModelLocalKey = "id")
     private LinkedList<Student> studentsBelongsToManyLinkedList;
 
+    // ---------------- -----------------//
+    @Column(inDatabase = false)
+    private Long studentsCount;
 }

@@ -2,8 +2,6 @@ package gaarason.database.query;
 
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
-import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
@@ -27,12 +25,16 @@ public abstract class ExecuteLevel1Builder<T, K> extends BaseBuilder<T, K> {
      * @param record 查询结果集
      */
     protected void with(Record<T, K> record) {
-        Map<String, Object[]> columnMap = grammar.pullWith();
-        for (Map.Entry<String, Object[]> stringEntry : columnMap.entrySet()) {
-            Object[] value = stringEntry.getValue();
-            record.with(stringEntry.getKey(), (GenerateSqlPartFunctionalInterface<?, ?>) value[0],
-                (RelationshipRecordWithFunctionalInterface) value[1]);
-        }
+        Map<String, Record.Relation> relationMap = grammar.pullRelation();
+        relationMap.forEach((k, v) -> {
+            if (!v.relationOperation) {
+                // 关联关系属性
+                record.with(k, v.sqlPartFunctionalInterface, v.relationshipRecordWithFunctionalInterface);
+            } else {
+                // 关联关系操作属性
+                record.getRelationMap().put(k, v);
+            }
+        });
     }
 
     /**
@@ -40,11 +42,18 @@ public abstract class ExecuteLevel1Builder<T, K> extends BaseBuilder<T, K> {
      * @param records 查询结果集
      */
     protected void with(RecordList<T, K> records) {
-        Map<String, Object[]> columnMap = grammar.pullWith();
-        for (Map.Entry<String, Object[]> stringEntry : columnMap.entrySet()) {
-            records.with(stringEntry.getKey(), (GenerateSqlPartFunctionalInterface<?, ?>) stringEntry.getValue()[0],
-                (RelationshipRecordWithFunctionalInterface) stringEntry.getValue()[1]);
-        }
+        Map<String, Record.Relation> relationMap = grammar.pullRelation();
+        relationMap.forEach((k, v) -> {
+            if (!v.relationOperation) {
+                // 关联关系属性
+                records.with(k, v.sqlPartFunctionalInterface, v.relationshipRecordWithFunctionalInterface);
+            } else {
+                // 关联关系操作属性
+                for (Record<T, K> record : records) {
+                    record.getRelationMap().put(k, v);
+                }
+            }
+        });
     }
 
     @Nullable

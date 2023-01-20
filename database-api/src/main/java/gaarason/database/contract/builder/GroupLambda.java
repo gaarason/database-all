@@ -16,19 +16,21 @@ public interface GroupLambda<T, K> extends Group<T, K>, Support<T, K> {
     /**
      * 分组
      * @param column 列名表达式
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> group(ColumnFunctionalInterface<T> column) {
+    default <F> Builder<T, K> group(ColumnFunctionalInterface<T, F> column) {
         return group(lambda2ColumnName(column));
     }
 
     /**
      * 分组
      * @param column 列名表达式数组
+     * @param <F> 属性类型
      * @return 查询构造器
      */
     @SuppressWarnings("unchecked")
-    default Builder<T, K> group(ColumnFunctionalInterface<T>... column) {
+    default <F> Builder<T, K> group(ColumnFunctionalInterface<T, F>... column) {
         return group(lambda2ColumnName(Arrays.asList(column)));
     }
 

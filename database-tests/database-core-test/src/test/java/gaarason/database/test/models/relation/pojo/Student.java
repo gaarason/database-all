@@ -126,22 +126,22 @@ public class Student extends BaseEntity implements Serializable {
         }
 
         @Override
-        public Builder<?, ?>[] prepareBuilderArr(List<Map<String, Object>> columnValueMapList,
+        public Builder<?, ?>[] prepareBuilderArr(boolean relationOperation, List<Map<String, Object>> originalMetadataMapList,
             GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart) {
             return new Builder<?, ?>[]{null,
                 generateSqlPart.execute(ObjectUtils.typeCast(hasOneTemplate.sonModel.newQuery())).whereIn(
                     hasOneTemplate.sonModelForeignKey,
-                    getColumnInMapList(columnValueMapList, hasOneTemplate.localModelLocalKey))};
+                    getColumnInMapList(originalMetadataMapList, hasOneTemplate.localModelLocalKey))};
         }
 
         @Override
-        public RecordList<?, ?> dealBatchForTarget(Builder<?, ?> builderForTarget,
+        public RecordList<?, ?> dealBatchForTarget(boolean relationOperation, Builder<?, ?> builderForTarget,
             RecordList<?, ?> relationRecordList) {
             return hasOneTemplate.sonModel.newQuery().setBuilder(ObjectUtils.typeCast(builderForTarget)).get();
         }
 
         @Override
-        public List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
+        public List<Object> filterBatchRecord(boolean relationOperation, Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
             Map<String, RecordList<?, ?>> cacheRelationRecordList) {
             // 子表的外键字段名
             String column = hasOneTemplate.sonModelForeignKey;

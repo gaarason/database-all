@@ -17,19 +17,21 @@ public interface ColumnLambda<T, K> extends Column<T, K>, Support<T, K> {
     /**
      * 新增字段
      * @param column 列名表达式
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> column(ColumnFunctionalInterface<T> column) {
+    default <F> Builder<T, K> column(ColumnFunctionalInterface<T, F> column) {
         return column(lambda2ColumnName(column));
     }
 
     /**
      * 新增字段
      * @param column 列名表达式数组
+     * @param <F> 属性类型
      * @return 查询构造器
      */
     @SuppressWarnings("unchecked")
-    default Builder<T, K> column(ColumnFunctionalInterface<T>... column) {
+    default <F> Builder<T, K> column(ColumnFunctionalInterface<T, F>... column) {
         return column(lambda2ColumnName(Arrays.asList(column)));
     }
 

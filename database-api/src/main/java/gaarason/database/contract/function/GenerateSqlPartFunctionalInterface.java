@@ -5,7 +5,10 @@ import gaarason.database.contract.eloquent.Builder;
 import java.io.Serializable;
 
 /**
+ * 查询构造器包装
  * 生成代码片段
+ * @param <T> 实体类型
+ * @param <K> 主键类型
  * @author xt
  */
 @FunctionalInterface

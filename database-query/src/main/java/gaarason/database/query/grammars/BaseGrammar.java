@@ -1,6 +1,7 @@
 package gaarason.database.query.grammars;
 
 import gaarason.database.appointment.SqlType;
+import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
 import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
@@ -33,6 +34,12 @@ public abstract class BaseGrammar implements Grammar, Serializable {
      * @see GenerateSqlPartFunctionalInterface
      */
     protected final Map<String, Object[]> withMap;
+
+    /**
+     * 关联关系
+     */
+    protected final Map<String, Record.Relation> relationMap;
+
     /**
      * 表名
      */
@@ -46,6 +53,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         table = tableName;
         withMap = new HashMap<>();
         SQLPartMap = new HashMap<>();
+        relationMap = new HashMap<>();
     }
 
     @Override
@@ -264,25 +272,14 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         }
     }
 
-    /**
-     * 记录with信息
-     * @param column 所关联的Model(当前模块的属性名)
-     * @param builderClosure 所关联的Model的查询构造器约束
-     * @param recordClosure 所关联的Model的再一级关联
-     */
     @Override
-    public void pushWith(String column, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
-        RelationshipRecordWithFunctionalInterface recordClosure) {
-        withMap.put(column, new Object[]{builderClosure, recordClosure});
+    public void pushRelation(String targetFieldName, Record.Relation relation) {
+        relationMap.put(targetFieldName, relation);
     }
 
-    /**
-     * 拉取with信息
-     * @return map
-     */
     @Override
-    public Map<String, Object[]> pullWith() {
-        return withMap;
+    public Map<String, Record.Relation> pullRelation(){
+        return relationMap;
     }
 
     @Override
@@ -292,7 +289,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
     @Override
     public void merger(Grammar grammar) {
-        withMap.putAll(grammar.pullWith());
+        relationMap.putAll(grammar.pullRelation());
 
         for (SQLPartType type : SQLPartType.values()) {
             SQLPartInfo partInfo = grammar.get(type);

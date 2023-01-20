@@ -42,17 +42,19 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public Builder<?, ?>[] prepareBuilderArr(List<Map<String, Object>> columnValueMapList,
+    public Builder<?, ?>[] prepareBuilderArr(boolean relationOperation, List<Map<String, Object>> originalMetadataMapList,
         GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart) {
 
+        // 关系表 （中间表）
         Builder<?, ?> relationBuilder = belongsToManyTemplate.relationModel.newQuery()
             .whereIn(belongsToManyTemplate.foreignKeyForLocalModel,
-                getColumnInMapList(columnValueMapList, belongsToManyTemplate.localModelLocalKey))
+                getColumnInMapList(originalMetadataMapList, belongsToManyTemplate.localModelLocalKey))
             .when(enableLocalModelMorph, builder -> builder.where(belongsToManyTemplate.morphKeyForLocalModel,
                 belongsToManyTemplate.morphValueForLocalModel))
             .when(enableTargetModelMorph, builder -> builder.where(belongsToManyTemplate.morphKeyForTargetModel,
                 belongsToManyTemplate.morphValueForTargetModel));
 
+        // 目标表
         Builder<?, ?> targetBuilder = generateSqlPart.execute(
             ObjectUtils.typeCast(belongsToManyTemplate.targetModel.newQuery()));
 
@@ -75,7 +77,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?> builderForTarget,
+    public RecordList<?, ?> dealBatchForTarget(boolean relationOperation, @Nullable Builder<?, ?> builderForTarget,
         RecordList<?, ?> relationRecordList) {
         if (builderForTarget == null) {
             return RecordFactory.newRecordList(getContainer());
@@ -99,6 +101,12 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         // 目标表结果
         RecordList<?, ?> targetRecordList = belongsToManyTemplate.targetModel.newQuery()
             .setBuilder(ObjectUtils.typeCast(builderForTarget))
+
+
+            // 关联关系操作, 则指定查询外键以及group
+            .when(relationOperation, builder -> builder.select(belongsToManyTemplate.targetModelLocalKey).group(belongsToManyTemplate.targetModelLocalKey))
+            .when(!relationOperation, builder -> builder.select(belongsToManyTemplate.targetModel.getEntityClass()))
+
             .whereIn(belongsToManyTemplate.targetModelLocalKey, targetModelForeignKeySet)
             .get();
 
@@ -123,7 +131,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
+    public List<Object> filterBatchRecord(boolean relationOperation, Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
         Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         // 目标关系表的外键字段名
         String targetModelLocalKey = belongsToManyTemplate.targetModelLocalKey;
@@ -135,6 +143,9 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
         List<Object> objectList = new ArrayList<>();
         List<?> objects = targetRecordList.toObjectList(cacheRelationRecordList);
+
+        // todo
+
 
         if (!objects.isEmpty()) {
             // 实体信息

@@ -18,11 +18,12 @@ public interface RelationSubQuery {
 
     /**
      * 批量关联查询的Builder预生成, toSql(select)后可以作为缓存的key
-     * @param columnValueMapList 当前recordList的元数据
+     * @param relationOperation 是否关联关系操作
+     * @param originalMetadataMapList 当前recordList的元数据
      * @param generateSqlPart Builder(目标表可用)
      * @return Builder数组 [0 -> 中间表操作 , 1 -> 目标表操作]
      */
-    Builder<?, ?>[] prepareBuilderArr(List<Map<String, Object>> columnValueMapList,
+    Builder<?, ?>[] prepareBuilderArr(boolean relationOperation, List<Map<String, Object>> originalMetadataMapList,
         GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart);
 
     /**
@@ -34,20 +35,22 @@ public interface RelationSubQuery {
 
     /**
      * 批量关联查询 (目标表)
+     * @param relationOperation 是否关联关系操作
      * @param builderForTarget 目标表查询构造器
      * @param relationRecordList @BelongsToMany 中间表数据
      * @return 查询结果集
      */
-    RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?> builderForTarget, RecordList<?, ?> relationRecordList);
+    RecordList<?, ?> dealBatchForTarget(boolean relationOperation, @Nullable Builder<?, ?> builderForTarget, RecordList<?, ?> relationRecordList);
 
     /**
      * 筛选批量关联查询结果对象
+     * @param relationOperation 是否关联关系操作
      * @param theRecord 当前record
      * @param targetRecordList 目标的recordList
      * @param cacheRelationRecordList 结果缓存
      * @return 筛选后的查询结果集
      */
-    List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
+    List<Object> filterBatchRecord(boolean relationOperation, Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
         Map<String, RecordList<?, ?>> cacheRelationRecordList);
 
     /**

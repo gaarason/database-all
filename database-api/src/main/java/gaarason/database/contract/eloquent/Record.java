@@ -8,7 +8,7 @@ import gaarason.database.contract.record.RelationshipLambda;
 import gaarason.database.contract.support.ExtendedSerializable;
 import gaarason.database.lang.Nullable;
 
-import java.util.HashMap;
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -77,28 +77,10 @@ public interface Record<T, K> extends Friendly<T, K>, OperationLambda<T, K>,
     void setOriginalPrimaryKeyValue(K value);
 
     /**
-     * 关联关系 Builder 补充设置
-     * @return <属性 -> GenerateSqlPart>
+     * 关联关系 补充设置
+     * @return 关联关系 补充设置
      */
-    Map<String, GenerateSqlPartFunctionalInterface<?, ?>> getRelationBuilderMap();
-
-    /**
-     * 关联关系 Builder 补充设置
-     * @param relationBuilderMap <属性 -> GenerateSqlPart>
-     */
-    void setRelationBuilderMap(HashMap<String, GenerateSqlPartFunctionalInterface<?, ?>> relationBuilderMap);
-
-    /**
-     * 关联关系 递归 设置
-     * @return <属性 -> RelationshipRecordWith>
-     */
-    Map<String, RelationshipRecordWithFunctionalInterface> getRelationRecordMap();
-
-    /**
-     * 关联关系 递归 设置
-     * @param relationRecordMap <属性 -> RelationshipRecordWith>
-     */
-    void setRelationRecordMap(HashMap<String, RelationshipRecordWithFunctionalInterface> relationRecordMap);
+    Map<String, Relation> getRelationMap();
 
     /**
      * 反序列化到指定结果集
@@ -120,5 +102,43 @@ public interface Record<T, K> extends Friendly<T, K>, OperationLambda<T, K>,
      */
     static <M, N> Record<M, N> deserialize(String serializeStr) {
         return ExtendedSerializable.deserialize(serializeStr);
+    }
+
+    /**
+     * 关联关系信息
+     */
+    class Relation implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        /**
+         * 是否关联关系操作
+         */
+        final public boolean relationOperation;
+
+        /**
+         * 关联关系属性
+         * 此属性上必然存在关联关系注解
+         */
+        final public String relationFieldName;
+
+        /**
+         * 查询构造器包装
+         */
+        final public GenerateSqlPartFunctionalInterface<?, ?> sqlPartFunctionalInterface;
+
+        /**
+         * 查询结果集包装
+         */
+        final public RelationshipRecordWithFunctionalInterface relationshipRecordWithFunctionalInterface;
+
+        public Relation(String relationFieldName, boolean relationOperation,
+            GenerateSqlPartFunctionalInterface<?, ?> sqlPartFunctionalInterface,
+            RelationshipRecordWithFunctionalInterface relationshipRecordWithFunctionalInterface) {
+            this.relationOperation = relationOperation;
+            this.relationFieldName = relationFieldName;
+            this.sqlPartFunctionalInterface = sqlPartFunctionalInterface;
+            this.relationshipRecordWithFunctionalInterface = relationshipRecordWithFunctionalInterface;
+        }
     }
 }

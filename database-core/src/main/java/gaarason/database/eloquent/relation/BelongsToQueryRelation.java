@@ -56,22 +56,24 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public Builder<?, ?>[] prepareBuilderArr(List<Map<String, Object>> columnValueMapList,
+    public Builder<?, ?>[] prepareBuilderArr(boolean relationOperation, List<Map<String, Object>> originalMetadataMapList,
         GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart) {
+        // 显然 @BelongsTo 中， relationOperation == true 没有任何意义
 
         Set<Object> objectSet = enableMorph ?
-            getColumnInMapList(columnValueMapList, belongsToTemplate.localModelForeignKey,
+            getColumnInMapList(originalMetadataMapList, belongsToTemplate.localModelForeignKey,
                 belongsToTemplate.localModelMorphKey, belongsToTemplate.localModelMorphValue) :
-            getColumnInMapList(columnValueMapList, belongsToTemplate.localModelForeignKey);
+            getColumnInMapList(originalMetadataMapList, belongsToTemplate.localModelForeignKey);
 
         Builder<?, ?> targetBuilder = ObjectUtils.isEmpty(objectSet) ? null :
             generateSqlPart.execute(ObjectUtils.typeCast(belongsToTemplate.parentModel.newQuery()))
+                .select(belongsToTemplate.parentModel.getEntityClass())
                 .whereIn(belongsToTemplate.parentModelLocalKey, objectSet);
         return new Builder<?, ?>[]{null, targetBuilder};
     }
 
     @Override
-    public RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?> builderForTarget,
+    public RecordList<?, ?> dealBatchForTarget(boolean relationOperation, @Nullable Builder<?, ?> builderForTarget,
         RecordList<?, ?> relationRecordList) {
         if (builderForTarget == null) {
             return RecordFactory.newRecordList(getContainer());
@@ -80,7 +82,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
+    public List<Object> filterBatchRecord(boolean relationOperation, Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
         Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         // 父表的外键字段名
         String column = belongsToTemplate.parentModelLocalKey;
@@ -88,6 +90,11 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
         Object value = theRecord.getMetadataMap().get(belongsToTemplate.localModelForeignKey);
 
         assert value != null;
+
+        if(relationOperation) {
+            return findObj(targetRecordList.getOriginalMetadataMapList(),column,value);
+        }
+
         return findObjList(targetRecordList.toObjectList(cacheRelationRecordList), column, value);
     }
 

@@ -58,18 +58,21 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public Builder<?, ?>[] prepareBuilderArr(List<Map<String, Object>> columnValueMapList,
+    public Builder<?, ?>[] prepareBuilderArr(boolean relationOperation, List<Map<String, Object>> originalMetadataMapList,
         GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart) {
         return new Builder<?, ?>[]{null,
             generateSqlPart.execute(ObjectUtils.typeCast(hasOneOrManyTemplate.sonModel.newQuery()))
+                // 关联关系操作, 则指定查询外键以及group
+                .when(relationOperation, builder -> builder.select(hasOneOrManyTemplate.sonModelForeignKey).group(hasOneOrManyTemplate.sonModelForeignKey))
+                .when(!relationOperation, builder -> builder.select(hasOneOrManyTemplate.sonModel.getEntityClass()))
                 .whereIn(hasOneOrManyTemplate.sonModelForeignKey,
-                    getColumnInMapList(columnValueMapList, hasOneOrManyTemplate.localModelLocalKey))
+                    getColumnInMapList(originalMetadataMapList, hasOneOrManyTemplate.localModelLocalKey))
                 .when(enableMorph,
                     builder -> builder.where(hasOneOrManyTemplate.sonModelMorphKey, hasOneOrManyTemplate.sonModelMorphValue))};
     }
 
     @Override
-    public RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?> builderForTarget, RecordList<?, ?> relationRecordList) {
+    public RecordList<?, ?> dealBatchForTarget(boolean relationOperation, @Nullable Builder<?, ?> builderForTarget, RecordList<?, ?> relationRecordList) {
         if(builderForTarget == null){
             return RecordFactory.newRecordList(getContainer());
         }
@@ -77,7 +80,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
+    public List<Object> filterBatchRecord(boolean relationOperation, Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
         Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         // 子表的外键字段名
         String column = hasOneOrManyTemplate.sonModelForeignKey;
@@ -85,6 +88,11 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
         Object value = theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey);
 
         assert value != null;
+
+        if(relationOperation) {
+            return findObj(targetRecordList.getOriginalMetadataMapList(),column,value);
+        }
+
         return findObjList(targetRecordList.toObjectList(cacheRelationRecordList), column, value);
     }
 

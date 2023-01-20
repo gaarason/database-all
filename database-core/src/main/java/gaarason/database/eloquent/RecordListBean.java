@@ -227,8 +227,7 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
         for (Record<T, K> tkRecord : this) {
             // 赋值关联关系过滤
             // 保持引用
-            tkRecord.getRelationBuilderMap().put(fieldName, builderClosure);
-            tkRecord.getRelationRecordMap().put(fieldName, recordClosure);
+            tkRecord.getRelationMap().put(fieldName, new Record.Relation(fieldName, false, builderClosure, recordClosure));
         }
         return this;
     }

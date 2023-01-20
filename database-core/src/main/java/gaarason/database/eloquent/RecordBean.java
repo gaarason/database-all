@@ -1,5 +1,6 @@
 package gaarason.database.eloquent;
 
+import com.sun.org.apache.bcel.internal.generic.NEW;
 import gaarason.database.appointment.EntityUseType;
 import gaarason.database.appointment.ValueWrapper;
 import gaarason.database.contract.eloquent.Model;
@@ -29,10 +30,7 @@ import gaarason.database.util.StringUtils;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 结果集对象
@@ -76,14 +74,10 @@ public class RecordBean<T, K> implements Record<T, K> {
     protected boolean hasBind;
 
     /**
-     * 关联关系(Builder)
+     * 关联关系MAP
+     * MAP< 待赋值字段 -> 关联关系信息（关联关系属性，查询构造器包装，查询结果集包装）>
      */
-    protected HashMap<String, GenerateSqlPartFunctionalInterface<?, ?>> relationBuilderMap = new HashMap<>();
-
-    /**
-     * 关联关系(Record)
-     */
-    protected HashMap<String, RelationshipRecordWithFunctionalInterface> relationRecordMap = new HashMap<>();
+    protected Map<String, Relation> relationMap = new HashMap<>();
 
     /**
      * 主键值
@@ -190,23 +184,8 @@ public class RecordBean<T, K> implements Record<T, K> {
     }
 
     @Override
-    public Map<String, GenerateSqlPartFunctionalInterface<?, ?>> getRelationBuilderMap() {
-        return relationBuilderMap;
-    }
-
-    @Override
-    public void setRelationBuilderMap(HashMap<String, GenerateSqlPartFunctionalInterface<?, ?>> relationBuilderMap) {
-        this.relationBuilderMap = relationBuilderMap;
-    }
-
-    @Override
-    public Map<String, RelationshipRecordWithFunctionalInterface> getRelationRecordMap() {
-        return relationRecordMap;
-    }
-
-    @Override
-    public void setRelationRecordMap(HashMap<String, RelationshipRecordWithFunctionalInterface> relationRecordMap) {
-        this.relationRecordMap = relationRecordMap;
+    public Map<String, Relation> getRelationMap() {
+        return relationMap;
     }
 
     /**
@@ -283,8 +262,7 @@ public class RecordBean<T, K> implements Record<T, K> {
 
     @Override
     public Record<T, K> withClear() {
-        relationBuilderMap.clear();
-        relationRecordMap.clear();
+        relationMap.clear();
         return this;
     }
 
@@ -315,8 +293,8 @@ public class RecordBean<T, K> implements Record<T, K> {
                 thrRecord -> thrRecord.with(lastLevelColumn, ObjectUtils.typeCast(builderClosure), recordClosure));
         }
 
-        relationBuilderMap.put(fieldName, builderClosure);
-        relationRecordMap.put(fieldName, recordClosure);
+        relationMap.put(fieldName, new Relation(fieldName, false, builderClosure, recordClosure));
+
         return this;
     }
 
@@ -645,8 +623,7 @@ public class RecordBean<T, K> implements Record<T, K> {
         out.writeUTF(model.getClass().getName());
         out.writeObject(metadataMap);
         out.writeUTF(originalSql);
-        out.writeObject(relationBuilderMap);
-        out.writeObject(relationRecordMap);
+        out.writeObject(relationMap);
     }
 
     @Override
@@ -655,8 +632,7 @@ public class RecordBean<T, K> implements Record<T, K> {
         String modelName = in.readUTF();
         Object map = in.readObject();
         String sql = in.readUTF();
-        relationBuilderMap = ObjectUtils.typeCast(in.readObject());
-        relationRecordMap = ObjectUtils.typeCast(in.readObject());
+        relationMap = ObjectUtils.typeCast(in.readObject());
 
         Container container = GodProvider.get(identification);
         Class<?> modelClass = ClassUtils.forName(modelName);

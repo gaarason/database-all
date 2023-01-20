@@ -172,4 +172,27 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
         }
         return objectList;
     }
+
+    /**
+     * 将满足条件的对象筛选并返回
+     * @param relationshipObjectList 待筛选的对象列表
+     * @param columnName 对象的属性的名
+     * @param fieldTargetValue 对象的属性的目标值
+     * @return 对象列表
+     */
+    protected List<Object> findObj(List<Map<String, Object>> relationshipObjectList, String columnName, Object fieldTargetValue) {
+        List<Object> objectList = new ArrayList<>();
+        if(ObjectUtils.isEmpty(relationshipObjectList)){
+            // 不建议使用 Collections.emptyList()
+            return objectList;
+        }
+
+        for (Map<String, Object> map : relationshipObjectList) {
+            if( ObjectUtils.nullSafeEquals(map.get(columnName), fieldTargetValue)){
+                objectList.add(map);
+            }
+        }
+
+        return objectList;
+    }
 }
