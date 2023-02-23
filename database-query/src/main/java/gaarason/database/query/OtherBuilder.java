@@ -4,7 +4,7 @@ import gaarason.database.appointment.AggregatesType;
 import gaarason.database.appointment.JoinType;
 import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.function.ToSqlFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
@@ -83,7 +83,7 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> from(String alias, GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> from(String alias, BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sqlPart = FormatUtils.bracket(sqlPartInfo.getSqlString()) + alias;
         grammar.set(Grammar.SQLPartType.FROM, sqlPart, sqlPartInfo.getParameters());
@@ -143,7 +143,7 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> union(GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> union(BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         grammar.add(Grammar.SQLPartType.UNION, "union" + FormatUtils.bracket(sqlPartInfo.getSqlString()),
             sqlPartInfo.getParameters());
@@ -151,7 +151,7 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> unionAll(GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> unionAll(BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         grammar.add(Grammar.SQLPartType.UNION, "union all" + FormatUtils.bracket(sqlPartInfo.getSqlString()),
             sqlPartInfo.getParameters());
@@ -186,8 +186,8 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> join(JoinType joinType, GenerateSqlPartFunctionalInterface<T, K> tempTable, String alias,
-        GenerateSqlPartFunctionalInterface<T, K> joinConditions) {
+    public Builder<T, K> join(JoinType joinType, BuilderWrapper<T, K> tempTable, String alias,
+        BuilderWrapper<T, K> joinConditions) {
         Grammar.SQLPartInfo tableInfo = generateSql(tempTable);
         String table = FormatUtils.bracket(tableInfo.getSqlString()) + alias;
 
@@ -207,7 +207,7 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
 
     @Override
     public Builder<T, K> join(JoinType joinType, String table,
-        GenerateSqlPartFunctionalInterface<T, K> joinConditions) {
+        BuilderWrapper<T, K> joinConditions) {
         Grammar.SQLPartInfo conditions = generateSql(joinConditions, Grammar.SQLPartType.WHERE);
         String sqlPart = FormatUtils.spaces(joinType.getOperation()) + "join " + table + FormatUtils.spaces("on") +
             FormatUtils.bracket(conditions.getSqlString());
@@ -234,13 +234,13 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> when(boolean condition, GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> when(boolean condition, BuilderWrapper<T, K> closure) {
         return when(condition, closure, builder -> builder);
     }
 
     @Override
-    public Builder<T, K> when(boolean condition, GenerateSqlPartFunctionalInterface<T, K> closureIfTrue,
-        GenerateSqlPartFunctionalInterface<T, K> closureIfFalse) {
+    public Builder<T, K> when(boolean condition, BuilderWrapper<T, K> closureIfTrue,
+        BuilderWrapper<T, K> closureIfFalse) {
         return condition ? closureIfTrue.execute(this) : closureIfFalse.execute(this);
     }
 

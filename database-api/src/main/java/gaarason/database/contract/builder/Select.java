@@ -1,7 +1,7 @@
 package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.lang.Nullable;
 
 import java.util.Collection;
@@ -88,8 +88,7 @@ public interface Select<T, K> {
      * @param alias 字段别名
      * @return 查询构造器
      */
-    Builder<T, K> selectFunction(String function, GenerateSqlPartFunctionalInterface<T, K> closure,
-        @Nullable String alias);
+    Builder<T, K> selectFunction(String function, BuilderWrapper<T, K> closure, @Nullable String alias);
 
     /**
      * 调研数据库中的方法
@@ -97,6 +96,13 @@ public interface Select<T, K> {
      * @param closure 返回代码片段
      * @return 查询构造器
      */
-    Builder<T, K> selectFunction(String function, GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> selectFunction(String function, BuilderWrapper<T, K> closure);
 
+    /**
+     * 自定义查询字段
+     * @param columnName 列名
+     * @param value 值  // todo support Object type
+     * @return 查询构造器
+     */
+    Builder<T, K> selectCustom(String columnName, String value);
 }

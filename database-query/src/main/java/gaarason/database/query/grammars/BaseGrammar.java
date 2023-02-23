@@ -2,8 +2,8 @@ package gaarason.database.query.grammars;
 
 import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.eloquent.Record;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
-import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.InvalidSqlTypeException;
@@ -30,8 +30,8 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         SQLPartType.IGNORE_INDEX, SQLPartType.COLUMN);
     /**
      * column -> [ GenerateSqlPart , RelationshipRecordWith ]
-     * @see RelationshipRecordWithFunctionalInterface
-     * @see GenerateSqlPartFunctionalInterface
+     * @see RecordWrapper
+     * @see BuilderWrapper
      */
     protected final Map<String, Object[]> withMap;
 
@@ -138,8 +138,9 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         // construct
         SQLPartInfo sqlPart = new SQLPartInfo(sqlPartString, parameters);
         // put
-        SQLPartMap.put(sqlPartType, Collections.singletonList(sqlPart));
-
+        LinkedList<SQLPartInfo> objects = new LinkedList<>();
+        objects.add(sqlPart);
+        SQLPartMap.put(sqlPartType, objects);
     }
 
     @Override
@@ -169,7 +170,11 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         Collection<Object> allParameters) {
         List<SQLPartInfo> sqlParts = SQLPartMap.get(sqlPartType);
         if (ObjectUtils.isEmpty(sqlParts)) {
-            return;
+            // 使用默认值
+            sqlParts = getDefault(sqlPartType);
+            if(ObjectUtils.isEmpty(sqlParts)) {
+                return;
+            }
         }
 
         // keyword
@@ -208,10 +213,6 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     public SQLPartInfo generateSql(SqlType sqlType) {
         StringBuilder sqlBuilder = new StringBuilder();
         Collection<Object> allParameters = new LinkedList<>();
-
-        // 默认值处理
-        setDefault();
-
 
         switch (sqlType) {
             case REPLACE:
@@ -257,19 +258,20 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     }
 
     /**
-     * 默认值填充
+     * 得到默认值
      */
-    protected void setDefault() {
-        if (isEmpty(SQLPartType.TABLE)) {
-            set(SQLPartType.TABLE, table, null);
-            set(SQLPartType.FROM, table, null);
+    @Nullable
+    protected List<SQLPartInfo> getDefault(SQLPartType type) {
+        switch (type) {
+            case TABLE:
+            case FROM:
+                return Collections.singletonList(new SQLPartInfo(table));
+            case SELECT:
+                return  Collections.singletonList(new SQLPartInfo("*"));
+            case VALUE:
+                return Collections.singletonList( new SQLPartInfo("()"));
         }
-        if (isEmpty(SQLPartType.SELECT)) {
-            set(SQLPartType.SELECT, "*", null);
-        }
-        if (isEmpty(SQLPartType.VALUE)) {
-            set(SQLPartType.VALUE, "()", null);
-        }
+        return null;
     }
 
     @Override

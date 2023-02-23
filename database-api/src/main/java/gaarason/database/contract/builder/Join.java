@@ -2,7 +2,7 @@ package gaarason.database.contract.builder;
 
 import gaarason.database.appointment.JoinType;
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.lang.Nullable;
 
 import java.util.Collection;
@@ -60,7 +60,7 @@ public interface Join<T, K> {
      * @param joinConditions 连接条件
      * @return 查询构造器
      */
-    Builder<T, K> join(JoinType joinType, String table, GenerateSqlPartFunctionalInterface<T, K> joinConditions);
+    Builder<T, K> join(JoinType joinType, String table, BuilderWrapper<T, K> joinConditions);
 
     /**
      * 连接查询(含子查询)
@@ -70,6 +70,6 @@ public interface Join<T, K> {
      * @param joinConditions 连接条件
      * @return 查询构造器
      */
-    Builder<T, K> join(JoinType joinType, GenerateSqlPartFunctionalInterface<T, K> tempTable, String alias,
-        GenerateSqlPartFunctionalInterface<T, K> joinConditions);
+    Builder<T, K> join(JoinType joinType, BuilderWrapper<T, K> tempTable, String alias,
+        BuilderWrapper<T, K> joinConditions);
 }

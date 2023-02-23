@@ -20,7 +20,7 @@ public interface RecordList<T, K> extends FriendlyList<T, K>,
      * 元数据
      * @return 元数据
      */
-    List<Map<String, Object>> getOriginalMetadataMapList();
+    List<Map<String, Object>> getMetadata();
 
     /**
      * 原始sql

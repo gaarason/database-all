@@ -2,7 +2,7 @@ package gaarason.database.query;
 
 import gaarason.database.appointment.EntityUseType;
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
 import gaarason.database.util.FormatUtils;
@@ -328,7 +328,7 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
 
     @Override
     public Builder<T, K> havingSubQuery(String column, String symbol,
-        GenerateSqlPartFunctionalInterface<T, K> closure) {
+        BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String completeSql = FormatUtils.bracket(sqlPartInfo.getSqlString());
         String sqlPart = backQuote(column) + symbol + completeSql;
@@ -394,14 +394,14 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingIn(String column, GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> havingIn(String column, BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sqlPart = backQuote(column) + "in" + FormatUtils.bracket(sqlPartInfo.getSqlString());
         return havingGrammar(sqlPart, sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
-    public Builder<T, K> havingNotIn(String column, GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> havingNotIn(String column, BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sqlPart = backQuote(column) + "not in" + FormatUtils.bracket(sqlPartInfo.getSqlString());
         return havingGrammar(sqlPart, sqlPartInfo.getParameters(), " and ");
@@ -471,14 +471,14 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingExists(GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> havingExists(BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sql = "exists " + FormatUtils.bracket(sqlPartInfo.getSqlString());
         return havingGrammar(sql, sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
-    public Builder<T, K> havingNotExists(GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> havingNotExists(BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sql = "not exists " + FormatUtils.bracket(sqlPartInfo.getSqlString());
         return havingGrammar(sql, sqlPartInfo.getParameters(), " and ");
@@ -496,19 +496,19 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> andHaving(GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> andHaving(BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.HAVING);
         return havingGrammar(FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
-    public Builder<T, K> orHaving(GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> orHaving(BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.HAVING);
         return havingGrammar(FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " or ");
     }
 
     @Override
-    public Builder<T, K> andHavingIgnoreEmpty(GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> andHavingIgnoreEmpty(BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.HAVING);
         if (!ObjectUtils.isEmpty(sqlPartInfo.getSqlString())) {
             havingGrammar(FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " and ");
@@ -517,7 +517,7 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> orHavingIgnoreEmpty(GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> orHavingIgnoreEmpty(BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.HAVING);
         if (!ObjectUtils.isEmpty(sqlPartInfo.getSqlString())) {
             havingGrammar(FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " or ");

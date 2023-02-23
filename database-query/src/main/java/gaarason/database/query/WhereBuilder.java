@@ -2,7 +2,7 @@ package gaarason.database.query;
 
 import gaarason.database.appointment.EntityUseType;
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
 import gaarason.database.util.FormatUtils;
@@ -308,7 +308,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
 
 
     @Override
-    public Builder<T, K> whereSubQuery(String column, String symbol, GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> whereSubQuery(String column, String symbol, BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String completeSql = FormatUtils.bracket(sqlPartInfo.getSqlString());
         String sqlPart = backQuote(column) + symbol + completeSql;
@@ -374,14 +374,14 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereIn(String column, GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> whereIn(String column, BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sqlPart = backQuote(column) + "in" + FormatUtils.bracket(sqlPartInfo.getSqlString());
         return whereGrammar(sqlPart, sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
-    public Builder<T, K> whereNotIn(String column, GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> whereNotIn(String column, BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sqlPart = backQuote(column) + "not in" + FormatUtils.bracket(sqlPartInfo.getSqlString());
         return whereGrammar(sqlPart, sqlPartInfo.getParameters(), " and ");
@@ -450,14 +450,14 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereExists(GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> whereExists(BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sql = "exists " + FormatUtils.bracket(sqlPartInfo.getSqlString());
         return whereGrammar(sql, sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
-    public Builder<T, K> whereNotExists(GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> whereNotExists(BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sql = "not exists " + FormatUtils.bracket(sqlPartInfo.getSqlString());
         return whereGrammar(sql, sqlPartInfo.getParameters(), " and ");
@@ -475,19 +475,19 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> andWhere(GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> andWhere(BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.WHERE);
         return whereGrammar(FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
-    public Builder<T, K> orWhere(GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> orWhere(BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.WHERE);
         return whereGrammar(FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " or ");
     }
 
     @Override
-    public Builder<T, K> andWhereIgnoreEmpty(GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> andWhereIgnoreEmpty(BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.WHERE);
         if (!ObjectUtils.isEmpty(sqlPartInfo.getSqlString())) {
             whereGrammar(FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " and ");
@@ -496,7 +496,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> orWhereIgnoreEmpty(GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> orWhereIgnoreEmpty(BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.WHERE);
         if (!ObjectUtils.isEmpty(sqlPartInfo.getSqlString())) {
             whereGrammar(FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " or ");

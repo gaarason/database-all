@@ -32,9 +32,10 @@ public class ObjectUtils {
     }
 
     /**
-     * 获取指定类中的第index个泛型的类
+     * 获取指定类的父类中的第index个泛型的类
+     * eg : 设 class A extends B<DD, FF> ，则  FF = getGenerics(A， 1)
      * @param clazz 指定类
-     * @param index 第几个
+     * @param index 第几个（从零开始）
      * @param <A> 泛型的类
      * @param <B> 指定类型
      * @return 泛型的类
@@ -47,6 +48,22 @@ public class ObjectUtils {
             throw new TypeNotSupportedException(clazz);
         }
         return (Class<A>) parameterizedType.getActualTypeArguments()[index];
+    }
+
+    /**
+     * 获取指定类的第interfaceIndex个接口中的第index个泛型的类
+     * eg : 设 class A implements C,B<DD, FF> ，则  DD = getGenerics(A， 1, 0)
+     * @param clazz 指定类
+     * @param interfaceIndex 第几个接口（从零开始）
+     * @param index 第几个泛型（从零开始）
+     * @param <A> 泛型的类
+     * @param <B> 指定类型
+     * @return 泛型的类
+     * @throws TypeNotSupportedException 不支持的类型
+     */
+    @SuppressWarnings("unchecked")
+    public static <A, B> Class<A> getGenerics(Class<B> clazz, int interfaceIndex, int index) {
+        return (Class<A>) ((ParameterizedType) (((ParameterizedType) clazz.getGenericInterfaces()[interfaceIndex]).getActualTypeArguments())[index]).getRawType();
     }
 
     /**

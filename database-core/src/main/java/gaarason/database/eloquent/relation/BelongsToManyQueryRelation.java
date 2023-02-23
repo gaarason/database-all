@@ -5,7 +5,7 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.core.Container;
 import gaarason.database.eloquent.RecordListBean;
 import gaarason.database.lang.Nullable;
@@ -17,6 +17,7 @@ import gaarason.database.util.ObjectUtils;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 关联关系 多对多
@@ -25,6 +26,11 @@ import java.util.*;
 public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
     private final BelongsToManyTemplate belongsToManyTemplate;
+
+    /**
+     * 人造关系键
+     */
+    private final String RELATION_KEY = "@R@";
 
     /**
      * 是否多态 - 本表
@@ -42,50 +48,27 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public Builder<?, ?>[] prepareBuilderArr(boolean relationOperation, List<Map<String, Object>> originalMetadataMapList,
-        GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart) {
-
-        // 关系表 （中间表）
-        Builder<?, ?> relationBuilder = belongsToManyTemplate.relationModel.newQuery()
+    @Nullable
+    public Builder<?, ?> prepareRelationBuilder(List<Map<String, Object>> metadata) {
+        return belongsToManyTemplate.relationModel.newQuery()
             .whereIn(belongsToManyTemplate.foreignKeyForLocalModel,
-                getColumnInMapList(originalMetadataMapList, belongsToManyTemplate.localModelLocalKey))
+                getColumnInMapList(metadata, belongsToManyTemplate.localModelLocalKey))
             .when(enableLocalModelMorph, builder -> builder.where(belongsToManyTemplate.morphKeyForLocalModel,
                 belongsToManyTemplate.morphValueForLocalModel))
             .when(enableTargetModelMorph, builder -> builder.where(belongsToManyTemplate.morphKeyForTargetModel,
                 belongsToManyTemplate.morphValueForTargetModel));
-
-        // 目标表
-        Builder<?, ?> targetBuilder = generateSqlPart.execute(
-            ObjectUtils.typeCast(belongsToManyTemplate.targetModel.newQuery()));
-
-        return new Builder<?, ?>[]{relationBuilder, targetBuilder};
     }
 
+    @Nullable
     @Override
-    public RecordList<?, ?> dealBatchForRelation(@Nullable Builder<?, ?> builderForRelation) {
-        if (ObjectUtils.isEmpty(builderForRelation)) {
-            return new RecordListBean<>(getContainer());
-        }
-        return belongsToManyTemplate.relationModel.newQuery()
-            .setBuilder(ObjectUtils.typeCast(builderForRelation))
-            .get();
-    }
+    public Builder<?, ?> prepareTargetBuilder(boolean relationOperation, List<Map<String, Object>> metadata, RecordList<?, ?> relationRecordList,
+        BuilderWrapper<?, ?> operationBuilder, BuilderWrapper<?, ?> customBuilder) {
 
-    @Override
-    protected Container getContainer() {
-        return belongsToManyTemplate.targetModel.getGaarasonDataSource().getContainer();
-    }
-
-    @Override
-    public RecordList<?, ?> dealBatchForTarget(boolean relationOperation, @Nullable Builder<?, ?> builderForTarget,
-        RecordList<?, ?> relationRecordList) {
-        if (builderForTarget == null) {
-            return RecordFactory.newRecordList(getContainer());
-        }
+        // 关系表的数据
         List<Map<String, Object>> relationMaps = relationRecordList.toMapList();
 
         // 将中间表结果中的目标表外键, 转化为可以使用 where in 查询的 set
-        Set<Object> targetModelForeignKeySet = new HashSet<>();
+        Set<Object> targetModelForeignKeySet = new HashSet<>(relationMaps.size());
         for (Map<String, Object> map : relationMaps) {
             Object result = map.get(belongsToManyTemplate.foreignKeyForTargetModel);
             if (null == result) {
@@ -95,32 +78,127 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         }
 
         if (targetModelForeignKeySet.isEmpty()) {
-            return RecordFactory.newRecordList(getContainer());
+            return null;
         }
 
-        // 目标表结果
-        RecordList<?, ?> targetRecordList = belongsToManyTemplate.targetModel.newQuery()
-            .setBuilder(ObjectUtils.typeCast(builderForTarget))
+        // 目标表查询构造器
+        Builder<?, ?> targetBuilder = customBuilder.execute(ObjectUtils.typeCast(belongsToManyTemplate.targetModel.newQuery()));
+
+        if(relationOperation) {
+
+            // relationMaps 进行分组
+            Map<Object, List<Object>> map = new HashMap<>();
+            for (Map<String, Object> relationMap : relationMaps) {
+                List<Object> objects = map.computeIfAbsent(
+                    relationMap.get(belongsToManyTemplate.foreignKeyForLocalModel), k -> new ArrayList<>());
+                objects.add(relationMap.get(belongsToManyTemplate.foreignKeyForTargetModel));
+            }
+
+            Builder<?, ?> newQuery = belongsToManyTemplate.targetModel.newQuery();
+
+            Builder<?, ?> opBuilder = operationBuilder.execute(ObjectUtils.typeCast(belongsToManyTemplate.targetModel.newQuery()));
+
+            AtomicBoolean firstAction = new AtomicBoolean(true);
+            map.forEach((k , v) -> {
+                Builder<?, ?> subBuilder = opBuilder.clone()
+                    .selectCustom(RELATION_KEY, k.toString())
+                    .from("a", tableBuilder -> tableBuilder.setAnyBuilder(targetBuilder)
+                        .whereIn(belongsToManyTemplate.targetModelLocalKey, v));
+
+                if(firstAction.get()){
+                    newQuery.setAnyBuilder(subBuilder);
+                    firstAction.set(false);
+                }else {
+                    newQuery.unionAll(builder -> builder.setAnyBuilder(subBuilder));
+                }
+            });
+
+            // eg : (SELECT max(id) as 'studentMaxId',1 as xx from (select * from student where `id`in("1","2","3"))a)UNION all(SELECT max(id) as 'studentMaxId',2 as xx from (select * from student where `id`in("1","2"))a);
+
+            return newQuery;
+
+        }else {
+            return targetBuilder.select(belongsToManyTemplate.targetModel.getEntityClass())
+                    .whereIn(belongsToManyTemplate.targetModelLocalKey, targetModelForeignKeySet);
+        }
+    }
 
 
-            // 关联关系操作, 则指定查询外键以及group
-            .when(relationOperation, builder -> builder.select(belongsToManyTemplate.targetModelLocalKey).group(belongsToManyTemplate.targetModelLocalKey))
-            .when(!relationOperation, builder -> builder.select(belongsToManyTemplate.targetModel.getEntityClass()))
-
-            .whereIn(belongsToManyTemplate.targetModelLocalKey, targetModelForeignKeySet)
+    @Override
+    public RecordList<?, ?> dealBatchForRelation(@Nullable Builder<?, ?> relationBuilder) {
+        if (ObjectUtils.isEmpty(relationBuilder)) {
+            return new RecordListBean<>(getContainer());
+        }
+        return belongsToManyTemplate.relationModel.newQuery()
+            .setBuilder(ObjectUtils.typeCast(relationBuilder))
             .get();
+    }
+
+    @Override
+    public Container getContainer() {
+        return belongsToManyTemplate.targetModel.getGaarasonDataSource().getContainer();
+    }
+
+    @Override
+    public RecordList<?, ?> dealBatchForTarget(boolean relationOperation, @Nullable Builder<?, ?> targetBuilder, RecordList<?, ?> relationRecordList) {
+        if (targetBuilder == null) {
+            return RecordFactory.newRecordList(getContainer());
+        }
+        // 关系表的数据
+        List<Map<String, Object>> relationMaps = relationRecordList.toMapList();
+
+        // 目标表结果
+        RecordList<?, ?> targetRecordList = belongsToManyTemplate.targetModel.newQuery().setAnyBuilder(targetBuilder).get();
+
+
+        if(relationOperation) {
+
+
+            return targetRecordList;
+        }
+//
+//        // 将中间表结果中的目标表外键, 转化为可以使用 where in 查询的 set
+//        Set<Object> targetModelForeignKeySet = new HashSet<>();
+//        for (Map<String, Object> map : relationMaps) {
+//            Object result = map.get(belongsToManyTemplate.foreignKeyForTargetModel);
+//            if (null == result) {
+//                continue;
+//            }
+//            targetModelForeignKeySet.add(result);
+//        }
+//
+//        if (targetModelForeignKeySet.isEmpty()) {
+//            return RecordFactory.newRecordList(getContainer());
+//        }
+
+//            .when(relationOperation, builder -> builder.from(UUID.randomUUID().toString().replace("-", ""),
+//                builderFrom -> builderFrom.setBuilder(ObjectUtils.typeCast(targetBuilder))
+//                    .whereIn(belongsToManyTemplate.targetModelLocalKey, targetModelForeignKeySet))
+//            )
+//
+//            // 关联关系操作, 则指定查询外键以及group
+////            .when(relationOperation, builder -> builder.select(belongsToManyTemplate.targetModelLocalKey).group(belongsToManyTemplate.targetModelLocalKey))
+//            .when(!relationOperation, builder -> builder.setBuilder(ObjectUtils.typeCast(targetBuilder))
+//                .select(belongsToManyTemplate.targetModel.getEntityClass())
+//                .whereIn(belongsToManyTemplate.targetModelLocalKey, targetModelForeignKeySet))
+//
+////            .whereIn(belongsToManyTemplate.targetModelLocalKey, targetModelForeignKeySet)
+//            .get();
 
         // 循环关系表, 筛选本表需要的数据
         for (Record<?, ?> targetRecord : targetRecordList) {
-            Object targetKey = targetRecord.getMetadataMap().get(belongsToManyTemplate.targetModelLocalKey);
+            // 目标表的关系键的值
+            Object targetKeyValue = targetRecord.getMetadataMap().get(belongsToManyTemplate.targetModelLocalKey);
 
             for (Map<String, Object> relationMap : relationMaps) {
+                // 关系表中， 指示本表的关系键的值
                 Object localModelKeyInMap = relationMap.get(belongsToManyTemplate.foreignKeyForLocalModel);
+                // 关系表中， 指示目标表的关系键的值
                 Object targetModelKeyInMap = relationMap.get(belongsToManyTemplate.foreignKeyForTargetModel);
 
-                if (targetModelKeyInMap.equals(targetKey)) {
-                    // 暂存
-                    // 存储到 RecordList 上
+                if (targetModelKeyInMap.equals(targetKeyValue)) {
+                    // 存储到目标表的RecordList 上
+                    // Map< localModelKeyInMap -> Set< targetModelKeyInMap > >
                     Set<Object> relationIds = targetRecordList.getCacheMap()
                         .computeIfAbsent(localModelKeyInMap, key -> new HashSet<>());
                     relationIds.add(targetModelKeyInMap);
@@ -129,33 +207,89 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         }
         return targetRecordList;
     }
+//
+//    protected Builder<?, ?> relationOperationBuilder(Builder<?, ?> builder, List<Map<String, Object>> relationMaps) {
+//        // 将中间表查询数据，转化为 Map< 本表关系键的值 -> Set < 目标表关系键的值 > >
+//        HashMap<Object, Set<Object>> map = new HashMap<>();
+//        for (Map<String, Object> relationMap : relationMaps) {
+//            Object foreignKeyForLocalModel = relationMap.get(belongsToManyTemplate.foreignKeyForLocalModel);
+//            Object foreignKeyForTargetModel = relationMap.get(belongsToManyTemplate.foreignKeyForTargetModel);
+//            Set<Object> foreignKeyForTargetModelSet = map.computeIfAbsent(foreignKeyForLocalModel,
+//                k -> new HashSet<>());
+//            foreignKeyForTargetModelSet.add(foreignKeyForTargetModel);
+//        }
+//
+//        String tempTable = UUID.randomUUID().toString().replace("-", "");
+//
+//
+//        for (Map.Entry<Object, Set<Object>> entry : map.entrySet()) {
+//            builder = builder.unionAll(builderUnionAll -> builderUnionAll.from(tempTable,
+//                    builderFrom -> builderFrom.setBuilder(ObjectUtils.typeCast(builder))
+//                        .whereIn(belongsToManyTemplate.targetModelLocalKey, entry.getValue()))
+//                .selectCustom("NAME", entry.getKey().toString()));
+//        }
+//
+//    }
+
 
     @Override
-    public List<Object> filterBatchRecord(boolean relationOperation, Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
+    public Map<String, Object> filterBatchRecordByRelationOperation(Record<?, ?> theRecord,
+        RecordList<?, ?> targetRecordList,
+        Map<String, RecordList<?, ?>> cacheRelationRecordList) {
+
+        // 目标关系表的外键字段名
+//        String targetModelLocalKey = belongsToManyTemplate.targetModelLocalKey;
+        // 本表的关系键值
+        Object value = theRecord.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey);
+
+//        return Collections.emptyMap();
+
+        return findObj(targetRecordList.getMetadata(), RELATION_KEY, value);
+//
+//
+//        // todo
+//        List<Map<String, Object>> mapList = targetRecordList.getMetadata();
+//        for (Map<String, Object> map : mapList) {
+//            // 目标表的关系键的值
+//            Object targetModelLocalKeyValue = map.get(targetModelLocalKey);
+//
+//            // 满足则加入
+//            if (targetModelLocalKayValueSet != null &&
+//                targetModelLocalKayValueSet.contains(targetModelLocalKeyValue)) {
+//                objectList.add(map);
+//            }
+//        }
+//
+//        return objectList;
+
+    }
+
+    @Override
+    public List<Object> filterBatchRecord(Record<?, ?> theRecord,
+        RecordList<?, ?> targetRecordList,
         Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         // 目标关系表的外键字段名
         String targetModelLocalKey = belongsToManyTemplate.targetModelLocalKey;
         // 本表的关系键值
         Object localModelLocalKeyValue = theRecord.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey);
 
-        // 本表应该关联的 目标表id列表
+        // 本表应该关联的 目标表的关系键的集合
         Set<Object> targetModelLocalKayValueSet = targetRecordList.getCacheMap().get(localModelLocalKeyValue);
 
         List<Object> objectList = new ArrayList<>();
-        List<?> objects = targetRecordList.toObjectList(cacheRelationRecordList);
 
-        // todo
-
-
-        if (!objects.isEmpty()) {
+        if (!targetRecordList.getMetadata().isEmpty()) {
             // 实体信息
             EntityMember<?, ?> entityMember = modelShadowProvider.get(targetRecordList.get(0).getModel())
                 .getEntityMember();
             // 字段信息
             FieldMember<?> fieldMember = entityMember.getFieldMemberByColumnName(targetModelLocalKey);
 
+
+            List<?> objects = targetRecordList.toObjectList(cacheRelationRecordList);
+
             for (Object obj : objects) {
-                // 目标值
+                // 目标表的关系键的值
                 Object targetModelLocalKeyValue = fieldMember.fieldGet(obj);
                 // 满足则加入
                 if (targetModelLocalKayValueSet != null &&
@@ -368,11 +502,11 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         // 目标表的关系键名
         columnList.add(belongsToManyTemplate.foreignKeyForTargetModel);
         // 本表的多态的键
-        if(enableLocalModelMorph){
+        if (enableLocalModelMorph) {
             columnList.add(belongsToManyTemplate.morphKeyForLocalModel);
         }
         // 目标表的多态的键
-        if(enableTargetModelMorph){
+        if (enableTargetModelMorph) {
             columnList.add(belongsToManyTemplate.morphKeyForTargetModel);
         }
 
@@ -394,11 +528,11 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
             // 目标表的关系键的值
             valueList.add(o);
             // 本表的多态的值
-            if(enableLocalModelMorph){
+            if (enableLocalModelMorph) {
                 valueList.add(belongsToManyTemplate.morphValueForLocalModel);
             }
             // 目标表的多态的值
-            if(enableTargetModelMorph){
+            if (enableTargetModelMorph) {
                 valueList.add(belongsToManyTemplate.morphValueForTargetModel);
             }
             // 中间表数据

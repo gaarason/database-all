@@ -5,7 +5,7 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.core.Container;
 import gaarason.database.exception.RelationAttachException;
 import gaarason.database.lang.Nullable;
@@ -55,34 +55,33 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
                 .getDefaultValue() : null;
     }
 
+    @Nullable
     @Override
-    public Builder<?, ?>[] prepareBuilderArr(boolean relationOperation, List<Map<String, Object>> originalMetadataMapList,
-        GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart) {
-        // 显然 @BelongsTo 中， relationOperation == true 没有任何意义
+    public Builder<?, ?> prepareTargetBuilder(boolean relationOperation, List<Map<String, Object>> metadata, RecordList<?, ?> relationRecordList,
+        BuilderWrapper<?, ?> operationBuilder, BuilderWrapper<?, ?> customBuilder) {
 
         Set<Object> objectSet = enableMorph ?
-            getColumnInMapList(originalMetadataMapList, belongsToTemplate.localModelForeignKey,
+            getColumnInMapList(metadata, belongsToTemplate.localModelForeignKey,
                 belongsToTemplate.localModelMorphKey, belongsToTemplate.localModelMorphValue) :
-            getColumnInMapList(originalMetadataMapList, belongsToTemplate.localModelForeignKey);
+            getColumnInMapList(metadata, belongsToTemplate.localModelForeignKey);
 
-        Builder<?, ?> targetBuilder = ObjectUtils.isEmpty(objectSet) ? null :
-            generateSqlPart.execute(ObjectUtils.typeCast(belongsToTemplate.parentModel.newQuery()))
+        return ObjectUtils.isEmpty(objectSet) ? null :
+            customBuilder.execute(ObjectUtils.typeCast(belongsToTemplate.parentModel.newQuery()))
                 .select(belongsToTemplate.parentModel.getEntityClass())
                 .whereIn(belongsToTemplate.parentModelLocalKey, objectSet);
-        return new Builder<?, ?>[]{null, targetBuilder};
     }
 
     @Override
-    public RecordList<?, ?> dealBatchForTarget(boolean relationOperation, @Nullable Builder<?, ?> builderForTarget,
+    public RecordList<?, ?> dealBatchForTarget(boolean relationOperation, @Nullable Builder<?, ?> targetBuilder,
         RecordList<?, ?> relationRecordList) {
-        if (builderForTarget == null) {
+        if (targetBuilder == null) {
             return RecordFactory.newRecordList(getContainer());
         }
-        return belongsToTemplate.parentModel.newQuery().setBuilder(ObjectUtils.typeCast(builderForTarget)).get();
+        return belongsToTemplate.parentModel.newQuery().setBuilder(ObjectUtils.typeCast(targetBuilder)).get();
     }
 
     @Override
-    public List<Object> filterBatchRecord(boolean relationOperation, Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
+    public List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
         Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         // 父表的外键字段名
         String column = belongsToTemplate.parentModelLocalKey;
@@ -90,10 +89,6 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
         Object value = theRecord.getMetadataMap().get(belongsToTemplate.localModelForeignKey);
 
         assert value != null;
-
-        if(relationOperation) {
-            return findObj(targetRecordList.getOriginalMetadataMapList(),column,value);
-        }
 
         return findObjList(targetRecordList.toObjectList(cacheRelationRecordList), column, value);
     }
@@ -321,7 +316,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    protected Container getContainer() {
+    public Container getContainer() {
         return belongsToTemplate.parentModel.getGaarasonDataSource().getContainer();
     }
 

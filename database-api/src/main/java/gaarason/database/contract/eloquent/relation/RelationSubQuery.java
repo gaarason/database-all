@@ -3,7 +3,9 @@ package gaarason.database.contract.eloquent.relation;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.core.Container;
+import gaarason.database.exception.OperationNotSupportedException;
 import gaarason.database.lang.Nullable;
 
 import java.util.Collection;
@@ -17,40 +19,71 @@ import java.util.Map;
 public interface RelationSubQuery {
 
     /**
-     * 批量关联查询的Builder预生成, toSql(select)后可以作为缓存的key
-     * @param relationOperation 是否关联关系操作
-     * @param originalMetadataMapList 当前recordList的元数据
-     * @param generateSqlPart Builder(目标表可用)
-     * @return Builder数组 [0 -> 中间表操作 , 1 -> 目标表操作]
+     * 容器
+     * @return 容器
      */
-    Builder<?, ?>[] prepareBuilderArr(boolean relationOperation, List<Map<String, Object>> originalMetadataMapList,
-        GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart);
+    Container getContainer();
+
+    /**
+     * 中间表 query builder
+     * @param metadata 当前recordList的元数据
+     * @return 中间表查询构造器
+     */
+    @Nullable
+    default Builder<?, ?> prepareRelationBuilder(List<Map<String, Object>> metadata) {
+        return null;
+    }
 
     /**
      * 批量关联查询 (中间表)
-     * @param builderForRelation 中间表查询构造器
+     * @param relationBuilder 中间表查询构造器
      * @return 查询结果集
      */
-    RecordList<?, ?> dealBatchForRelation(@Nullable Builder<?, ?> builderForRelation);
+    RecordList<?, ?> dealBatchForRelation(@Nullable Builder<?, ?> relationBuilder);
+
+    /**
+     * 目标表 query builder
+     * @param relationOperation 是否关联关系操作
+     * @param metadata 当前recordList的元数据
+     * @param relationRecordList 中间表数据
+     * @param operationBuilder 操作构造器包装
+     * @param customBuilder 查询构造器包装
+     * @return 目标表查询构造器
+     */
+    @Nullable
+    Builder<?, ?> prepareTargetBuilder(boolean relationOperation, List<Map<String, Object>> metadata, RecordList<?, ?> relationRecordList,
+        BuilderWrapper<?, ?> operationBuilder, BuilderWrapper<?, ?> customBuilder);
 
     /**
      * 批量关联查询 (目标表)
      * @param relationOperation 是否关联关系操作
-     * @param builderForTarget 目标表查询构造器
+     * @param targetBuilder 目标表查询构造器
      * @param relationRecordList @BelongsToMany 中间表数据
      * @return 查询结果集
      */
-    RecordList<?, ?> dealBatchForTarget(boolean relationOperation, @Nullable Builder<?, ?> builderForTarget, RecordList<?, ?> relationRecordList);
+    RecordList<?, ?> dealBatchForTarget(boolean relationOperation, @Nullable Builder<?, ?> targetBuilder, RecordList<?, ?> relationRecordList);
+
+    /**
+     * 筛选批量关联查询结果
+     * 针对关联关系操作
+     * @param theRecord 当前record
+     * @param targetRecordList 目标的recordList
+     * @param cacheRelationRecordList 结果缓存
+     * @return 关联查询操作的结果
+     */
+    default Map<String, Object> filterBatchRecordByRelationOperation(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
+        Map<String, RecordList<?, ?>> cacheRelationRecordList) {
+        throw new OperationNotSupportedException();
+    }
 
     /**
      * 筛选批量关联查询结果对象
-     * @param relationOperation 是否关联关系操作
      * @param theRecord 当前record
      * @param targetRecordList 目标的recordList
      * @param cacheRelationRecordList 结果缓存
      * @return 筛选后的查询结果集
      */
-    List<Object> filterBatchRecord(boolean relationOperation, Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
+    List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
         Map<String, RecordList<?, ?>> cacheRelationRecordList);
 
     /**

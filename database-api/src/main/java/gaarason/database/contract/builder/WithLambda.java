@@ -3,8 +3,8 @@ package gaarason.database.contract.builder;
 import gaarason.database.appointment.AggregatesType;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
-import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.lang.Nullable;
 
 /**
@@ -51,7 +51,7 @@ public interface WithLambda<T, K> extends With<T, K>, Support<T, K> {
      * @return 关联的Model的查询构造器
      */
     default <F> Builder<T, K> with(ColumnFunctionalInterface<T, F> fieldName,
-        GenerateSqlPartFunctionalInterface<F, ?> builderClosure) {
+        BuilderWrapper<F, ?> builderClosure) {
         return with(lambda2FieldName(fieldName), builderClosure);
     }
 
@@ -63,7 +63,7 @@ public interface WithLambda<T, K> extends With<T, K>, Support<T, K> {
      * @return 关联的Model的查询构造器
      */
     default <F> Builder<T, K> withMany(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
-        GenerateSqlPartFunctionalInterface<F, ?> builderClosure) {
+        BuilderWrapper<F, ?> builderClosure) {
         return withMany(lambda2FieldName(fieldName), builderClosure);
     }
 
@@ -75,7 +75,7 @@ public interface WithLambda<T, K> extends With<T, K>, Support<T, K> {
      * @return 关联的Model的查询构造器
      */
     default <F> Builder<T, K> withMany(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
-        GenerateSqlPartFunctionalInterface<F, ?> builderClosure) {
+        BuilderWrapper<F, ?> builderClosure) {
         return withMany(lambda2FieldName(fieldName), builderClosure);
     }
 
@@ -87,8 +87,8 @@ public interface WithLambda<T, K> extends With<T, K>, Support<T, K> {
      * @return 关联的Model的查询构造器
      */
     default <F> Builder<T, K> with(ColumnFunctionalInterface<T, F> fieldName,
-        GenerateSqlPartFunctionalInterface<F, ?> builderClosure,
-        RelationshipRecordWithFunctionalInterface recordClosure) {
+        BuilderWrapper<F, ?> builderClosure,
+        RecordWrapper recordClosure) {
         return with(lambda2FieldName(fieldName), builderClosure, recordClosure);
     }
 
@@ -101,8 +101,8 @@ public interface WithLambda<T, K> extends With<T, K>, Support<T, K> {
      * @return 关联的Model的查询构造器
      */
     default <F> Builder<T, K> withMany(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
-        GenerateSqlPartFunctionalInterface<F, ?> builderClosure,
-        RelationshipRecordWithFunctionalInterface recordClosure) {
+        BuilderWrapper<F, ?> builderClosure,
+        RecordWrapper recordClosure) {
         return withMany(lambda2FieldName(fieldName), builderClosure, recordClosure);
     }
 
@@ -115,8 +115,8 @@ public interface WithLambda<T, K> extends With<T, K>, Support<T, K> {
      * @return 关联的Model的查询构造器
      */
     default <F> Builder<T, K> withMany(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
-        GenerateSqlPartFunctionalInterface<F, ?> builderClosure,
-        RelationshipRecordWithFunctionalInterface recordClosure) {
+        BuilderWrapper<F, ?> builderClosure,
+        RecordWrapper recordClosure) {
         return withMany(lambda2FieldName(fieldName), builderClosure, recordClosure);
     }
 
@@ -129,8 +129,8 @@ public interface WithLambda<T, K> extends With<T, K>, Support<T, K> {
      * @return 查询构造器
      */
     default <F, FK> Builder<T, K> withOperation(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
-        GenerateSqlPartFunctionalInterface<F, FK> builderClosure) {
-        return withOperation(lambda2FieldName(fieldName), builderClosure);
+        BuilderWrapper<?, ?> operationBuilder, BuilderWrapper<F, FK> builderClosure, ColumnFunctionalInterface.ColumnCollection<T, F> alisaFieldName) {
+        return withOperation(lambda2FieldName(fieldName), operationBuilder, builderClosure, lambda2FieldName(alisaFieldName));
     }
 
     /**
@@ -142,8 +142,8 @@ public interface WithLambda<T, K> extends With<T, K>, Support<T, K> {
      * @return 查询构造器
      */
     default <F, FK> Builder<T, K> withOperation(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
-        GenerateSqlPartFunctionalInterface<F, FK> builderClosure) {
-        return withOperation(lambda2FieldName(fieldName), builderClosure);
+        BuilderWrapper<?, ?> operationBuilder, BuilderWrapper<F, FK> builderClosure, ColumnFunctionalInterface.ColumnArray<T, F> alisaFieldName) {
+        return withOperation(lambda2FieldName(fieldName), operationBuilder, builderClosure, lambda2FieldName(alisaFieldName));
     }
 
 
@@ -159,7 +159,7 @@ public interface WithLambda<T, K> extends With<T, K>, Support<T, K> {
      */
     default <F, FK> Builder<T, K> withAggregate(AggregatesType op,
         ColumnFunctionalInterface.ColumnCollection<T, F> fieldName, ColumnFunctionalInterface<F, FK> column,
-        GenerateSqlPartFunctionalInterface<F, FK> builderClosure,
+        BuilderWrapper<F, FK> builderClosure,
         @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
         return withAggregate(op, lambda2FieldName(fieldName), lambda2ColumnName(column), builderClosure,
             lambda2FieldNameNullable(alisaFieldName));
@@ -167,7 +167,7 @@ public interface WithLambda<T, K> extends With<T, K>, Support<T, K> {
 
     default <F, FK> Builder<T, K> withAggregate(AggregatesType op,
         ColumnFunctionalInterface.ColumnArray<T, F> fieldName, ColumnFunctionalInterface<F, FK> column,
-        GenerateSqlPartFunctionalInterface<F, FK> builderClosure,
+        BuilderWrapper<F, FK> builderClosure,
         @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
         return withAggregate(op, lambda2FieldName(fieldName), lambda2ColumnName(column), builderClosure,
             lambda2FieldNameNullable(alisaFieldName));
@@ -177,7 +177,7 @@ public interface WithLambda<T, K> extends With<T, K>, Support<T, K> {
 
     default <F, FK> Builder<T, K> withCount(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
-        GenerateSqlPartFunctionalInterface<F, FK> builderClosure,
+        BuilderWrapper<F, FK> builderClosure,
         @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
         return withAggregate(AggregatesType.count, lambda2FieldName(fieldName), lambda2ColumnName(column),
             builderClosure, lambda2FieldNameNullable(alisaFieldName));
@@ -190,191 +190,191 @@ public interface WithLambda<T, K> extends With<T, K>, Support<T, K> {
     default <F, FK> Builder<T, K> withCount(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column) {
         return withCount(lambda2FieldName(fieldName), lambda2ColumnName(column),
-            GenerateSqlPartFunctionalInterface.empty(), null);
+            BuilderWrapper.empty(), null);
     }
 
     default <F, FK> Builder<T, K> withCount(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> alisaFieldName) {
         return withCount(lambda2FieldName(fieldName), lambda2ColumnName(column),
-            GenerateSqlPartFunctionalInterface.empty(), lambda2FieldName(alisaFieldName));
+            BuilderWrapper.empty(), lambda2FieldName(alisaFieldName));
     }
 
     // ------------ withCount ColumnArray ------------ //
 
     default <F, FK> Builder<T, K> withCount(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
-        GenerateSqlPartFunctionalInterface<F, FK> builderClosure,
+        BuilderWrapper<F, FK> builderClosure,
         @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
         return withAggregate(AggregatesType.count, lambda2FieldName(fieldName), lambda2ColumnName(column),
             builderClosure, lambda2FieldNameNullable(alisaFieldName));
     }
 
     default <F, FK> Builder<T, K> withCount(ColumnFunctionalInterface.ColumnArray<T, F> fieldName) {
-        return withCount(lambda2FieldName(fieldName), "*", GenerateSqlPartFunctionalInterface.empty(), null);
+        return withCount(lambda2FieldName(fieldName), "*", BuilderWrapper.empty(), null);
     }
 
     default <F, FK> Builder<T, K> withCount(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column) {
         return withCount(lambda2FieldName(fieldName), lambda2ColumnName(column),
-            GenerateSqlPartFunctionalInterface.empty(), null);
+            BuilderWrapper.empty(), null);
     }
 
     default <F, FK> Builder<T, K> withCount(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> alisaFieldName) {
         return withCount(lambda2FieldName(fieldName), lambda2ColumnName(column),
-            GenerateSqlPartFunctionalInterface.empty(), lambda2FieldName(alisaFieldName));
+            BuilderWrapper.empty(), lambda2FieldName(alisaFieldName));
     }
 
     // ------------ withMax ColumnCollection ------------ //
 
     default <F, FK> Builder<T, K> withMax(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
-        GenerateSqlPartFunctionalInterface<F, FK> builderClosure,
+        BuilderWrapper<F, FK> builderClosure,
         @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
         return withAggregate(AggregatesType.max, fieldName, column, builderClosure, alisaFieldName);
     }
 
     default <F, FK> Builder<T, K> withMax(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column) {
-        return withMax(fieldName, column, GenerateSqlPartFunctionalInterface.empty(), null);
+        return withMax(fieldName, column, BuilderWrapper.empty(), null);
     }
 
     default <F, FK> Builder<T, K> withMax(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withMax(fieldName, column, GenerateSqlPartFunctionalInterface.empty(), alisaFieldName);
+        return withMax(fieldName, column, BuilderWrapper.empty(), alisaFieldName);
     }
 
     // ------------ withMax ColumnArray ------------ //
 
     default <F, FK> Builder<T, K> withMax(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
-        GenerateSqlPartFunctionalInterface<F, FK> builderClosure,
+        BuilderWrapper<F, FK> builderClosure,
         @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
         return withAggregate(AggregatesType.max, fieldName, column, builderClosure, alisaFieldName);
     }
 
     default <F, FK> Builder<T, K> withMax(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column) {
-        return withMax(fieldName, column, GenerateSqlPartFunctionalInterface.empty(), null);
+        return withMax(fieldName, column, BuilderWrapper.empty(), null);
     }
 
     default <F, FK> Builder<T, K> withMax(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withMax(fieldName, column, GenerateSqlPartFunctionalInterface.empty(), alisaFieldName);
+        return withMax(fieldName, column, BuilderWrapper.empty(), alisaFieldName);
     }
 
     // ------------ withMin ColumnCollection ------------ //
 
     default <F, FK> Builder<T, K> withMin(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
-        GenerateSqlPartFunctionalInterface<F, FK> builderClosure,
+        BuilderWrapper<F, FK> builderClosure,
         @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
         return withAggregate(AggregatesType.min, fieldName, column, builderClosure, alisaFieldName);
     }
 
     default <F, FK> Builder<T, K> withMin(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column) {
-        return withMin(fieldName, column, GenerateSqlPartFunctionalInterface.empty(), null);
+        return withMin(fieldName, column, BuilderWrapper.empty(), null);
     }
 
     default <F, FK> Builder<T, K> withMin(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withMin(fieldName, column, GenerateSqlPartFunctionalInterface.empty(), alisaFieldName);
+        return withMin(fieldName, column, BuilderWrapper.empty(), alisaFieldName);
     }
 
     // ------------ withMin ColumnArray ------------ //
 
     default <F, FK> Builder<T, K> withMin(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
-        GenerateSqlPartFunctionalInterface<F, FK> builderClosure,
+        BuilderWrapper<F, FK> builderClosure,
         @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
         return withAggregate(AggregatesType.min, fieldName, column, builderClosure, alisaFieldName);
     }
 
     default <F, FK> Builder<T, K> withMin(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column) {
-        return withMin(fieldName, column, GenerateSqlPartFunctionalInterface.empty(), null);
+        return withMin(fieldName, column, BuilderWrapper.empty(), null);
     }
 
     default <F, FK> Builder<T, K> withMin(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withMin(fieldName, column, GenerateSqlPartFunctionalInterface.empty(), alisaFieldName);
+        return withMin(fieldName, column, BuilderWrapper.empty(), alisaFieldName);
     }
 
     // ------------ withMin ColumnCollection ------------ //
 
     default <F, FK> Builder<T, K> withAvg(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
-        GenerateSqlPartFunctionalInterface<F, FK> builderClosure,
+        BuilderWrapper<F, FK> builderClosure,
         @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
         return withAggregate(AggregatesType.avg, fieldName, column, builderClosure, alisaFieldName);
     }
 
     default <F, FK> Builder<T, K> withAvg(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column) {
-        return withAvg(fieldName, column, GenerateSqlPartFunctionalInterface.empty(), null);
+        return withAvg(fieldName, column, BuilderWrapper.empty(), null);
     }
 
     default <F, FK> Builder<T, K> withAvg(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withAvg(fieldName, column, GenerateSqlPartFunctionalInterface.empty(), alisaFieldName);
+        return withAvg(fieldName, column, BuilderWrapper.empty(), alisaFieldName);
     }
 
     // ------------ withMin ColumnArray ------------ //
 
     default <F, FK> Builder<T, K> withAvg(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
-        GenerateSqlPartFunctionalInterface<F, FK> builderClosure,
+        BuilderWrapper<F, FK> builderClosure,
         @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
         return withAggregate(AggregatesType.avg, fieldName, column, builderClosure, alisaFieldName);
     }
 
     default <F, FK> Builder<T, K> withAvg(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column) {
-        return withAvg(fieldName, column, GenerateSqlPartFunctionalInterface.empty(), null);
+        return withAvg(fieldName, column, BuilderWrapper.empty(), null);
     }
 
     default <F, FK> Builder<T, K> withAvg(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withAvg(fieldName, column, GenerateSqlPartFunctionalInterface.empty(), alisaFieldName);
+        return withAvg(fieldName, column, BuilderWrapper.empty(), alisaFieldName);
     }
 
     // ------------ withMin ColumnCollection ------------ //
 
     default <F, FK> Builder<T, K> withSum(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
-        GenerateSqlPartFunctionalInterface<F, FK> builderClosure,
+        BuilderWrapper<F, FK> builderClosure,
         @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
         return withAggregate(AggregatesType.sum, fieldName, column, builderClosure, alisaFieldName);
     }
 
     default <F, FK> Builder<T, K> withSum(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column) {
-        return withSum(fieldName, column, GenerateSqlPartFunctionalInterface.empty(), null);
+        return withSum(fieldName, column, BuilderWrapper.empty(), null);
     }
 
     default <F, FK> Builder<T, K> withSum(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column, @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withSum(fieldName, column, GenerateSqlPartFunctionalInterface.empty(), alisaFieldName);
+        return withSum(fieldName, column, BuilderWrapper.empty(), alisaFieldName);
     }
 
     // ------------ withMin ColumnArray ------------ //
 
     default <F, FK> Builder<T, K> withSum(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
-        GenerateSqlPartFunctionalInterface<F, FK> builderClosure,
+        BuilderWrapper<F, FK> builderClosure,
         @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
         return withAggregate(AggregatesType.sum, fieldName, column, builderClosure, alisaFieldName);
     }
 
     default <F, FK> Builder<T, K> withSum(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column) {
-        return withSum(fieldName, column, GenerateSqlPartFunctionalInterface.empty(), null);
+        return withSum(fieldName, column, BuilderWrapper.empty(), null);
     }
 
     default <F, FK> Builder<T, K> withSum(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column, @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withSum(fieldName, column, GenerateSqlPartFunctionalInterface.empty(), alisaFieldName);
+        return withSum(fieldName, column, BuilderWrapper.empty(), alisaFieldName);
     }
 
 }

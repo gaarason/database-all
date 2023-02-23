@@ -3,10 +3,12 @@ package gaarason.database.eloquent.relation;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
+import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.core.Container;
 import gaarason.database.eloquent.RecordListBean;
+import gaarason.database.exception.OperationNotSupportedException;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.FieldMember;
@@ -40,14 +42,16 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
 
     /**
      * 将数据源中的某一列,转化为可以使用 where in 查询的 set
-     * @param columnValueMapList 数据源
+     * @param metadata 数据源
      * @param column 目标列
      * @return 目标列的集合
      */
-    protected static Set<Object> getColumnInMapList(List<Map<String, Object>> columnValueMapList, String column) {
+    protected static Set<Object> getColumnInMapList(List<Map<String, Object>> metadata, String column) {
         Set<Object> result = new HashSet<>();
-        for (Map<String, Object> stringColumnMap : columnValueMapList) {
-            result.add(stringColumnMap.get(column));
+        for (Map<String, Object> stringColumnMap : metadata) {
+            if (stringColumnMap.containsKey(column)) {
+                result.add(stringColumnMap.get(column));
+            }
         }
         return result;
     }
@@ -60,11 +64,12 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @param morphValue 多态value
      * @return 目标列的集合
      */
-    protected static Set<Object> getColumnInMapList(List<Map<String, Object>> columnValueMapList, String column, String morphKey, String morphValue) {
+    protected static Set<Object> getColumnInMapList(List<Map<String, Object>> columnValueMapList, String column,
+        String morphKey, String morphValue) {
         Set<Object> result = new HashSet<>();
         for (Map<String, Object> stringColumnMap : columnValueMapList) {
             Object mKeyValue = stringColumnMap.get(morphKey);
-            if(mKeyValue != null && mKeyValue.equals(morphValue)){
+            if (mKeyValue != null && mKeyValue.equals(morphValue)) {
                 result.add(stringColumnMap.get(column));
             }
         }
@@ -72,15 +77,9 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
     }
 
     @Override
-    public RecordList<?, ?> dealBatchForRelation(@Nullable Builder<?, ?> builderForRelation) {
+    public RecordList<?, ?> dealBatchForRelation(@Nullable Builder<?, ?> relationBuilder) {
         return new RecordListBean<>(getContainer());
     }
-
-    /**
-     * 容器
-     * @return 容器
-     */
-    protected abstract Container getContainer();
 
     /**
      * 集合兼容处理
@@ -151,7 +150,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      */
     protected List<Object> findObjList(List<?> relationshipObjectList, String columnName, Object fieldTargetValue) {
         List<Object> objectList = new ArrayList<>();
-        if(ObjectUtils.isEmpty(relationshipObjectList)){
+        if (ObjectUtils.isEmpty(relationshipObjectList)) {
             // 不建议使用 Collections.emptyList()
             return objectList;
         }
@@ -180,19 +179,20 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @param fieldTargetValue 对象的属性的目标值
      * @return 对象列表
      */
-    protected List<Object> findObj(List<Map<String, Object>> relationshipObjectList, String columnName, Object fieldTargetValue) {
-        List<Object> objectList = new ArrayList<>();
-        if(ObjectUtils.isEmpty(relationshipObjectList)){
-            // 不建议使用 Collections.emptyList()
-            return objectList;
+    protected Map<String, Object> findObj(List<Map<String, Object>> relationshipObjectList, String columnName,
+        Object fieldTargetValue) {
+
+        if (ObjectUtils.isEmpty(relationshipObjectList)) {
+            return Collections.emptyMap();
         }
 
+        // 关系键对应关系
         for (Map<String, Object> map : relationshipObjectList) {
-            if( ObjectUtils.nullSafeEquals(map.get(columnName), fieldTargetValue)){
-                objectList.add(map);
+            if (ObjectUtils.nullSafeEquals(map.get(columnName), fieldTargetValue)) {
+                return map;
             }
         }
 
-        return objectList;
+        return Collections.emptyMap();
     }
 }

@@ -12,13 +12,13 @@ import java.io.Serializable;
  * @author xt
  */
 @FunctionalInterface
-public interface GenerateSqlPartFunctionalInterface<T, K> extends Serializable {
+public interface BuilderWrapper<T, K> extends Serializable {
 
     /**
      * 通用空实现
      */
     @SuppressWarnings("rawtypes")
-    GenerateSqlPartFunctionalInterface EMPTY = builder -> builder;
+    BuilderWrapper EMPTY = builder -> builder;
 
     /**
      * 生成代码片段
@@ -34,7 +34,7 @@ public interface GenerateSqlPartFunctionalInterface<T, K> extends Serializable {
      * @return 生成代码片段
      */
     @SuppressWarnings("unchecked")
-    static <TT, KK> GenerateSqlPartFunctionalInterface<TT, KK> empty() {
-        return (GenerateSqlPartFunctionalInterface<TT, KK>) EMPTY;
+    static <TT, KK> BuilderWrapper<TT, KK> empty() {
+        return (BuilderWrapper<TT, KK>) EMPTY;
     }
 }

@@ -2,8 +2,6 @@ package gaarason.database.contract.query;
 
 import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.eloquent.Record;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
-import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.lang.Nullable;
 
@@ -186,6 +184,10 @@ public interface Grammar {
         public SQLPartInfo(String sqlString, @Nullable Collection<Object> parameters) {
             this.sqlString = sqlString;
             this.parameters = parameters;
+        }
+
+        public SQLPartInfo(String sqlString) {
+            this(sqlString, null);
         }
 
         public String getSqlString() {

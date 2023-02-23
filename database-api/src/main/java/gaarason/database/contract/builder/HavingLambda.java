@@ -2,7 +2,7 @@ package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.lang.Nullable;
 
 import java.util.Arrays;
@@ -197,7 +197,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @return 查询构造器
      */
     default <F> Builder<T, K> havingSubQuery(ColumnFunctionalInterface<T, F> column, String symbol,
-        GenerateSqlPartFunctionalInterface<T, K> closure) {
+        BuilderWrapper<T, K> closure) {
         return havingSubQuery(lambda2ColumnName(column), symbol, closure);
     }
 
@@ -264,7 +264,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @return 查询构造器
      */
     default <F> Builder<T, K> havingIn(ColumnFunctionalInterface<T, F> column,
-        GenerateSqlPartFunctionalInterface<T, K> closure) {
+        BuilderWrapper<T, K> closure) {
         return havingIn(lambda2ColumnName(column), closure);
     }
 
@@ -332,7 +332,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @return 查询构造器
      */
     default <F> Builder<T, K> havingNotIn(ColumnFunctionalInterface<T, F> column,
-        GenerateSqlPartFunctionalInterface<T, K> closure) {
+        BuilderWrapper<T, K> closure) {
         return havingNotIn(lambda2ColumnName(column), closure);
     }
 

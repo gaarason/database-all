@@ -1,8 +1,8 @@
 package gaarason.database.contract.record;
 
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
-import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.contract.function.RecordWrapper;
 
 /**
  * 关联关系
@@ -26,7 +26,7 @@ public interface RelationshipList<T, K> {
      * @param builderClosure 所关联的Model的查询构造器约束
      * @return 关联的Model的查询构造器
      */
-    RecordList<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure);
+    RecordList<T, K> with(String fieldName, BuilderWrapper<?, ?> builderClosure);
 
     /**
      * 渴求式关联
@@ -35,6 +35,6 @@ public interface RelationshipList<T, K> {
      * @param recordClosure 所关联的Model的再一级关联
      * @return 关联的Model的查询构造器
      */
-    RecordList<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
-        RelationshipRecordWithFunctionalInterface recordClosure);
+    RecordList<T, K> with(String fieldName, BuilderWrapper<?, ?> builderClosure,
+        RecordWrapper recordClosure);
 }

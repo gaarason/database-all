@@ -6,13 +6,14 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.core.Container;
 import gaarason.database.eloquent.relation.BaseRelationSubQuery;
 import gaarason.database.eloquent.relation.HasOneOrManyQueryRelation;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.support.RecordFactory;
 import gaarason.database.test.models.relation.model.RelationshipStudentTeacherModel;
 import gaarason.database.test.models.relation.pojo.base.BaseEntity;
 import gaarason.database.util.ObjectUtils;
@@ -126,22 +127,24 @@ public class Student extends BaseEntity implements Serializable {
         }
 
         @Override
-        public Builder<?, ?>[] prepareBuilderArr(boolean relationOperation, List<Map<String, Object>> originalMetadataMapList,
-            GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart) {
-            return new Builder<?, ?>[]{null,
-                generateSqlPart.execute(ObjectUtils.typeCast(hasOneTemplate.sonModel.newQuery())).whereIn(
-                    hasOneTemplate.sonModelForeignKey,
-                    getColumnInMapList(originalMetadataMapList, hasOneTemplate.localModelLocalKey))};
+        public Builder<?, ?> prepareTargetBuilder(boolean relationOperation, List<Map<String, Object>> metadata, RecordList<?, ?> relationRecordList,
+            BuilderWrapper<?, ?> operationBuilder, BuilderWrapper<?, ?> customBuilder) {
+            return customBuilder.execute(ObjectUtils.typeCast(hasOneTemplate.sonModel.newQuery())).whereIn(
+                hasOneTemplate.sonModelForeignKey,
+                getColumnInMapList(metadata, hasOneTemplate.localModelLocalKey));
         }
 
         @Override
-        public RecordList<?, ?> dealBatchForTarget(boolean relationOperation, Builder<?, ?> builderForTarget,
+        public RecordList<?, ?> dealBatchForTarget(boolean relationOperation, @Nullable Builder<?, ?> targetBuilder,
             RecordList<?, ?> relationRecordList) {
-            return hasOneTemplate.sonModel.newQuery().setBuilder(ObjectUtils.typeCast(builderForTarget)).get();
+            if (targetBuilder == null) {
+                return RecordFactory.newRecordList(getContainer());
+            }
+            return hasOneTemplate.sonModel.newQuery().setBuilder(ObjectUtils.typeCast(targetBuilder)).get();
         }
 
         @Override
-        public List<Object> filterBatchRecord(boolean relationOperation, Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
+        public List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
             Map<String, RecordList<?, ?>> cacheRelationRecordList) {
             // 子表的外键字段名
             String column = hasOneTemplate.sonModelForeignKey;
@@ -293,7 +296,7 @@ public class Student extends BaseEntity implements Serializable {
         }
 
         @Override
-        protected Container getContainer() {
+        public Container getContainer() {
             return hasOneTemplate.sonModel.getGaarasonDataSource().getContainer();
         }
 

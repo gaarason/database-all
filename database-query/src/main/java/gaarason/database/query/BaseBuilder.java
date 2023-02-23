@@ -8,12 +8,13 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
-import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.contract.function.TransactionFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.core.Container;
 import gaarason.database.exception.AbnormalParameterException;
+import gaarason.database.exception.AggregatesNotSupportedGroupException;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
@@ -27,7 +28,6 @@ import gaarason.database.util.StringUtils;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -154,7 +154,7 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
      */
     @Override
     public Builder<T, K> with(String fieldName) {
-        return with(fieldName, GenerateSqlPartFunctionalInterface.empty(), RelationshipRecordWithFunctionalInterface.empty());
+        return with(fieldName, BuilderWrapper.empty(), RecordWrapper.empty());
     }
 
     /**
@@ -164,8 +164,8 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
      * @return 关联的Model的查询构造器
      */
     @Override
-    public <F> Builder<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<F, ?> builderClosure) {
-        return with(fieldName, builderClosure, RelationshipRecordWithFunctionalInterface.empty());
+    public <F> Builder<T, K> with(String fieldName, BuilderWrapper<F, ?> builderClosure) {
+        return with(fieldName, builderClosure, RecordWrapper.empty());
     }
 
     /**
@@ -176,43 +176,31 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
      * @return 关联的Model的查询构造器
      */
     @Override
-    public <F> Builder<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<F, ?> builderClosure,
-        RelationshipRecordWithFunctionalInterface recordClosure) {
-        grammar.pushRelation(fieldName, new Record.Relation(fieldName, false, builderClosure, recordClosure));
+    public <F> Builder<T, K> with(String fieldName, BuilderWrapper<F, ?> builderClosure,
+        RecordWrapper recordClosure) {
+        grammar.pushRelation(fieldName, new Record.Relation(fieldName, builderClosure, recordClosure));
         return this;
     }
 
     @Override
-    public Builder<T, K> withOperation(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure) {
-        return null;
+    public Builder<T, K> withOperation(String fieldName, BuilderWrapper<?, ?> operationBuilder, BuilderWrapper<?, ?> customBuilder, String alisaFieldName) {
+        grammar.pushRelation(alisaFieldName, new Record.Relation(fieldName, operationBuilder, customBuilder, RecordWrapper.empty()));
+        return this;
     }
 
     @Override
     public Builder<T, K> withAggregate(AggregatesType op, String fieldName, String column,
-        GenerateSqlPartFunctionalInterface<?, ?> builderClosure, @Nullable String alisaFieldName) {
+        BuilderWrapper<?, ?> customBuilder, @Nullable String alisaFieldName) {
 
         // 别名
         String alisaField = alisaFieldName != null ? alisaFieldName : StringUtils.lineToHump(fieldName + "_" + op + "_" + column);
 
-        GenerateSqlPartFunctionalInterface<Object, Object> generateSqlPartFunctionalInterface = builder -> {
-            Builder<?, ?> builder1 = builderClosure.execute(ObjectUtils.typeCast(builder));
-            Grammar grammar = builder1.getGrammar();
-            // todo check
-            if (!grammar.isEmpty(Grammar.SQLPartType.GROUP)) {
-                String tableAlias = StringUtils.getRandomString(6);
-
-                if (grammar.isEmpty(Grammar.SQLPartType.SELECT)) {
-                    Grammar.SQLPartInfo groupInfo = grammar.get(Grammar.SQLPartType.GROUP);
-                    builder1.selectRaw(groupInfo.getSqlString(), groupInfo.getParameters());
-                }
-                model.newQuery().from(tableAlias + "sub", subBuilder -> ObjectUtils.typeCast(builder1));
-            }
+        // 操作查询构造器
+        BuilderWrapper<Object, Object> operationBuilder = builder -> {
             return builder.selectFunction(op.toString(), column, alisaField);
         };
 
-        grammar.pushRelation(alisaField, new Record.Relation(fieldName, true, generateSqlPartFunctionalInterface, RelationshipRecordWithFunctionalInterface.empty()));
-
-        return this;
+        return withOperation(fieldName,  operationBuilder, customBuilder, alisaField);
     }
 
 

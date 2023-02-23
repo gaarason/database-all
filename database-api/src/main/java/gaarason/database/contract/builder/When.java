@@ -1,7 +1,7 @@
 package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
 
 /**
  * 条件子句
@@ -17,7 +17,7 @@ public interface When<T, K> {
      * @param closure 查询构造
      * @return 查询构造器
      */
-    Builder<T, K> when(boolean condition, GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> when(boolean condition, BuilderWrapper<T, K> closure);
 
     /**
      * 当condition==true时, 执行closureIfTrue, 反之执行closureIfFalse
@@ -26,8 +26,8 @@ public interface When<T, K> {
      * @param closureIfFalse 查询构造
      * @return 查询构造器
      */
-    Builder<T, K> when(boolean condition, GenerateSqlPartFunctionalInterface<T, K> closureIfTrue,
-        GenerateSqlPartFunctionalInterface<T, K> closureIfFalse);
+    Builder<T, K> when(boolean condition, BuilderWrapper<T, K> closureIfTrue,
+        BuilderWrapper<T, K> closureIfFalse);
 
 
 }

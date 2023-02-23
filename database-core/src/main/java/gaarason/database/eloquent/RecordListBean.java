@@ -5,8 +5,8 @@ import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.FilterRecordAttributeFunctionalInterface;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
-import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.core.Container;
 import gaarason.database.exception.AbnormalParameterException;
 import gaarason.database.exception.NoSuchAlgorithmException;
@@ -85,7 +85,7 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
     }
 
     @Override
-    public List<Map<String, Object>> getOriginalMetadataMapList() {
+    public List<Map<String, Object>> getMetadata() {
         List<Map<String, Object>> metadataMapList = new ArrayList<>();
         for (Record<T, K> tkRecord : this) {
             metadataMapList.add(tkRecord.getMetadataMap());
@@ -155,7 +155,7 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
      */
     @Override
     public List<Map<String, Object>> toMapList() {
-        List<Map<String, Object>> list = new ArrayList<>();
+        List<Map<String, Object>> list = new ArrayList<>(this.size());
         for (Record<T, K> theRecord : this) {
             list.add(theRecord.toMap());
         }
@@ -209,13 +209,13 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
     }
 
     @Override
-    public RecordListBean<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure) {
+    public RecordListBean<T, K> with(String fieldName, BuilderWrapper<?, ?> builderClosure) {
         return with(fieldName, builderClosure, theRecord -> theRecord);
     }
 
     @Override
-    public RecordListBean<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
-        RelationshipRecordWithFunctionalInterface recordClosure) {
+    public RecordListBean<T, K> with(String fieldName, BuilderWrapper<?, ?> builderClosure,
+        RecordWrapper recordClosure) {
         String[] columnArr = fieldName.split("\\.");
         // 快捷类型
         if (columnArr.length > 1) {
@@ -227,7 +227,7 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
         for (Record<T, K> tkRecord : this) {
             // 赋值关联关系过滤
             // 保持引用
-            tkRecord.getRelationMap().put(fieldName, new Record.Relation(fieldName, false, builderClosure, recordClosure));
+            tkRecord.getRelationMap().put(fieldName, new Record.Relation(fieldName, builderClosure, recordClosure));
         }
         return this;
     }

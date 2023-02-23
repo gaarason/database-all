@@ -29,7 +29,7 @@ public abstract class ExecuteLevel1Builder<T, K> extends BaseBuilder<T, K> {
         relationMap.forEach((k, v) -> {
             if (!v.relationOperation) {
                 // 关联关系属性
-                record.with(k, v.sqlPartFunctionalInterface, v.relationshipRecordWithFunctionalInterface);
+                record.with(k, v.customBuilder, v.recordWrapper);
             } else {
                 // 关联关系操作属性
                 record.getRelationMap().put(k, v);
@@ -46,7 +46,7 @@ public abstract class ExecuteLevel1Builder<T, K> extends BaseBuilder<T, K> {
         relationMap.forEach((k, v) -> {
             if (!v.relationOperation) {
                 // 关联关系属性
-                records.with(k, v.sqlPartFunctionalInterface, v.relationshipRecordWithFunctionalInterface);
+                records.with(k, v.customBuilder, v.recordWrapper);
             } else {
                 // 关联关系操作属性
                 for (Record<T, K> record : records) {

@@ -1,7 +1,7 @@
 package gaarason.database.contract.eloquent;
 
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
-import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.contract.record.Friendly;
 import gaarason.database.contract.record.OperationLambda;
 import gaarason.database.contract.record.RelationshipLambda;
@@ -123,22 +123,38 @@ public interface Record<T, K> extends Friendly<T, K>, OperationLambda<T, K>,
         final public String relationFieldName;
 
         /**
+         * 操作构造器包装
+         */
+        final public BuilderWrapper<?, ?> operationBuilder;
+
+        /**
          * 查询构造器包装
          */
-        final public GenerateSqlPartFunctionalInterface<?, ?> sqlPartFunctionalInterface;
+        final public BuilderWrapper<?, ?> customBuilder;
 
         /**
          * 查询结果集包装
          */
-        final public RelationshipRecordWithFunctionalInterface relationshipRecordWithFunctionalInterface;
+        final public RecordWrapper recordWrapper;
 
-        public Relation(String relationFieldName, boolean relationOperation,
-            GenerateSqlPartFunctionalInterface<?, ?> sqlPartFunctionalInterface,
-            RelationshipRecordWithFunctionalInterface relationshipRecordWithFunctionalInterface) {
-            this.relationOperation = relationOperation;
+        public Relation(String relationFieldName, BuilderWrapper<?, ?> operationBuilder,
+            BuilderWrapper<?, ?> customBuilder,
+            RecordWrapper recordWrapper) {
+            this.relationOperation = true;
+            this.operationBuilder = operationBuilder;
             this.relationFieldName = relationFieldName;
-            this.sqlPartFunctionalInterface = sqlPartFunctionalInterface;
-            this.relationshipRecordWithFunctionalInterface = relationshipRecordWithFunctionalInterface;
+            this.customBuilder = customBuilder;
+            this.recordWrapper = recordWrapper;
+        }
+
+        public Relation(String relationFieldName,
+            BuilderWrapper<?, ?> customBuilder,
+            RecordWrapper recordWrapper) {
+            this.relationOperation = false;
+            this.operationBuilder = BuilderWrapper.empty();
+            this.relationFieldName = relationFieldName;
+            this.customBuilder = customBuilder;
+            this.recordWrapper = recordWrapper;
         }
     }
 }

@@ -1,6 +1,5 @@
 package gaarason.database.test.parent;
 
-import gaarason.database.appointment.AggregatesType;
 import gaarason.database.appointment.OrderBy;
 import gaarason.database.appointment.Paginate;
 import gaarason.database.contract.connection.GaarasonDataSource;
@@ -1394,10 +1393,71 @@ abstract public class RelationTests extends BaseTests {
     }
 
     @Test
-    public void count(){
+    public void count_hasOneOrMany(){
+        List<Teacher> teachers = teacherModel.newQuery()
+            .whereIn(Teacher::getId, 1, 2, 6)
+            .orderBy(Teacher::getId)
+            .withCount(Teacher::getStudents)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(3, teachers.size());
+        Assert.assertEquals(2, teachers.get(0).getStudentsCount().intValue());
+        Assert.assertEquals(2, teachers.get(1).getStudentsCount().intValue());
+        Assert.assertEquals(4, teachers.get(2).getStudentsCount().intValue());
+
         Teacher teacher = teacherModel.newQuery().withCount(Teacher::getStudents).findOrFail(1).toObject();
         Assert.assertNotNull(teacher.getStudentsCount());
         Assert.assertEquals(2, teacher.getStudentsCount().intValue());
+
+        Teacher teacher1 = teacherModel.newQuery().withCount(Teacher::getStudents).findOrFail(6).toObject();
+        Assert.assertNotNull(teacher1.getStudentsCount());
+        Assert.assertEquals(4, teacher1.getStudentsCount().intValue());
+
+        // 指定统计的字段(属性)，以及别名(属性)
+        Teacher teacher2 = teacherModel.newQuery().withCount(Teacher::getStudents, Student::getId, Teacher::getStudentsCount).findOrFail(6).toObject();
+        Assert.assertNotNull(teacher2.getStudentsCount());
+        Assert.assertEquals(4, teacher2.getStudentsCount().intValue());
+
+        // 附带自定义查询
+        Teacher teacher3 = teacherModel.newQuery().withCount(Teacher::getStudents, Student::getId, builder -> builder.where(Student::getSex, 2), Teacher::getStudentsCount).findOrFail(6).toObject();
+        Assert.assertNotNull(teacher3.getStudentsCount());
+        Assert.assertEquals(3, teacher3.getStudentsCount().intValue());
+
+//        // 附带自定义统计
+//        Teacher teacher4 = teacherModel.newQuery().withCount(Teacher::getStudents, Student::getId, builder -> builder.group(Student::getSex), Teacher::getStudentsCount).findOrFail(6).toObject();
+//        Assert.assertNotNull(teacher4.getStudentsCount());
+//        Assert.assertEquals(2, teacher4.getStudentsCount().intValue());
+    }
+
+    @Test
+    public void count_belongsToMany(){
+        List<Teacher> teachers = teacherModel.newQuery()
+            .whereIn(Teacher::getId, 1, 6)
+            .withCount(Teacher::getStudentsBelongsToMany, Student::getId, Teacher::getStudentsCount)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(2, teachers.size());
+        Assert.assertEquals(3, teachers.get(0).getStudentsCount().intValue());
+        Assert.assertEquals(6, teachers.get(1).getStudentsCount().intValue());
+
+        Teacher teacher = teacherModel.newQuery().withCount(Teacher::getStudentsBelongsToMany).findOrFail(1).toObject();
+        Assert.assertNotNull(teacher.getStudentsBelongsToManyCount());
+        Assert.assertEquals(3, teacher.getStudentsBelongsToManyCount().intValue());
+
+        Teacher teacher1 = teacherModel.newQuery().withCount(Teacher::getStudentsBelongsToMany).findOrFail(6).toObject();
+        Assert.assertNotNull(teacher1.getStudentsBelongsToManyCount());
+        Assert.assertEquals(6, teacher1.getStudentsBelongsToManyCount().intValue());
+
+        // 指定统计的字段(属性)，以及别名(属性)
+        Teacher teacher2 = teacherModel.newQuery().withCount(Teacher::getStudentsBelongsToMany, Student::getId, Teacher::getStudentsCount).findOrFail(6).toObject();
+        Assert.assertNotNull(teacher2.getStudentsCount());
+        Assert.assertEquals(6, teacher2.getStudentsCount().intValue());
+
+        // 附带自定义查询
+        Teacher teacher3 = teacherModel.newQuery().withCount(Teacher::getStudentsBelongsToMany, Student::getId, builder -> builder.where(Student::getSex, 2), Teacher::getStudentsCount).findOrFail(6).toObject();
+        Assert.assertNotNull(teacher3.getStudentsCount());
+        Assert.assertEquals(2, teacher3.getStudentsCount().intValue());
+
     }
 
     @Test

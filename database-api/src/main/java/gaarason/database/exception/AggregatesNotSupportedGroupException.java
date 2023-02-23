@@ -8,6 +8,9 @@ import gaarason.database.exception.base.BaseException;
  */
 public class AggregatesNotSupportedGroupException extends BaseException {
 
+    public AggregatesNotSupportedGroupException() {
+        super();
+    }
     public AggregatesNotSupportedGroupException(String message) {
         super(message);
     }

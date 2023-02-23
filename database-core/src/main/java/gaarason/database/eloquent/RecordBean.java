@@ -1,6 +1,5 @@
 package gaarason.database.eloquent;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
 import gaarason.database.appointment.EntityUseType;
 import gaarason.database.appointment.ValueWrapper;
 import gaarason.database.contract.eloquent.Model;
@@ -8,8 +7,8 @@ import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.extra.Bind;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
-import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.core.Container;
 import gaarason.database.eloquent.record.BindBean;
 import gaarason.database.exception.EntityAttributeInvalidException;
@@ -272,13 +271,13 @@ public class RecordBean<T, K> implements Record<T, K> {
     }
 
     @Override
-    public Record<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure) {
+    public Record<T, K> with(String fieldName, BuilderWrapper<?, ?> builderClosure) {
         return with(fieldName, builderClosure, theRecord -> theRecord);
     }
 
     @Override
-    public Record<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
-        RelationshipRecordWithFunctionalInterface recordClosure) {
+    public Record<T, K> with(String fieldName, BuilderWrapper<?, ?> builderClosure,
+        RecordWrapper recordClosure) {
         // 效验参数
         if (!ObjectUtils.checkProperties(entityClass, fieldName)) {
             throw new RelationNotFoundException(fieldName, entityClass);
@@ -293,7 +292,7 @@ public class RecordBean<T, K> implements Record<T, K> {
                 thrRecord -> thrRecord.with(lastLevelColumn, ObjectUtils.typeCast(builderClosure), recordClosure));
         }
 
-        relationMap.put(fieldName, new Relation(fieldName, false, builderClosure, recordClosure));
+        relationMap.put(fieldName, new Relation(fieldName, builderClosure, recordClosure));
 
         return this;
     }

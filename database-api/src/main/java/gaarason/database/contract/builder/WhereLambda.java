@@ -2,7 +2,7 @@ package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.lang.Nullable;
 
 import java.util.Arrays;
@@ -186,7 +186,7 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * @return 查询构造器
      */
     default <F> Builder<T, K> whereSubQuery(ColumnFunctionalInterface<T, F> column, String symbol,
-        GenerateSqlPartFunctionalInterface<T, K> closure) {
+        BuilderWrapper<T, K> closure) {
         return whereSubQuery(lambda2ColumnName(column), symbol, closure);
     }
 
@@ -253,7 +253,7 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * @return 查询构造器
      */
     default <F> Builder<T, K> whereIn(ColumnFunctionalInterface<T, F> column,
-        GenerateSqlPartFunctionalInterface<T, K> closure) {
+        BuilderWrapper<T, K> closure) {
         return whereIn(lambda2ColumnName(column), closure);
     }
 
@@ -321,7 +321,7 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * @return 查询构造器
      */
     default <F> Builder<T, K> whereNotIn(ColumnFunctionalInterface<T, F> column,
-        GenerateSqlPartFunctionalInterface<T, K> closure) {
+        BuilderWrapper<T, K> closure) {
         return whereNotIn(lambda2ColumnName(column), closure);
     }
 

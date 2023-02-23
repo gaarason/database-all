@@ -10,12 +10,12 @@ import java.io.Serializable;
  * @author xt
  */
 @FunctionalInterface
-public interface RelationshipRecordWithFunctionalInterface extends Serializable {
+public interface RecordWrapper extends Serializable {
 
     /**
      * 通用空实现
      */
-    RelationshipRecordWithFunctionalInterface EMPTY = theRecord -> theRecord;
+    RecordWrapper EMPTY = theRecord -> theRecord;
 
     /**
      * Record关联关系
@@ -28,7 +28,7 @@ public interface RelationshipRecordWithFunctionalInterface extends Serializable 
      * 通用空实现
      * @return 查询结果集包装
      */
-    static RelationshipRecordWithFunctionalInterface empty() {
+    static RecordWrapper empty() {
         return  EMPTY;
     }
 }
