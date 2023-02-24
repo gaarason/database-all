@@ -57,7 +57,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
     @Nullable
     @Override
-    public Builder<?, ?> prepareTargetBuilder(boolean relationOperation, List<Map<String, Object>> metadata, RecordList<?, ?> relationRecordList,
+    public Builder<?, ?> prepareTargetBuilder(List<Map<String, Object>> metadata, RecordList<?, ?> relationRecordList,
         BuilderWrapper<?, ?> operationBuilder, BuilderWrapper<?, ?> customBuilder) {
 
         Set<Object> objectSet = enableMorph ?
@@ -72,10 +72,10 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public RecordList<?, ?> dealBatchForTarget(boolean relationOperation, @Nullable Builder<?, ?> targetBuilder,
+    public RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?> targetBuilder,
         RecordList<?, ?> relationRecordList) {
         if (targetBuilder == null) {
-            return RecordFactory.newRecordList(getContainer());
+            return emptyRecordList();
         }
         return belongsToTemplate.parentModel.newQuery().setBuilder(ObjectUtils.typeCast(targetBuilder)).get();
     }

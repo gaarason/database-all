@@ -127,7 +127,7 @@ public class Student extends BaseEntity implements Serializable {
         }
 
         @Override
-        public Builder<?, ?> prepareTargetBuilder(boolean relationOperation, List<Map<String, Object>> metadata, RecordList<?, ?> relationRecordList,
+        public Builder<?, ?> prepareTargetBuilder(List<Map<String, Object>> metadata, RecordList<?, ?> relationRecordList,
             BuilderWrapper<?, ?> operationBuilder, BuilderWrapper<?, ?> customBuilder) {
             return customBuilder.execute(ObjectUtils.typeCast(hasOneTemplate.sonModel.newQuery())).whereIn(
                 hasOneTemplate.sonModelForeignKey,
@@ -135,7 +135,7 @@ public class Student extends BaseEntity implements Serializable {
         }
 
         @Override
-        public RecordList<?, ?> dealBatchForTarget(boolean relationOperation, @Nullable Builder<?, ?> targetBuilder,
+        public RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?> targetBuilder,
             RecordList<?, ?> relationRecordList) {
             if (targetBuilder == null) {
                 return RecordFactory.newRecordList(getContainer());

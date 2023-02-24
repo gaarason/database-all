@@ -7,6 +7,7 @@ import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.core.Container;
+import gaarason.database.exception.OperationNotSupportedException;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.RecordFactory;
@@ -58,39 +59,58 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public Builder<?, ?> prepareTargetBuilder(boolean relationOperation, List<Map<String, Object>> metadata, RecordList<?, ?> relationRecordList,
-        BuilderWrapper<?, ?> operationBuilder, BuilderWrapper<?, ?> customBuilder) {
+    public Builder<?, ?> prepareTargetBuilder(List<Map<String, Object>> metadata,
+        RecordList<?, ?> relationRecordList, BuilderWrapper<?, ?> operationBuilder,
+        BuilderWrapper<?, ?> customBuilder) {
 
         // 查询构造器包装
-        Builder<?, ?> queryBuilder = customBuilder.execute(ObjectUtils.typeCast(hasOneOrManyTemplate.sonModel.newQuery()));
-        // 操作响应包装
-        if(relationOperation) {
-            queryBuilder = operationBuilder.execute(ObjectUtils.typeCast(queryBuilder));
-        }
+        Builder<?, ?> queryBuilder = customBuilder.execute(
+            ObjectUtils.typeCast(hasOneOrManyTemplate.sonModel.newQuery()));
 
-        return queryBuilder
-                // 关联关系操作, 则指定查询外键以及group
-                .when(relationOperation, builder -> builder.select(hasOneOrManyTemplate.sonModelForeignKey)
-                    .group(hasOneOrManyTemplate.sonModelForeignKey))
-                .when(!relationOperation, builder -> builder.select(hasOneOrManyTemplate.sonModel.getEntityClass()))
-                .whereIn(hasOneOrManyTemplate.sonModelForeignKey,
-                    getColumnInMapList(metadata, hasOneOrManyTemplate.localModelLocalKey))
-                .when(enableMorph, builder -> builder.where(hasOneOrManyTemplate.sonModelMorphKey,
+        return queryBuilder.select(hasOneOrManyTemplate.sonModel.getEntityClass())
+            .whereIn(hasOneOrManyTemplate.sonModelForeignKey,
+                getColumnInMapList(metadata, hasOneOrManyTemplate.localModelLocalKey))
+            .when(enableMorph, builder -> builder.where(hasOneOrManyTemplate.sonModelMorphKey,
                 hasOneOrManyTemplate.sonModelMorphValue));
     }
 
     @Override
-    public RecordList<?, ?> dealBatchForTarget(boolean relationOperation, @Nullable Builder<?, ?> targetBuilder,
+    public Builder<?, ?> prepareTargetBuilderByRelationOperation(List<Map<String, Object>> metadata,
+        RecordList<?, ?> relationRecordList, BuilderWrapper<?, ?> operationBuilder,
+        BuilderWrapper<?, ?> customBuilder) {
+
+        // 查询构造器包装
+        Builder<?, ?> queryBuilder = customBuilder.execute(
+            ObjectUtils.typeCast(hasOneOrManyTemplate.sonModel.newQuery()));
+        // 操作响应包装
+        queryBuilder = operationBuilder.execute(ObjectUtils.typeCast(queryBuilder));
+
+        return queryBuilder.select(hasOneOrManyTemplate.sonModelForeignKey)
+            .group(hasOneOrManyTemplate.sonModelForeignKey)
+            .whereIn(hasOneOrManyTemplate.sonModelForeignKey,
+                getColumnInMapList(metadata, hasOneOrManyTemplate.localModelLocalKey))
+            .when(enableMorph, builder -> builder.where(hasOneOrManyTemplate.sonModelMorphKey,
+                hasOneOrManyTemplate.sonModelMorphValue));
+    }
+
+    @Override
+    public RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?> targetBuilder,
         RecordList<?, ?> relationRecordList) {
         if (targetBuilder == null) {
-            return RecordFactory.newRecordList(getContainer());
+            return emptyRecordList();
         }
         return hasOneOrManyTemplate.sonModel.newQuery().setBuilder(ObjectUtils.typeCast(targetBuilder)).get();
     }
 
     @Override
-    public Map<String, Object> filterBatchRecordByRelationOperation(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
-        Map<String, RecordList<?, ?>> cacheRelationRecordList) {
+    public RecordList<?, ?> dealBatchForTargetByRelationOperation(@Nullable Builder<?, ?> targetBuilder,
+        RecordList<?, ?> relationRecordList) {
+        return dealBatchForTarget(targetBuilder, relationRecordList);
+    }
+
+    @Override
+    public Map<String, Object> filterBatchRecordByRelationOperation(Record<?, ?> theRecord,
+        RecordList<?, ?> targetRecordList, Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         // 子表的外键字段名
         String column = hasOneOrManyTemplate.sonModelForeignKey;
         // 本表的关系键值
@@ -100,8 +120,8 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public List<Object> filterBatchRecord(Record<?, ?> theRecord,
-        RecordList<?, ?> targetRecordList, Map<String, RecordList<?, ?>> cacheRelationRecordList) {
+    public List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
+        Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         // 子表的外键字段名
         String column = hasOneOrManyTemplate.sonModelForeignKey;
         // 本表的关系键值

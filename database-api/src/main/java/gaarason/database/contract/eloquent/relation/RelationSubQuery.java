@@ -25,6 +25,12 @@ public interface RelationSubQuery {
     Container getContainer();
 
     /**
+     * 空的查询结果集
+     * @return 空的查询结果集
+     */
+    RecordList<?, ?> emptyRecordList();
+
+    /**
      * 中间表 query builder
      * @param metadata 当前recordList的元数据
      * @return 中间表查询构造器
@@ -51,17 +57,43 @@ public interface RelationSubQuery {
      * @return 目标表查询构造器
      */
     @Nullable
-    Builder<?, ?> prepareTargetBuilder(boolean relationOperation, List<Map<String, Object>> metadata, RecordList<?, ?> relationRecordList,
-        BuilderWrapper<?, ?> operationBuilder, BuilderWrapper<?, ?> customBuilder);
+    Builder<?, ?> prepareTargetBuilder(List<Map<String, Object>> metadata,
+        RecordList<?, ?> relationRecordList, BuilderWrapper<?, ?> operationBuilder, BuilderWrapper<?, ?> customBuilder);
+
+    /**
+     * 目标表 query builder
+     * @param metadata 当前recordList的元数据
+     * @param relationRecordList 中间表数据
+     * @param operationBuilder 操作构造器包装
+     * @param customBuilder 查询构造器包装
+     * @return 目标表查询构造器
+     */
+    @Nullable
+    default Builder<?, ?> prepareTargetBuilderByRelationOperation(List<Map<String, Object>> metadata,
+        RecordList<?, ?> relationRecordList, BuilderWrapper<?, ?> operationBuilder,
+        BuilderWrapper<?, ?> customBuilder) {
+        throw new OperationNotSupportedException();
+    }
 
     /**
      * 批量关联查询 (目标表)
-     * @param relationOperation 是否关联关系操作
      * @param targetBuilder 目标表查询构造器
      * @param relationRecordList @BelongsToMany 中间表数据
      * @return 查询结果集
      */
-    RecordList<?, ?> dealBatchForTarget(boolean relationOperation, @Nullable Builder<?, ?> targetBuilder, RecordList<?, ?> relationRecordList);
+    RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?> targetBuilder,
+        RecordList<?, ?> relationRecordList);
+
+    /**
+     * 批量关联查询 (目标表)
+     * @param targetBuilder 目标表查询构造器
+     * @param relationRecordList @BelongsToMany 中间表数据
+     * @return 查询结果集
+     */
+    default RecordList<?, ?> dealBatchForTargetByRelationOperation(@Nullable Builder<?, ?> targetBuilder,
+        RecordList<?, ?> relationRecordList) {
+        throw new OperationNotSupportedException();
+    }
 
     /**
      * 筛选批量关联查询结果
@@ -71,8 +103,8 @@ public interface RelationSubQuery {
      * @param cacheRelationRecordList 结果缓存
      * @return 关联查询操作的结果
      */
-    default Map<String, Object> filterBatchRecordByRelationOperation(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
-        Map<String, RecordList<?, ?>> cacheRelationRecordList) {
+    default Map<String, Object> filterBatchRecordByRelationOperation(Record<?, ?> theRecord,
+        RecordList<?, ?> targetRecordList, Map<String, RecordList<?, ?>> cacheRelationRecordList) {
         throw new OperationNotSupportedException();
     }
 

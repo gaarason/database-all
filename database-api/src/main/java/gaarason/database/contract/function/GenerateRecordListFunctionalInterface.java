@@ -1,7 +1,6 @@
 package gaarason.database.contract.function;
 
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.lang.Nullable;
 
 /**
  * @author xt

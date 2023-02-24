@@ -35,9 +35,29 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      */
     protected final Model<?, ?> localModel;
 
+    /**
+     * 空的结果集
+     */
+    @Nullable
+    private RecordList<?, ?> emptyRecordList = null;
+
     protected BaseRelationSubQuery(ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
         this.modelShadowProvider = modelShadowProvider;
         this.localModel = model;
+    }
+
+    @Override
+    public RecordList<?, ?> emptyRecordList() {
+        RecordList<?, ?> localEmptyRecordList = emptyRecordList;
+        if (localEmptyRecordList == null) {
+            synchronized (this) {
+                localEmptyRecordList = emptyRecordList;
+                if (localEmptyRecordList == null) {
+                    localEmptyRecordList = emptyRecordList = new RecordListBean<>(getContainer());
+                }
+            }
+        }
+        return localEmptyRecordList;
     }
 
     /**
@@ -78,7 +98,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
 
     @Override
     public RecordList<?, ?> dealBatchForRelation(@Nullable Builder<?, ?> relationBuilder) {
-        return new RecordListBean<>(getContainer());
+        return emptyRecordList();
     }
 
     /**

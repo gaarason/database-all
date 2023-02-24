@@ -15,6 +15,7 @@ import gaarason.database.util.StringUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 公用查询构造器
@@ -155,6 +156,30 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         grammar.add(Grammar.SQLPartType.UNION, "union all" + FormatUtils.bracket(sqlPartInfo.getSqlString()),
             sqlPartInfo.getParameters());
+        return this;
+    }
+
+    private boolean unionEachFirstActionMark = true;
+
+    @Override
+    public Builder<T, K> union(Builder<?, ?> builder) {
+        if(unionEachFirstActionMark){
+            setAnyBuilder(builder);
+            unionEachFirstActionMark = false;
+        }else{
+            union(subBuilder -> subBuilder.setAnyBuilder(builder));
+        }
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> unionAll(Builder<?, ?> builder) {
+        if(unionEachFirstActionMark){
+            setAnyBuilder(builder);
+            unionEachFirstActionMark = false;
+        }else{
+            unionAll(subBuilder -> subBuilder.setAnyBuilder(builder));
+        }
         return this;
     }
 

@@ -161,21 +161,20 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
             RecordList<?, ?> relationRecords = getRelationRecordsInCache(cacheRecords, relationBuilder,
                 () -> relationSubQuery.dealBatchForRelation(relationBuilder));
 
-            // 目标表，查询构造器
-            Builder<?, ?> targetBuilder = relationSubQuery.prepareTargetBuilder(relationOperation, metadata,
-                relationRecords, relation.operationBuilder, relation.customBuilder);
-
-            // 本级关系查询
-            RecordList<?, ?> targetRecordList = getTargetRecordsInCache(cacheRecords, targetBuilder,
-                relation.recordWrapper,
-                () -> relationSubQuery.dealBatchForTarget(relationOperation, targetBuilder, relationRecords));
-
             // 关联关系统计查询
             if (relationOperation) {
+                // 目标表，查询构造器
+                Builder<?, ?> targetBuilder = relationSubQuery.prepareTargetBuilderByRelationOperation(metadata,
+                    relationRecords, relation.operationBuilder, relation.customBuilder);
+
+                // 本级关系查询
+                RecordList<?, ?> targetRecordList = getTargetRecordsInCache(cacheRecords, targetBuilder,
+                    relation.recordWrapper,
+                    () -> relationSubQuery.dealBatchForTargetByRelationOperation(targetBuilder, relationRecords));
+
                 // 递归处理下级关系, 并筛选当前 record 所需要的属性
                 Map<String, Object> map = relationSubQuery.filterBatchRecordByRelationOperation(record,
-                    targetRecordList,
-                    cacheRecords);
+                    targetRecordList, cacheRecords);
                 // 目标属性信息
                 FieldMember<?> targetFieldMember = entityMember.getFieldMemberByFieldName(targetFieldName);
                 // 目标属性赋值 - 统计属性 - 单数
@@ -184,9 +183,16 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
             }
             // 关联关系查询
             else {
+                // 目标表，查询构造器
+                Builder<?, ?> targetBuilder = relationSubQuery.prepareTargetBuilder(metadata, relationRecords,
+                    relation.operationBuilder, relation.customBuilder);
+
+                // 本级关系查询
+                RecordList<?, ?> targetRecordList = getTargetRecordsInCache(cacheRecords, targetBuilder,
+                    relation.recordWrapper, () -> relationSubQuery.dealBatchForTarget(targetBuilder, relationRecords));
+
                 // 递归处理下级关系, 并筛选当前 record 所需要的属性
-                List<?> objects = relationSubQuery.filterBatchRecord(record, targetRecordList,
-                    cacheRecords);
+                List<?> objects = relationSubQuery.filterBatchRecord(record, targetRecordList, cacheRecords);
                 // 是否是集合
                 if (fieldRelationMember.isPlural()) {
                     // 关系属性赋值 - 复数
@@ -196,10 +202,9 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
                     fieldRelationMember.fieldSet(entity, objects.size() == 0 ? null : objects.get(0));
                 }
             }
-
         }
-
     }
+
 
     /**
      * 在内存缓存中优先查找目标值
