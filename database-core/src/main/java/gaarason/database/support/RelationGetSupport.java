@@ -178,8 +178,11 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
                 // 目标属性信息
                 FieldMember<?> targetFieldMember = entityMember.getFieldMemberByFieldName(targetFieldName);
                 // 目标属性赋值 - 统计属性 - 单数
-                Object o = map.get(targetFieldName);
-                targetFieldMember.fieldSet(entity, o);
+                Object targetFieldValue = map.get(targetFieldName);
+                // 类型转化
+                Object targetFieldValueDeserialize = targetFieldMember.deserialize(targetFieldValue);
+                // 赋值
+                targetFieldMember.fieldSet(entity, targetFieldValueDeserialize);
             }
             // 关联关系查询
             else {

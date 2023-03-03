@@ -92,5 +92,8 @@ public class Teacher extends BaseEntity implements Serializable {
     private Long studentsCount;
 
     @Column(inDatabase = false)
+    private Long studentsMaxAge;
+
+    @Column(inDatabase = false)
     private Long studentsBelongsToManyCount;
 }
