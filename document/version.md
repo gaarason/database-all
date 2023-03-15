@@ -26,7 +26,9 @@ Eloquent ORM for Java
 ## 版本升级指引
 
 ### 4.8.0
-- 支持多态关联关系
+- 支持多态关联关系, 对于 `@hasOneOrMany`, `@belongsTo`, `@belongsToMany`增加多态属性
+- 支持关联集合查询, 在`Builder`中, 增加`withCount()`, `withMax()`,`withMin()`,`withAvg()`,`withSum()`
+- 支持关联反向筛选, 在`Builder`中, 增加`whereHas()`, `whereNotHas()`
 
 ### 4.7.0
 - 支持自定义关联关系, 增加`@Relation`用于标注自定义的关联关系注解, 并指明其解析器
