@@ -4,16 +4,18 @@ import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderAnyWrapper;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.contract.support.LambdaStyle;
+import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.lang.Nullable;
 
 /**
  * 支持
  * @author xt
  */
-public interface Support<T, K> extends LambdaStyle<T, K> {
+public interface Support<T, K> extends LambdaStyle, Cloneable{
 
     /**
      * 构造函数
@@ -55,12 +57,39 @@ public interface Support<T, K> extends LambdaStyle<T, K> {
     Builder<T, K> getSelf();
 
     /**
+     * 复制当前的查询构造器
+     * 相互不存在引用 即深拷贝实现
+     * @return 查询构造器
+     * @throws CloneNotSupportedRuntimeException 克隆出错
+     */
+    Builder<T, K> clone() throws CloneNotSupportedRuntimeException;
+
+    /**
+     * 覆盖 查询构造器
+     * @param builder 查询构造器
+     * @return 查询构造器
+     */
+    default Builder<T, K> setAnyBuilder(Builder<?, ?> builder) {
+        setGrammar(builder.getGrammar().deepCopy());
+        return getSelf();
+    }
+
+    /**
      * 覆盖 查询构造器
      * @param builder 查询构造器
      * @return 查询构造器
      */
     default Builder<T, K> setBuilder(Builder<T, K> builder) {
-        setGrammar(builder.getGrammar().deepCopy());
+        return setAnyBuilder(builder);
+    }
+
+    /**
+     * 合并 查询构造器
+     * @param builder 查询构造器
+     * @return 查询构造器
+     */
+    default Builder<T, K> mergerAnyBuilder(Builder<?, ?> builder) {
+        mergerGrammar(builder.getGrammar().deepCopy());
         return getSelf();
     }
 
@@ -70,8 +99,7 @@ public interface Support<T, K> extends LambdaStyle<T, K> {
      * @return 查询构造器
      */
     default Builder<T, K> mergerBuilder(Builder<T, K> builder) {
-        mergerGrammar(builder.getGrammar().deepCopy());
-        return getSelf();
+        return mergerAnyBuilder(builder);
     }
 
     /**
@@ -79,8 +107,18 @@ public interface Support<T, K> extends LambdaStyle<T, K> {
      * @param closure 闭包
      * @return sql
      */
-    default Grammar.SQLPartInfo generateSql(GenerateSqlPartFunctionalInterface<T, K> closure) {
+    default Grammar.SQLPartInfo generateSql(BuilderWrapper<T, K> closure) {
         Builder<T, K> subBuilder = closure.execute(getNewSelf());
+        return subBuilder.getGrammar().generateSql(SqlType.SELECT);
+    }
+
+    /**
+     * 执行闭包生成完整sql, 含绑定参数的合并
+     * @param closure 闭包
+     * @return sql
+     */
+    default Grammar.SQLPartInfo generateSql(BuilderAnyWrapper closure) {
+        Builder<?, ?> subBuilder = closure.execute(getNewSelf());
         return subBuilder.getGrammar().generateSql(SqlType.SELECT);
     }
 
@@ -90,7 +128,7 @@ public interface Support<T, K> extends LambdaStyle<T, K> {
      * @param sqlPartType 片段类型
      * @return sql
      */
-    default Grammar.SQLPartInfo generateSql(GenerateSqlPartFunctionalInterface<T, K> closure,
+    default Grammar.SQLPartInfo generateSql(BuilderWrapper<T, K> closure,
         Grammar.SQLPartType sqlPartType) {
         Builder<T, K> subBuilder = closure.execute(getNewSelf());
         return subBuilder.getGrammar().get(sqlPartType);

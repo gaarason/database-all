@@ -5,7 +5,7 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.core.Container;
 import gaarason.database.exception.RelationAttachException;
 import gaarason.database.lang.Nullable;
@@ -55,28 +55,29 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
                 .getDefaultValue() : null;
     }
 
+    @Nullable
     @Override
-    public Builder<?, ?>[] prepareBuilderArr(List<Map<String, Object>> columnValueMapList,
-        GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart) {
+    public Builder<?, ?> prepareTargetBuilder(List<Map<String, Object>> metadata, RecordList<?, ?> relationRecordList,
+        BuilderWrapper<?, ?> operationBuilder, BuilderWrapper<?, ?> customBuilder) {
 
         Set<Object> objectSet = enableMorph ?
-            getColumnInMapList(columnValueMapList, belongsToTemplate.localModelForeignKey,
+            getColumnInMapList(metadata, belongsToTemplate.localModelForeignKey,
                 belongsToTemplate.localModelMorphKey, belongsToTemplate.localModelMorphValue) :
-            getColumnInMapList(columnValueMapList, belongsToTemplate.localModelForeignKey);
+            getColumnInMapList(metadata, belongsToTemplate.localModelForeignKey);
 
-        Builder<?, ?> targetBuilder = ObjectUtils.isEmpty(objectSet) ? null :
-            generateSqlPart.execute(ObjectUtils.typeCast(belongsToTemplate.parentModel.newQuery()))
+        return ObjectUtils.isEmpty(objectSet) ? null :
+            customBuilder.execute(ObjectUtils.typeCast(belongsToTemplate.parentModel.newQuery()))
+                .select(belongsToTemplate.parentModel.getEntityClass())
                 .whereIn(belongsToTemplate.parentModelLocalKey, objectSet);
-        return new Builder<?, ?>[]{null, targetBuilder};
     }
 
     @Override
-    public RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?> builderForTarget,
+    public RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?> targetBuilder,
         RecordList<?, ?> relationRecordList) {
-        if (builderForTarget == null) {
-            return RecordFactory.newRecordList(getContainer());
+        if (targetBuilder == null) {
+            return emptyRecordList();
         }
-        return belongsToTemplate.parentModel.newQuery().setBuilder(ObjectUtils.typeCast(builderForTarget)).get();
+        return belongsToTemplate.parentModel.newQuery().setBuilder(ObjectUtils.typeCast(targetBuilder)).get();
     }
 
     @Override
@@ -88,7 +89,17 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
         Object value = theRecord.getMetadataMap().get(belongsToTemplate.localModelForeignKey);
 
         assert value != null;
+
         return findObjList(targetRecordList.toObjectList(cacheRelationRecordList), column, value);
+    }
+
+    @Override
+    public Builder<?, ?> prepareForWhereHas(BuilderWrapper<?, ?> customBuilder) {
+        return customBuilder.execute(ObjectUtils.typeCast(belongsToTemplate.parentModel.newQuery()))
+            .when(enableMorph, builder -> builder.where(belongsToTemplate.localModelMorphKey,
+                belongsToTemplate.localModelMorphValue))
+            .whereColumn(localModel.getTableName() + "." + belongsToTemplate.localModelForeignKey,
+                belongsToTemplate.parentModel.getTableName() + "." + belongsToTemplate.parentModelLocalKey);
     }
 
     @Override
@@ -314,7 +325,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    protected Container getContainer() {
+    public Container getContainer() {
         return belongsToTemplate.parentModel.getGaarasonDataSource().getContainer();
     }
 

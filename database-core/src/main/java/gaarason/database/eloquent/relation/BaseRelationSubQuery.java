@@ -3,10 +3,12 @@ package gaarason.database.eloquent.relation;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
+import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.core.Container;
 import gaarason.database.eloquent.RecordListBean;
+import gaarason.database.exception.OperationNotSupportedException;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.FieldMember;
@@ -33,21 +35,43 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      */
     protected final Model<?, ?> localModel;
 
+    /**
+     * 空的结果集
+     */
+    @Nullable
+    private RecordList<?, ?> emptyRecordList = null;
+
     protected BaseRelationSubQuery(ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
         this.modelShadowProvider = modelShadowProvider;
         this.localModel = model;
     }
 
+    @Override
+    public RecordList<?, ?> emptyRecordList() {
+        RecordList<?, ?> localEmptyRecordList = emptyRecordList;
+        if (localEmptyRecordList == null) {
+            synchronized (this) {
+                localEmptyRecordList = emptyRecordList;
+                if (localEmptyRecordList == null) {
+                    localEmptyRecordList = emptyRecordList = new RecordListBean<>(getContainer());
+                }
+            }
+        }
+        return localEmptyRecordList;
+    }
+
     /**
      * 将数据源中的某一列,转化为可以使用 where in 查询的 set
-     * @param columnValueMapList 数据源
+     * @param metadata 数据源
      * @param column 目标列
      * @return 目标列的集合
      */
-    protected static Set<Object> getColumnInMapList(List<Map<String, Object>> columnValueMapList, String column) {
+    protected static Set<Object> getColumnInMapList(List<Map<String, Object>> metadata, String column) {
         Set<Object> result = new HashSet<>();
-        for (Map<String, Object> stringColumnMap : columnValueMapList) {
-            result.add(stringColumnMap.get(column));
+        for (Map<String, Object> stringColumnMap : metadata) {
+            if (stringColumnMap.containsKey(column)) {
+                result.add(stringColumnMap.get(column));
+            }
         }
         return result;
     }
@@ -60,11 +84,12 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @param morphValue 多态value
      * @return 目标列的集合
      */
-    protected static Set<Object> getColumnInMapList(List<Map<String, Object>> columnValueMapList, String column, String morphKey, String morphValue) {
+    protected static Set<Object> getColumnInMapList(List<Map<String, Object>> columnValueMapList, String column,
+        String morphKey, String morphValue) {
         Set<Object> result = new HashSet<>();
         for (Map<String, Object> stringColumnMap : columnValueMapList) {
             Object mKeyValue = stringColumnMap.get(morphKey);
-            if(mKeyValue != null && mKeyValue.equals(morphValue)){
+            if (mKeyValue != null && mKeyValue.equals(morphValue)) {
                 result.add(stringColumnMap.get(column));
             }
         }
@@ -72,15 +97,9 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
     }
 
     @Override
-    public RecordList<?, ?> dealBatchForRelation(@Nullable Builder<?, ?> builderForRelation) {
-        return new RecordListBean<>(getContainer());
+    public RecordList<?, ?> dealBatchForRelation(@Nullable Builder<?, ?> relationBuilder) {
+        return emptyRecordList();
     }
-
-    /**
-     * 容器
-     * @return 容器
-     */
-    protected abstract Container getContainer();
 
     /**
      * 集合兼容处理
@@ -151,23 +170,49 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      */
     protected List<Object> findObjList(List<?> relationshipObjectList, String columnName, Object fieldTargetValue) {
         List<Object> objectList = new ArrayList<>();
-        if (!relationshipObjectList.isEmpty()) {
-            // 模型信息
-            ModelMember<?, ?> modelMember = modelShadowProvider.getByEntityClass(
-                relationshipObjectList.get(0).getClass());
+        if (ObjectUtils.isEmpty(relationshipObjectList)) {
+            // 不建议使用 Collections.emptyList()
+            return objectList;
+        }
+        // 模型信息
+        ModelMember<?, ?> modelMember = modelShadowProvider.getByEntityClass(
+            relationshipObjectList.get(0).getClass());
 
-            // 字段信息
-            FieldMember<?> fieldMember = modelMember.getEntityMember().getColumnFieldMap().get(columnName);
+        // 字段信息
+        FieldMember<?> fieldMember = modelMember.getEntityMember().getColumnFieldMap().get(columnName);
 
-            for (Object o : relationshipObjectList) {
-                // 值
-                Object fieldValue = fieldMember.fieldGet(o);
-                // 满足则加入
-                if (fieldTargetValue.equals(fieldValue)) {
-                    objectList.add(o);
-                }
+        for (Object o : relationshipObjectList) {
+            // 值
+            Object fieldValue = fieldMember.fieldGet(o);
+            // 满足则加入
+            if (fieldTargetValue.equals(fieldValue)) {
+                objectList.add(o);
             }
         }
         return objectList;
+    }
+
+    /**
+     * 将满足条件的对象筛选并返回
+     * @param relationshipObjectList 待筛选的对象列表
+     * @param columnName 对象的属性的名
+     * @param fieldTargetValue 对象的属性的目标值
+     * @return 对象列表
+     */
+    protected Map<String, Object> findObj(List<Map<String, Object>> relationshipObjectList, String columnName,
+        Object fieldTargetValue) {
+
+        if (ObjectUtils.isEmpty(relationshipObjectList)) {
+            return Collections.emptyMap();
+        }
+
+        // 关系键对应关系
+        for (Map<String, Object> map : relationshipObjectList) {
+            if (ObjectUtils.nullSafeEquals(map.get(columnName), fieldTargetValue)) {
+                return map;
+            }
+        }
+
+        return Collections.emptyMap();
     }
 }

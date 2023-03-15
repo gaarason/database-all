@@ -6,13 +6,14 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.core.Container;
 import gaarason.database.eloquent.relation.BaseRelationSubQuery;
 import gaarason.database.eloquent.relation.HasOneOrManyQueryRelation;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.support.RecordFactory;
 import gaarason.database.test.models.relation.model.RelationshipStudentTeacherModel;
 import gaarason.database.test.models.relation.pojo.base.BaseEntity;
 import gaarason.database.util.ObjectUtils;
@@ -126,18 +127,20 @@ public class Student extends BaseEntity implements Serializable {
         }
 
         @Override
-        public Builder<?, ?>[] prepareBuilderArr(List<Map<String, Object>> columnValueMapList,
-            GenerateSqlPartFunctionalInterface<?, ?> generateSqlPart) {
-            return new Builder<?, ?>[]{null,
-                generateSqlPart.execute(ObjectUtils.typeCast(hasOneTemplate.sonModel.newQuery())).whereIn(
-                    hasOneTemplate.sonModelForeignKey,
-                    getColumnInMapList(columnValueMapList, hasOneTemplate.localModelLocalKey))};
+        public Builder<?, ?> prepareTargetBuilder(List<Map<String, Object>> metadata, RecordList<?, ?> relationRecordList,
+            BuilderWrapper<?, ?> operationBuilder, BuilderWrapper<?, ?> customBuilder) {
+            return customBuilder.execute(ObjectUtils.typeCast(hasOneTemplate.sonModel.newQuery())).whereIn(
+                hasOneTemplate.sonModelForeignKey,
+                getColumnInMapList(metadata, hasOneTemplate.localModelLocalKey));
         }
 
         @Override
-        public RecordList<?, ?> dealBatchForTarget(Builder<?, ?> builderForTarget,
+        public RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?> targetBuilder,
             RecordList<?, ?> relationRecordList) {
-            return hasOneTemplate.sonModel.newQuery().setBuilder(ObjectUtils.typeCast(builderForTarget)).get();
+            if (targetBuilder == null) {
+                return RecordFactory.newRecordList(getContainer());
+            }
+            return hasOneTemplate.sonModel.newQuery().setBuilder(ObjectUtils.typeCast(targetBuilder)).get();
         }
 
         @Override
@@ -150,6 +153,11 @@ public class Student extends BaseEntity implements Serializable {
 
             assert value != null;
             return findObjList(targetRecordList.toObjectList(cacheRelationRecordList), column, value);
+        }
+
+        @Override
+        public Builder<?, ?> prepareForWhereHas(BuilderWrapper<?, ?> customBuilder) {
+            return null;
         }
 
         @Override
@@ -293,7 +301,7 @@ public class Student extends BaseEntity implements Serializable {
         }
 
         @Override
-        protected Container getContainer() {
+        public Container getContainer() {
             return hasOneTemplate.sonModel.getGaarasonDataSource().getContainer();
         }
 

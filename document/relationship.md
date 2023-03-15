@@ -34,6 +34,15 @@ Eloquent ORM for Java
             * [示例无线级筛选](#示例无线级筛选)
             * [示例混合场景](#示例混合场景)
             * [示例分页](#示例分页)
+    * [关联聚合查询](#关联聚合查询)
+        * [withCount](#withCount)
+        * [其他聚合函数](#其他聚合函数)
+            * [withMax](#withMax)
+            * [withMin](#withMin)
+            * [withAvg](#withAvg)
+            * [withSum](#withSum)
+    * [关联反向筛选](#关联反向筛选)
+        * [whereHas/whereNotHas](#whereHas/whereNotHas)
     * [更新关系](#更新关系)
         * [附加关系](#附加关系)
         * [解除关系](#解除关系)
@@ -560,7 +569,182 @@ Paginate<Student> paginate = studentModel.newQuery().orderBy("id").with("relatio
 
 ```java
 studentModel..newQuery().with("teachers").with("relation").get();
+```
 
+## 关联聚合查询
+
+- 有时你可能需要计算给定关系的相关模型的数量, 或者仅仅想知道其中最大的某项是什么, 而不实际加载模型
+- 针对于一对一/一对多/反向一对一/多对多, 以及其对应的多态形式的所有关联关系, 均进行了支持
+
+### withCount
+- 计算指定关联关系的数量, 并将结果拖地在实体上
+- 默认的属性是`{relationFieldName}Count`
+```java
+// 在实体中定义用于接受结果的属性
+@Data
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+@Table(name = "teacher")
+public class Teacher extends BaseEntity implements Serializable {
+    // ... 省略其他字段
+    
+    @HasOneOrMany(sonModelForeignKey = "teacher_id")
+    private List<Student> students;
+
+
+    // ---------------- -----------------//
+    @Column(inDatabase = false)
+    private Long studentsCount;
+}
+
+```
+- withCount(relationFieldName)
+```java
+// 统计id为 1,2,6的三位老师, 分别有几个学生
+List<Teacher> teachers = teacherModel.newQuery()
+            .whereIn(Teacher::getId, 1, 2, 6)
+            .orderBy(Teacher::getId)
+            .withCount(Teacher::getStudents)
+            .get()
+            .toObjectList();
+// 查看结果
+teachers.get(0).getStudentsCount()
+```
+- withCount(relationFieldName, 关系表中的统计列, 结果落地的属性)
+```java
+// 统计id为 1,2,6的三位老师, 的学生们拥有id的数量, 并落地在 studentCount 属性上
+List<Teacher> teachers = teacherModel.newQuery()
+            .whereIn(Teacher::getId, 1, 2, 6)
+            .orderBy(Teacher::getId)
+            .withCount(Teacher::getStudents, Student::getId, Teacher::getStudentsCount)
+            .get()
+            .toObjectList();
+// 查看结果
+teachers.get(0).getStudentsCount()
+```
+- withCount(relationFieldName, 关系表中的统计列, 自定义查询 ,结果落地的属性)
+```java
+// 统计id为 1,2,6的三位老师的, sex=2的学生们拥有id的数量, 并落地在 studentsCount 属性上
+List<Teacher> teachers = teacherModel.newQuery()
+            .whereIn(Teacher::getId, 1, 2, 6)
+            .orderBy(Teacher::getId)
+            .withCount(Teacher::getStudents, Student::getId, builder -> builder.where(Student::getSex, 2), Teacher::getStudentsCount)
+            .get()
+            .toObjectList();
+// 查看结果
+teachers.get(0).getStudentsCount()
+```
+
+### 其他聚合函数
+- `withMax`/`withMin`/`withAvg`/`withSum`
+- 计算指定关联关系的指定列的`统计`, 并将结果拖地在实体上
+- 默认的属性是`{relationFieldName}{function}{column}`
+
+#### withMax
+
+- 计算指定关联关系的指定列的最大值, 并将结果拖地在实体上
+- 默认的属性是`{relationFieldName}Max{column}`
+
+```java
+// 在实体中定义用于接受结果的属性
+@Data
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+@Table(name = "teacher")
+public class Teacher extends BaseEntity implements Serializable {
+    // ... 省略其他字段
+
+    @BelongsToMany(relationModel = RelationshipStudentTeacherModel.class, 
+        foreignKeyForLocalModel = "teacher_id", foreignKeyForTargetModel = "student_id", 
+        localModelLocalKey = "id", targetModelLocalKey = "id")
+    private Student[] students;
+
+
+    // ---------------- -----------------//
+    @Column(inDatabase = false)
+    private Long studentsMaxAge;
+}
+
+```
+- withMax(relationFieldName, 关系表中的统计列)
+```java
+// 分别统计id为 1,2,6的三位老师的, 学生们中最大的age, 并落地在 studentsMaxAge 属性上
+List<Teacher> teachers = teacherModel.newQuery()
+    .whereIn(Teacher::getId, 1, 2, 6)
+    .orderBy(Teacher::getId)
+    .withMax(Teacher::getStudents, Student::getAge)
+    .get()
+    .toObjectList();
+
+// 查看结果
+    teachers.get(0).getStudentsMaxAge()
+```
+
+
+- withMax(relationFieldName, 关系表中的统计列, 结果落地的属性)
+```java
+// 分别统计id为 1,2,6的三位老师的, 学生们中最大的id, 并落地在 studentsMaxAge 属性上
+List<Teacher> teachers = teacherModel.newQuery()
+            .whereIn(Teacher::getId, 1, 2, 6)
+            .orderBy(Teacher::getId)
+            .withMax(Teacher::getStudents, Student::getId, Teacher::getStudentsMaxAge)
+            .get()
+            .toObjectList();
+
+// 查看结果
+teachers.get(0).getStudentsMaxAge()
+```
+
+- withMax(relationFieldName, 关系表中的统计列, 自定义查询, 结果落地的属性)
+```java
+// 分别统计id为 1,2,6的三位老师的, sex=2 的学生们中最大的id, 并落地在 studentsMaxAge 属性上
+List<Teacher> teachers = teacherModel.newQuery()
+            .whereIn(Teacher::getId, 1, 2, 6)
+            .orderBy(Teacher::getId)
+            .withMax(Teacher::getStudents, Student::getId, builder -> builder.where(Student::getSex, 2), Teacher::getStudentsMaxAge)
+            .get()
+            .toObjectList();
+
+// 查看结果
+teachers.get(0).getStudentsMaxAge()
+```
+
+#### withMin
+略
+#### withAvg
+略
+#### withSum
+略
+
+## 关联反向筛选
+- 使用从表关系筛选主表结果
+- 检索模型记录时, 你可能希望根据关系的存在限制结果. 例如, 假设要检索至少有一条评论的所有博客文章.
+### whereHas/whereNotHas
+
+- whereHas/whereNotHas(relationFieldName)
+```java
+// 查询所有有学生的老师
+List<Teacher> teacherList = teacherModel.newQuery()
+    .whereHas(Teacher::getStudentArray)
+    .get()
+    .toObjectList();
+```
+
+- whereHas/whereNotHas(relationFieldName, 自定义查询)
+```java
+// 查询所有的老师, 这些老师的学生们都不大于16岁
+List<Teacher> teacherList = teacherModel.newQuery()
+    .whereNotHas(Teacher::getStudentArray, builder -> builder.where(Student::getAge, ">", "16"))
+    .orderBy(Teacher::getId)
+    .get()
+    .toObjectList();
+
+// 查询所有学生, 这些学生的有男老师
+List<Student> students = studentModel.newQuery()
+    .whereHas("teacher", builder -> builder.where("sex", 1))
+    .orderBy(Student::getId)
+    .get()
+    .toObjectList();
 ```
 
 ## 更新关系

@@ -1,7 +1,7 @@
 package gaarason.database.query;
 
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
 import gaarason.database.util.FormatUtils;
@@ -84,7 +84,7 @@ public abstract class SelectBuilder<T, K> extends OrderBuilder<T, K> {
 
     // todo test
     @Override
-    public Builder<T, K> selectFunction(String function, GenerateSqlPartFunctionalInterface<T, K> closure,
+    public Builder<T, K> selectFunction(String function, BuilderWrapper<T, K> closure,
         @Nullable String alias) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String completeSql = sqlPartInfo.getSqlString();
@@ -95,8 +95,13 @@ public abstract class SelectBuilder<T, K> extends OrderBuilder<T, K> {
 
     // todo test
     @Override
-    public Builder<T, K> selectFunction(String function, GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> selectFunction(String function, BuilderWrapper<T, K> closure) {
         return selectFunction(function, closure, null);
 
+    }
+
+    @Override
+    public Builder<T, K> selectCustom(String columnName, String value) {
+        return selectRaw(value + " as " + backQuote(columnName));
     }
 }

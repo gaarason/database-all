@@ -4,6 +4,7 @@ import gaarason.database.appointment.OrderBy;
 import gaarason.database.appointment.Paginate;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
+import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.test.models.relation.model.RelationshipStudentTeacherModel;
 import gaarason.database.test.models.relation.model.StudentModel;
 import gaarason.database.test.models.relation.model.TeacherModel;
@@ -39,10 +40,12 @@ abstract public class RelationTests extends BaseTests {
     protected GaarasonDataSource getGaarasonDataSource() {
         return studentModel.getGaarasonDataSource();
     }
+
     @Override
     protected List<TABLE> getInitTables() {
         return Arrays.asList(TABLE.student, TABLE.teacher, TABLE.relationship_student_teacher);
     }
+
     @Test
     public void 一对一关系() {
         // 声明但不使用
@@ -70,7 +73,10 @@ abstract public class RelationTests extends BaseTests {
         Assert.assertNull(student3.getTeacher().getStudent());
 
         // 声明且使用
-        Student student4 = studentModel.newQuery().with(Student::getTeacher).queryOrFail("select * from student limit 1").toObject();
+        Student student4 = studentModel.newQuery()
+            .with(Student::getTeacher)
+            .queryOrFail("select * from student limit 1")
+            .toObject();
         System.out.println(student4);
         Assert.assertNotNull(student4.getTeacher());
         Assert.assertNull(student4.getRelationshipStudentTeachers());
@@ -108,7 +114,7 @@ abstract public class RelationTests extends BaseTests {
 
         Assert.assertEquals(2, student.getTeachersBelongsToMany().size());
         Assert.assertEquals(2, student.getRelationshipStudentTeachers().size());
-        Assert.assertNotNull( student.getRelationshipStudentTeacher());
+        Assert.assertNotNull(student.getRelationshipStudentTeacher());
         Assert.assertEquals(2, student.getRelationshipStudentTeacher().getStudentId().intValue());
     }
 
@@ -1321,17 +1327,20 @@ abstract public class RelationTests extends BaseTests {
             .getStudent()
             .getId()
             .intValue(), 10);
-
     }
 
     @Test
-    public void 一对多_关联关系属性类型支持(){
-        Teacher teacher = teacherModel.findOrFail(1)
+    public void 一对多_关联关系属性类型支持() {
+        Teacher teacher = teacherModel.newQuery()
+//            .withAggregate(AggregatesType.min, Teacher::getStudents, Student::getAge, builder -> builder.where("sss",231), null)
+//            .withMany(Teacher::getStudentArray, builder -> builder.where(Student::getAge, "12"))
+            .findOrFail(1)
             .with(Teacher::getStudents)
             .with(Teacher::getStudentArray)
             .with(Teacher::getStudentArrayList)
             // 使用 orWhere 更改查询范围
-            .with(Teacher::getStudentLinkedList, builder -> builder.where("id",3).orWhere(builder1 -> builder1.where("id",1)))
+            .with(Teacher::getStudentLinkedList,
+                builder -> builder.where("id", 3).orWhere(builder1 -> builder1.where("id", 1)))
             .with(Teacher::getStudentLinkedHashSet)
             .with(Teacher::getStudentSet)
             .toObject();
@@ -1357,13 +1366,14 @@ abstract public class RelationTests extends BaseTests {
     }
 
     @Test
-    public void 多对多_关联关系属性类型支持(){
+    public void 多对多_关联关系属性类型支持() {
         Teacher teacher = teacherModel.findOrFail(1)
             .with(Teacher::getStudentsBelongsToMany)
             .with(Teacher::getStudentsBelongsToManyArray)
             .with(Teacher::getStudentsBelongsToManyLinkedHashSet)
             // 使用 orWhere 更改查询范围
-            .with(Teacher::getStudentsBelongsToManySet, builder -> builder.where("id",3).orWhere(builder1 -> builder1.where("id",1)))
+            .with(Teacher::getStudentsBelongsToManySet,
+                builder -> builder.where("id", 3).orWhere(builder1 -> builder1.where("id", 1)))
             .with(Teacher::getStudentsBelongsToManyArrayList)
             .with(Teacher::getStudentsBelongsToManyLinkedList)
             .toObject();
@@ -1388,4 +1398,340 @@ abstract public class RelationTests extends BaseTests {
         Assert.assertEquals(3, teacher.getStudentsBelongsToManyLinkedList().size());
 
     }
+
+    @Test
+    public void count_hasOneOrMany() {
+        List<Teacher> teachers = teacherModel.newQuery()
+            .whereIn(Teacher::getId, 1, 2, 6)
+            .orderBy(Teacher::getId)
+            .withCount(Teacher::getStudents)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(3, teachers.size());
+        Assert.assertEquals(2, teachers.get(0).getStudentsCount().intValue());
+        Assert.assertEquals(2, teachers.get(1).getStudentsCount().intValue());
+        Assert.assertEquals(4, teachers.get(2).getStudentsCount().intValue());
+
+        Teacher teacher = teacherModel.newQuery().withCount(Teacher::getStudents).findOrFail(1).toObject();
+        Assert.assertNotNull(teacher.getStudentsCount());
+        Assert.assertEquals(2, teacher.getStudentsCount().intValue());
+
+        Teacher teacher1 = teacherModel.newQuery().withCount(Teacher::getStudents).findOrFail(6).toObject();
+        Assert.assertNotNull(teacher1.getStudentsCount());
+        Assert.assertEquals(4, teacher1.getStudentsCount().intValue());
+
+        // 指定统计的字段(属性)，以及别名(属性)
+        Teacher teacher2 = teacherModel.newQuery()
+            .withCount(Teacher::getStudents, Student::getId, Teacher::getStudentsCount)
+            .findOrFail(6)
+            .toObject();
+        Assert.assertNotNull(teacher2.getStudentsCount());
+        Assert.assertEquals(4, teacher2.getStudentsCount().intValue());
+
+        // 附带自定义查询
+        Teacher teacher3 = teacherModel.newQuery()
+            .withCount(Teacher::getStudents, Student::getId, builder -> builder.where(Student::getSex, 2),
+                Teacher::getStudentsCount)
+            .findOrFail(6)
+            .toObject();
+        Assert.assertNotNull(teacher3.getStudentsCount());
+        Assert.assertEquals(3, teacher3.getStudentsCount().intValue());
+
+        // 附带自定义统计
+        // select count(sex) as 'studentsCount',`teacher_id` from (select `sex`,`teacher_id` from student where `teacher_id`in("6") group by `sex`)TTMBNasub where `teacher_id`in("6") group by `teacher_id`
+        Teacher teacher4 = teacherModel.newQuery()
+            .withCount(Teacher::getStudents, Student::getSex, builder -> builder.group(Student::getSex),
+                Teacher::getStudentsCount)
+            .findOrFail(6)
+            .toObject();
+        Assert.assertNotNull(teacher4.getStudentsCount());
+        Assert.assertEquals(2, teacher4.getStudentsCount().intValue());
+    }
+
+    @Test
+    public void count_belongsToMany() {
+        List<Teacher> teachers = teacherModel.newQuery()
+            .whereIn(Teacher::getId, 1, 6)
+            .withCount(Teacher::getStudentsBelongsToMany, Student::getId, Teacher::getStudentsCount)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(2, teachers.size());
+        Assert.assertEquals(3, teachers.get(0).getStudentsCount().intValue());
+        Assert.assertEquals(6, teachers.get(1).getStudentsCount().intValue());
+
+        Teacher teacher = teacherModel.newQuery().withCount(Teacher::getStudentsBelongsToMany).findOrFail(1).toObject();
+        Assert.assertNotNull(teacher.getStudentsBelongsToManyCount());
+        Assert.assertEquals(3, teacher.getStudentsBelongsToManyCount().intValue());
+
+        Teacher teacher1 = teacherModel.newQuery()
+            .withCount(Teacher::getStudentsBelongsToMany)
+            .findOrFail(6)
+            .toObject();
+        Assert.assertNotNull(teacher1.getStudentsBelongsToManyCount());
+        Assert.assertEquals(6, teacher1.getStudentsBelongsToManyCount().intValue());
+
+        // 指定统计的字段(属性)，以及别名(属性)
+        Teacher teacher2 = teacherModel.newQuery()
+            .withCount(Teacher::getStudentsBelongsToMany, Student::getId, Teacher::getStudentsCount)
+            .findOrFail(6)
+            .toObject();
+        Assert.assertNotNull(teacher2.getStudentsCount());
+        Assert.assertEquals(6, teacher2.getStudentsCount().intValue());
+
+        // 附带自定义查询
+        Teacher teacher3 = teacherModel.newQuery()
+            .withCount(Teacher::getStudentsBelongsToMany, Student::getId, builder -> builder.where(Student::getSex, 2),
+                Teacher::getStudentsCount)
+            .findOrFail(6)
+            .toObject();
+        Assert.assertNotNull(teacher3.getStudentsCount());
+        Assert.assertEquals(2, teacher3.getStudentsCount().intValue());
+
+        // 附带自定义统计查询
+        Teacher teacher4 = teacherModel.newQuery()
+            .withCount(Teacher::getStudentsBelongsToMany, Student::getSex, builder -> builder.group(Student::getSex),
+                Teacher::getStudentsCount)
+            .findOrFail(6)
+            .toObject();
+        Assert.assertNotNull(teacher4.getStudentsCount());
+        Assert.assertEquals(2, teacher4.getStudentsCount().intValue());
+    }
+
+    @Test
+    public void max_hasOneOrMany() {
+        List<Teacher> teachers = teacherModel.newQuery()
+            .whereIn(Teacher::getId, 1, 2, 6)
+            .orderBy(Teacher::getId)
+            .withMax(Teacher::getStudents, Student::getAge)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(3, teachers.size());
+        Assert.assertEquals(16, teachers.get(0).getStudentsMaxAge().intValue());
+        Assert.assertEquals(17, teachers.get(1).getStudentsMaxAge().intValue());
+        Assert.assertEquals(16, teachers.get(2).getStudentsMaxAge().intValue());
+
+        Teacher teacher = teacherModel.newQuery()
+            .withMax(Teacher::getStudents, Student::getAge)
+            .findOrFail(1)
+            .toObject();
+        Assert.assertNotNull(teacher.getStudentsMaxAge());
+        Assert.assertEquals(16, teacher.getStudentsMaxAge().intValue());
+
+        Teacher teacher1 = teacherModel.newQuery()
+            .withMax(Teacher::getStudents, Student::getAge)
+            .findOrFail(6)
+            .toObject();
+        Assert.assertNotNull(teacher1.getStudentsMaxAge());
+        Assert.assertEquals(16, teacher1.getStudentsMaxAge().intValue());
+
+        // 指定统计的字段(属性)，以及别名(属性)
+        Teacher teacher2 = teacherModel.newQuery()
+            .withMax(Teacher::getStudents, Student::getId, Teacher::getStudentsMaxAge)
+            .findOrFail(6)
+            .toObject();
+        Assert.assertNotNull(teacher2.getStudentsMaxAge());
+        Assert.assertEquals(4, teacher2.getStudentsMaxAge().intValue());
+
+        // 附带自定义查询
+        Teacher teacher3 = teacherModel.newQuery()
+            .withMax(Teacher::getStudents, Student::getAge, builder -> builder.where(Student::getSex, 2),
+                Teacher::getStudentsCount)
+            .findOrFail(6)
+            .toObject();
+        Assert.assertNotNull(teacher3.getStudentsCount());
+        Assert.assertEquals(11, teacher3.getStudentsCount().intValue());
+
+        // 附带自定义统计
+        Teacher teacher4 = teacherModel.newQuery()
+            .withMax(Teacher::getStudents, Student::getSex, builder -> builder.group(Student::getSex),
+                Teacher::getStudentsCount)
+            .findOrFail(6)
+            .toObject();
+        Assert.assertNotNull(teacher4.getStudentsCount());
+        Assert.assertEquals(2, teacher4.getStudentsCount().intValue());
+    }
+
+    @Test
+    public void max_belongsToMany() {
+        List<Teacher> teachers = teacherModel.newQuery()
+            .whereIn(Teacher::getId, 1, 6)
+            .withMax(Teacher::getStudentsBelongsToMany, Student::getId, Teacher::getStudentsMaxAge)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(2, teachers.size());
+        Assert.assertEquals(3, teachers.get(0).getStudentsMaxAge().intValue());
+        Assert.assertEquals(9, teachers.get(1).getStudentsMaxAge().intValue());
+
+        Teacher teacher = teacherModel.newQuery()
+            .withMax(Teacher::getStudentsBelongsToMany, Student::getAge, Teacher::getStudentsMaxAge)
+            .findOrFail(1)
+            .toObject();
+        Assert.assertNotNull(teacher.getStudentsMaxAge());
+        Assert.assertEquals(16, teacher.getStudentsMaxAge().intValue());
+
+        Teacher teacher1 = teacherModel.newQuery()
+            .withMax(Teacher::getStudentsBelongsToMany, Student::getAge, Teacher::getStudentsMaxAge)
+            .findOrFail(6)
+            .toObject();
+        Assert.assertNotNull(teacher1.getStudentsMaxAge());
+        Assert.assertEquals(17, teacher1.getStudentsMaxAge().intValue());
+
+        // 附带自定义查询
+        Teacher teacher3 = teacherModel.newQuery()
+            .withMax(Teacher::getStudentsBelongsToMany, Student::getId, builder -> builder.where(Student::getSex, 2),
+                Teacher::getStudentsMaxAge)
+            .findOrFail(6)
+            .toObject();
+        Assert.assertNotNull(teacher3.getStudentsMaxAge());
+        Assert.assertEquals(5, teacher3.getStudentsMaxAge().intValue());
+
+        // 附带自定义统计查询
+        Teacher teacher4 = teacherModel.newQuery()
+            .withMax(Teacher::getStudentsBelongsToMany, Student::getSex, builder -> builder.group(Student::getSex),
+                Teacher::getStudentsCount)
+            .findOrFail(6)
+            .toObject();
+        Assert.assertNotNull(teacher4.getStudentsCount());
+        Assert.assertEquals(2, teacher4.getStudentsCount().intValue());
+    }
+
+    @Test
+    public void whereNotHas_hasOneOrMany() {
+        List<Teacher> teacherList = teacherModel.newQuery()
+            .whereNotHas(Teacher::getStudentArray, builder -> builder.where(Student::getAge, ">", "16"))
+            .orderBy(Teacher::getId)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(2, teacherList.size());
+        Assert.assertEquals(1, teacherList.get(0).getId().intValue());
+        Assert.assertEquals(6, teacherList.get(1).getId().intValue());
+
+        // 手动删除几个
+        studentModel.newQuery().whereBetween(Student::getId, 7,9).delete();
+
+        RecordList<Teacher, Long> records = teacherModel.newQuery().whereNotHas(Teacher::getStudents).get();
+        List<Teacher> teachers = records.toObjectList();
+        System.out.println(teachers);
+
+        Assert.assertEquals(2, teachers.size());
+
+        List<Long> ids = records.toList(e -> e.toObject().getId());
+        Assert.assertTrue(ids.contains(2L));
+        Assert.assertTrue(ids.contains(8L));
+    }
+
+    @Test
+    public void whereHas_hasOneOrMany() {
+        List<Teacher> teacherList = teacherModel.newQuery()
+            .whereHas(Teacher::getStudentArray, builder -> builder.where(Student::getAge, ">", "16"))
+            .orderBy(Teacher::getId)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(2, teacherList.size());
+        Assert.assertEquals(2, teacherList.get(0).getId().intValue());
+        Assert.assertEquals(8, teacherList.get(1).getId().intValue());
+
+        // 手动删除几个
+        studentModel.newQuery().whereBetween(Student::getId, 7,9).delete();
+
+        RecordList<Teacher, Long> records = teacherModel.newQuery().whereHas(Teacher::getStudents).get();
+        List<Teacher> teachers = records.toObjectList();
+        System.out.println(teachers);
+
+        Assert.assertEquals(2, teachers.size());
+
+        List<Long> ids = records.toList(e -> e.toObject().getId());
+        Assert.assertTrue(ids.contains(1L));
+        Assert.assertTrue(ids.contains(6L));
+    }
+
+    @Test
+    public void whereNotHas_belongsTo() {
+        List<Student> studentList = studentModel.newQuery().whereNotHas("teacher").get().toObjectList();
+        Assert.assertEquals(1, studentList.size());
+        Assert.assertEquals(10, studentList.get(0).getId().intValue());
+
+
+        List<Student> students = studentModel.newQuery()
+            .whereNotHas("teacher", builder -> builder.where("sex", 2))
+            .orderBy(Student::getId)
+            .get()
+            .toObjectList();
+        System.out.println(students);
+
+        Assert.assertEquals(3, students.size());
+        Assert.assertEquals(7, students.get(0).getId().intValue());
+        Assert.assertEquals(8, students.get(1).getId().intValue());
+        Assert.assertEquals(10, students.get(2).getId().intValue());
+    }
+
+    @Test
+    public void whereHas_belongsTo() {
+        List<Student> studentList = studentModel.newQuery().whereHas("teacher").get().toObjectList();
+        Assert.assertEquals(9, studentList.size());
+
+
+        List<Student> students = studentModel.newQuery()
+            .whereHas("teacher", builder -> builder.where("sex", 1))
+            .orderBy(Student::getId)
+            .get()
+            .toObjectList();
+        System.out.println(students);
+
+        Assert.assertEquals(2, students.size());
+        Assert.assertEquals(7, students.get(0).getId().intValue());
+        Assert.assertEquals(8, students.get(1).getId().intValue());
+    }
+
+
+    @Test
+    public void whereNotHas_belongsToMany() {
+        relationshipStudentTeacherModel.newQuery().whereIn("id", 19, 20).delete();
+
+        List<Student> studentList = studentModel.newQuery().whereNotHas(Student::getTeachersBelongsToMany).get().toObjectList();
+        Assert.assertEquals(1, studentList.size());
+        Assert.assertEquals(10, studentList.get(0).getId().intValue());
+
+        relationshipStudentTeacherModel.newQuery().whereIn("id", 1,2,3,4,5,6,8,10).delete();
+
+        List<Student> students = studentModel.newQuery()
+            .whereNotHas(Student::getTeachersBelongsToMany, builder -> builder.where("sex", 2))
+            .orderBy(Student::getId)
+            .get()
+            .toObjectList();
+        System.out.println(students);
+
+        Assert.assertEquals(4, students.size());
+        Assert.assertEquals(1, students.get(0).getId().intValue());
+        Assert.assertEquals(2, students.get(1).getId().intValue());
+        Assert.assertEquals(3, students.get(2).getId().intValue());
+        Assert.assertEquals(10, students.get(3).getId().intValue());
+    }
+
+    @Test
+    public void whereHas_belongsToMany() {
+
+        relationshipStudentTeacherModel.newQuery().whereIn("id", 19, 20).delete();
+
+        List<Student> studentList = studentModel.newQuery().whereHas(Student::getTeachersBelongsToMany).get().toObjectList();
+        Assert.assertEquals(9, studentList.size());
+
+        relationshipStudentTeacherModel.newQuery().whereIn("id", 1,2,3,4,5,6,8,10).delete();
+
+        List<Student> students = studentModel.newQuery()
+            .whereHas(Student::getTeachersBelongsToMany, builder -> builder.where("sex", 2))
+            .orderBy(Student::getId)
+            .get()
+            .toObjectList();
+        System.out.println(students);
+
+        Assert.assertEquals(6, students.size());
+        Assert.assertEquals(4, students.get(0).getId().intValue());
+        Assert.assertEquals(5, students.get(1).getId().intValue());
+        Assert.assertEquals(6, students.get(2).getId().intValue());
+        Assert.assertEquals(7, students.get(3).getId().intValue());
+        Assert.assertEquals(8, students.get(4).getId().intValue());
+        Assert.assertEquals(9, students.get(5).getId().intValue());
+    }
+
 }

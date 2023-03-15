@@ -41,10 +41,11 @@ public class LambdaUtils {
      * 比较慢, 实际场景建议缓存使用
      * @param func lambda风格的属性名
      * @param <T> 实体类型
+     * @param <F> 属性类型
      * @return 属性名
      * @see ModelShadowProvider
      */
-    public static <T> LambdaInfo<T> parse(ColumnFunctionalInterface<T> func) {
+    public static <T, F> LambdaInfo<T> parse(ColumnFunctionalInterface<T, F> func) {
         try {
             Method method = func.getClass().getDeclaredMethod("writeReplace");
             method.setAccessible(true);

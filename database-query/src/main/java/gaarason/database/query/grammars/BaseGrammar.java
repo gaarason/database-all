@@ -1,8 +1,9 @@
 package gaarason.database.query.grammars;
 
 import gaarason.database.appointment.SqlType;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
-import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
+import gaarason.database.contract.eloquent.Record;
+import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.InvalidSqlTypeException;
@@ -29,10 +30,16 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         SQLPartType.IGNORE_INDEX, SQLPartType.COLUMN);
     /**
      * column -> [ GenerateSqlPart , RelationshipRecordWith ]
-     * @see RelationshipRecordWithFunctionalInterface
-     * @see GenerateSqlPartFunctionalInterface
+     * @see RecordWrapper
+     * @see BuilderWrapper
      */
     protected final Map<String, Object[]> withMap;
+
+    /**
+     * 关联关系
+     */
+    protected final Map<String, Record.Relation> relationMap;
+
     /**
      * 表名
      */
@@ -46,6 +53,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         table = tableName;
         withMap = new HashMap<>();
         SQLPartMap = new HashMap<>();
+        relationMap = new HashMap<>();
     }
 
     @Override
@@ -130,8 +138,9 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         // construct
         SQLPartInfo sqlPart = new SQLPartInfo(sqlPartString, parameters);
         // put
-        SQLPartMap.put(sqlPartType, Collections.singletonList(sqlPart));
-
+        LinkedList<SQLPartInfo> objects = new LinkedList<>();
+        objects.add(sqlPart);
+        SQLPartMap.put(sqlPartType, objects);
     }
 
     @Override
@@ -161,7 +170,11 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         Collection<Object> allParameters) {
         List<SQLPartInfo> sqlParts = SQLPartMap.get(sqlPartType);
         if (ObjectUtils.isEmpty(sqlParts)) {
-            return;
+            // 使用默认值
+            sqlParts = getDefault(sqlPartType);
+            if(ObjectUtils.isEmpty(sqlParts)) {
+                return;
+            }
         }
 
         // keyword
@@ -200,10 +213,6 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     public SQLPartInfo generateSql(SqlType sqlType) {
         StringBuilder sqlBuilder = new StringBuilder();
         Collection<Object> allParameters = new LinkedList<>();
-
-        // 默认值处理
-        setDefault();
-
 
         switch (sqlType) {
             case REPLACE:
@@ -249,40 +258,30 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     }
 
     /**
-     * 默认值填充
+     * 得到默认值
      */
-    protected void setDefault() {
-        if (isEmpty(SQLPartType.TABLE)) {
-            set(SQLPartType.TABLE, table, null);
-            set(SQLPartType.FROM, table, null);
+    @Nullable
+    protected List<SQLPartInfo> getDefault(SQLPartType type) {
+        switch (type) {
+            case TABLE:
+            case FROM:
+                return Collections.singletonList(new SQLPartInfo(table));
+            case SELECT:
+                return  Collections.singletonList(new SQLPartInfo("*"));
+            case VALUE:
+                return Collections.singletonList( new SQLPartInfo("()"));
         }
-        if (isEmpty(SQLPartType.SELECT)) {
-            set(SQLPartType.SELECT, "*", null);
-        }
-        if (isEmpty(SQLPartType.VALUE)) {
-            set(SQLPartType.VALUE, "()", null);
-        }
+        return null;
     }
 
-    /**
-     * 记录with信息
-     * @param column 所关联的Model(当前模块的属性名)
-     * @param builderClosure 所关联的Model的查询构造器约束
-     * @param recordClosure 所关联的Model的再一级关联
-     */
     @Override
-    public void pushWith(String column, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
-        RelationshipRecordWithFunctionalInterface recordClosure) {
-        withMap.put(column, new Object[]{builderClosure, recordClosure});
+    public void pushRelation(String targetFieldName, Record.Relation relation) {
+        relationMap.put(targetFieldName, relation);
     }
 
-    /**
-     * 拉取with信息
-     * @return map
-     */
     @Override
-    public Map<String, Object[]> pullWith() {
-        return withMap;
+    public Map<String, Record.Relation> pullRelation(){
+        return relationMap;
     }
 
     @Override
@@ -292,7 +291,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
     @Override
     public void merger(Grammar grammar) {
-        withMap.putAll(grammar.pullWith());
+        relationMap.putAll(grammar.pullRelation());
 
         for (SQLPartType type : SQLPartType.values()) {
             SQLPartInfo partInfo = grammar.get(type);

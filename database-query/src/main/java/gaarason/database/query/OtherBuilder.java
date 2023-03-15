@@ -4,15 +4,17 @@ import gaarason.database.appointment.AggregatesType;
 import gaarason.database.appointment.JoinType;
 import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderAnyWrapper;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.function.ToSqlFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
+import gaarason.database.support.EntityMember;
+import gaarason.database.support.FieldRelationMember;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -40,38 +42,6 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
         }
         Map<String, Object> resMap = builder.selectFunction(op.toString(), column, alias).firstOrFail().toMap();
         return ObjectUtils.typeCast(resMap.get(alias));
-    }
-
-    @Override
-    public Long count() {
-        return count("*");
-    }
-
-    @Override
-    public Long count(String column) {
-        return aggregate(AggregatesType.count, column);
-    }
-
-    @Override
-    public String max(String column) {
-        Object aggregate = aggregate(AggregatesType.max, column);
-        return String.valueOf(aggregate);
-    }
-
-    @Override
-    public String min(String column) {
-        Object aggregate = aggregate(AggregatesType.min, column);
-        return String.valueOf(aggregate);
-    }
-
-    @Override
-    public BigDecimal avg(String column) {
-        return aggregate(AggregatesType.avg, column);
-    }
-
-    @Override
-    public BigDecimal sum(String column) {
-        return aggregate(AggregatesType.sum, column);
     }
 
     @Override
@@ -116,7 +86,7 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> from(String alias, GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> from(String alias, BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sqlPart = FormatUtils.bracket(sqlPartInfo.getSqlString()) + alias;
         grammar.set(Grammar.SQLPartType.FROM, sqlPart, sqlPartInfo.getParameters());
@@ -176,7 +146,7 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> union(GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> union(BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         grammar.add(Grammar.SQLPartType.UNION, "union" + FormatUtils.bracket(sqlPartInfo.getSqlString()),
             sqlPartInfo.getParameters());
@@ -184,10 +154,34 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> unionAll(GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> unionAll(BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         grammar.add(Grammar.SQLPartType.UNION, "union all" + FormatUtils.bracket(sqlPartInfo.getSqlString()),
             sqlPartInfo.getParameters());
+        return this;
+    }
+
+    private boolean unionEachFirstActionMark = true;
+
+    @Override
+    public Builder<T, K> union(Builder<?, ?> builder) {
+        if(unionEachFirstActionMark){
+            setAnyBuilder(builder);
+            unionEachFirstActionMark = false;
+        }else{
+            union(subBuilder -> subBuilder.setAnyBuilder(builder));
+        }
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> unionAll(Builder<?, ?> builder) {
+        if(unionEachFirstActionMark){
+            setAnyBuilder(builder);
+            unionEachFirstActionMark = false;
+        }else{
+            unionAll(subBuilder -> subBuilder.setAnyBuilder(builder));
+        }
         return this;
     }
 
@@ -219,8 +213,8 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> join(JoinType joinType, GenerateSqlPartFunctionalInterface<T, K> tempTable, String alias,
-        GenerateSqlPartFunctionalInterface<T, K> joinConditions) {
+    public Builder<T, K> join(JoinType joinType, BuilderWrapper<T, K> tempTable, String alias,
+        BuilderWrapper<T, K> joinConditions) {
         Grammar.SQLPartInfo tableInfo = generateSql(tempTable);
         String table = FormatUtils.bracket(tableInfo.getSqlString()) + alias;
 
@@ -240,7 +234,7 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
 
     @Override
     public Builder<T, K> join(JoinType joinType, String table,
-        GenerateSqlPartFunctionalInterface<T, K> joinConditions) {
+        BuilderWrapper<T, K> joinConditions) {
         Grammar.SQLPartInfo conditions = generateSql(joinConditions, Grammar.SQLPartType.WHERE);
         String sqlPart = FormatUtils.spaces(joinType.getOperation()) + "join " + table + FormatUtils.spaces("on") +
             FormatUtils.bracket(conditions.getSqlString());
@@ -267,13 +261,13 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> when(boolean condition, GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> when(boolean condition, BuilderWrapper<T, K> closure) {
         return when(condition, closure, builder -> builder);
     }
 
     @Override
-    public Builder<T, K> when(boolean condition, GenerateSqlPartFunctionalInterface<T, K> closureIfTrue,
-        GenerateSqlPartFunctionalInterface<T, K> closureIfFalse) {
+    public Builder<T, K> when(boolean condition, BuilderWrapper<T, K> closureIfTrue,
+        BuilderWrapper<T, K> closureIfFalse) {
         return condition ? closureIfTrue.execute(this) : closureIfFalse.execute(this);
     }
 
@@ -319,5 +313,25 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
             column(column);
         }
         return this;
+    }
+
+    @Override
+    public Builder<T, K> whereHas(String relationFieldName, BuilderWrapper<?, ?> closure) {
+        // 获取关联关系
+        EntityMember<T, K> entityMember = modelShadowProvider.parseAnyEntityWithCache(entityClass);
+        FieldRelationMember relationMember = entityMember.getFieldRelationMemberByFieldName(
+            relationFieldName);
+
+        return whereAnyExists(builder -> (relationMember.getRelationSubQuery().prepareForWhereHas(closure)));
+    }
+
+    @Override
+    public Builder<T, K> whereNotHas(String relationFieldName, BuilderWrapper<?, ?> closure) {
+        // 获取关联关系
+        EntityMember<T, K> entityMember = modelShadowProvider.parseAnyEntityWithCache(entityClass);
+        FieldRelationMember relationMember = entityMember.getFieldRelationMemberByFieldName(
+            relationFieldName);
+
+        return whereAnyNotExists(builder -> (relationMember.getRelationSubQuery().prepareForWhereHas(closure)));
     }
 }

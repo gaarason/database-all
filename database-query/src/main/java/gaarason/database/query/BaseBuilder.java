@@ -1,17 +1,20 @@
 package gaarason.database.query;
 
+import gaarason.database.appointment.AggregatesType;
 import gaarason.database.appointment.FinalVariable;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
+import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
-import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.contract.function.TransactionFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.core.Container;
 import gaarason.database.exception.AbnormalParameterException;
+import gaarason.database.exception.AggregatesNotSupportedGroupException;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
@@ -20,6 +23,7 @@ import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.ClassUtils;
 import gaarason.database.util.ExceptionUtils;
 import gaarason.database.util.ObjectUtils;
+import gaarason.database.util.StringUtils;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -115,12 +119,12 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
     }
 
     @Override
-    public String lambda2FieldName(ColumnFunctionalInterface<T> column) {
+    public String lambda2FieldName(ColumnFunctionalInterface<?, ?> column) {
         return modelShadowProvider.parseFieldNameByLambdaWithCache(column);
     }
 
     @Override
-    public String lambda2ColumnName(ColumnFunctionalInterface<T> column) {
+    public String lambda2ColumnName(ColumnFunctionalInterface<?, ?> column) {
         return modelShadowProvider.parseColumnNameByLambdaWithCache(column);
     }
 
@@ -150,7 +154,7 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
      */
     @Override
     public Builder<T, K> with(String fieldName) {
-        return with(fieldName, builder -> builder, theRecord -> theRecord);
+        return with(fieldName, BuilderWrapper.empty(), RecordWrapper.empty());
     }
 
     /**
@@ -160,8 +164,8 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
      * @return 关联的Model的查询构造器
      */
     @Override
-    public Builder<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure) {
-        return with(fieldName, builderClosure, theRecord -> theRecord);
+    public <F> Builder<T, K> with(String fieldName, BuilderWrapper<F, ?> builderClosure) {
+        return with(fieldName, builderClosure, RecordWrapper.empty());
     }
 
     /**
@@ -172,10 +176,31 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
      * @return 关联的Model的查询构造器
      */
     @Override
-    public Builder<T, K> with(String fieldName, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
-        RelationshipRecordWithFunctionalInterface recordClosure) {
-        grammar.pushWith(fieldName, builderClosure, recordClosure);
+    public <F> Builder<T, K> with(String fieldName, BuilderWrapper<F, ?> builderClosure,
+        RecordWrapper recordClosure) {
+        grammar.pushRelation(fieldName, new Record.Relation(fieldName, builderClosure, recordClosure));
         return this;
+    }
+
+    @Override
+    public Builder<T, K> withOperation(String fieldName, BuilderWrapper<?, ?> operationBuilder, BuilderWrapper<?, ?> customBuilder, String alisaFieldName) {
+        grammar.pushRelation(alisaFieldName, new Record.Relation(fieldName, operationBuilder, customBuilder, RecordWrapper.empty()));
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> withAggregate(AggregatesType op, String fieldName, String column,
+        BuilderWrapper<?, ?> customBuilder, @Nullable String alisaFieldName) {
+
+        // 别名
+        String alisaField = alisaFieldName != null ? alisaFieldName : StringUtils.lineToHump(fieldName + "_" + op + "_" + column);
+
+        // 操作查询构造器
+        BuilderWrapper<Object, Object> operationBuilder = builder -> {
+            return builder.selectFunction(op.toString(), column, alisaField);
+        };
+
+        return withOperation(fieldName,  operationBuilder, customBuilder, alisaField);
     }
 
 

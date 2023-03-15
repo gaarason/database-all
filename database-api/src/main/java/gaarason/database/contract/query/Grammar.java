@@ -1,8 +1,7 @@
 package gaarason.database.contract.query;
 
 import gaarason.database.appointment.SqlType;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
-import gaarason.database.contract.function.RelationshipRecordWithFunctionalInterface;
+import gaarason.database.contract.eloquent.Record;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.lang.Nullable;
 
@@ -136,19 +135,18 @@ public interface Grammar {
     void merger(Grammar grammar);
 
     /**
-     * 记录with信息
-     * @param column 所关联的Model(当前模块的属性名)
-     * @param builderClosure 所关联的Model的查询构造器约束
-     * @param recordClosure 所关联的Model的再一级关联
+     * 记录关联关系信息
+     * @param targetFieldName 目标属性(当前模块的属性名)
+     * @param relation 关联关系信息
      */
-    void pushWith(String column, GenerateSqlPartFunctionalInterface<?, ?> builderClosure,
-        RelationshipRecordWithFunctionalInterface recordClosure);
+    void pushRelation(String targetFieldName, Record.Relation relation);
+
 
     /**
-     * 拉取with信息
-     * @return map
+     * 拉取关联关系信息
+     * @return 目标属性 -> 关联关系信息
      */
-    Map<String, Object[]> pullWith();
+    Map<String, Record.Relation> pullRelation();
 
     /**
      * SQL片段类型
@@ -186,6 +184,10 @@ public interface Grammar {
         public SQLPartInfo(String sqlString, @Nullable Collection<Object> parameters) {
             this.sqlString = sqlString;
             this.parameters = parameters;
+        }
+
+        public SQLPartInfo(String sqlString) {
+            this(sqlString, null);
         }
 
         public String getSqlString() {

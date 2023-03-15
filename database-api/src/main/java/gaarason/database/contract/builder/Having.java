@@ -1,7 +1,7 @@
 package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.lang.Nullable;
 
 import java.util.Collection;
@@ -344,7 +344,7 @@ public interface Having<T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> havingSubQuery(String column, String symbol, GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> havingSubQuery(String column, String symbol, BuilderWrapper<T, K> closure);
 
 
     /**
@@ -393,7 +393,7 @@ public interface Having<T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> havingIn(String column, GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> havingIn(String column, BuilderWrapper<T, K> closure);
 
     /**
      * 列值不在范围内
@@ -441,7 +441,7 @@ public interface Having<T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> havingNotIn(String column, GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> havingNotIn(String column, BuilderWrapper<T, K> closure);
 
     /**
      * 列值在两值之间
@@ -525,7 +525,7 @@ public interface Having<T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> havingExists(GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> havingExists(BuilderWrapper<T, K> closure);
 
     /**
      * not exists一个闭包
@@ -539,7 +539,7 @@ public interface Having<T, K> {
      * @param closure 完整sql
      * @return 查询构造器
      */
-    Builder<T, K> havingNotExists(GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> havingNotExists(BuilderWrapper<T, K> closure);
 
     /**
      * 比较字段与字段
@@ -563,26 +563,26 @@ public interface Having<T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> andHaving(GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> andHaving(BuilderWrapper<T, K> closure);
 
     /**
      * 且, 忽略空语句
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> andHavingIgnoreEmpty(GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> andHavingIgnoreEmpty(BuilderWrapper<T, K> closure);
 
     /**
      * 或
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> orHaving(GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> orHaving(BuilderWrapper<T, K> closure);
 
     /**
      * 或, 忽略空语句
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> orHavingIgnoreEmpty(GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> orHavingIgnoreEmpty(BuilderWrapper<T, K> closure);
 }

@@ -1,7 +1,8 @@
 package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderAnyWrapper;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.lang.Nullable;
 
 import java.util.Collection;
@@ -318,7 +319,7 @@ public interface Where<T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> whereSubQuery(String column, String symbol, GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> whereSubQuery(String column, String symbol, BuilderWrapper<T, K> closure);
 
     /**
      * 列值在范围内
@@ -366,7 +367,7 @@ public interface Where<T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> whereIn(String column, GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> whereIn(String column, BuilderWrapper<T, K> closure);
 
     /**
      * 列值不在范围内
@@ -414,7 +415,7 @@ public interface Where<T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> whereNotIn(String column, GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> whereNotIn(String column, BuilderWrapper<T, K> closure);
 
     /**
      * 列值在两值之间
@@ -498,7 +499,14 @@ public interface Where<T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> whereExists(GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> whereExists(BuilderWrapper<T, K> closure);
+
+    /**
+     * exists一个闭包
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    Builder<T, K> whereAnyExists(BuilderAnyWrapper closure);
 
     /**
      * not exists一个闭包
@@ -512,7 +520,14 @@ public interface Where<T, K> {
      * @param closure 完整sql
      * @return 查询构造器
      */
-    Builder<T, K> whereNotExists(GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> whereNotExists(BuilderWrapper<T, K> closure);
+
+    /**
+     * not exists一个完整sql
+     * @param closure 完整sql
+     * @return 查询构造器
+     */
+    Builder<T, K> whereAnyNotExists(BuilderAnyWrapper closure);
 
     /**
      * 比较字段与字段
@@ -536,27 +551,60 @@ public interface Where<T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> andWhere(GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> andWhere(BuilderWrapper<T, K> closure);
 
     /**
      * 且, 忽略空语句
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> andWhereIgnoreEmpty(GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> andWhereIgnoreEmpty(BuilderWrapper<T, K> closure);
 
     /**
      * 或
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> orWhere(GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> orWhere(BuilderWrapper<T, K> closure);
 
     /**
      * 或, 忽略空语句
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> orWhereIgnoreEmpty(GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> orWhereIgnoreEmpty(BuilderWrapper<T, K> closure);
 
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @return 查询构造器
+     */
+    default Builder<T, K> whereHas(String relationFieldName) {
+        return whereHas(relationFieldName, BuilderWrapper.empty());
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    Builder<T, K> whereHas(String relationFieldName, BuilderWrapper<?, ?> closure);
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @return 查询构造器
+     */
+    default Builder<T, K> whereNotHas(String relationFieldName) {
+        return whereNotHas(relationFieldName, BuilderWrapper.empty());
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    Builder<T, K> whereNotHas(String relationFieldName, BuilderWrapper<?, ?> closure);
 }

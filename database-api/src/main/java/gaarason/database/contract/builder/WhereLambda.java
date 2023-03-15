@@ -2,7 +2,7 @@ package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.lang.Nullable;
 
 import java.util.Arrays;
@@ -10,8 +10,8 @@ import java.util.Collection;
 
 /**
  * 条件
- * @param <T>
- * @param <K>
+ * @param <T> 实体类型
+ * @param <K> 主键类型
  * @author xt
  */
 public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
@@ -21,9 +21,10 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * @param column 列名表达式
      * @param symbol 比较关系
      * @param value 值
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> where(ColumnFunctionalInterface<T> column, String symbol, Object value) {
+    default <F> Builder<T, K> where(ColumnFunctionalInterface<T, F> column, String symbol, Object value) {
         return where(lambda2ColumnName(column), symbol, value);
     }
 
@@ -32,9 +33,11 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * @param column 列名表达式
      * @param symbol 比较关系
      * @param value 值
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereIgnoreNull(ColumnFunctionalInterface<T> column, String symbol, @Nullable Object value) {
+    default <F> Builder<T, K> whereIgnoreNull(ColumnFunctionalInterface<T, F> column, String symbol,
+        @Nullable Object value) {
         return whereIgnoreNull(lambda2ColumnName(column), symbol, value);
     }
 
@@ -42,19 +45,25 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 比较列与值相等
      * @param column 列名表达式
      * @param value 值
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> where(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+    default <F> Builder<T, K> where(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
         return where(lambda2ColumnName(column), value);
     }
+
+//    default <F> Builder<T, K> where(ColumnFunctionalInterface.Collection<T, F> column, @Nullable Object value) {
+//        return where(lambda2ColumnName(column), value);
+//    }
 
     /**
      * 比较列与值相等(忽略值为null的情况)
      * @param column 列名表达式
      * @param value 值
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereIgnoreNull(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+    default <F> Builder<T, K> whereIgnoreNull(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
         return whereIgnoreNull(lambda2ColumnName(column), value);
     }
 
@@ -65,10 +74,11 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 其他情况下, 使用 = 查询
      * @param value 值
      * @param columns 多个列名表达式
+     * @param <F> 属性类型
      * @return 查询构造器
      */
     @SuppressWarnings("unchecked")
-    default Builder<T, K> whereKeywords(@Nullable Object value, ColumnFunctionalInterface<T>... columns) {
+    default <F> Builder<T, K> whereKeywords(@Nullable Object value, ColumnFunctionalInterface<T, F>... columns) {
         return whereKeywordsIgnoreNull(value, lambda2ColumnName(Arrays.asList(columns)));
     }
 
@@ -79,9 +89,10 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 忽略值为 % 、%%的情况
      * @param column 列名表达式
      * @param value 值
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereLikeIgnoreNull(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+    default <F> Builder<T, K> whereLikeIgnoreNull(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
         return whereLikeIgnoreNull(lambda2ColumnName(column), value);
     }
 
@@ -92,9 +103,10 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 忽略值为 % 、%%的情况
      * @param column 列名表达式
      * @param value 值
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereNotLikeIgnoreNull(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+    default <F> Builder<T, K> whereNotLikeIgnoreNull(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
         return whereNotLikeIgnoreNull(lambda2ColumnName(column), value);
     }
 
@@ -105,9 +117,10 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 其他情况下, 使用 = 查询
      * @param column 列名表达式
      * @param value 值
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereMayLike(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+    default <F> Builder<T, K> whereMayLike(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
         return whereMayLike(lambda2ColumnName(column), value);
     }
 
@@ -118,9 +131,10 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 其他情况下, 使用 = 查询
      * @param column 列名表达式
      * @param value 值
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereMayNotLike(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+    default <F> Builder<T, K> whereMayNotLike(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
         return whereMayNotLike(lambda2ColumnName(column), value);
     }
 
@@ -131,9 +145,10 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 其他情况下, 使用 = 查询
      * @param column 列名表达式
      * @param value 值
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereMayLikeIgnoreNull(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+    default <F> Builder<T, K> whereMayLikeIgnoreNull(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
         return whereMayLikeIgnoreNull(lambda2ColumnName(column), value);
     }
 
@@ -144,9 +159,11 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 其他情况下, 使用 != 查询
      * @param column 列名
      * @param value 值
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereMayNotLikeIgnoreNull(ColumnFunctionalInterface<T> column, @Nullable Object value) {
+    default <F> Builder<T, K> whereMayNotLikeIgnoreNull(ColumnFunctionalInterface<T, F> column,
+        @Nullable Object value) {
         return whereMayNotLikeIgnoreNull(lambda2ColumnName(column), value);
     }
 
@@ -155,9 +172,10 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * @param column 列名表达式
      * @param symbol 关系符号
      * @param completeSql 完整sql
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereSubQuery(ColumnFunctionalInterface<T> column, String symbol, String completeSql) {
+    default <F> Builder<T, K> whereSubQuery(ColumnFunctionalInterface<T, F> column, String symbol, String completeSql) {
         return whereSubQuery(lambda2ColumnName(column), symbol, completeSql);
     }
 
@@ -166,10 +184,11 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * @param column 列名表达式
      * @param symbol 关系符号
      * @param closure 闭包
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereSubQuery(ColumnFunctionalInterface<T> column, String symbol,
-        GenerateSqlPartFunctionalInterface<T, K> closure) {
+    default <F> Builder<T, K> whereSubQuery(ColumnFunctionalInterface<T, F> column, String symbol,
+        BuilderWrapper<T, K> closure) {
         return whereSubQuery(lambda2ColumnName(column), symbol, closure);
     }
 
@@ -177,9 +196,10 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 列值在范围内
      * @param column 列名表达式
      * @param valueList 值所在的list
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereIn(ColumnFunctionalInterface<T> column, Collection<?> valueList) {
+    default <F> Builder<T, K> whereIn(ColumnFunctionalInterface<T, F> column, Collection<?> valueList) {
         return whereIn(lambda2ColumnName(column), valueList);
     }
 
@@ -187,9 +207,11 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 列值在范围内(忽略值为空的情况)
      * @param column 列名表达式
      * @param valueList 值所在的list
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereInIgnoreEmpty(ColumnFunctionalInterface<T> column, @Nullable Collection<?> valueList) {
+    default <F> Builder<T, K> whereInIgnoreEmpty(ColumnFunctionalInterface<T, F> column,
+        @Nullable Collection<?> valueList) {
         return whereInIgnoreEmpty(lambda2ColumnName(column), valueList);
     }
 
@@ -197,9 +219,10 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 列值在范围内
      * @param column 列名表达式
      * @param valueArray 值所在的数组
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereIn(ColumnFunctionalInterface<T> column, Object... valueArray) {
+    default <F> Builder<T, K> whereIn(ColumnFunctionalInterface<T, F> column, Object... valueArray) {
         return whereIn(lambda2ColumnName(column), valueArray);
     }
 
@@ -207,9 +230,11 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 列值在范围内(忽略值为空的情况)
      * @param column 列名表达式
      * @param valueArray 值所在的数组
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereInIgnoreEmpty(ColumnFunctionalInterface<T> column, @Nullable Object... valueArray) {
+    default <F> Builder<T, K> whereInIgnoreEmpty(ColumnFunctionalInterface<T, F> column,
+        @Nullable Object... valueArray) {
         return whereInIgnoreEmpty(lambda2ColumnName(column), valueArray);
     }
 
@@ -217,9 +242,10 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 列值在范围内(子查询)
      * @param column 列名表达式
      * @param sql 完整sql eg:select id from student where age>10
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereInRaw(ColumnFunctionalInterface<T> column, String sql) {
+    default <F> Builder<T, K> whereInRaw(ColumnFunctionalInterface<T, F> column, String sql) {
         return whereInRaw(lambda2ColumnName(column), sql);
     }
 
@@ -227,10 +253,11 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 列值在范围内(子查询)
      * @param column 列名表达式
      * @param closure 闭包
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereIn(ColumnFunctionalInterface<T> column,
-        GenerateSqlPartFunctionalInterface<T, K> closure) {
+    default <F> Builder<T, K> whereIn(ColumnFunctionalInterface<T, F> column,
+        BuilderWrapper<T, K> closure) {
         return whereIn(lambda2ColumnName(column), closure);
     }
 
@@ -238,9 +265,10 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 列值不在范围内
      * @param column 列名表达式
      * @param valueList 值所在的list
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereNotIn(ColumnFunctionalInterface<T> column, Collection<?> valueList) {
+    default <F> Builder<T, K> whereNotIn(ColumnFunctionalInterface<T, F> column, Collection<?> valueList) {
         return whereNotIn(lambda2ColumnName(column), valueList);
     }
 
@@ -248,9 +276,10 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 列值在范围内(忽略值为空的情况)
      * @param column 列名表达式
      * @param valueList 值所在的list
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereNotInIgnoreEmpty(ColumnFunctionalInterface<T> column,
+    default <F> Builder<T, K> whereNotInIgnoreEmpty(ColumnFunctionalInterface<T, F> column,
         @Nullable Collection<?> valueList) {
         return whereNotInIgnoreEmpty(lambda2ColumnName(column), valueList);
     }
@@ -259,9 +288,10 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 列值在范围内
      * @param column 列名表达式
      * @param valueArray 值所在的数组
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereNotIn(ColumnFunctionalInterface<T> column, Object... valueArray) {
+    default <F> Builder<T, K> whereNotIn(ColumnFunctionalInterface<T, F> column, Object... valueArray) {
         return whereNotIn(lambda2ColumnName(column), valueArray);
     }
 
@@ -269,9 +299,11 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 列值在范围内(忽略值为空的情况)
      * @param column 列名表达式
      * @param valueArray 值所在的数组
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereNotInIgnoreEmpty(ColumnFunctionalInterface<T> column, @Nullable Object... valueArray) {
+    default <F> Builder<T, K> whereNotInIgnoreEmpty(ColumnFunctionalInterface<T, F> column,
+        @Nullable Object... valueArray) {
         return whereNotInIgnoreEmpty(lambda2ColumnName(column), valueArray);
     }
 
@@ -279,9 +311,10 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 列值不在范围内(子查询)
      * @param column 列名表达式
      * @param sql 完整sql eg:select id from student where age>10
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereNotInRaw(ColumnFunctionalInterface<T> column, String sql) {
+    default <F> Builder<T, K> whereNotInRaw(ColumnFunctionalInterface<T, F> column, String sql) {
         return whereNotInRaw(lambda2ColumnName(column), sql);
     }
 
@@ -289,10 +322,11 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 列值不在范围内(子查询)
      * @param column 列名表达式
      * @param closure 闭包
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereNotIn(ColumnFunctionalInterface<T> column,
-        GenerateSqlPartFunctionalInterface<T, K> closure) {
+    default <F> Builder<T, K> whereNotIn(ColumnFunctionalInterface<T, F> column,
+        BuilderWrapper<T, K> closure) {
         return whereNotIn(lambda2ColumnName(column), closure);
     }
 
@@ -301,9 +335,10 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * @param column 列名表达式
      * @param min 值1
      * @param max 值2
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereBetween(ColumnFunctionalInterface<T> column, Object min, Object max) {
+    default <F> Builder<T, K> whereBetween(ColumnFunctionalInterface<T, F> column, Object min, Object max) {
         return whereBetween(lambda2ColumnName(column), min, max);
     }
 
@@ -312,27 +347,30 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * @param column 列名表达式
      * @param min 值1
      * @param max 值2
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereNotBetween(ColumnFunctionalInterface<T> column, Object min, Object max) {
+    default <F> Builder<T, K> whereNotBetween(ColumnFunctionalInterface<T, F> column, Object min, Object max) {
         return whereNotBetween(lambda2ColumnName(column), min, max);
     }
 
     /**
      * 列值为null
      * @param column 列名表达式
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereNull(ColumnFunctionalInterface<T> column) {
+    default <F> Builder<T, K> whereNull(ColumnFunctionalInterface<T, F> column) {
         return whereNull(lambda2ColumnName(column));
     }
 
     /**
      * 列值不为null
      * @param column 列名表达式
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereNotNull(ColumnFunctionalInterface<T> column) {
+    default <F> Builder<T, K> whereNotNull(ColumnFunctionalInterface<T, F> column) {
         return whereNotNull(lambda2ColumnName(column));
     }
 
@@ -341,10 +379,11 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * @param column1 列1 表达式
      * @param symbol 比较关系
      * @param column2 列2 表达式
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereColumn(ColumnFunctionalInterface<T> column1, String symbol,
-        ColumnFunctionalInterface<T> column2) {
+    default <F> Builder<T, K> whereColumn(ColumnFunctionalInterface<T, F> column1, String symbol,
+        ColumnFunctionalInterface<T, F> column2) {
         return whereColumn(lambda2ColumnName(column1), symbol, lambda2ColumnName(column2));
     }
 
@@ -352,10 +391,91 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * 字段与字段相等
      * @param column1 列1 表达式
      * @param column2 列2 表达式
+     * @param <F> 属性类型
      * @return 查询构造器
      */
-    default Builder<T, K> whereColumn(ColumnFunctionalInterface<T> column1, ColumnFunctionalInterface<T> column2) {
+    default <F> Builder<T, K> whereColumn(ColumnFunctionalInterface<T, F> column1,
+        ColumnFunctionalInterface<T, F> column2) {
         return whereColumn(lambda2ColumnName(column1), lambda2ColumnName(column2));
     }
 
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @return 查询构造器
+     */
+    default <F> Builder<T, K> whereHas(ColumnFunctionalInterface.ColumnCollection<T, F> relationFieldName) {
+        return whereHas(lambda2FieldName(relationFieldName), BuilderWrapper.empty());
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @return 查询构造器
+     */
+    default <F> Builder<T, K> whereHas(ColumnFunctionalInterface.ColumnArray<T, F> relationFieldName) {
+        return whereHas(lambda2FieldName(relationFieldName), BuilderWrapper.empty());
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    default <F> Builder<T, K> whereHas(ColumnFunctionalInterface.ColumnCollection<T, F> relationFieldName,
+        BuilderWrapper<F, ?> closure) {
+        return whereHas(lambda2FieldName(relationFieldName), closure);
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    default <F> Builder<T, K> whereHas(ColumnFunctionalInterface.ColumnArray<T, F> relationFieldName,
+        BuilderWrapper<F, ?> closure) {
+        return whereHas(lambda2FieldName(relationFieldName), closure);
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @return 查询构造器
+     */
+    default <F> Builder<T, K> whereNotHas(ColumnFunctionalInterface.ColumnArray<T, F> relationFieldName) {
+        return whereNotHas(lambda2FieldName(relationFieldName), BuilderWrapper.empty());
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @return 查询构造器
+     */
+    default <F> Builder<T, K> whereNotHas(ColumnFunctionalInterface.ColumnCollection<T, F> relationFieldName) {
+        return whereNotHas(lambda2FieldName(relationFieldName), BuilderWrapper.empty());
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    default <F> Builder<T, K> whereNotHas(ColumnFunctionalInterface.ColumnArray<T, F> relationFieldName,
+        BuilderWrapper<F, ?> closure) {
+        return whereNotHas(lambda2FieldName(relationFieldName), closure);
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    default <F> Builder<T, K> whereNotHas(ColumnFunctionalInterface.ColumnCollection<T, F> relationFieldName,
+        BuilderWrapper<F, ?> closure) {
+        return whereNotHas(lambda2FieldName(relationFieldName), closure);
+    }
 }

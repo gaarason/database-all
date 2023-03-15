@@ -238,7 +238,7 @@ public interface CollectionOperation<E> extends List<E>, Deque<E> {
      * @param value 给定值
      * @return bool
      */
-    boolean contains(String fieldName, Object value);
+    boolean contains(String fieldName, @Nullable Object value);
 
     /**
      * 判断集合是否存在任何一个元素满足条件

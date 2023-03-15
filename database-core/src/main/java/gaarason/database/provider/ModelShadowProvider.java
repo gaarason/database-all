@@ -220,9 +220,10 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * 这个过程使用缓存进行加速, 5-10倍
      * @param func lambda风格的属性名
      * @param <T> 实体类型
+     * @param <F> 属性类型
      * @return 属性名
      */
-    public <T> String parseFieldNameByLambdaWithCache(ColumnFunctionalInterface<T> func) {
+    public <T, F> String parseFieldNameByLambdaWithCache(ColumnFunctionalInterface<T, F> func) {
         Class<?> clazz = func.getClass();
         String fieldName = cache.lambdaFieldName.get(clazz);
         if (fieldName == null) {
@@ -230,7 +231,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
                 fieldName = cache.lambdaFieldName.get(clazz);
                 if (fieldName == null) {
                     // 解析 lambda
-                    LambdaInfo<T> lambdaInfo = LambdaUtils.parse(func);
+                    LambdaInfo<?> lambdaInfo = LambdaUtils.parse(func);
                     // 属性名
                     fieldName = lambdaInfo.getFieldName();
                     // 常量化后, 加入缓存
@@ -246,9 +247,10 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * 这个过程使用缓存进行加速, 5-10倍
      * @param func lambda风格的列名
      * @param <T> 实体类型
+     * @param <F> 属性类型
      * @return 列名
      */
-    public <T> String parseColumnNameByLambdaWithCache(ColumnFunctionalInterface<T> func) {
+    public <T, F> String parseColumnNameByLambdaWithCache(ColumnFunctionalInterface<T, F> func) {
         Class<?> clazz = func.getClass();
         String columnName = cache.lambdaColumnName.get(clazz);
         if (columnName == null) {
@@ -269,9 +271,10 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * 解析lambda
      * @param func lambda风格
      * @param <T> 实体类型
+     * @param <F> 属性类型
      * @return FieldInfo
      */
-    private <T> String parseLambda(ColumnFunctionalInterface<T> func) {
+    private <T, F> String parseLambda(ColumnFunctionalInterface<T, F> func) {
         // 解析 lambda
         LambdaInfo<T> lambdaInfo = LambdaUtils.parse(func);
         // 实例类

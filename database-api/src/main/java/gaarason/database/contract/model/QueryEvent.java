@@ -125,14 +125,14 @@ public interface QueryEvent<T, K> {
     }
 
     /**
-     * 回复数据时
+     * 恢复数据时
      * @param builder 查询构造器
      */
     default void restoring(Builder<T, K> builder) {
     }
 
     /**
-     * 回复数据后
+     * 恢复数据后
      * @param rows 受影响的行数
      */
     default void restored(int rows) {

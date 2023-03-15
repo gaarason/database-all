@@ -354,7 +354,7 @@ public class EntityMember<T, K> extends Container.SimpleKeeper implements Serial
             Class<? extends Annotation> annotationType = annotation.annotationType();
 
             // 预置注解
-            if(FinalVariable.RELATION_ANNOTATIONS.contains(annotationType)){
+            if (FinalVariable.RELATION_ANNOTATIONS.contains(annotationType)) {
                 return true;
             }
 

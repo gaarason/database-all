@@ -2,7 +2,7 @@ package gaarason.database.query;
 
 import gaarason.database.appointment.OrderBy;
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
 import gaarason.database.util.ObjectUtils;
@@ -50,7 +50,7 @@ public abstract class OrderBuilder<T, K> extends HavingBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> firstOrderBy(GenerateSqlPartFunctionalInterface<T, K> closure) {
+    public Builder<T, K> firstOrderBy(BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.ORDER);
         return orderFirstGrammar(sqlPartInfo.getSqlString(), sqlPartInfo.getParameters());
     }

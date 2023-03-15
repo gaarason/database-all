@@ -1,7 +1,7 @@
 package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.function.GenerateSqlPartFunctionalInterface;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.lang.Nullable;
 
 /**
@@ -39,6 +39,6 @@ public interface Order<T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> firstOrderBy(GenerateSqlPartFunctionalInterface<T, K> closure);
+    Builder<T, K> firstOrderBy(BuilderWrapper<T, K> closure);
 
 }
