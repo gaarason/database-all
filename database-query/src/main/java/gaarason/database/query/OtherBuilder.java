@@ -4,10 +4,13 @@ import gaarason.database.appointment.AggregatesType;
 import gaarason.database.appointment.JoinType;
 import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.eloquent.Builder;
+import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.function.ToSqlFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
+import gaarason.database.support.EntityMember;
+import gaarason.database.support.FieldRelationMember;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
@@ -15,7 +18,6 @@ import gaarason.database.util.StringUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 公用查询构造器
@@ -311,5 +313,25 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
             column(column);
         }
         return this;
+    }
+
+    @Override
+    public Builder<T, K> whereHas(String relationFieldName, BuilderWrapper<?, ?> closure) {
+        // 获取关联关系
+        EntityMember<T, K> entityMember = modelShadowProvider.parseAnyEntityWithCache(entityClass);
+        FieldRelationMember relationMember = entityMember.getFieldRelationMemberByFieldName(
+            relationFieldName);
+
+        return whereAnyExists(builder -> (relationMember.getRelationSubQuery().prepareForWhereHas(closure)));
+    }
+
+    @Override
+    public Builder<T, K> whereNotHas(String relationFieldName, BuilderWrapper<?, ?> closure) {
+        // 获取关联关系
+        EntityMember<T, K> entityMember = modelShadowProvider.parseAnyEntityWithCache(entityClass);
+        FieldRelationMember relationMember = entityMember.getFieldRelationMemberByFieldName(
+            relationFieldName);
+
+        return whereAnyNotExists(builder -> (relationMember.getRelationSubQuery().prepareForWhereHas(closure)));
     }
 }

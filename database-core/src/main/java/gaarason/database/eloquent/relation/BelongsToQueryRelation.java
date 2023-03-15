@@ -94,6 +94,15 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
+    public Builder<?, ?> prepareForWhereHas(BuilderWrapper<?, ?> customBuilder) {
+        return customBuilder.execute(ObjectUtils.typeCast(belongsToTemplate.parentModel.newQuery()))
+            .when(enableMorph, builder -> builder.where(belongsToTemplate.localModelMorphKey,
+                belongsToTemplate.localModelMorphValue))
+            .whereColumn(localModel.getTableName() + "." + belongsToTemplate.localModelForeignKey,
+                belongsToTemplate.parentModel.getTableName() + "." + belongsToTemplate.parentModelLocalKey);
+    }
+
+    @Override
     public int attach(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap) {
         if (targetRecords.isEmpty()) {
             return 0;

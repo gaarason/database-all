@@ -49,7 +49,6 @@ public interface RelationSubQuery {
 
     /**
      * 目标表 query builder
-     * @param relationOperation 是否关联关系操作
      * @param metadata 当前recordList的元数据
      * @param relationRecordList 中间表数据
      * @param operationBuilder 操作构造器包装
@@ -117,6 +116,9 @@ public interface RelationSubQuery {
      */
     List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
         Map<String, RecordList<?, ?>> cacheRelationRecordList);
+
+
+    Builder<?, ?> prepareForWhereHas(BuilderWrapper<?, ?> customBuilder);
 
     /**
      * 增加关联关系

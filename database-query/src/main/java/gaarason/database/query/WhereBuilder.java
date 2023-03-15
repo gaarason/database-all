@@ -2,6 +2,7 @@ package gaarason.database.query;
 
 import gaarason.database.appointment.EntityUseType;
 import gaarason.database.contract.eloquent.Builder;
+import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
@@ -457,7 +458,21 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
+    public Builder<T, K> whereAnyExists(BuilderAnyWrapper closure) {
+        Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
+        String sql = "exists " + FormatUtils.bracket(sqlPartInfo.getSqlString());
+        return whereGrammar(sql, sqlPartInfo.getParameters(), " and ");
+    }
+
+    @Override
     public Builder<T, K> whereNotExists(BuilderWrapper<T, K> closure) {
+        Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
+        String sql = "not exists " + FormatUtils.bracket(sqlPartInfo.getSqlString());
+        return whereGrammar(sql, sqlPartInfo.getParameters(), " and ");
+    }
+
+    @Override
+    public Builder<T, K> whereAnyNotExists(BuilderAnyWrapper closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sql = "not exists " + FormatUtils.bracket(sqlPartInfo.getSqlString());
         return whereGrammar(sql, sqlPartInfo.getParameters(), " and ");

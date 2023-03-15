@@ -156,6 +156,11 @@ public class Student extends BaseEntity implements Serializable {
         }
 
         @Override
+        public Builder<?, ?> prepareForWhereHas(BuilderWrapper<?, ?> customBuilder) {
+            return null;
+        }
+
+        @Override
         public int attach(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap) {
             return attach(theRecord, getTargetRecordPrimaryKeyIds(targetRecords), relationDataMap);
         }

@@ -143,6 +143,14 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
         return findObjList(targetRecordList.toObjectList(cacheRelationRecordList), column, value);
     }
 
+    @Override
+    public Builder<?, ?> prepareForWhereHas(BuilderWrapper<?, ?> customBuilder) {
+        return customBuilder.execute(ObjectUtils.typeCast(hasOneOrManyTemplate.sonModel.newQuery()))
+            .when(enableMorph, builder -> builder.where(hasOneOrManyTemplate.sonModelMorphKey,
+                hasOneOrManyTemplate.sonModelMorphValue))
+            .whereColumn(localModel.getTableName() +"."+hasOneOrManyTemplate.localModelLocalKey,
+                hasOneOrManyTemplate.sonModel.getTableName()+"."+hasOneOrManyTemplate.sonModelForeignKey);
+    }
 
     @Override
     public int attach(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap) {

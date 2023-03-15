@@ -1,6 +1,7 @@
 package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
+import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.lang.Nullable;
 
@@ -501,6 +502,13 @@ public interface Where<T, K> {
     Builder<T, K> whereExists(BuilderWrapper<T, K> closure);
 
     /**
+     * exists一个闭包
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    Builder<T, K> whereAnyExists(BuilderAnyWrapper closure);
+
+    /**
      * not exists一个闭包
      * @param sql 闭包
      * @return 查询构造器
@@ -513,6 +521,13 @@ public interface Where<T, K> {
      * @return 查询构造器
      */
     Builder<T, K> whereNotExists(BuilderWrapper<T, K> closure);
+
+    /**
+     * not exists一个完整sql
+     * @param closure 完整sql
+     * @return 查询构造器
+     */
+    Builder<T, K> whereAnyNotExists(BuilderAnyWrapper closure);
 
     /**
      * 比较字段与字段
@@ -559,4 +574,37 @@ public interface Where<T, K> {
      */
     Builder<T, K> orWhereIgnoreEmpty(BuilderWrapper<T, K> closure);
 
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @return 查询构造器
+     */
+    default Builder<T, K> whereHas(String relationFieldName) {
+        return whereHas(relationFieldName, BuilderWrapper.empty());
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    Builder<T, K> whereHas(String relationFieldName, BuilderWrapper<?, ?> closure);
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @return 查询构造器
+     */
+    default Builder<T, K> whereNotHas(String relationFieldName) {
+        return whereNotHas(relationFieldName, BuilderWrapper.empty());
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    Builder<T, K> whereNotHas(String relationFieldName, BuilderWrapper<?, ?> closure);
 }

@@ -1596,21 +1596,142 @@ abstract public class RelationTests extends BaseTests {
     }
 
     @Test
-    public void notHas_() {
-        RecordList<Student, Long> teacherRecords = studentModel.newQuery()
-            .whereNotExists(builder -> builder.from("teacher").whereColumn("student.teacher_id", "teacher.id"))
-            .get();
-        List<Student> students = teacherRecords.toObjectList();
-        System.out.println(students);
+    public void whereNotHas_hasOneOrMany() {
+        List<Teacher> teacherList = teacherModel.newQuery()
+            .whereNotHas(Teacher::getStudentArray, builder -> builder.where(Student::getAge, ">", "16"))
+            .orderBy(Teacher::getId)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(2, teacherList.size());
+        Assert.assertEquals(1, teacherList.get(0).getId().intValue());
+        Assert.assertEquals(6, teacherList.get(1).getId().intValue());
+
+        // 手动删除几个
+        studentModel.newQuery().whereBetween(Student::getId, 7,9).delete();
+
+        RecordList<Teacher, Long> records = teacherModel.newQuery().whereNotHas(Teacher::getStudents).get();
+        List<Teacher> teachers = records.toObjectList();
+        System.out.println(teachers);
+
+        Assert.assertEquals(2, teachers.size());
+
+        List<Long> ids = records.toList(e -> e.toObject().getId());
+        Assert.assertTrue(ids.contains(2L));
+        Assert.assertTrue(ids.contains(8L));
     }
 
     @Test
-    public void notHas_1() {
-        RecordList<Student, Long> teacherRecords = studentModel.newQuery()
-            .whereNotExists(builder -> builder.from("relationship_student_teacher")
-                .whereColumn("student.id", "relationship_student_teacher.student_id"))
-            .get();
-        List<Student> students = teacherRecords.toObjectList();
-        System.out.println(students);
+    public void whereHas_hasOneOrMany() {
+        List<Teacher> teacherList = teacherModel.newQuery()
+            .whereHas(Teacher::getStudentArray, builder -> builder.where(Student::getAge, ">", "16"))
+            .orderBy(Teacher::getId)
+            .get()
+            .toObjectList();
+        Assert.assertEquals(2, teacherList.size());
+        Assert.assertEquals(2, teacherList.get(0).getId().intValue());
+        Assert.assertEquals(8, teacherList.get(1).getId().intValue());
+
+        // 手动删除几个
+        studentModel.newQuery().whereBetween(Student::getId, 7,9).delete();
+
+        RecordList<Teacher, Long> records = teacherModel.newQuery().whereHas(Teacher::getStudents).get();
+        List<Teacher> teachers = records.toObjectList();
+        System.out.println(teachers);
+
+        Assert.assertEquals(2, teachers.size());
+
+        List<Long> ids = records.toList(e -> e.toObject().getId());
+        Assert.assertTrue(ids.contains(1L));
+        Assert.assertTrue(ids.contains(6L));
     }
+
+    @Test
+    public void whereNotHas_belongsTo() {
+        List<Student> studentList = studentModel.newQuery().whereNotHas("teacher").get().toObjectList();
+        Assert.assertEquals(1, studentList.size());
+        Assert.assertEquals(10, studentList.get(0).getId().intValue());
+
+
+        List<Student> students = studentModel.newQuery()
+            .whereNotHas("teacher", builder -> builder.where("sex", 2))
+            .orderBy(Student::getId)
+            .get()
+            .toObjectList();
+        System.out.println(students);
+
+        Assert.assertEquals(3, students.size());
+        Assert.assertEquals(7, students.get(0).getId().intValue());
+        Assert.assertEquals(8, students.get(1).getId().intValue());
+        Assert.assertEquals(10, students.get(2).getId().intValue());
+    }
+
+    @Test
+    public void whereHas_belongsTo() {
+        List<Student> studentList = studentModel.newQuery().whereHas("teacher").get().toObjectList();
+        Assert.assertEquals(9, studentList.size());
+
+
+        List<Student> students = studentModel.newQuery()
+            .whereHas("teacher", builder -> builder.where("sex", 1))
+            .orderBy(Student::getId)
+            .get()
+            .toObjectList();
+        System.out.println(students);
+
+        Assert.assertEquals(2, students.size());
+        Assert.assertEquals(7, students.get(0).getId().intValue());
+        Assert.assertEquals(8, students.get(1).getId().intValue());
+    }
+
+
+    @Test
+    public void whereNotHas_belongsToMany() {
+        relationshipStudentTeacherModel.newQuery().whereIn("id", 19, 20).delete();
+
+        List<Student> studentList = studentModel.newQuery().whereNotHas(Student::getTeachersBelongsToMany).get().toObjectList();
+        Assert.assertEquals(1, studentList.size());
+        Assert.assertEquals(10, studentList.get(0).getId().intValue());
+
+        relationshipStudentTeacherModel.newQuery().whereIn("id", 1,2,3,4,5,6,8,10).delete();
+
+        List<Student> students = studentModel.newQuery()
+            .whereNotHas(Student::getTeachersBelongsToMany, builder -> builder.where("sex", 2))
+            .orderBy(Student::getId)
+            .get()
+            .toObjectList();
+        System.out.println(students);
+
+        Assert.assertEquals(4, students.size());
+        Assert.assertEquals(1, students.get(0).getId().intValue());
+        Assert.assertEquals(2, students.get(1).getId().intValue());
+        Assert.assertEquals(3, students.get(2).getId().intValue());
+        Assert.assertEquals(10, students.get(3).getId().intValue());
+    }
+
+    @Test
+    public void whereHas_belongsToMany() {
+
+        relationshipStudentTeacherModel.newQuery().whereIn("id", 19, 20).delete();
+
+        List<Student> studentList = studentModel.newQuery().whereHas(Student::getTeachersBelongsToMany).get().toObjectList();
+        Assert.assertEquals(9, studentList.size());
+
+        relationshipStudentTeacherModel.newQuery().whereIn("id", 1,2,3,4,5,6,8,10).delete();
+
+        List<Student> students = studentModel.newQuery()
+            .whereHas(Student::getTeachersBelongsToMany, builder -> builder.where("sex", 2))
+            .orderBy(Student::getId)
+            .get()
+            .toObjectList();
+        System.out.println(students);
+
+        Assert.assertEquals(6, students.size());
+        Assert.assertEquals(4, students.get(0).getId().intValue());
+        Assert.assertEquals(5, students.get(1).getId().intValue());
+        Assert.assertEquals(6, students.get(2).getId().intValue());
+        Assert.assertEquals(7, students.get(3).getId().intValue());
+        Assert.assertEquals(8, students.get(4).getId().intValue());
+        Assert.assertEquals(9, students.get(5).getId().intValue());
+    }
+
 }

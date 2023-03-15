@@ -1,6 +1,7 @@
 package gaarason.database.eloquent.relation;
 
 import gaarason.database.annotation.BelongsToMany;
+import gaarason.database.appointment.JoinType;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
@@ -256,6 +257,30 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
+    public Builder<?, ?> prepareForWhereHas(BuilderWrapper<?, ?> customBuilder) {
+        String localModelTableName = localModel.getTableName();
+        String relationModelTableName = belongsToManyTemplate.relationModel.getTableName();
+        String targetModelTableName = belongsToManyTemplate.targetModel.getTableName();
+        // 完成SQL 大致是:  SELECT * FROM student WHERE id in (7,8,9,10) and not EXISTS
+        // (select * from teacher INNER JOIN relationship_student_teacher on  `relationship_student_teacher`.teacher_id = `teacher`.id  where `relationship_student_teacher`.student_id = `student`.id );
+
+        // 此处的SQL 大致是: select * from teacher INNER JOIN relationship_student_teacher on  `relationship_student_teacher`.teacher_id = `teacher`.id
+        // where `relationship_student_teacher`.student_id = `student`.id
+        return customBuilder.execute(ObjectUtils.typeCast(belongsToManyTemplate.targetModel.newQuery()))
+            .join(JoinType.INNER, relationModelTableName, builder -> builder.whereColumn(
+                    relationModelTableName + "." + belongsToManyTemplate.foreignKeyForTargetModel,
+                    targetModelTableName + "." + belongsToManyTemplate.targetModelLocalKey)
+                .when(enableTargetModelMorph, morphBuilder -> morphBuilder.where(
+                    relationModelTableName + "." + belongsToManyTemplate.morphKeyForTargetModel,
+                    belongsToManyTemplate.morphValueForTargetModel)))
+            .whereColumn(relationModelTableName + "." + belongsToManyTemplate.foreignKeyForLocalModel,
+                localModelTableName + "." + belongsToManyTemplate.localModelLocalKey)
+            .when(enableLocalModelMorph,
+                builder -> builder.where(relationModelTableName + "." + belongsToManyTemplate.morphKeyForLocalModel,
+                    belongsToManyTemplate.morphValueForLocalModel));
+    }
+
+    @Override
     public int attach(Record<?, ?> theRecord, RecordList<?, ?> targetRecords, Map<String, Object> relationDataMap) {
         if (targetRecords.isEmpty()) {
             return 0;
@@ -424,7 +449,8 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
         if (checkAlreadyExist) {
             // 查询中间表(relationModel)是否存在已经存在对应的关系
-            List<Object> alreadyExistTargetModelLocalKeyValueList = setWhere(localModelLocalKeyValue, targetModelLocalKeyValues)
+            List<Object> alreadyExistTargetModelLocalKeyValueList = setWhere(localModelLocalKeyValue,
+                targetModelLocalKeyValues)
                 .select(belongsToManyTemplate.foreignKeyForLocalModel, belongsToManyTemplate.foreignKeyForTargetModel)
                 .get()
                 .toList(recordTemp -> recordTemp.getMetadataMap().get(belongsToManyTemplate.foreignKeyForTargetModel));
@@ -550,14 +576,16 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         Object localModelLocalKeyValue = theRecord.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey);
 
         // 现存的关联关系 中间表指向目标表的外键值的集合
-        List<Object> alreadyExistTargetModelLocalKeyValues = setWhere(localModelLocalKeyValue, targetModelLocalKeyValues)
+        List<Object> alreadyExistTargetModelLocalKeyValues = setWhere(localModelLocalKeyValue,
+            targetModelLocalKeyValues)
             .select(belongsToManyTemplate.foreignKeyForTargetModel)
             .get()
             .toOneColumnList();
 
         // 现存的关联关系, 解除
-        int detachNum = !targetModelLocalKeyValues.isEmpty() ? setWhere(localModelLocalKeyValue, targetModelLocalKeyValues)
-            .delete() : 0;
+        int detachNum =
+            !targetModelLocalKeyValues.isEmpty() ? setWhere(localModelLocalKeyValue, targetModelLocalKeyValues)
+                .delete() : 0;
 
         // 需要增加的关系(不存在就增加) 中间表指向目标表的外键值的集合
         Collection<Object> compatibleTargetModelLocalKeyValues = compatibleCollection(targetModelLocalKeyValues,
@@ -577,7 +605,8 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
      * @param targetModelLocalKeyValues 目标表的关系键集合
      * @return 查询构造器
      */
-    protected Builder<?, ?> setWhere(Object localModelLocalKeyValue, @Nullable Collection<Object> targetModelLocalKeyValues) {
+    protected Builder<?, ?> setWhere(Object localModelLocalKeyValue,
+        @Nullable Collection<Object> targetModelLocalKeyValues) {
         return belongsToManyTemplate.relationModel.newQuery()
             .where(belongsToManyTemplate.foreignKeyForLocalModel, localModelLocalKeyValue)
             .whereInIgnoreEmpty(belongsToManyTemplate.foreignKeyForTargetModel, targetModelLocalKeyValues)

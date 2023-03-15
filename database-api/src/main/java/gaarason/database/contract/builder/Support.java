@@ -4,6 +4,7 @@ import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
+import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.contract.support.LambdaStyle;
@@ -108,6 +109,16 @@ public interface Support<T, K> extends LambdaStyle, Cloneable{
      */
     default Grammar.SQLPartInfo generateSql(BuilderWrapper<T, K> closure) {
         Builder<T, K> subBuilder = closure.execute(getNewSelf());
+        return subBuilder.getGrammar().generateSql(SqlType.SELECT);
+    }
+
+    /**
+     * 执行闭包生成完整sql, 含绑定参数的合并
+     * @param closure 闭包
+     * @return sql
+     */
+    default Grammar.SQLPartInfo generateSql(BuilderAnyWrapper closure) {
+        Builder<?, ?> subBuilder = closure.execute(getNewSelf());
         return subBuilder.getGrammar().generateSql(SqlType.SELECT);
     }
 
