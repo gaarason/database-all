@@ -32,11 +32,16 @@ public class StringUtils {
      */
     private static final Map<String, Pattern> PATTERN_MAP = new SoftCache<>();
 
+    /**
+     * Pattern 缓存
+     */
+    private static final Map<String, Pattern> PATTERN_MAP_FOR_REPLACE_ALL = new SoftCache<>();
+
     private StringUtils() {
     }
 
     /**
-     * 替换字符
+     * 替换字符 ( 不识别正则表达式 )
      * 功能上等于 input.replace(pattern , replacement), 但性能较好
      * 注意 : 因为对于每个 pattern 不会释放内存, 所以使用时要确保 pattern 是有限的
      * @param input 原始字符
@@ -46,6 +51,21 @@ public class StringUtils {
      */
     public static String replace(Object input, String pattern, String replacement) {
         return PATTERN_MAP.computeIfAbsent(pattern, k -> Pattern.compile(k, Pattern.LITERAL))
+            .matcher(String.valueOf(input))
+            .replaceAll(replacement);
+    }
+
+    /**
+     * 替换字符 ( 识别正则表达式 )
+     * 功能上等于 input.replaceAll(pattern , replacement), 但性能较好
+     * 注意 : 因为对于每个 pattern 不会释放内存, 所以使用时要确保 pattern 是有限的
+     * @param input 原始字符
+     * @param pattern 需要匹配的的字符(待替换)的预置规则
+     * @param replacement 新的字符
+     * @return 替换后的字符
+     */
+    public static String replaceAll(Object input, String pattern, String replacement) {
+        return PATTERN_MAP_FOR_REPLACE_ALL.computeIfAbsent(pattern, Pattern::compile)
             .matcher(String.valueOf(input))
             .replaceAll(replacement);
     }
