@@ -1,9 +1,10 @@
 可以提供以下信息   
-bug类:   
+
+bug 反馈类:   
 
 1 .使用的代码库的方式 ? (源码编译 / maven依赖 / 源码拷贝 ..)  
 
-2 .使用的代码库的方式版本 ? ( tag版本 / maven依赖版本 / commit hash ..)
+2 .使用的代码库的版本 ? ( tag版本 / maven依赖版本 / commit hash ..)
 
 3 .java版本   
 

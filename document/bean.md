@@ -410,6 +410,9 @@ public class TestModel extends Model<TestModel.Inner, Integer> {
      * 一般定义到父类 或者 一个统一的外部即可
      */
     static {
+        // 设置包扫描配置
+        System.setProperty("gaarason.database.scan.packages", "com.temp.model,com.temp.dao");
+        
         DruidDataSource druidDataSource = new DruidDataSource();
         druidDataSource.setUrl(
             "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
@@ -421,26 +424,12 @@ public class TestModel extends Model<TestModel.Inner, Integer> {
         druidDataSource.setMinIdle(5);
         druidDataSource.setMaxActive(10);
         druidDataSource.setMaxWait(60000);
-        druidDataSource.setTimeBetweenEvictionRunsMillis(60000);
-        druidDataSource.setMinEvictableIdleTimeMillis(300000);
-        druidDataSource.setValidationQuery("SELECT 1");
-        List<String> iniSql = new ArrayList<>();
-        iniSql.add(
-            "SET SESSION SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'");
-        druidDataSource.setConnectionInitSqls(iniSql);
-        druidDataSource.setTestOnBorrow(false);
-        druidDataSource.setTestOnReturn(false);
-        druidDataSource.setPoolPreparedStatements(false);
-        druidDataSource.setMaxPoolPreparedStatementPerConnectionSize(-1);
-        Properties properties = new Properties();
-        properties.setProperty("druid.stat.mergeSql", "true");
-        properties.setProperty("druid.stat.slowSqlMillis", "5000");
-        druidDataSource.setConnectProperties(properties);
-        druidDataSource.setUseGlobalDataSourceStat(true);
 
         List<DataSource> dataSources = new ArrayList<>();
         dataSources.add(druidDataSource);
 
+        // 在此初始化 GaarasonDataSource
+        // 结果保存在内静态属性上, 以保证仅初始化一次
         gaarasonDataSource = GaarasonDataSourceBuilder.build(dataSources);
     }
 
@@ -450,6 +439,7 @@ public class TestModel extends Model<TestModel.Inner, Integer> {
      */
     @Override
     public GaarasonDataSource getGaarasonDataSource() {
+        // 简单的获取已经完成初始化的 GaarasonDataSource
         return gaarasonDataSource;
     }
 
