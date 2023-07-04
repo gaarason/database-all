@@ -57,6 +57,13 @@ public interface Support<T, K> extends LambdaStyle, Cloneable{
     Builder<T, K> getSelf();
 
     /**
+     * 清除指定的sql片段
+     * @param sqlPartType SQL片段
+     * @return 查询构造器
+     */
+    Builder<T, K> clear(Grammar.SQLPartType sqlPartType);
+
+    /**
      * 复制当前的查询构造器
      * 相互不存在引用 即深拷贝实现
      * @return 查询构造器

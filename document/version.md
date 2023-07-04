@@ -25,6 +25,9 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 4.8.1
+- 在`Builder`中, 增加`count`对于非`group`下的自定义`select`的支持, 同步影响`paginate`等分页等函数
+
 ### 4.8.0
 - 支持多态关联关系, 对于 `@hasOneOrMany`, `@belongsTo`, `@belongsToMany`增加多态属性
 - 支持关联集合查询, 在`Builder`中, 增加`withCount()`, `withMax()`,`withMin()`,`withAvg()`,`withSum()`

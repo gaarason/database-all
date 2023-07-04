@@ -32,7 +32,9 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
         String alias = StringUtils.getRandomString(6);
         Builder<T, K> builder = this;
 
+        // 存在 group
         if (!grammar.isEmpty(Grammar.SQLPartType.GROUP)) {
+            // 不存在 select
             if (grammar.isEmpty(Grammar.SQLPartType.SELECT)) {
                 Grammar.SQLPartInfo groupInfo = grammar.get(Grammar.SQLPartType.GROUP);
                 selectRaw(groupInfo.getSqlString(), groupInfo.getParameters());
@@ -40,6 +42,11 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
 
             builder = model.newQuery().from(alias + "sub", subBuilder -> this);
         }
+        // 不存在 group, 但存在 select
+        else if (!grammar.isEmpty(Grammar.SQLPartType.SELECT)) {
+            builder = model.newQuery().setBuilder(builder).clear(Grammar.SQLPartType.SELECT);
+        }
+
         Map<String, Object> resMap = builder.selectFunction(op.toString(), column, alias).firstOrFail().toMap();
         return ObjectUtils.typeCast(resMap.get(alias));
     }
@@ -165,10 +172,10 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
 
     @Override
     public Builder<T, K> union(Builder<?, ?> builder) {
-        if(unionEachFirstActionMark){
+        if (unionEachFirstActionMark) {
             setAnyBuilder(builder);
             unionEachFirstActionMark = false;
-        }else{
+        } else {
             union(subBuilder -> subBuilder.setAnyBuilder(builder));
         }
         return this;
@@ -176,10 +183,10 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
 
     @Override
     public Builder<T, K> unionAll(Builder<?, ?> builder) {
-        if(unionEachFirstActionMark){
+        if (unionEachFirstActionMark) {
             setAnyBuilder(builder);
             unionEachFirstActionMark = false;
-        }else{
+        } else {
             unionAll(subBuilder -> subBuilder.setAnyBuilder(builder));
         }
         return this;

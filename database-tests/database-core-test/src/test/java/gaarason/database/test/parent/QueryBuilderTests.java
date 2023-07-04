@@ -2397,6 +2397,45 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
+    public void 分页_自定义查询字段_mapStyle() {
+        // 自定义查询字段, 不带group
+        Paginate<Map<String, Object>> paginate1 = studentModel.newQuery()
+            .select("name as NAME", "age", "sex")
+            .orderBy("id")
+            .where("sex", "1")
+            .orWhere((builder -> builder.where("sex", "2")))
+            .paginateMapStyle(1, 4);
+        System.out.println(paginate1);
+        Assert.assertEquals(paginate1.getCurrentPage(), 1);
+        Assert.assertEquals(1, paginate1.getFrom().intValue());
+        Assert.assertEquals(4, paginate1.getTo().intValue());
+        Assert.assertNotNull(paginate1.getLastPage());
+        Assert.assertNotNull(paginate1.getTotal());
+        Assert.assertEquals(paginate1.getLastPage().intValue(), 3);
+        Assert.assertEquals(paginate1.getTotal().intValue(), 10);
+        Assert.assertEquals("小明", paginate1.getItemList().get(0).get("NAME"));
+
+
+        // 自定义查询字段, 带group
+        Paginate<Map<String, Object>> paginate5 = studentModel.newQuery()
+            .select("name as NAME", "age", "sex")
+            .orderBy("sex")
+            .where("sex", "1")
+            .orWhere((builder -> builder.where("sex", "2")))
+            .group("NAME", "age", "sex")
+            .paginateMapStyle(1, 4);
+        System.out.println(paginate5);
+        Assert.assertEquals(paginate5.getCurrentPage(), 1);
+        Assert.assertNotNull(paginate5.getFrom());
+        Assert.assertNotNull(paginate5.getTo());
+        Assert.assertNotNull(paginate5.getLastPage());
+        Assert.assertNotNull(paginate5.getTotal());
+        Assert.assertEquals(paginate5.getLastPage().intValue(), 3);
+        Assert.assertEquals(paginate5.getTotal().intValue(), 10);
+        Assert.assertEquals("小腾", paginate5.getItemList().get(0).get("NAME"));
+    }
+
+    @Test
     public void 原生() {
         Record<StudentModel.Entity, Integer> record = studentModel.newQuery()
             .query("select * from student where id=1", new ArrayList<>());

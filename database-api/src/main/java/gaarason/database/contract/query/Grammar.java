@@ -84,6 +84,12 @@ public interface Grammar {
     void addFirst(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters);
 
     /**
+     * 清空指定sql片段类型
+     * @param sqlPartType SQL片段类型
+     */
+    void clear(SQLPartType sqlPartType);
+
+    /**
      * 设置sql片段
      * @param sqlPartType SQL片段类型
      * @param sqlPartString SQL片段

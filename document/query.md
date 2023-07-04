@@ -388,7 +388,12 @@ count/max/min/avg/sum 使用是需要注意下各个方法返回的数据类型
 ### 无group
 
 ```java
-// select count(*) as 'eUTIdN' from `student` where `sex`="1" limit 1
+// select count(id) as 'eUTIdN' from `student` where `sex`="1" limit 1
+// 统计时会忽略 select 中指定的 name
+Long count00 = studentModel.newQuery().select("name").where("sex", "1").count("id");
+Assert.assertEquals(count00.intValue(), 6);
+    
+// select count(id) as 'eUTIdN' from `student` where `sex`="1" limit 1
 Long count0 = studentModel.newQuery().where("sex", "1").count("id");
 Assert.assertEquals(count0.intValue(), 6);
 

@@ -124,6 +124,11 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     }
 
     @Override
+    public void clear(SQLPartType sqlPartType) {
+        SQLPartMap.remove(sqlPartType);
+    }
+
+    @Override
     public void addFirst(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters) {
         // init list
         List<SQLPartInfo> sqlParts = SQLPartMap.computeIfAbsent(sqlPartType, k -> new LinkedList<>());

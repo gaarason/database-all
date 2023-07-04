@@ -119,6 +119,12 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
     }
 
     @Override
+    public Builder<T, K> clear(Grammar.SQLPartType sqlPartType) {
+        grammar.clear(sqlPartType);
+        return this;
+    }
+
+    @Override
     public String lambda2FieldName(ColumnFunctionalInterface<?, ?> column) {
         return modelShadowProvider.parseFieldNameByLambdaWithCache(column);
     }
