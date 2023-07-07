@@ -97,7 +97,7 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
             try {
                 DataSource dataSource = getRealDataSource(true);
                 Connection connection = dataSource.getConnection();
-                connection.setAutoCommit(false);
+                setAutoCommit(connection, false);
                 localThreadTransactionConnection.set(connection);
             } catch (SQLException e) {
                 throw new SQLRuntimeException(e.getMessage(), e);
@@ -116,7 +116,7 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
         if (localThreadTransactionSavepointLinkedList.get().isEmpty()) {
             try {
                 connection.commit();
-                connection.setAutoCommit(true);
+                setAutoCommit(connection, true);
             } catch (SQLException e) {
                 throw new SQLRuntimeException(e.getMessage(), e);
             } finally {
@@ -137,7 +137,7 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
         if (localThreadTransactionSavepointLinkedList.get().isEmpty()) {
             try {
                 connection.rollback();
-                connection.setAutoCommit(true);
+                setAutoCommit(connection, true);
             } catch (SQLException e) {
                 throw new SQLRuntimeException(e.getMessage(), e);
             } finally {
@@ -357,5 +357,17 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
     @Override
     public Container getContainer() {
         return container;
+    }
+
+    /**
+     * 设置自动提交
+     * @param connection 数据库连接
+     * @param flag y/n
+     * @throws SQLException sql异常
+     */
+    void setAutoCommit(Connection connection, boolean flag) throws SQLException {
+        if (!connection.isClosed()) {
+            connection.setAutoCommit(flag);
+        }
     }
 }

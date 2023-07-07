@@ -25,6 +25,9 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 4.8.2
+- 增强在多个事务管理器, 同时存在时的兼容性
+
 ### 4.8.1
 - 在`Builder`中, 增加`count`对于非`group`下的自定义`select`的支持, 同步影响`paginate`等分页等函数
 
