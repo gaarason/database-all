@@ -72,7 +72,7 @@ List<Student> students = studentModel.newQuery().whereIn("id", 1, 2, 3).get().wi
 studentModel.findOrFail(8).bind("teachers").attach( 1, 2, 3 );
 ```
 
-## spring boot 快速开始
+## Spring boot 快速开始
 
 1.引入仓库 pom.xml
 
@@ -136,3 +136,10 @@ public void 简单查询() {
 }
 
 ```
+
+## 更多功能
+
+- 借助 [自动生成代码](/document/generate.md), 自动化地为每个数据表都定义一个与该表数据结构对应的实体（Entity）， 以及的进行交互的模型（Model）
+- 在模型（Model）中, 通过 [查询构造器](/document/query.md) 你可以对数据表进行查询、插入、更新、删除等操作，并将结果反映到 [查询结果集](/document/record.md) 中
+- 在 [查询结果集](/document/record.md) 中可以快速的将结果转化为的 java 实体（Entity）对象， 以及其他数据结构以及处理操作
+- 通过在实体（Entity）中应用各种的声明式注解进行 [数据映射](/document/mapping.md)， 便可以方便的在模型（Model）中应用诸如 [关联关系](/document/relationship.md)、ORM以及各种自定义操作

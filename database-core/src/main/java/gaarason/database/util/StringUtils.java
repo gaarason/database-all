@@ -7,6 +7,8 @@ import gaarason.database.support.SoftCache;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -36,6 +38,18 @@ public class StringUtils {
      * Pattern 缓存
      */
     private static final Map<String, Pattern> PATTERN_MAP_FOR_REPLACE_ALL = new SoftCache<>();
+
+    private static final Random rand;
+
+    static {
+        Random randTemp;
+        try {
+            randTemp = SecureRandom.getInstanceStrong();
+        } catch (NoSuchAlgorithmException e) {
+            randTemp = new Random();
+        }
+        rand = randTemp;
+    }
 
     private StringUtils() {
     }
@@ -208,10 +222,9 @@ public class StringUtils {
      */
     public static String getRandomString(int length) {
         String str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        Random random = new Random();
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) {
-            int number = random.nextInt(52);
+            int number = rand.nextInt(52);
             sb.append(str.charAt(number));
         }
         return sb.toString();
