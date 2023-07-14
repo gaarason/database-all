@@ -33,9 +33,11 @@ public class ExceptionUtils {
             "Lock wait timeout exceeded; try restarting transaction",
             "WSREP detected deadlock/conflict and aborted the transaction. Try restarting the transaction",
         };
-        for (String exceptionMessage : exceptionMessages)
-            if (message.contains(exceptionMessage))
+        for (String exceptionMessage : exceptionMessages) {
+            if (message.contains(exceptionMessage)) {
                 return true;
+            }
+        }
         return false;
     }
 }

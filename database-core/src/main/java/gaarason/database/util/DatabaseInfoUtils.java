@@ -14,7 +14,7 @@ import java.util.*;
  * 数据库信息
  * @author xt
  */
-public class DatabaseInfoUtils {
+public final class DatabaseInfoUtils {
 
     private DatabaseInfoUtils() {
     }

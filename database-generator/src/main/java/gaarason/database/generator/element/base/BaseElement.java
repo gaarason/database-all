@@ -1,5 +1,6 @@
 package gaarason.database.generator.element.base;
 
+import gaarason.database.appointment.FinalVariable;
 import gaarason.database.generator.support.TypeReference;
 import gaarason.database.util.StringUtils;
 
@@ -12,6 +13,11 @@ import java.util.stream.Collectors;
 
 abstract public class BaseElement {
 
+    /**
+     * 分割符号
+     */
+    protected static final String SEPARATOR_SYMBOL = FinalVariable.Symbol.SEPARATOR;
+    
     /**
      * 包名 eg: gaarason.database.generator.element.base.
      */
@@ -47,7 +53,7 @@ abstract public class BaseElement {
      */
     public String type2Name(String typeString) {
         addImports(typeString);
-        String[] split = typeString.split("\\.");
+        String[] split = typeString.split(SEPARATOR_SYMBOL);
         // 兼容内部类
         return StringUtils.replace(split[split.length - 1], "$", ".");
     }
@@ -61,7 +67,7 @@ abstract public class BaseElement {
     public String type2Name(Class<?> annotation) {
         String typeName = annotation.getTypeName();
         addImports(typeName);
-        String[] split = typeName.split("\\.");
+        String[] split = typeName.split(SEPARATOR_SYMBOL);
         // 兼容内部类
         return StringUtils.replace(split[split.length - 1], "$", ".");
     }
@@ -173,7 +179,7 @@ abstract public class BaseElement {
         String typeName = type.getTypeName();
         if (type instanceof Class) {
             addImports(type.getTypeName());
-            String[] split = typeName.split("\\.");
+            String[] split = typeName.split(SEPARATOR_SYMBOL);
             // 兼容内部类
             return StringUtils.replace(split[split.length - 1], "$", ".");
         } else if (type instanceof ParameterizedType) {
@@ -181,7 +187,7 @@ abstract public class BaseElement {
             Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
             Type rawType = parameterizedType.getRawType();
             addImports(((Class<?>) rawType).getTypeName());
-            String[] split = rawType.getTypeName().split("\\.");
+            String[] split = rawType.getTypeName().split(SEPARATOR_SYMBOL);
             StringBuilder stringBuilder = new StringBuilder(split[split.length - 1]).append("<");
             List<String> sss = new LinkedList<>();
             for (Type typeArgument : actualTypeArguments) {
@@ -212,7 +218,7 @@ abstract public class BaseElement {
      */
     protected static String getNamespace(String typeName) {
         StringBuilder stringBuilder = new StringBuilder();
-        String[] strings = typeName.split("\\.");
+        String[] strings = typeName.split(SEPARATOR_SYMBOL);
         for (int i = 0; i < strings.length - 1; i++) {
             stringBuilder.append(strings[i]).append(".");
         }

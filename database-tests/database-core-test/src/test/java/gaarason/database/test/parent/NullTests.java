@@ -5,6 +5,7 @@ import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.test.models.normal.NullTestModel;
+import gaarason.database.test.models.normal.NullTestWIthFillModel;
 import gaarason.database.test.parent.base.BaseTests;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
@@ -21,6 +22,8 @@ import java.util.Map;
 abstract public class NullTests extends BaseTests {
 
     protected static NullTestModel nullTestModel = new NullTestModel();
+
+    protected static NullTestWIthFillModel nullTestWIthFillModel = new NullTestWIthFillModel();
 
     protected GaarasonDataSource getGaarasonDataSource() {
         return nullTestModel.getGaarasonDataSource();
@@ -74,6 +77,43 @@ abstract public class NullTests extends BaseTests {
 
         final Map<Object, Record<NullTestModel.Entity, Integer>> id = records.keyBy("id");
         System.out.println(id);
+
+    }
+
+    @Test
+    public void fill() {
+        Record<NullTestWIthFillModel.Entity, Integer> record = nullTestWIthFillModel.newRecord();
+
+        // ORM 新增
+        boolean save = record.save();
+        Assert.assertTrue(save);
+        NullTestWIthFillModel.Entity entity = record.getEntity();
+        System.out.println(entity);
+        Assert.assertNotNull(entity.getId());
+        Assert.assertNotNull(entity.getTimeColumn());
+        Assert.assertNull(entity.getDateColumn());
+
+        Integer id = entity.getId();
+        // query 查询验证
+        NullTestWIthFillModel.Entity entity1 = nullTestWIthFillModel.findOrFail(id).toObject();
+        System.out.println(entity1);
+//  有小数点, 不方便断言      Assert.assertEquals(entity1.getTimeColumn(),entity.getTimeColumn());
+        Assert.assertEquals(entity1.getDateColumn(),entity.getDateColumn());
+
+        // ORM 更新
+        String name = "asdaa1111";
+        entity.setName(name);
+        boolean save2 = record.save();
+        Assert.assertTrue(save2);
+        System.out.println(entity);
+        Assert.assertEquals(name, entity.getName());
+        Assert.assertNotNull(entity.getTimeColumn());
+        Assert.assertNotNull(entity.getDateColumn());
+        // query 查询验证
+        NullTestWIthFillModel.Entity entity2 = nullTestWIthFillModel.findOrFail(id).toObject();
+        System.out.println(entity2);
+//  有小数点, 不方便断言        Assert.assertEquals(entity2.getTimeColumn(),entity.getTimeColumn());
+        Assert.assertEquals(entity2.getDateColumn(),entity.getDateColumn());
 
     }
 

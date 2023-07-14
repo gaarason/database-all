@@ -15,6 +15,10 @@ import java.util.List;
  */
 public class GaarasonDataSourceBuilder {
 
+    private GaarasonDataSourceBuilder() {
+
+    }
+
     /**
      * 构造 GaarasonDataSource
      * @param masterDataSource 单个主要数据源

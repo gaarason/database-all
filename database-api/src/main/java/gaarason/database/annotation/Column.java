@@ -55,16 +55,19 @@ public @interface Column {
 
     /**
      * 是否插入时使用
+     * 当值为默认时, 取用 strategy() 的值
      */
     Class<? extends FieldStrategy> insertStrategy() default FieldStrategy.Default.class;
 
     /**
      * 是否更新时使用
+     * 当值为默认时, 取用 strategy() 的值
      */
     Class<? extends FieldStrategy> updateStrategy() default FieldStrategy.Default.class;
 
     /**
      * 是否条件时使用
+     * 当值为默认时, 取用 strategy() 的值
      */
     Class<? extends FieldStrategy> conditionStrategy() default FieldStrategy.Default.class;
 

@@ -127,6 +127,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
      * Return the number of key-value mappings in this cache.  The time
      * required by this operation is linear in the size of the map.
      */
+    @Override
     public int size() {
         return entrySet().size();
     }
@@ -134,6 +135,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
     /**
      * Return <code>true</code> if this cache contains no key-value mappings.
      */
+    @Override
     public boolean isEmpty() {
         return entrySet().isEmpty();
     }
@@ -146,10 +148,12 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
      * attempt to construct one by invoking the <code>fill</code> method.
      * @param key The key whose presence in the cache is to be tested
      */
+    @Override
     public boolean containsKey(Object key) {
         return ValueCell.strip(hash.get(key), false) != null;
     }
 
+    @Override
     @Nullable
     public V get(Object key) {
         processQueue();
@@ -169,6 +173,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
      * @return The previous value to which this key was mapped, or
      * <code>null</code> if is there was no mapping for the key
      */
+    @Override
     public V put(K key, V value) {
         processQueue();
         ValueCell<V> vc = ValueCell.create(key, value, queue);
@@ -182,6 +187,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
      * @return The value to which this key was mapped, or <code>null</code> if
      * there was no mapping for the key
      */
+    @Override
     @Nullable
     public V remove(Object key) {
         processQueue();
@@ -191,6 +197,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
     /**
      * Remove all mappings from this cache.
      */
+    @Override
     public void clear() {
         processQueue();
         hash.clear();
@@ -199,6 +206,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
     /**
      * Return a <code>Set</code> view of the mappings in this cache.
      */
+    @Override
     public Set<Map.Entry<K, V>> entrySet() {
         if (this.entrySet == null) {
             Set<? extends Map.Entry<K, V>> entrySetTemp = new EntrySet();
@@ -291,21 +299,25 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
             this.value = value;
         }
 
+        @Override
         public K getKey() {
             return ent.getKey();
         }
 
+        @Override
         @Nullable
         public V getValue() {
             return value;
         }
 
+        @Override
         @Nullable
         public V setValue(@Nullable V value) {
             this.value = value;
             return ValueCell.strip(ent.setValue(ValueCell.create(ent.getKey(), value, queue)), true);
         }
 
+        @Override
         public boolean equals(Object o) {
             if (!(o instanceof Map.Entry)) return false;
             Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
@@ -313,6 +325,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
                 && valEquals(value, e.getValue()));
         }
 
+        @Override
         public int hashCode() {
             Object k;
             return ((((k = getKey()) == null) ? 0 : k.hashCode())
@@ -325,12 +338,15 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
     private class EntrySet extends AbstractSet<Entry> {
         Set<Map.Entry<K, ValueCell<V>>> hashEntries = hash.entrySet();
 
+        @Override
         public Iterator<Entry> iterator() {
             return new Iterator<Entry>() {
                 final Iterator<Map.Entry<K, ValueCell<V>>> hashIterator = hashEntries.iterator();
+
                 @Nullable
                 Entry next = null;
 
+                @Override
                 public boolean hasNext() {
                     while (hashIterator.hasNext()) {
                         Map.Entry<K, ValueCell<V>> ent = hashIterator.next();
@@ -347,6 +363,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
                     return false;
                 }
 
+                @Override
                 public Entry next() {
                     if ((next == null) && !hasNext()) {
                         throw new NoSuchElementException();
@@ -357,6 +374,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
                     return e;
                 }
 
+                @Override
                 public void remove() {
                     hashIterator.remove();
                 }
@@ -364,16 +382,21 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
             };
         }
 
+        @Override
         public boolean isEmpty() {
             return !(iterator().hasNext());
         }
 
+        @Override
         public int size() {
             int j = 0;
-            for (Iterator<Entry> i = iterator(); i.hasNext(); i.next()) j++;
+            for (Iterator<Entry> i = iterator(); i.hasNext(); i.next()) {
+                j++;
+            }
             return j;
         }
 
+        @Override
         public boolean remove(Object o) {
             processQueue();
             if (o instanceof SoftCache.Entry) {

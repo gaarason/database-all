@@ -34,7 +34,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     /**
      * 人造关系键
      */
-    private final String RELATION_KEY = "@R@";
+    private static final String RELATION_KEY = "@R@";
 
     /**
      * 是否多态 - 本表

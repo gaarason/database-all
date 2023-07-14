@@ -6,15 +6,15 @@ import org.slf4j.spi.LocationAwareLogger;
 
 public class SLF4JImpl implements Log {
 
-    private static final String callerFQCN = SLF4JImpl.class.getName();
+    private static final String CALLER_FQCN = SLF4JImpl.class.getName();
 
-    private static final Logger testLogger = LoggerFactory.getLogger(SLF4JImpl.class);
+    private static final Logger TEST_LOGGER = LoggerFactory.getLogger(SLF4JImpl.class);
 
     static {
         // if the logger is not a LocationAwareLogger instance, it can not get correct stack StackTraceElement
         // so ignore this implementation.
-        if (!(testLogger instanceof LocationAwareLogger)) {
-            throw new UnsupportedOperationException(testLogger.getClass() + " is not a suitable logger");
+        if (!(TEST_LOGGER instanceof LocationAwareLogger)) {
+            throw new UnsupportedOperationException(TEST_LOGGER.getClass() + " is not a suitable logger");
         }
     }
 
@@ -39,13 +39,13 @@ public class SLF4JImpl implements Log {
 
     @Override
     public void error(String msg, Throwable e) {
-        log.log(null, callerFQCN, LocationAwareLogger.ERROR_INT, msg, null, e);
+        log.log(null, CALLER_FQCN, LocationAwareLogger.ERROR_INT, msg, null, e);
         errorCount++;
     }
 
     @Override
     public void error(String msg) {
-        log.log(null, callerFQCN, LocationAwareLogger.ERROR_INT, msg, null, null);
+        log.log(null, CALLER_FQCN, LocationAwareLogger.ERROR_INT, msg, null, null);
         errorCount++;
     }
 
@@ -57,19 +57,19 @@ public class SLF4JImpl implements Log {
     @Override
     public void info(String msg) {
         infoCount++;
-        log.log(null, callerFQCN, LocationAwareLogger.INFO_INT, msg, null, null);
+        log.log(null, CALLER_FQCN, LocationAwareLogger.INFO_INT, msg, null, null);
     }
 
     @Override
     public void debug(String msg) {
         debugCount++;
-        log.log(null, callerFQCN, LocationAwareLogger.DEBUG_INT, msg, null, null);
+        log.log(null, CALLER_FQCN, LocationAwareLogger.DEBUG_INT, msg, null, null);
     }
 
     @Override
     public void debug(String msg, Throwable e) {
         debugCount++;
-        log.log(null, callerFQCN, LocationAwareLogger.ERROR_INT, msg, null, e);
+        log.log(null, CALLER_FQCN, LocationAwareLogger.ERROR_INT, msg, null, e);
     }
 
     @Override
@@ -84,13 +84,13 @@ public class SLF4JImpl implements Log {
 
     @Override
     public void warn(String msg) {
-        log.log(null, callerFQCN, LocationAwareLogger.WARN_INT, msg, null, null);
+        log.log(null, CALLER_FQCN, LocationAwareLogger.WARN_INT, msg, null, null);
         warnCount++;
     }
 
     @Override
     public void warn(String msg, Throwable e) {
-        log.log(null, callerFQCN, LocationAwareLogger.WARN_INT, msg, null, e);
+        log.log(null, CALLER_FQCN, LocationAwareLogger.WARN_INT, msg, null, e);
         warnCount++;
     }
 

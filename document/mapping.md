@@ -193,6 +193,30 @@ Assert.assertEquals(200, record0.getEntity().getId().intValue());
 - fill
 - 字段填充策略
 - 业务上可以自行实现 `FieldFill` 接口, 已确定在 插入/更新/条件时, 填充的值
+- 提供 `FieldFill.NotFill.class`(默认)不做填充
+- 提供 `FieldFill.CreatedTimeFill.class` 在 insert 时对时间类型的字段进行当前时间的填充
+- 提供 `FieldFill.UpdatedTimeFill.class` 在 insert 时对时间类型的字段进行当前时间的填充
+
+```java
+@Data
+public class Entity implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @Primary
+    private Integer id;
+
+    @Column
+    private String name;
+
+    @Column(fill = FieldFill.CreatedTimeFill.class)
+    private LocalTime timeColumn;
+
+    @Column(fill = FieldFill.UpdatedTimeFill.class)
+    private LocalDate dateColumn;
+
+}
+```
 
 #### 类型转化
 - conversion

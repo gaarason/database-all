@@ -2,6 +2,7 @@ package gaarason.database.generator.element.field;
 
 import gaarason.database.annotation.Column;
 import gaarason.database.annotation.Primary;
+import gaarason.database.appointment.FinalVariable;
 import gaarason.database.contract.support.FieldConversion;
 import gaarason.database.contract.support.FieldFill;
 import gaarason.database.contract.support.FieldStrategy;
@@ -168,12 +169,12 @@ public class Field extends JavaElement {
             (unsigned ? ", unsigned = " + unsigned : "") +
             (nullable ? ", nullable = " + nullable : "") +
             (!ObjectUtils.isNull(columnDisSelectable) ? ", selectable = " + columnDisSelectable : "") +
-            (!ObjectUtils.isNull(columnFill) ? ", fill = " + element.type2Name(columnFill) + ".class" : "") +
-            (!ObjectUtils.isNull(columnStrategy) ? ", strategy = " + element.type2Name(columnStrategy)+ ".class" : "") +
-            (!ObjectUtils.isNull(columnInsertStrategy) ? ", insertStrategy = " + element.type2Name(columnInsertStrategy)+ ".class" : "") +
-            (!ObjectUtils.isNull(columnUpdateStrategy) ? ", updateStrategy = " + element.type2Name(columnUpdateStrategy)+ ".class" : "") +
-            (!ObjectUtils.isNull(columnConditionStrategy) ? ", conditionStrategy = " + element.type2Name(columnConditionStrategy)+ ".class" : "") +
-            (!ObjectUtils.isNull(columnConversion) ? ", conversion = " + element.type2Name(columnConversion)+ ".class" : "") +
+            (!ObjectUtils.isNull(columnFill) ? ", fill = " + element.type2Name(columnFill) + FinalVariable.Symbol.CLASS : "") +
+            (!ObjectUtils.isNull(columnStrategy) ? ", strategy = " + element.type2Name(columnStrategy)+ FinalVariable.Symbol.CLASS : "") +
+            (!ObjectUtils.isNull(columnInsertStrategy) ? ", insertStrategy = " + element.type2Name(columnInsertStrategy)+ FinalVariable.Symbol.CLASS : "") +
+            (!ObjectUtils.isNull(columnUpdateStrategy) ? ", updateStrategy = " + element.type2Name(columnUpdateStrategy)+ FinalVariable.Symbol.CLASS : "") +
+            (!ObjectUtils.isNull(columnConditionStrategy) ? ", conditionStrategy = " + element.type2Name(columnConditionStrategy)+ FinalVariable.Symbol.CLASS : "") +
+            (!ObjectUtils.isNull(columnConversion) ? ", conversion = " + element.type2Name(columnConversion)+ FinalVariable.Symbol.CLASS : "") +
             (length != null && length != 255 ? ", length = " + length + "L" : "") +
             (!"".equals(comment) ? ", comment = \"" + comment + "\"" : "") +
 

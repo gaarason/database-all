@@ -25,18 +25,27 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 4.9.0
+
+- 在`@Column`中, 对 `fill`增加可选实现, `FieldFill.CreatedTimeFill.class`/`FieldFill.UpdatedTimeFill.class`分别在 ORM 的 insert/update 时,
+  对时间类型的字段进行当前时间的填充
+
 ### 4.8.2
+
 - 增强在多个事务管理器, 同时存在时的兼容性
 
 ### 4.8.1
+
 - 在`Builder`中, 增加`count`对于非`group`下的自定义`select`的支持, 同步影响`paginate`等分页等函数
 
 ### 4.8.0
+
 - 支持多态关联关系, 对于 `@hasOneOrMany`, `@belongsTo`, `@belongsToMany`增加多态属性
 - 支持关联集合查询, 在`Builder`中, 增加`withCount()`, `withMax()`,`withMin()`,`withAvg()`,`withSum()`
 - 支持关联反向筛选, 在`Builder`中, 增加`whereHas()`, `whereNotHas()`
 
 ### 4.7.0
+
 - 支持自定义关联关系, 增加`@Relation`用于标注自定义的关联关系注解, 并指明其解析器
 
 ### 4.6.0
@@ -277,19 +286,19 @@ Eloquent ORM for Java
 
 ```java
 int attach(Record<?, ?> targetRecord,Map<String, Object> relationDataMap);
-        int attach(RecordList<?, ?> targetRecords,Map<String, Object> relationDataMap);
-        int attach(Object id,Map<String, Object> relationDataMap);
-        int attach(Collection<Object> ids,Map<String, Object> relationDataMap);
+int attach(RecordList<?, ?> targetRecords,Map<String, Object> relationDataMap);
+int attach(Object id,Map<String, Object> relationDataMap);
+int attach(Collection<Object> ids,Map<String, Object> relationDataMap);
 
-        int sync(Record<?, ?> targetRecord,Map<String, Object> relationDataMap);
-        int sync(RecordList<?, ?> targetRecords,Map<String, Object> relationDataMap);
-        int sync(Object id,Map<String, Object> relationDataMap);
-        int sync(Collection<Object> ids,Map<String, Object> relationDataMap);
+int sync(Record<?, ?> targetRecord,Map<String, Object> relationDataMap);
+int sync(RecordList<?, ?> targetRecords,Map<String, Object> relationDataMap);
+int sync(Object id,Map<String, Object> relationDataMap);
+int sync(Collection<Object> ids,Map<String, Object> relationDataMap);
 
-        int toggle(Record<?, ?> targetRecord,Map<String, Object> relationDataMap);
-        int toggle(RecordList<?, ?> targetRecords,Map<String, Object> relationDataMap);
-        int toggle(Object id,Map<String, Object> relationDataMap);
-        int toggle(Collection<Object> ids,Map<String, Object> relationDataMap);
+int toggle(Record<?, ?> targetRecord,Map<String, Object> relationDataMap);
+int toggle(RecordList<?, ?> targetRecords,Map<String, Object> relationDataMap);
+int toggle(Object id,Map<String, Object> relationDataMap);
+int toggle(Collection<Object> ids,Map<String, Object> relationDataMap);
 ```
 
 ### 2.5.0
@@ -298,21 +307,21 @@ int attach(Record<?, ?> targetRecord,Map<String, Object> relationDataMap);
 
 ```java
 Builder<T, K> where(String column,String symbol,Object value);
-        Builder<T, K> where(String column,Object value);
-        Builder<T, K> whereIn(String column,Object...valueArray);
-        Builder<T, K> whereNotIn(String column,Object...valueArray);
-        Builder<T, K> whereBetween(String column,Object min,Object max);
-        Builder<T, K> whereNotBetween(String column,Object min,Object max);
+Builder<T, K> where(String column,Object value);
+Builder<T, K> whereIn(String column,Object...valueArray);
+Builder<T, K> whereNotIn(String column,Object...valueArray);
+Builder<T, K> whereBetween(String column,Object min,Object max);
+Builder<T, K> whereNotBetween(String column,Object min,Object max);
 
-        Builder<T, K> having(String column,String symbol,Object value);
-        Builder<T, K> having(String column,Object value);
-        Builder<T, K> havingIn(String column,Object...valueArray);
-        Builder<T, K> havingNotIn(String column,Object...valueArray);
-        Builder<T, K> havingBetween(String column,Object min,Object max);
-        Builder<T, K> havingNotBetween(String column,Object min,Object max);
+Builder<T, K> having(String column,String symbol,Object value);
+Builder<T, K> having(String column,Object value);
+Builder<T, K> havingIn(String column,Object...valueArray);
+Builder<T, K> havingNotIn(String column,Object...valueArray);
+Builder<T, K> havingBetween(String column,Object min,Object max);
+Builder<T, K> havingNotBetween(String column,Object min,Object max);
 
-        Builder<T, K> data(String column,Object value);
-        Builder<T, K> data(Map<String, Object> map);
+Builder<T, K> data(String column,Object value);
+Builder<T, K> data(Map<String, Object> map);
 ```
 
 ### 2.4.0
@@ -339,8 +348,7 @@ Builder<T, K> where(String column,String symbol,Object value);
 
 不兼容
 
-- `gaarason.database.eloquent.Model<T>` 升级为 `gaarason.database.eloquent.Model<T, K>`,
-  其中T为实体类, K为实体类中的主键类型(eg: Long)
+- `gaarason.database.eloquent.Model<T>` 升级为 `gaarason.database.eloquent.Model<T, K>`, 其中T为实体类, K为实体类中的主键类型(eg: Long)
 - `gaarason.database.query.Builder<T>` 升级为 `gaarason.database.query.Builder<T, K>`
 - `gaarason.database.eloquent.Record<T>` 升级为 `gaarason.database.eloquent.Record<T, K>`
 - `gaarason.database.eloquent.RecordList<T>` 升级为 `gaarason.database.eloquent.RecordList<T, K>`

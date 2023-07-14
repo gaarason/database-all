@@ -153,8 +153,8 @@ public class FieldMember<F> extends Container.SimpleKeeper implements Serializab
             case INSERT:
                 if (originalValue == null) {
                     /*
-                     * 非 @Primary 修饰的字段, 此值等于 null
-                     * 如果类型不一致, 就直接异常即可
+                     * 非 @Primary 修饰的字段, idGenerator.nextId() 的值一定等于 null
+                     * 因此, 以下逻辑没有影响
                      */
                     originalValue = ObjectUtils.typeCastNullable(idGenerator.nextId());
                 }

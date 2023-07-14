@@ -20,7 +20,7 @@ import java.util.Set;
  * 全局可用的常量
  * @author xt
  */
-public class FinalVariable {
+public final class FinalVariable {
 
     /**
      * 实体中普通属性支持的包装类型
@@ -68,7 +68,7 @@ public class FinalVariable {
     /**
      * 日期时间相关
      */
-    public static class Timestamp {
+    public static final class Timestamp {
         /**
          * 默认日期时间格式
          */
@@ -85,6 +85,22 @@ public class FinalVariable {
         private Timestamp() {
         }
     }
+
+    /**
+     * 分割符号
+     */
+    public static final class Symbol {
+        /**
+         * 点 .
+         */
+        public static final String SEPARATOR = "\\.";
+        /**
+         * class
+         */
+        public static final String CLASS = ".class";
+
+    }
+
 
     private FinalVariable() {
 

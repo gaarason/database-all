@@ -23,7 +23,7 @@ import java.util.Map;
  * 结果集生成
  * @author xt
  */
-public class RecordFactory {
+public final class RecordFactory {
 
     private RecordFactory() {
 

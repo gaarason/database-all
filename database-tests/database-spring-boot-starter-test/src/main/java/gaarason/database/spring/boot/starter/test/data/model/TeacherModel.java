@@ -27,10 +27,8 @@ public class TeacherModel extends BaseModel<Teacher, Integer> implements Teacher
 
         }
 
-        Student student = studentModel.getInfoFromDB();
 
-
-        return student;
+        return studentModel.getInfoFromDB();
     }
 
     @Override

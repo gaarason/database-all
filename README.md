@@ -137,7 +137,7 @@ public void 简单查询() {
 
 ```
 
-## 更多功能
+## 完整体验
 
 - 借助 [自动生成代码](/document/generate.md), 自动化地为每个数据表都定义一个与该表数据结构对应的实体（Entity）， 以及的进行交互的模型（Model）
 - 在模型（Model）中, 通过 [查询构造器](/document/query.md) 你可以对数据表进行查询、插入、更新、删除等操作，并将结果反映到 [查询结果集](/document/record.md) 中

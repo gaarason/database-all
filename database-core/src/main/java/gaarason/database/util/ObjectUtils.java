@@ -21,7 +21,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * 对象工具类
  * @author xt
  */
-public class ObjectUtils {
+public final class ObjectUtils {
 
     /**
      * 线程安全随机对象

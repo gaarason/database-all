@@ -5,7 +5,7 @@ import org.apache.log4j.Logger;
 
 public class Log4jImpl implements Log {
 
-    private static final String callerFQCN = Log4jImpl.class.getName();
+    private static final String CALLER_FQCN = Log4jImpl.class.getName();
 
     private final Logger log;
 
@@ -35,31 +35,31 @@ public class Log4jImpl implements Log {
 
     public void error(String s, Throwable e) {
         errorCount++;
-        log.log(callerFQCN, Level.ERROR, s, e);
+        log.log(CALLER_FQCN, Level.ERROR, s, e);
     }
 
     public void error(String s) {
         errorCount++;
-        log.log(callerFQCN, Level.ERROR, s, null);
+        log.log(CALLER_FQCN, Level.ERROR, s, null);
     }
 
     public void debug(String s) {
         debugCount++;
-        log.log(callerFQCN, Level.DEBUG, s, null);
+        log.log(CALLER_FQCN, Level.DEBUG, s, null);
     }
 
     public void debug(String s, Throwable e) {
         debugCount++;
-        log.log(callerFQCN, Level.DEBUG, s, e);
+        log.log(CALLER_FQCN, Level.DEBUG, s, e);
     }
 
     public void warn(String s) {
-        log.log(callerFQCN, Level.WARN, s, null);
+        log.log(CALLER_FQCN, Level.WARN, s, null);
         warnCount++;
     }
 
     public void warn(String s, Throwable e) {
-        log.log(callerFQCN, Level.WARN, s, e);
+        log.log(CALLER_FQCN, Level.WARN, s, e);
         warnCount++;
     }
 
@@ -88,7 +88,7 @@ public class Log4jImpl implements Log {
 
     public void info(String msg) {
         infoCount++;
-        log.log(callerFQCN, Level.INFO, msg, null);
+        log.log(CALLER_FQCN, Level.INFO, msg, null);
     }
 
     public boolean isWarnEnabled() {

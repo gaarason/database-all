@@ -11,7 +11,7 @@ public class StudentModel extends BaseModel<Student, Long> implements StudentQue
 
     @Override
     public Student updateName() {
-        int update = newQuery().where("id", "1").data("name", "bgfd").update();
+        newQuery().where("id", "1").data("name", "bgfd").update();
 
         if (true) {
             throw new BaseException("更新操作执行完, 抛出异常");

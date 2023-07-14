@@ -1,8 +1,11 @@
 package gaarason.database.contract.support;
 
+import gaarason.database.exception.TypeNotSupportedException;
 import gaarason.database.lang.Nullable;
+import gaarason.database.util.DateTimeUtils;
 
 import java.lang.reflect.Field;
+import java.util.Date;
 
 /**
  * 字段填充
@@ -54,6 +57,54 @@ public interface FieldFill {
         @Override
         public <W> W updating(Object entity, Field field, @Nullable W originalValue) {
             return originalValue;
+        }
+
+        @Nullable
+        @Override
+        public <W> W condition(Object entity, Field field, @Nullable W originalValue) {
+            return originalValue;
+        }
+    }
+
+    /**
+     * 创建时间填充
+     */
+    class CreatedTimeFill implements FieldFill {
+
+        @Nullable
+        @Override
+        public <W> W inserting(Object entity, Field field, @Nullable W originalValue) throws TypeNotSupportedException {
+            return DateTimeUtils.currentDateTime(field.getType());
+        }
+
+        @Nullable
+        @Override
+        public <W> W updating(Object entity, Field field, @Nullable W originalValue) {
+            return originalValue;
+        }
+
+        @Nullable
+        @Override
+        public <W> W condition(Object entity, Field field, @Nullable W originalValue) {
+            return originalValue;
+        }
+    }
+
+    /**
+     * 更新时间填充
+     */
+    class UpdatedTimeFill implements FieldFill {
+
+        @Nullable
+        @Override
+        public <W> W inserting(Object entity, Field field, @Nullable W originalValue) {
+            return originalValue;
+        }
+
+        @Nullable
+        @Override
+        public <W> W updating(Object entity, Field field, @Nullable W originalValue) throws TypeNotSupportedException {
+            return DateTimeUtils.currentDateTime(field.getType());
         }
 
         @Nullable

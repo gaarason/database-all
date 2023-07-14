@@ -17,7 +17,7 @@ import java.util.List;
  * 时间处理工具
  * @author xt
  */
-public class LocalDateUtils {
+public final class LocalDateUtils {
 
     /**
      * 解决 SimpleDateFormat 线程不安全的问题, 使用 SIMPLE_DATE_FORMAT.get() 获取对象.
