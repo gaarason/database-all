@@ -112,6 +112,7 @@ spring.datasource.type=com.alibaba.druid.pool.DruidDataSource
 # gaarason.database.snow-flake.worker-id=1
 
 # 包扫描路径, 默认是`@SpringBootApplication`所在的包
+# 非 SpringBoot, 且 jdk8+, 则建议指定包扫描路径
 # gaarason.database.scan.packages=you.package1,you.package2
 ```
 
@@ -126,10 +127,10 @@ GeneralModel generalModel;
 @Test
 public void 简单查询() {
 
-    // select * from student where id= 3 limit 1
+    // select * from student where id = 3 limit 1
     Record<GeneralModel.Table,Object> record = generalModel.newQuery().from("student").where("id", 3).firstOrFail();
 
-    // 结果转化到map
+    // 结果转化到 map
     Map<String, Object> stringObjectMap = record.toMap();
 
     System.out.println(stringObjectMap);

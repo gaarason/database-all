@@ -17,7 +17,7 @@ public class TService {
     @Resource
     private GeneralModel generalModel;
 
-    @Transactional( transactionManager="gaarasonTransactionManager", rollbackFor = TestException.class)
+    @Transactional(rollbackFor = TestException.class)
     public void doSomething(int id, int age) throws TestException {
 
         studentMapper.updateAgeById(id, age);

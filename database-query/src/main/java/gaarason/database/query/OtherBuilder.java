@@ -4,7 +4,6 @@ import gaarason.database.appointment.AggregatesType;
 import gaarason.database.appointment.JoinType;
 import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.function.ToSqlFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
@@ -292,18 +291,13 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
 
     @Override
     public Builder<T, K> columnRaw(@Nullable String sqlPart) {
-        if (!ObjectUtils.isEmpty(sqlPart)) {
-            columnGrammar(sqlPart, null);
-        }
-        return this;
+        return columnRaw(sqlPart, null);
     }
 
     @Override
     public Builder<T, K> columnRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters) {
-        if (!ObjectUtils.isEmpty(sqlPart)) {
+        return ObjectUtils.isEmpty(sqlPart) ? this :
             columnGrammar(sqlPart, ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters));
-        }
-        return this;
     }
 
     @Override

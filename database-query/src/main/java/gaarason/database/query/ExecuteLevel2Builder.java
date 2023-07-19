@@ -95,7 +95,6 @@ public abstract class ExecuteLevel2Builder<T, K> extends ExecuteLevel1Builder<T,
         // 事件
         model.creating(this);
         Grammar.SQLPartInfo sqlPartInfo = toSQLPartInfo(SqlType.INSERT);
-        assert sqlPartInfo.getParameters() != null;
         K id = executeGetId(sqlPartInfo.getSqlString(), sqlPartInfo.getParameters());
         if (id != null) {
             model.created(id);
@@ -108,7 +107,6 @@ public abstract class ExecuteLevel2Builder<T, K> extends ExecuteLevel1Builder<T,
         // 事件
         model.creating(this);
         Grammar.SQLPartInfo sqlPartInfo = toSQLPartInfo(SqlType.INSERT);
-        assert sqlPartInfo.getParameters() != null;
         List<K> ids = executeGetIds(sqlPartInfo.getSqlString(), sqlPartInfo.getParameters());
         model.created(ids);
         return ids;
