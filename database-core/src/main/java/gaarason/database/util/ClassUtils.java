@@ -11,7 +11,7 @@ import java.lang.reflect.Constructor;
 /**
  * 类的相关操作
  */
-public class ClassUtils {
+public final class ClassUtils {
 
     private static final Log LOGGER = LogFactory.getLog(ClassUtils.class);
 

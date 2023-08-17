@@ -6,7 +6,7 @@ import java.util.concurrent.ExecutionException;
  * 异常
  * @author xt
  */
-public class ExceptionUtils {
+public final class ExceptionUtils {
 
     private ExceptionUtils() {
     }

@@ -72,7 +72,7 @@ public final class ObjectUtils {
      * @return ParameterizedType
      */
     @Nullable
-    protected static ParameterizedType getParameterizedType(Class<?> clazz) {
+    private static ParameterizedType getParameterizedType(Class<?> clazz) {
         Type type = clazz.getGenericSuperclass();
         if (type instanceof Class) {
             return getParameterizedType((Class<?>) type);
@@ -347,7 +347,7 @@ public final class ObjectUtils {
      * @param count 返回随机数的数量
      * @return 不重复的随机数
      */
-    protected static Set<Integer> randomReal(int bound, int count) {
+    private static Set<Integer> randomReal(int bound, int count) {
         if (bound < count) {
             throw new AbnormalParameterException();
         }

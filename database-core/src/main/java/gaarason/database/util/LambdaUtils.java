@@ -16,7 +16,7 @@ import java.util.Locale;
 /**
  * 解析 Lambda
  */
-public class LambdaUtils {
+public final class LambdaUtils {
 
     private static final Log LOGGER = LogFactory.getLog(LambdaUtils.class);
 

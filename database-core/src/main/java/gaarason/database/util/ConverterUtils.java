@@ -19,7 +19,7 @@ import java.util.Optional;
  * 类型转化类
  * @author xt
  */
-public class ConverterUtils {
+public final class ConverterUtils {
 
     private ConverterUtils() {
     }

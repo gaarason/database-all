@@ -114,6 +114,9 @@ public class SnowFlakeIdGenerator implements IdGenerator.SnowFlakesID {
         return timestamp;
     }
 
+    /**
+     * 信息报告
+     */
     private void informationReport() {
         long effectiveAge =
             ((1L << (64 - 1 - SEQUENCE_BITS - WORKER_ID_BITS - DATA_CENTER_ID_BITS)) -

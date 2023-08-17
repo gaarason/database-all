@@ -10,7 +10,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,7 +38,7 @@ public class StringUtils {
      */
     private static final Map<String, Pattern> PATTERN_MAP_FOR_REPLACE_ALL = new SoftCache<>();
 
-    private static final Random rand;
+    private static final Random RAND;
 
     static {
         Random randTemp;
@@ -48,7 +47,7 @@ public class StringUtils {
         } catch (NoSuchAlgorithmException e) {
             randTemp = new Random();
         }
-        rand = randTemp;
+        RAND = randTemp;
     }
 
     private StringUtils() {
@@ -224,7 +223,7 @@ public class StringUtils {
         String str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) {
-            int number = rand.nextInt(52);
+            int number = RAND.nextInt(52);
             sb.append(str.charAt(number));
         }
         return sb.toString();

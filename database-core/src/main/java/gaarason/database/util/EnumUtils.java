@@ -11,7 +11,7 @@ import java.util.Map;
  * 枚举工具
  * @author xt
  */
-public class EnumUtils {
+public final class EnumUtils {
 
     /**
      * int为索引的缓存

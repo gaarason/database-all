@@ -7,7 +7,7 @@ import java.util.Locale;
  * 格式化
  * @author xt
  */
-public class FormatUtils {
+public final class FormatUtils {
 
     private FormatUtils() {
     }

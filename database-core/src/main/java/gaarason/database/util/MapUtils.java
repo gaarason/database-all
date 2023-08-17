@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * Map工具类
  */
-public class MapUtils {
+public final class MapUtils {
 
     private MapUtils() {
 
