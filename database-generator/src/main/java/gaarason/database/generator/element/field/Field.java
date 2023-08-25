@@ -86,7 +86,7 @@ public class Field extends JavaElement {
     /**
      * 字段, 序列化与反序列化方式
      */
-    private Class<? extends FieldConversion> columnConversion;
+    private Class<? extends FieldConversion<?, ?>> columnConversion;
 
     /**
      * 字段长度
@@ -354,12 +354,12 @@ public class Field extends JavaElement {
         this.columnConditionStrategy = columnConditionStrategy;
     }
 
-    public Class<? extends FieldConversion> getColumnConversion() {
+    public Class<? extends FieldConversion<?, ?>> getColumnConversion() {
         return columnConversion;
     }
 
     public void setColumnConversion(
-        Class<? extends FieldConversion> columnConversion) {
+        Class<? extends FieldConversion<?, ?>> columnConversion) {
         this.columnConversion = columnConversion;
     }
 

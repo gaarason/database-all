@@ -10,7 +10,7 @@ import java.sql.JDBCType;
 public class JDBCValueWrapper {
 
     @Nullable
-    Object value;
+    final Object value;
 
     JDBCType type;
 

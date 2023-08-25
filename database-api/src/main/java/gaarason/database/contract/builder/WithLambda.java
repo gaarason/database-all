@@ -146,16 +146,16 @@ public interface WithLambda<T, K> extends With<T, K>, Support<T, K> {
         return withOperation(lambda2FieldName(fieldName), operationBuilder, builderClosure, lambda2FieldName(alisaFieldName));
     }
 
-
     /**
-     * @param op
-     * @param fieldName
-     * @param column
-     * @param builderClosure
-     * @param alisaFieldName
-     * @param <F>
-     * @param <FK>
-     * @return
+     * 统计操作
+     * @param op 操作类型
+     * @param fieldName 关联关系属性名
+     * @param column 列名
+     * @param builderClosure 自定义查询构造器
+     * @param alisaFieldName 别名
+     * @param <F> 关联关系属性所对应的实体类型
+     * @param <FK> 联关系属性所对应的数据表的主键类型
+     * @return 查询构造器
      */
     default <F, FK> Builder<T, K> withAggregate(AggregatesType op,
         ColumnFunctionalInterface.ColumnCollection<T, F> fieldName, ColumnFunctionalInterface<F, FK> column,

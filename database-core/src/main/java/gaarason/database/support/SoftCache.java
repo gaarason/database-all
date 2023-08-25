@@ -336,7 +336,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
 
     /* Internal class for entry sets */
     private class EntrySet extends AbstractSet<Entry> {
-        Set<Map.Entry<K, ValueCell<V>>> hashEntries = hash.entrySet();
+        final Set<Map.Entry<K, ValueCell<V>>> hashEntries = hash.entrySet();
 
         @Override
         public Iterator<Entry> iterator() {

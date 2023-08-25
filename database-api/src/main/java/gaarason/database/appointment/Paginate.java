@@ -17,12 +17,12 @@ public class Paginate<T> implements Serializable {
     /**
      * 当前页的页码
      */
-    protected int currentPage;
+    protected final int currentPage;
 
     /**
      * 每页数量
      */
-    protected int perPage;
+    protected final int perPage;
 
     /**
      * 最后页的页码
@@ -34,13 +34,13 @@ public class Paginate<T> implements Serializable {
      * 当前页的第一条数据是总数据量中的第几条
      */
     @Nullable
-    protected Integer from;
+    protected final Integer from;
 
     /**
      * 当前页的最后条数据是总数据量中的第几条
      */
     @Nullable
-    protected Integer to;
+    protected final Integer to;
 
     /**
      * 总的数据条数
@@ -51,7 +51,7 @@ public class Paginate<T> implements Serializable {
     /**
      * 当前页的具体数据
      */
-    protected List<T> itemList;
+    protected final List<T> itemList;
 
     /**
      * 构建分页

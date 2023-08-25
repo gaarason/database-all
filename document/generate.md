@@ -64,32 +64,32 @@ import java.util.List;
 @FixMethodOrder(MethodSorters.JVM)
 public class GeneratorTests {
 
-    // 推荐
-    @Test
-    public void run有参构造() {
-        String jdbcUrl = "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8" +
-                "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
-        String username = "root";
-        String password = "root";
-        Generator generator = new Generator(jdbcUrl, username, password);
-          // 风格切换
-        generator.setStyle(Style.ENTITY);
-        // set
-        generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
-  //        generator.setOutputDir("./src/test/java1/");     // 所有生成文件的路径
-        generator.setNamespace("gaarason.database.test.models.relation.pojo");                 // 所有生成文件的所属命名空间
-        generator.setCorePoolSize(20);                  // 所用的线程数
-        generator.setSpringBoot(true);                // 是否生成spring boot相关注解
-        generator.setSwagger(false);                   // 是否生成swagger相关注解
-        generator.setValidator(false);                 // 是否生成validator相关注解
-  
-        generator.setEntityStaticField(false);          // 是否在实体中生成静态字段
-        generator.setBaseEntityDir("base");             // 实体父类的相对路径
-        generator.setBaseEntityFields("id");            // 实体父类存在的字段
-        generator.setBaseEntityName("BaseEntity");      // 实体父类的类名
-        generator.setEntityDir("entity");               // 实体的相对路径
-        generator.setEntityPrefix("");                  // 实体的类名前缀
-        generator.setEntitySuffix("");                  // 实体的类名后缀
+  // 推荐
+  @Test
+  public void run有参构造() {
+    String jdbcUrl = "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8" +
+            "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
+    String username = "root";
+    String password = "root";
+    Generator generator = new Generator(jdbcUrl, username, password);
+    // 风格切换
+    generator.setStyle(Style.ENTITY);
+    // set
+    generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
+    //        generator.setOutputDir("./src/test/java1/");     // 所有生成文件的路径
+    generator.setNamespace("gaarason.database.test.models.relation.pojo");                 // 所有生成文件的所属命名空间
+    generator.setCorePoolSize(20);                  // 所用的线程数
+    generator.setSpringBoot(true);                // 是否生成spring boot相关注解
+    generator.setSwagger(false);                   // 是否生成swagger相关注解
+    generator.setValidator(false);                 // 是否生成validator相关注解
+
+    generator.setEntityStaticField(false);          // 是否在实体中生成静态字段
+    generator.setBaseEntityDir("base");             // 实体父类的相对路径
+    generator.setBaseEntityFields("id");            // 实体父类存在的字段
+    generator.setBaseEntityName("BaseEntity");      // 实体父类的类名
+    generator.setEntityDir("entity");               // 实体的相对路径
+    generator.setEntityPrefix("");                  // 实体的类名前缀
+    generator.setEntitySuffix("");                  // 实体的类名后缀
 
 //      generator.setColumnDisSelectable("created_at", "updated_at");             // 字段, 不可查询
 //
@@ -102,82 +102,87 @@ public class GeneratorTests {
 //
 //      generator.setColumnConversion(FieldConversion.Default.class, "created_at", "updated_at");   // 字段, 序列化与反序列化方式
 
-        generator.setBaseModelDir("base");              // 模型父类的相对路径
-        generator.setBaseModelName("BaseModel");        // 模型父类的类名
-        generator.setModelDir("model");                 // 模型的相对路径
-        generator.setModelPrefix("");                   // 模型的类名前缀
-        generator.setModelSuffix("Model");              // 模型的类名后缀
-  
-        // 执行
-        generator.run();
-    }
+    generator.setBaseModelDir("base");              // 模型父类的相对路径
+    generator.setBaseModelName("BaseModel");        // 模型父类的类名
+    generator.setModelDir("model");                 // 模型的相对路径
+    generator.setModelPrefix("");                   // 模型的类名前缀
+    generator.setModelSuffix("Model");              // 模型的类名后缀
 
-    @Test
-    public void run无参构造() {
-        ProxyDataSource gaarasonDataSourceWrapper = gaarasonDataSourceWrapper();
-        ToolModel toolModel = new ToolModel(gaarasonDataSourceWrapper);
-        AutoGenerator autoGenerator = new AutoGenerator(toolModel);
-        // set
-        autoGenerator.setStaticField(true);
-        autoGenerator.setIsSpringBoot(true);
-        autoGenerator.setCorePoolSize(20);
-        autoGenerator.setOutputDir("./src/test/java/");
-        autoGenerator.setNamespace("test.data");
-        autoGenerator.setDisInsertable("created_at", "updated_at");
-        autoGenerator.setDisUpdatable("created_at", "updated_at");
+    // 执行
+    generator.run();
+  }
 
-        autoGenerator.run();
-    }
+  @Test
+  public void run无参构造() {
+    ProxyDataSource gaarasonDataSourceWrapper = gaarasonDataSourceWrapper();
+    ToolModel toolModel = new ToolModel(gaarasonDataSourceWrapper);
+    AutoGenerator autoGenerator = new AutoGenerator(toolModel);
+    // set
+    autoGenerator.setStaticField(true);
+    autoGenerator.setIsSpringBoot(true);
+    autoGenerator.setCorePoolSize(20);
+    autoGenerator.setOutputDir("./src/test/java/");
+    autoGenerator.setNamespace("test.data");
+    autoGenerator.setDisInsertable("created_at", "updated_at");
+    autoGenerator.setDisUpdatable("created_at", "updated_at");
 
-    private DataSource dataSourceMaster0() {
-        DruidDataSource druidDataSource = new DruidDataSource();
-        druidDataSource.setUrl(
+    autoGenerator.run();
+  }
+
+  private DataSource dataSourceMaster0() {
+    DruidDataSource druidDataSource = new DruidDataSource();
+    druidDataSource.setUrl(
             "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
-        druidDataSource.setUsername("root");
-        druidDataSource.setPassword("root");
+    druidDataSource.setUsername("root");
+    druidDataSource.setPassword("root");
 
-        druidDataSource.setDbType("com.alibaba.druid.pool.DruidDataSource");
-        druidDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        druidDataSource.setInitialSize(20);
-        druidDataSource.setMaxActive(20);
-        druidDataSource.setLoginTimeout(3);
-        druidDataSource.setQueryTimeout(3);
-        return druidDataSource;
+    druidDataSource.setDbType("com.alibaba.druid.pool.DruidDataSource");
+    druidDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+    druidDataSource.setInitialSize(20);
+    druidDataSource.setMaxActive(20);
+    druidDataSource.setLoginTimeout(3);
+    druidDataSource.setQueryTimeout(3);
+    return druidDataSource;
+  }
+
+  private List<DataSource> dataSourceMasterList() {
+    List<DataSource> dataSources = new ArrayList<>();
+    dataSources.add(dataSourceMaster0());
+    return dataSources;
+  }
+
+  private ProxyDataSource gaarasonDataSourceWrapper() {
+    List<DataSource> dataSources = dataSourceMasterList();
+    return new ProxyDataSource(dataSources);
+  }
+
+  public static class ToolModel extends Model<ToolModel.Inner, Object> {
+    private final ProxyDataSource gaarasonDataSourceWrapper;
+
+    public ToolModel(ProxyDataSource dataSource) {
+      gaarasonDataSourceWrapper = dataSource;
     }
 
-    private List<DataSource> dataSourceMasterList() {
-        List<DataSource> dataSources = new ArrayList<>();
-        dataSources.add(dataSourceMaster0());
-        return dataSources;
+    public ProxyDataSource getProxyDataSource() {
+      return gaarasonDataSourceWrapper;
     }
 
-    private ProxyDataSource gaarasonDataSourceWrapper() {
-        List<DataSource> dataSources = dataSourceMasterList();
-        return new ProxyDataSource(dataSources);
+    public static class Inner {
+    }
+  }
+
+  public static class AutoGenerator extends Generator {
+    private final Model toolModel;
+
+    public AutoGenerator(Model model) {
+      toolModel = model;
     }
 
-    public static class ToolModel extends Model<ToolModel.Inner, Object> {
-        private ProxyDataSource gaarasonDataSourceWrapper;
-        public ToolModel(ProxyDataSource dataSource) {
-            gaarasonDataSourceWrapper = dataSource;
-        }
-        public ProxyDataSource getProxyDataSource() {
-            return gaarasonDataSourceWrapper;
-        }
-        public static class Inner {
-        }
+    public Model getModel() {
+      return toolModel;
     }
 
-    public static class AutoGenerator extends Generator {
-        private Model toolModel;
-        public AutoGenerator(Model model) {
-            toolModel = model;
-        }
-        public Model getModel() {
-            return toolModel;
-        }
-
-    }
+  }
 }
 
 ```

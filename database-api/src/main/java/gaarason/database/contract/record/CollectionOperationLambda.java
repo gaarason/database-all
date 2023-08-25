@@ -76,7 +76,6 @@ public interface CollectionOperationLambda<T, K>
      * 返回集合所有元素的指定属性的值的众数
      * @param fieldName 属性名表达式
      * @param <F> 属性类型
-     * @param <F> 属性类型
      * @param <W> 返回LIST中的值类型
      * @return 众数列表
      */

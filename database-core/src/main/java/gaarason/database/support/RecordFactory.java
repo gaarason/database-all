@@ -169,7 +169,7 @@ public final class RecordFactory {
      * @return 通用map
      * @throws SQLException 数据库异常
      */
-    protected static <T, K> Map<String, Object> JDBCResultToMap(
+    private static <T, K> Map<String, Object> JDBCResultToMap(
         Model<T, K> model, Map<String, Object> map, ResultSetMetaData resultSetMetaData, ResultSet resultSet)
         throws SQLException {
 

@@ -52,10 +52,6 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
         return where(lambda2ColumnName(column), value);
     }
 
-//    default <F> Builder<T, K> where(ColumnFunctionalInterface.Collection<T, F> column, @Nullable Object value) {
-//        return where(lambda2ColumnName(column), value);
-//    }
-
     /**
      * 比较列与值相等(忽略值为null的情况)
      * @param column 列名表达式

@@ -209,7 +209,7 @@ public class MysqlFieldGenerator extends BaseFieldGenerator {
     /**
      * 字段, 序列化与反序列化方式
      */
-    private Map<String , Class<? extends FieldConversion>> columnConversion = new HashMap<>();
+    private Map<String , Class<? extends FieldConversion<?, ?>>> columnConversion = new HashMap<>();
 
     /**
      * 生成Field
@@ -558,12 +558,12 @@ public class MysqlFieldGenerator extends BaseFieldGenerator {
         this.columnConditionStrategy = columnConditionStrategy;
     }
 
-    public Map<String, Class<? extends FieldConversion>> getColumnConversion() {
+    public Map<String, Class<? extends FieldConversion<?, ?>>> getColumnConversion() {
         return columnConversion;
     }
 
     public void setColumnConversion(
-        Map<String, Class<? extends FieldConversion>> columnColumnConversion) {
+        Map<String, Class<? extends FieldConversion<?, ?>>> columnColumnConversion) {
         this.columnConversion = columnColumnConversion;
     }
 }

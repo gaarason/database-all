@@ -24,7 +24,7 @@ abstract public class BaseModel<T extends Serializable, K extends Serializable> 
     private static GaarasonDataSource mysqlDataSource() {
         DruidDataSource druidDataSource = new DruidDataSource();
         druidDataSource.setUrl(
-            "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");
+            "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&autoReconnect=true&serverTimezone=Asia/Shanghai");
         druidDataSource.setDbType("com.alibaba.druid.pool.DruidDataSource");
         druidDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         druidDataSource.setUsername("root");

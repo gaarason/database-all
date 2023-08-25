@@ -23,7 +23,7 @@ public class TeacherModel extends BaseModel<Teacher, Integer> implements Teacher
         try {
 
             studentModel.updateName();
-        } catch (Exception e) {
+        } catch (Exception ignore) {
 
         }
 

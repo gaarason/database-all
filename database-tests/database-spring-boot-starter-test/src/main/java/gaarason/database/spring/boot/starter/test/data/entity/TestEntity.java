@@ -55,7 +55,7 @@ public class TestEntity implements Serializable {
     }
 
 
-    public static class JsonFieldConversion implements FieldConversion {
+    public static class JsonFieldConversion implements FieldConversion<Object, Object> {
 
         public final static ObjectMapper MAPPER = new ObjectMapper();
 

@@ -10,7 +10,6 @@ import gaarason.database.core.Container;
 import gaarason.database.exception.RelationAttachException;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
-import gaarason.database.support.RecordFactory;
 import gaarason.database.util.ObjectUtils;
 
 import java.lang.reflect.Field;

@@ -25,6 +25,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 4.9.1
+
+- 优化
+
 ### 4.9.0
 
 - 在`@Column`中, 对 `fill`增加可选实现, `FieldFill.CreatedTimeFill.class`/`FieldFill.UpdatedTimeFill.class`分别在 ORM 的 insert/update 时,

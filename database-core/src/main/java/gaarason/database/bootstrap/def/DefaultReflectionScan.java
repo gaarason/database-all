@@ -16,7 +16,7 @@ import java.util.Set;
  */
 public class DefaultReflectionScan implements ReflectionScan {
 
-    protected Reflections reflections;
+    protected final Reflections reflections;
 
     public DefaultReflectionScan(GaarasonDatabaseProperties properties) {
         reflections = getReflections(properties);

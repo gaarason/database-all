@@ -14,7 +14,6 @@ import gaarason.database.contract.function.TransactionFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.core.Container;
 import gaarason.database.exception.AbnormalParameterException;
-import gaarason.database.exception.AggregatesNotSupportedGroupException;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
@@ -202,9 +201,7 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
         String alisaField = alisaFieldName != null ? alisaFieldName : StringUtils.lineToHump(fieldName + "_" + op + "_" + column);
 
         // 操作查询构造器
-        BuilderWrapper<Object, Object> operationBuilder = builder -> {
-            return builder.selectFunction(op.toString(), column, alisaField);
-        };
+        BuilderWrapper<Object, Object> operationBuilder = builder -> builder.selectFunction(op.toString(), column, alisaField);
 
         return withOperation(fieldName,  operationBuilder, customBuilder, alisaField);
     }

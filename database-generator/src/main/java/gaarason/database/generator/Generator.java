@@ -147,7 +147,7 @@ public class Generator {
     /**
      * 字段, 序列化与反序列化方式
      */
-    private final Map<String, Class<? extends FieldConversion>> columnConversion = new HashMap<>();
+    private final Map<String, Class<? extends FieldConversion<?, ?>>> columnConversion = new HashMap<>();
 
     /**
      * 代码风格
@@ -849,7 +849,7 @@ public class Generator {
         return this;
     }
 
-    public Generator setColumnConversion(Class<? extends FieldConversion> fieldConversionClass, String... columns) {
+    public Generator setColumnConversion(Class<? extends FieldConversion<?, ?>> fieldConversionClass, String... columns) {
         for (String column : columns) {
             columnConversion.put(column, fieldConversionClass);
         }
