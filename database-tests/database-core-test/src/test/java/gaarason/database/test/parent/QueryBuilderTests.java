@@ -2419,7 +2419,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         // 自定义查询字段, 带group
         Paginate<Map<String, Object>> paginate5 = studentModel.newQuery()
             .select("name as NAME", "age", "sex")
-            .orderBy("sex")
+            .orderBy("age")
             .where("sex", "1")
             .orWhere((builder -> builder.where("sex", "2")))
             .group("NAME", "age", "sex")
@@ -2432,7 +2432,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertNotNull(paginate5.getTotal());
         Assert.assertEquals(paginate5.getLastPage().intValue(), 3);
         Assert.assertEquals(paginate5.getTotal().intValue(), 10);
-        Assert.assertEquals("小腾", paginate5.getItemList().get(0).get("NAME"));
+        Assert.assertEquals("小明", paginate5.getItemList().get(0).get("NAME"));
     }
 
     @Test
