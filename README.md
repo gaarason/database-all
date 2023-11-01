@@ -94,6 +94,7 @@ studentModel.findOrFail(8).bind("teachers").attach( 1, 2, 3 );
     <groupId>com.github.gaarason.database-all</groupId>
     <artifactId>database-spring-boot-starter</artifactId>
     <version>{latest-version}</version>
+    <!-- <version>4.9.1</version> -->
 </dependency>
 ```
 
@@ -112,7 +113,7 @@ spring.datasource.type=com.alibaba.druid.pool.DruidDataSource
 # gaarason.database.snow-flake.worker-id=1
 
 # 包扫描路径, 默认是`@SpringBootApplication`所在的包
-# 非 SpringBoot, 且 jdk8+, 则建议指定包扫描路径
+# 非 SpringBoot, 建议手动指定包扫描路径
 # gaarason.database.scan.packages=you.package1,you.package2
 ```
 
