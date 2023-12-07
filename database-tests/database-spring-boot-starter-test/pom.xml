@@ -7,6 +7,12 @@
         <groupId>com.github.gaarason</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
+<!--    <parent>-->
+<!--        <groupId>org.springframework.boot</groupId>-->
+<!--        <artifactId>spring-boot-starter-parent</artifactId>-->
+<!--        <version>3.1.5</version>-->
+<!--        <relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;-->
+<!--    </parent>-->
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>database-spring-boot-starter-test</artifactId>
@@ -21,14 +27,14 @@
 
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>com.github.gaarason</groupId>
             <artifactId>database-common-test</artifactId>
-            <version>${project.version}</version>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>com.github.gaarason</groupId>
             <artifactId>database-spring-boot-starter</artifactId>
-            <version>${project.version}</version>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>

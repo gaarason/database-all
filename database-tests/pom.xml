@@ -17,7 +17,6 @@
         <module>database-spring-boot-starter-hikari-test</module>
         <module>database-common-test</module>
         <module>database-spring-boot-starter-mybatis-test</module>
-        <module>database-spring-boot3-starter-test</module>
     </modules>
 
     <properties>
