@@ -49,7 +49,7 @@ public @interface Column {
     boolean selectable() default true;
 
     /**
-     * 是否插入/更新/条件使用, 当对应策略值为DEFAULT时, 取用
+     * 是否插入/更新/条件使用, 当对应策略值为DEFAULT(未配置)时, 取用本策略
      */
     Class<? extends FieldStrategy> strategy() default FieldStrategy.NotNull.class;
 

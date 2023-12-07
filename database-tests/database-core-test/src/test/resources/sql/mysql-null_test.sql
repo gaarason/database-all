@@ -12,7 +12,7 @@ CREATE TABLE `null_test`
     `time_column`        time        DEFAULT NULL COMMENT 'time类型字段',
     `date_column`        date        DEFAULT NULL COMMENT 'date类型字段',
     `datetime_column`    datetime    DEFAULT NULL COMMENT 'datetime类型字段',
-    `timestamp_column`   timestamp   DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'timestamp类型字段',
+    `timestamp_column`   timestamp   ON UPDATE CURRENT_TIMESTAMP COMMENT 'timestamp类型字段',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1

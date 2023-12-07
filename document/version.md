@@ -25,6 +25,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 5.0.0
+
+- 支持 SpringBoot3 以及 java17
+
 ### 4.9.1
 
 - 优化

@@ -41,7 +41,9 @@ public class NullTestModel extends SingleModel<NullTestModel.Entity, Integer> {
         @Column(name = "datetime_column", strategy = FieldStrategy.Always.class)
         private LocalDateTime datetimeColumn;
 
-        @Column(name = "timestamp_column", strategy = FieldStrategy.Always.class)
+        // 有部分版本的 mysql 不允许 时间字段为 null
+        // 所以就不用这个字段测试了
+        @Column(name = "timestamp_column", strategy = FieldStrategy.NotNull.class)
         private Date timestampColumn;
 
         private boolean isDeleted;

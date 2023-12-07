@@ -94,7 +94,7 @@ studentModel.findOrFail(8).bind("teachers").attach( 1, 2, 3 );
     <groupId>com.github.gaarason.database-all</groupId>
     <artifactId>database-spring-boot-starter</artifactId>
     <version>{latest-version}</version>
-    <!-- <version>4.9.1</version> -->
+    <!-- <version>5.0.0</version> -->
 </dependency>
 ```
 

@@ -2,6 +2,7 @@ package gaarason.database.test.parent.base;
 
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.exception.SQLRuntimeException;
+import gaarason.database.test.utils.DatabaseTypeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.*;
 import org.junit.runners.MethodSorters;
@@ -36,10 +37,12 @@ abstract public class BaseTests {
 
         Map<TABLE, String[]> tableSql = new HashMap<>();
         for (TABLE table : TABLE.values()) {
-            String sqlFilename = Thread.currentThread().getStackTrace()[1].getClass().getResource("/").toString().replace(
-                "file:", "") + "../../src/test/java/gaarason/database/test/init/mysql-"+table.name()+".sql";
+//            String sqlFilename = Thread.currentThread().getStackTrace()[1].getClass().getResource("/").toString().replace(
+
+//            String sqlFilename = Thread.currentThread().getStackTrace()[1].getClassName().replace(".","/") + "/../../src/test/java/gaarason/database/test/init/mysql-"+table.name()+".sql";
             try {
-                tableSql.put(table, readToString(sqlFilename).split(";\n"));
+                String sqlFilename = BaseTests.class.getClassLoader().getResource("sql/mysql-"+table.name()+".sql").getFile();
+                tableSql.put(table, DatabaseTypeUtil.readToString(sqlFilename).split(";\n"));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
