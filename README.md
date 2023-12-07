@@ -14,7 +14,7 @@ Eloquent ORM for Java
 
 - 对于关联关系 Eloquent ORM 提供了富有表现力的声明方式，与简洁的使用方法，并专注在内部进行查询与内存优化，在复杂的关系中有仍然有着良好的体验。
 
-- 兼容于其他常见的 ORM 框架, 以及常见的数据源 (DataSource)
+- 支持原生Java8,Java11,Java17应用, 支持SpringBoot 2x 以及 3x ,兼容于其他常见的 ORM 框架, 以及常见的数据源 (DataSource)
 
 ## 目录
 
@@ -129,7 +129,7 @@ GeneralModel generalModel;
 public void 简单查询() {
 
     // select * from student where id = 3 limit 1
-    Record<GeneralModel.Table,Object> record = generalModel.newQuery().from("student").where("id", 3).firstOrFail();
+    Record<?, ?> record = generalModel.newQuery().from("student").where("id", 3).firstOrFail();
 
     // 结果转化到 map
     Map<String, Object> stringObjectMap = record.toMap();
