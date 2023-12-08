@@ -25,6 +25,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 5.1.0
+
+- 在代码生成中, 增加对 javax 以及 jakarta 的兼容
+
 ### 5.0.0
 
 - 支持 SpringBoot3 以及 java17

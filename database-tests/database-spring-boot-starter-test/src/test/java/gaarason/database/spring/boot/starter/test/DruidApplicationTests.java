@@ -5,13 +5,11 @@ import gaarason.database.contract.eloquent.Record;
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.generator.GeneralGenerator;
 import gaarason.database.generator.Generator;
-import gaarason.database.spring.boot.starter.test.data.entity.DataType;
 import gaarason.database.spring.boot.starter.test.data.entity.Student;
 import gaarason.database.spring.boot.starter.test.data.entity.Teacher;
 import gaarason.database.spring.boot.starter.test.data.entity.TestEntity;
 import gaarason.database.spring.boot.starter.test.data.repository.StudentQuery;
 import gaarason.database.spring.boot.starter.test.data.repository.TeacherQuery;
-import gaarason.database.support.SnowFlakeIdGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -23,7 +21,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -53,12 +53,12 @@ public class DruidApplicationTests {
     public void 生成代码() {
         // set
         generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
-//        generator.setOutputDir("./src/test/java1/");     // 所有生成文件的路径
         generator.setNamespace("data");                 // 所有生成文件的所属命名空间
         generator.setCorePoolSize(20);                  // 所用的线程数
-        generator.setSpringBoot(true);                  // 是否生成spring boot相关注解
+        generator.setSpringBoot(Generator.SpringBootVersion.THREE);    // 是否生成spring boot3相关注解
         generator.setSwagger(true);                     // 是否生成swagger相关注解
         generator.setValidator(true);                   // 是否生成validator相关注解
+        generator.setJdkDependVersion(Generator.JdkDependVersion.JAKARTA);  // jdk依赖使用的包是 javax 还是 jakarta ?
 
         generator.setEntityStaticField(true);           // 是否在实体中生成静态字段
         generator.setBaseEntityDir("base");             // 实体父类的相对路径
@@ -89,7 +89,7 @@ public class DruidApplicationTests {
 
         // set
         generator.setEntityStaticField(true);
-        generator.setSpringBoot(true);                // 是否生成spring boot相关注解
+        generator.setSpringBoot(Generator.SpringBootVersion.THREE);                // 是否生成spring boot相关注解
         generator.setSwagger(true);                   // 是否生成swagger相关注解
         generator.setValidator(true);                 // 是否生成validator相关注解
         generator.setCorePoolSize(20);

@@ -6,6 +6,7 @@ import gaarason.database.appointment.FinalVariable;
 import gaarason.database.contract.support.FieldConversion;
 import gaarason.database.contract.support.FieldFill;
 import gaarason.database.contract.support.FieldStrategy;
+import gaarason.database.generator.Generator;
 import gaarason.database.generator.element.JavaClassification;
 import gaarason.database.generator.element.JavaElement;
 import gaarason.database.generator.element.JavaVisibility;
@@ -147,7 +148,8 @@ public class Field extends JavaElement {
      * @return eg:private String name;
      */
     public String toFieldName() {
-        return indentation() + JavaVisibility.PRIVATE.getValue() + element.type2Name(javaClassTypeString) + " " + name + ";\n\n";
+        return indentation() + JavaVisibility.PRIVATE.getValue() + element.type2Name(javaClassTypeString) + " " + name +
+                ";\n\n";
     }
 
     /**
@@ -155,30 +157,34 @@ public class Field extends JavaElement {
      */
     public String toAnnotationDatabasePrimary() {
         return primary ? indentation() + element.anno2Name(Primary.class) + "(" +
-            (!increment ? "increment = " + increment : "") +
-            ")\n" : "";
+                (!increment ? "increment = " + increment : "") + ")\n" : "";
     }
 
     /**
      * @return eg:@Column(name = "name", length = 20L, comment = "姓名")
      */
     public String toAnnotationDatabaseColumn() {
-        return indentation() + element.anno2Name(Column.class)+"(" +
+        return indentation() + element.anno2Name(Column.class) + "(" +
 
-            "name = \"" + columnName + "\"" +
-            (unsigned ? ", unsigned = " + unsigned : "") +
-            (nullable ? ", nullable = " + nullable : "") +
-            (!ObjectUtils.isNull(columnDisSelectable) ? ", selectable = " + columnDisSelectable : "") +
-            (!ObjectUtils.isNull(columnFill) ? ", fill = " + element.type2Name(columnFill) + FinalVariable.Symbol.CLASS : "") +
-            (!ObjectUtils.isNull(columnStrategy) ? ", strategy = " + element.type2Name(columnStrategy)+ FinalVariable.Symbol.CLASS : "") +
-            (!ObjectUtils.isNull(columnInsertStrategy) ? ", insertStrategy = " + element.type2Name(columnInsertStrategy)+ FinalVariable.Symbol.CLASS : "") +
-            (!ObjectUtils.isNull(columnUpdateStrategy) ? ", updateStrategy = " + element.type2Name(columnUpdateStrategy)+ FinalVariable.Symbol.CLASS : "") +
-            (!ObjectUtils.isNull(columnConditionStrategy) ? ", conditionStrategy = " + element.type2Name(columnConditionStrategy)+ FinalVariable.Symbol.CLASS : "") +
-            (!ObjectUtils.isNull(columnConversion) ? ", conversion = " + element.type2Name(columnConversion)+ FinalVariable.Symbol.CLASS : "") +
-            (length != null && length != 255 ? ", length = " + length + "L" : "") +
-            (!"".equals(comment) ? ", comment = \"" + comment + "\"" : "") +
+                "name = \"" + columnName + "\"" + (unsigned ? ", unsigned = " + unsigned : "") +
+                (nullable ? ", nullable = " + nullable : "") +
+                (!ObjectUtils.isNull(columnDisSelectable) ? ", selectable = " + columnDisSelectable : "") +
+                (!ObjectUtils.isNull(columnFill) ?
+                        ", fill = " + element.type2Name(columnFill) + FinalVariable.Symbol.CLASS : "") +
+                (!ObjectUtils.isNull(columnStrategy) ?
+                        ", strategy = " + element.type2Name(columnStrategy) + FinalVariable.Symbol.CLASS : "") +
+                (!ObjectUtils.isNull(columnInsertStrategy) ?
+                        ", insertStrategy = " + element.type2Name(columnInsertStrategy) + FinalVariable.Symbol.CLASS :
+                        "") + (!ObjectUtils.isNull(columnUpdateStrategy) ?
+                ", updateStrategy = " + element.type2Name(columnUpdateStrategy) + FinalVariable.Symbol.CLASS : "") +
+                (!ObjectUtils.isNull(columnConditionStrategy) ?
+                        ", conditionStrategy = " + element.type2Name(columnConditionStrategy) +
+                                FinalVariable.Symbol.CLASS : "") + (!ObjectUtils.isNull(columnConversion) ?
+                ", conversion = " + element.type2Name(columnConversion) + FinalVariable.Symbol.CLASS : "") +
+                (length != null && length != 255 ? ", length = " + length + "L" : "") +
+                (!"".equals(comment) ? ", comment = \"" + comment + "\"" : "") +
 
-            ")\n";
+                ")\n";
     }
 
     /**
@@ -190,11 +196,10 @@ public class Field extends JavaElement {
 
         return indentation() + element.anno2Name("io.swagger.annotations.ApiModelProperty") + "(" +
 
-            "value = \"" + value + "\"" +
-            (defaultValue != null ? ", example = \"" + defaultValue + "\"" : "") +
-            (isRequired() ? ", required = true" : "") +
+                "value = \"" + value + "\"" + (defaultValue != null ? ", example = \"" + defaultValue + "\"" : "") +
+                (isRequired() ? ", required = true" : "") +
 
-            ")\n";
+                ")\n";
     }
 
     /**
@@ -203,27 +208,23 @@ public class Field extends JavaElement {
      * org.hibernate.validator.constraints.@Length
      * @return eg:@Length(min = 0, max = 50, message = "合同的首期缴费日期[firstPayDate]长度需要在0和50之间")
      */
-    public String toAnnotationOrgHibernateValidatorConstraintValidator() {
+    public String toAnnotationOrgHibernateValidatorConstraintValidator(Generator.JdkDependVersion version) {
         // 字段没有注释的情况下, 使用字段名
         String describe = "".equals(comment) ? columnName : comment;
-
+        String prefix = version.name().toLowerCase();
         switch (javaClassification) {
             case NUMERIC:
-                return indentation() + element.anno2Name("javax.validation.constraints.Max") + "(value = " + max + "L, " +
-                    "message = \"" + describe + "[" + columnName + "]需要小于等于" + max + "\"" +
-                    ")\n" +
-                    indentation() + element.anno2Name("javax.validation.constraints.Min") + "(value = " + min + "L, " +
-                    "message = \"" + describe + "[" + columnName + "]需要大于等于" + min + "\"" +
-                    ")\n";
+                return indentation() + element.anno2Name(prefix + ".validation.constraints.Max") + "(value = " + max +
+                        "L, " + "message = \"" + describe + "[" + columnName + "]需要小于等于" + max + "\"" + ")\n" +
+                        indentation() + element.anno2Name(prefix + ".validation.constraints.Min") + "(value = " + min +
+                        "L, " + "message = \"" + describe + "[" + columnName + "]需要大于等于" + min + "\"" + ")\n";
             case STRING:
                 if (max == 0) {
                     return "";
                 } else {
                     return indentation() + element.anno2Name("org.hibernate.validator.constraints.Length") + "(" +
-                        "min = " + min + ", " +
-                        "max = " + max + ", " +
-                        "message = \"" + describe + "[" + columnName + "]长度需要在" + min + "和" + max + "之间" + "\"" +
-                        ")\n";
+                            "min = " + min + ", " + "max = " + max + ", " + "message = \"" + describe + "[" +
+                            columnName + "]长度需要在" + min + "和" + max + "之间" + "\"" + ")\n";
                 }
             default:
                 return "";
@@ -331,8 +332,7 @@ public class Field extends JavaElement {
         return columnInsertStrategy;
     }
 
-    public void setColumnInsertStrategy(
-        Class<? extends FieldStrategy> columnInsertStrategy) {
+    public void setColumnInsertStrategy(Class<? extends FieldStrategy> columnInsertStrategy) {
         this.columnInsertStrategy = columnInsertStrategy;
     }
 
@@ -340,8 +340,7 @@ public class Field extends JavaElement {
         return columnUpdateStrategy;
     }
 
-    public void setColumnUpdateStrategy(
-        Class<? extends FieldStrategy> columnUpdateStrategy) {
+    public void setColumnUpdateStrategy(Class<? extends FieldStrategy> columnUpdateStrategy) {
         this.columnUpdateStrategy = columnUpdateStrategy;
     }
 
@@ -349,8 +348,7 @@ public class Field extends JavaElement {
         return columnConditionStrategy;
     }
 
-    public void setColumnConditionStrategy(
-        Class<? extends FieldStrategy> columnConditionStrategy) {
+    public void setColumnConditionStrategy(Class<? extends FieldStrategy> columnConditionStrategy) {
         this.columnConditionStrategy = columnConditionStrategy;
     }
 
@@ -358,8 +356,7 @@ public class Field extends JavaElement {
         return columnConversion;
     }
 
-    public void setColumnConversion(
-        Class<? extends FieldConversion<?, ?>> columnConversion) {
+    public void setColumnConversion(Class<? extends FieldConversion<?, ?>> columnConversion) {
         this.columnConversion = columnConversion;
     }
 

@@ -39,7 +39,7 @@ public class GeneratorTests {
 //        generator.setOutputDir("./src/test/java1/");     // 所有生成文件的路径
         generator.setNamespace("gaarason.database.test.models.morph");                 // 所有生成文件的所属命名空间
         generator.setCorePoolSize(20);                  // 所用的线程数
-        generator.setSpringBoot(true);                // 是否生成spring boot相关注解
+        generator.setSpringBoot(Generator.SpringBootVersion.THREE);                // 是否生成spring boot相关注解
         generator.setSwagger(false);                   // 是否生成swagger相关注解
         generator.setValidator(false);                 // 是否生成validator相关注解
 
@@ -79,7 +79,7 @@ public class GeneratorTests {
         AutoGenerator autoGenerator = new AutoGenerator(toolModel);
         // set
         autoGenerator.setEntityStaticField(true);
-        autoGenerator.setSpringBoot(true);
+        autoGenerator.setSpringBoot(Generator.SpringBootVersion.THREE);
         autoGenerator.setCorePoolSize(20);
 //        autoGenerator.setOutputDir("./src/test/java/");
         autoGenerator.setOutputDir("./src/test/java1/");

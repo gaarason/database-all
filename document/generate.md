@@ -76,12 +76,13 @@ public class GeneratorTests {
     generator.setStyle(Style.ENTITY);
     // set
     generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
-    //        generator.setOutputDir("./src/test/java1/");     // 所有生成文件的路径
-    generator.setNamespace("gaarason.database.test.models.relation.pojo");                 // 所有生成文件的所属命名空间
+    generator.setNamespace("gaarason.database.test.models.relation.pojo");                  // 所有生成文件的所属命名空间
+    generator.setSpringBoot(Generator.SpringBootVersion.THREE);                             // 是否生成spring boot相关注解
     generator.setCorePoolSize(20);                  // 所用的线程数
-    generator.setSpringBoot(true);                // 是否生成spring boot相关注解
-    generator.setSwagger(false);                   // 是否生成swagger相关注解
-    generator.setValidator(false);                 // 是否生成validator相关注解
+    generator.setSwagger(false);                    // 是否生成swagger相关注解
+    generator.setValidator(false);                  // 是否生成validator相关注解
+    generator.setJdkDependVersion(Generator.JdkDependVersion.JAKARTA);  // jdk依赖使用的包是 javax 还是 jakarta ?
+
 
     generator.setEntityStaticField(false);          // 是否在实体中生成静态字段
     generator.setBaseEntityDir("base");             // 实体父类的相对路径
@@ -119,7 +120,6 @@ public class GeneratorTests {
     AutoGenerator autoGenerator = new AutoGenerator(toolModel);
     // set
     autoGenerator.setStaticField(true);
-    autoGenerator.setIsSpringBoot(true);
     autoGenerator.setCorePoolSize(20);
     autoGenerator.setOutputDir("./src/test/java/");
     autoGenerator.setNamespace("test.data");
@@ -252,13 +252,15 @@ public class TestApplicationTests {
         generator.setStyle(Style.ENTITY);
         // set
         generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
-        //        generator.setOutputDir("./src/test/java1/");     // 所有生成文件的路径
-        generator.setNamespace("gaarason.database.test.models.relation.pojo");                 // 所有生成文件的所属命名空间
+      
+        generator.setNamespace("gaarason.database.test.models.relation.pojo");                  // 所有生成文件的所属命名空间
+        generator.setSpringBoot(Generator.SpringBootVersion.THREE);                             // 是否生成spring boot相关注解
         generator.setCorePoolSize(20);                  // 所用的线程数
-        generator.setSpringBoot(true);                // 是否生成spring boot相关注解
-        generator.setSwagger(false);                   // 是否生成swagger相关注解
-        generator.setValidator(false);                 // 是否生成validator相关注解
-  
+        generator.setSwagger(false);                    // 是否生成swagger相关注解
+        generator.setValidator(false);                  // 是否生成validator相关注解
+        generator.setJdkDependVersion(Generator.JdkDependVersion.JAKARTA);  // jdk依赖使用的包是 javax 还是 jakarta ?
+
+
         generator.setEntityStaticField(false);          // 是否在实体中生成静态字段
         generator.setBaseEntityDir("base");             // 实体父类的相对路径
         generator.setBaseEntityFields("id");            // 实体父类存在的字段

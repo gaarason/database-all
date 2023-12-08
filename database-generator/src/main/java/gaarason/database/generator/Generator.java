@@ -21,7 +21,6 @@ import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.util.StringUtils;
 
-import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.io.Serializable;
 import java.util.*;
@@ -100,15 +99,23 @@ public class Generator {
     /**
      * 是否使用spring boot注解 model
      */
-    private boolean isSpringBoot;
+    private boolean springBoot;
+    /**
+     * 使用 spring boot 的版本
+     */
+    private SpringBootVersion springBootVersion = SpringBootVersion.TWO;
+    /**
+     * Jdk 依赖版本
+     */
+    private JdkDependVersion jdkDependVersion = JdkDependVersion.JAVAX;
     /**
      * 是否使用swagger注解 entity
      */
-    private boolean isSwagger;
+    private boolean swagger;
     /**
      * 是否使用 org.hibernate.validator.constraints.* 注解 entity
      */
-    private boolean isValidator;
+    private boolean validator;
     /**
      * 是否生成静态字段名
      */
@@ -380,7 +387,7 @@ public class Generator {
         parameterMap.put("${base_entity_namespace}", baseEntityNamespace);
 
         parameterMap.put("${spring_lazy}",
-            isSpringBoot ? element.anno2Name("org.springframework.context.annotation.Lazy") : "");
+            springBoot ? element.anno2Name("org.springframework.context.annotation.Lazy") : "");
         parameterMap.put("${imports}", element.printImports());
 
         templateHelper.writeBaseModel(parameterMap);
@@ -430,7 +437,7 @@ public class Generator {
         parameterMap.put("${table}", tableName);
 
         parameterMap.put("${swagger_annotation}",
-            isSwagger ? element.anno2Name("io.swagger.annotations.ApiModel") + "(\"" + comment + "\")" : "");
+            swagger ? element.anno2Name("io.swagger.annotations.ApiModel") + "(\"" + comment + "\")" : "");
         parameterMap.put("${static_fields}", entityStaticField ? fillStaticFieldsTemplate(tableName, false) : "");
         parameterMap.put("${fields}", fillFieldsTemplate(element, tableName, false));
 
@@ -469,7 +476,7 @@ public class Generator {
 
         parameterMap.put("${model_name}", modelName);
         parameterMap.put("${is_spring_boot}",
-            isSpringBoot ? element.anno2Name("org.springframework.stereotype.Repository") : "");
+            springBoot ? element.anno2Name("org.springframework.stereotype.Repository") : "");
 
         parameterMap.put("${imports}", element.printImports());
 
@@ -482,12 +489,16 @@ public class Generator {
             element.type2Name(new TypeReference<gaarason.database.eloquent.Model<?, ?>>() {});
             element.type2Name(new TypeReference<Collection<?>>() {});
             element.type2Name(new TypeReference<GaarasonDataSource>() {});
-            element.anno2Name(Resource.class);
+            if (SpringBootVersion.THREE.equals(springBootVersion)) {
+                element.anno2Name("jakarta.annotation.Resource");
+            } else {
+                element.anno2Name("javax.annotation.Resource");
+            }
 
             // 模板替换参数
             Map<String, String> parameterMap = new HashMap<>(16);
             parameterMap.put("${spring_lazy}",
-                isSpringBoot ? element.anno2Name("org.springframework.context.annotation.Lazy") : "");
+                springBoot ? element.anno2Name("org.springframework.context.annotation.Lazy") : "");
             parameterMap.put("${base_entity_name}", baseEntityName);
             parameterMap.put("${base_model_name}", element.type2Name(baseEntityNamespace + "." + baseModelName));
             return templateHelper.fillBaseModelWithinBaseEntity(parameterMap);
@@ -505,7 +516,7 @@ public class Generator {
 
             parameterMap.put("${entity_name}", entityName);
             parameterMap.put("${is_spring_boot}",
-                isSpringBoot ? element.type2Name("org.springframework.stereotype.@Repository") : "");
+                springBoot ? element.type2Name("org.springframework.stereotype.@Repository") : "");
             parameterMap.put("${base_model_name}",
                 element.type2Name(baseEntityNamespace + "." + baseEntityName + "$" + baseModelName));
             parameterMap.put("${primary_key_type}",
@@ -650,9 +661,10 @@ public class Generator {
         parameterMap.put("${primary}", field.toAnnotationDatabasePrimary());
         parameterMap.put("${column}", field.toAnnotationDatabaseColumn());
         parameterMap.put("${field}", field.toFieldName());
-        parameterMap.put("${apiModelProperty}", isSwagger ? field.toAnnotationSwaggerAnnotationsApiModelProperty() :
+        parameterMap.put("${apiModelProperty}", swagger ? field.toAnnotationSwaggerAnnotationsApiModelProperty() :
             "");
-        parameterMap.put("${validator}", isValidator ? field.toAnnotationOrgHibernateValidatorConstraintValidator() :
+        parameterMap.put("${validator}", validator ? field.toAnnotationOrgHibernateValidatorConstraintValidator(
+                jdkDependVersion) :
             "");
 
         return templateHelper.fillField(parameterMap);
@@ -788,16 +800,20 @@ public class Generator {
         this.baseModelName = baseModelName;
     }
 
-    public void setSpringBoot(boolean springBoot) {
-        isSpringBoot = springBoot;
+    public void setSpringBoot(SpringBootVersion version) {
+        this.springBoot = true;
+        this.springBootVersion = version;
+    }
+    public void setJdkDependVersion(JdkDependVersion version) {
+        this.jdkDependVersion = version;
     }
 
     public void setSwagger(boolean swagger) {
-        isSwagger = swagger;
+        this.swagger = swagger;
     }
 
     public void setValidator(boolean validator) {
-        isValidator = validator;
+        this.validator = validator;
     }
 
     public void setEntityStaticField(boolean entityStaticField) {
@@ -871,4 +887,17 @@ public class Generator {
         }
     }
 
+    /**
+     * SpringBoot 版本
+     */
+    public enum SpringBootVersion {
+        TWO, THREE
+    }
+
+    /**
+     * Jdk 依赖版本
+     */
+    public enum JdkDependVersion {
+        JAVAX, JAKARTA
+    }
 }
