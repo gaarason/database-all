@@ -213,9 +213,9 @@ public class Generator {
         ToolModel.gaarasonDataSource = GaarasonDataSourceBuilder.build(druidDataSource);
 
         this.model = ToolModel.gaarasonDataSource.getContainer()
-            .getBean(ModelShadowProvider.class)
-            .getByModelClass(ToolModel.class)
-            .getModel();
+                                                 .getBean(ModelShadowProvider.class)
+                                                 .getByModelClass(ToolModel.class)
+                                                 .getModel();
     }
 
     /**
@@ -224,11 +224,11 @@ public class Generator {
      */
     public Generator(DataSource dataSource) {
         ToolModel.gaarasonDataSource = GaarasonDataSourceBuilder.build(dataSource,
-            ContainerBootstrap.build().autoBootstrap());
+                ContainerBootstrap.build().autoBootstrap());
         this.model = ToolModel.gaarasonDataSource.getContainer()
-            .getBean(ModelShadowProvider.class)
-            .getByModelClass(ToolModel.class)
-            .getModel();
+                                                 .getBean(ModelShadowProvider.class)
+                                                 .getByModelClass(ToolModel.class)
+                                                 .getModel();
     }
 
     /**
@@ -254,9 +254,9 @@ public class Generator {
         ToolModel.gaarasonDataSource = GaarasonDataSourceBuilder.build(druidDataSource, container);
 
         this.model = ToolModel.gaarasonDataSource.getContainer()
-            .getBean(ModelShadowProvider.class)
-            .getByModelClass(ToolModel.class)
-            .getModel();
+                                                 .getBean(ModelShadowProvider.class)
+                                                 .getByModelClass(ToolModel.class)
+                                                 .getModel();
     }
 
     /**
@@ -266,9 +266,9 @@ public class Generator {
     public Generator(DataSource dataSource, Container container) {
         ToolModel.gaarasonDataSource = GaarasonDataSourceBuilder.build(dataSource, container);
         this.model = ToolModel.gaarasonDataSource.getContainer()
-            .getBean(ModelShadowProvider.class)
-            .getByModelClass(ToolModel.class)
-            .getModel();
+                                                 .getBean(ModelShadowProvider.class)
+                                                 .getByModelClass(ToolModel.class)
+                                                 .getModel();
     }
 
     /**
@@ -312,16 +312,17 @@ public class Generator {
      */
     private void init() {
         if (getModel() == null) {
-            throw new GeneratorException("使用无参构造`public void Generator()`时,需要重写`getModel`方法,否则请使用`public void " +
-                "Generator(String jdbcUrl, String username, String password)`");
+            throw new GeneratorException(
+                    "使用无参构造`public void Generator()`时,需要重写`getModel`方法,否则请使用`public void " +
+                            "Generator(String jdbcUrl, String username, String password)`");
         }
 
         templateHelper = new TemplateHelper(style, outputDir);
 
         baseModelNamespace = namespace + ("".equals(modelDir) ? "" : ("." + modelDir)) + ("".equals(
-            baseModelDir) ? "" : ("." + baseModelDir));
+                baseModelDir) ? "" : ("." + baseModelDir));
         baseEntityNamespace = namespace + ("".equals(entityDir) ? "" : ("." + entityDir)) + ("".equals(
-            baseEntityDir) ? "" : ("." + baseEntityDir));
+                baseEntityDir) ? "" : ("." + baseEntityDir));
         modelNamespace = namespace + ("".equals(modelDir) ? "" : ("." + modelDir));
         entityNamespace = namespace + ("".equals(entityDir) ? "" : ("." + entityDir));
     }
@@ -340,7 +341,7 @@ public class Generator {
         processBaseEntity(tables.get(0).entrySet().stream().findFirst().get().getValue().toString());
 
         ThreadPoolExecutor threadPool = new ThreadPoolExecutor(corePoolSize, corePoolSize + 1, 1,
-            TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(65535));
+                TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(65535));
 
         CountDownLatch countDownLatch = new CountDownLatch(tables.size());
 
@@ -356,7 +357,7 @@ public class Generator {
                     Map<String, Object> tableInfo = showTableInfo(tableName);
                     // 表注释
                     String entityComment = tableInfo.get("TABLE_COMMENT") == null ? tableName : tableInfo.get(
-                        "TABLE_COMMENT").toString();
+                            "TABLE_COMMENT").toString();
 
 
                     // entity文件内容
@@ -379,7 +380,8 @@ public class Generator {
     }
 
     private void processBaseModel() {
-        BaseElement element = new BaseElement() {};
+        BaseElement element = new BaseElement() {
+        };
         Map<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("${namespace}", baseModelNamespace);
         parameterMap.put("${base_model_name}", baseModelName);
@@ -387,14 +389,15 @@ public class Generator {
         parameterMap.put("${base_entity_namespace}", baseEntityNamespace);
 
         parameterMap.put("${spring_lazy}",
-            springBoot ? element.anno2Name("org.springframework.context.annotation.Lazy") : "");
+                springBoot ? element.anno2Name("org.springframework.context.annotation.Lazy") : "");
         parameterMap.put("${imports}", element.printImports());
 
         templateHelper.writeBaseModel(parameterMap);
     }
 
     private void processBaseEntity(String tableName) {
-        BaseElement element = new BaseElement() {};
+        BaseElement element = new BaseElement() {
+        };
         element.setNamespace(baseEntityNamespace);
         element.setClassName(baseEntityName);
 
@@ -420,7 +423,8 @@ public class Generator {
      * 填充baseModel模板内容
      */
     private void processEntity(String tableName, String entityName, String comment) {
-        BaseElement element = new BaseElement() {};
+        BaseElement element = new BaseElement() {
+        };
         element.setNamespace(entityNamespace);
         element.setClassName(entityName);
         element.type2Name("lombok.Data");
@@ -437,7 +441,7 @@ public class Generator {
         parameterMap.put("${table}", tableName);
 
         parameterMap.put("${swagger_annotation}",
-            swagger ? element.anno2Name("io.swagger.annotations.ApiModel") + "(\"" + comment + "\")" : "");
+                swagger ? element.anno2Name("io.swagger.annotations.ApiModel") + "(\"" + comment + "\")" : "");
         parameterMap.put("${static_fields}", entityStaticField ? fillStaticFieldsTemplate(tableName, false) : "");
         parameterMap.put("${fields}", fillFieldsTemplate(element, tableName, false));
 
@@ -455,7 +459,8 @@ public class Generator {
      * @param entityName pojo对象名
      */
     private void processModel(String tableName, String modelName, String entityName) {
-        BaseElement element = new BaseElement() {};
+        BaseElement element = new BaseElement() {
+        };
         element.setNamespace(entityNamespace);
         element.setClassName(entityName);
         element.type2Name("lombok.Data");
@@ -471,12 +476,13 @@ public class Generator {
         parameterMap.put("${entity_name}", entityName);
 
         parameterMap.put("${primary_key_type}",
-            tablePrimaryKeyTypeMap.containsKey(tableName) ? element.type2Name(tablePrimaryKeyTypeMap.get(tableName)) :
-                element.type2Name(Object.class));
+                tablePrimaryKeyTypeMap.containsKey(tableName) ?
+                        element.type2Name(tablePrimaryKeyTypeMap.get(tableName)) :
+                        element.type2Name(Object.class));
 
         parameterMap.put("${model_name}", modelName);
         parameterMap.put("${is_spring_boot}",
-            springBoot ? element.anno2Name("org.springframework.stereotype.Repository") : "");
+                springBoot ? element.anno2Name("org.springframework.stereotype.Repository") : "");
 
         parameterMap.put("${imports}", element.printImports());
 
@@ -486,9 +492,12 @@ public class Generator {
     private String fillBaseModelWithinBaseEntityTemplate(BaseElement element) {
         if (Style.ENTITY.equals(style) || Style.ALL.equals(style)) {
             // 导入
-            element.type2Name(new TypeReference<gaarason.database.eloquent.Model<?, ?>>() {});
-            element.type2Name(new TypeReference<Collection<?>>() {});
-            element.type2Name(new TypeReference<GaarasonDataSource>() {});
+            element.type2Name(new TypeReference<gaarason.database.eloquent.Model<?, ?>>() {
+            });
+            element.type2Name(new TypeReference<Collection<?>>() {
+            });
+            element.type2Name(new TypeReference<GaarasonDataSource>() {
+            });
             if (SpringBootVersion.THREE.equals(springBootVersion)) {
                 element.anno2Name("jakarta.annotation.Resource");
             } else {
@@ -498,7 +507,7 @@ public class Generator {
             // 模板替换参数
             Map<String, String> parameterMap = new HashMap<>(16);
             parameterMap.put("${spring_lazy}",
-                springBoot ? element.anno2Name("org.springframework.context.annotation.Lazy") : "");
+                    springBoot ? element.anno2Name("org.springframework.context.annotation.Lazy") : "");
             parameterMap.put("${base_entity_name}", baseEntityName);
             parameterMap.put("${base_model_name}", element.type2Name(baseEntityNamespace + "." + baseModelName));
             return templateHelper.fillBaseModelWithinBaseEntity(parameterMap);
@@ -516,13 +525,13 @@ public class Generator {
 
             parameterMap.put("${entity_name}", entityName);
             parameterMap.put("${is_spring_boot}",
-                springBoot ? element.type2Name("org.springframework.stereotype.@Repository") : "");
+                    springBoot ? element.type2Name("org.springframework.stereotype.@Repository") : "");
             parameterMap.put("${base_model_name}",
-                element.type2Name(baseEntityNamespace + "." + baseEntityName + "$" + baseModelName));
+                    element.type2Name(baseEntityNamespace + "." + baseEntityName + "$" + baseModelName));
             parameterMap.put("${primary_key_type}",
-                tablePrimaryKeyTypeMap.containsKey(tableName) ?
-                    element.type2Name(tablePrimaryKeyTypeMap.get(tableName)) :
-                    element.type2Name(Object.class));
+                    tablePrimaryKeyTypeMap.containsKey(tableName) ?
+                            element.type2Name(tablePrimaryKeyTypeMap.get(tableName)) :
+                            element.type2Name(Object.class));
 
             return templateHelper.fillModelWithinEntity(parameterMap);
         } else {
@@ -583,8 +592,8 @@ public class Generator {
 
             // 每个字段的填充(避免静态字段与普通属性名一样导致冲突, 一样时使用$前缀)
             String fieldTemplateStrReplace =
-                "    public static final String " + (staticName.equals(columnName) ? "$" : "") + staticName +
-                    " = \"" + columnName + "\";\n";
+                    "    public static final String " + (staticName.equals(columnName) ? "$" : "") + staticName +
+                            " = \"" + columnName + "\";\n";
             // 追加
             str.append(fieldTemplateStrReplace);
         }
@@ -599,7 +608,7 @@ public class Generator {
      * @return 内容
      */
     private String fillFieldTemplate(BaseElement element, Map<String, Object> fieldStringObjectMap, String tableName,
-        boolean isForBaseEntity) {
+                                     boolean isForBaseEntity) {
 
         System.out.println(fieldStringObjectMap);
         // 判断数据源类型 目前仅支持mysql
@@ -614,18 +623,18 @@ public class Generator {
         mysqlFieldGenerator.setExtra(getValue(fieldStringObjectMap, MysqlFieldGenerator.THE_EXTRA));
         mysqlFieldGenerator.setColumnKey(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_KEY));
         mysqlFieldGenerator.setCharacterOctetLength(
-            getValue(fieldStringObjectMap, MysqlFieldGenerator.CHARACTER_OCTET_LENGTH));
+                getValue(fieldStringObjectMap, MysqlFieldGenerator.CHARACTER_OCTET_LENGTH));
         mysqlFieldGenerator.setNumericPrecision(getValue(fieldStringObjectMap, MysqlFieldGenerator.NUMERIC_PRECISION));
         mysqlFieldGenerator.setPrivileges(getValue(fieldStringObjectMap, MysqlFieldGenerator.THE_PRIVILEGES));
         mysqlFieldGenerator.setColumnComment(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_COMMENT));
         mysqlFieldGenerator.setDatetimePrecision(
-            getValue(fieldStringObjectMap, MysqlFieldGenerator.DATETIME_PRECISION));
+                getValue(fieldStringObjectMap, MysqlFieldGenerator.DATETIME_PRECISION));
         mysqlFieldGenerator.setCollationName(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLLATION_NAME));
         mysqlFieldGenerator.setNumericScale(getValue(fieldStringObjectMap, MysqlFieldGenerator.NUMERIC_SCALE));
         mysqlFieldGenerator.setColumnType(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_TYPE));
         mysqlFieldGenerator.setOrdinalPosition(getValue(fieldStringObjectMap, MysqlFieldGenerator.ORDINAL_POSITION));
         mysqlFieldGenerator.setCharacterMaximumLength(
-            getValue(fieldStringObjectMap, MysqlFieldGenerator.CHARACTER_MAXIMUM_LENGTH));
+                getValue(fieldStringObjectMap, MysqlFieldGenerator.CHARACTER_MAXIMUM_LENGTH));
         mysqlFieldGenerator.setDataType(getValue(fieldStringObjectMap, MysqlFieldGenerator.DATA_TYPE));
         mysqlFieldGenerator.setCharacterSetName(getValue(fieldStringObjectMap, MysqlFieldGenerator.CHARACTER_SET_NAME));
         mysqlFieldGenerator.setColumnDefault(getValue(fieldStringObjectMap, MysqlFieldGenerator.COLUMN_DEFAULT));
@@ -662,10 +671,10 @@ public class Generator {
         parameterMap.put("${column}", field.toAnnotationDatabaseColumn());
         parameterMap.put("${field}", field.toFieldName());
         parameterMap.put("${apiModelProperty}", swagger ? field.toAnnotationSwaggerAnnotationsApiModelProperty() :
-            "");
+                "");
         parameterMap.put("${validator}", validator ? field.toAnnotationOrgHibernateValidatorConstraintValidator(
                 jdkDependVersion) :
-            "");
+                "");
 
         return templateHelper.fillField(parameterMap);
     }
@@ -699,7 +708,7 @@ public class Generator {
         parameters.add(DBName());
         parameters.add(tableName);
         return getModel().newQuery().queryOrFail("select * from information_schema.tables where table_schema = ? and" +
-            " table_name = ? ", parameters).toMap();
+                " table_name = ? ", parameters).toMap();
     }
 
     /**
@@ -720,9 +729,9 @@ public class Generator {
         parameters.add(DBName());
         parameters.add(tableName);
         return getModel().nativeQueryList(
-                "select * from information_schema.`columns` where table_schema = ? and table_name = ? order by ordinal_position",
-                parameters)
-            .toMapList();
+                                 "select * from information_schema.`columns` where table_schema = ? and table_name = ? order by ordinal_position",
+                                 parameters)
+                         .toMapList();
     }
 
     /**
@@ -802,8 +811,12 @@ public class Generator {
 
     public void setSpringBoot(SpringBootVersion version) {
         this.springBoot = true;
+        if (SpringBootVersion.THREE.equals(version)) {
+            setJdkDependVersion(JdkDependVersion.JAKARTA);
+        }
         this.springBootVersion = version;
     }
+
     public void setJdkDependVersion(JdkDependVersion version) {
         this.jdkDependVersion = version;
     }
@@ -865,7 +878,8 @@ public class Generator {
         return this;
     }
 
-    public Generator setColumnConversion(Class<? extends FieldConversion<?, ?>> fieldConversionClass, String... columns) {
+    public Generator setColumnConversion(Class<? extends FieldConversion<?, ?>> fieldConversionClass,
+                                         String... columns) {
         for (String column : columns) {
             columnConversion.put(column, fieldConversionClass);
         }
