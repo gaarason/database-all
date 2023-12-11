@@ -174,7 +174,7 @@ Assert.assertEquals(200, record0.getEntity().getId().intValue());
 ### Column
 
 - `gaarason.database.eloquent.annotation.Column` 用于确定每个数据字段的具体属性
-- 当`insertable`以及`updatable`为`false`时, 对应字段的`ORM`操作将被忽略
+- 通过对于`Column`的数据设置, 可以精准的控制每一个字段, 在增删查改下的行为
 - 如果某个数据对象没有`Primary`注解, 则大多数`ORM`操作将被禁用
 
 #### 使用策略
@@ -228,17 +228,14 @@ public enum Sex {
     WOMAN,
     OTHER;
 
-    /**
-     * 字段的类型转化
-     */
     static class SexConversion implements FieldConversion {
 
         @Nullable
         @Override
-        public Object serialize(Field field, @Nullable Object originalValue) {
-            if (MAN.equals(originalValue)) {
+        public Object serialize(Field field, @Nullable Object fieldValue) {
+            if (MAN.equals(fieldValue)) {
                 return 1;
-            } else if (WOMAN.equals(originalValue)) {
+            } else if (WOMAN.equals(fieldValue)) {
                 return 2;
             } else {
                 return 3;
@@ -247,7 +244,7 @@ public enum Sex {
 
         @Nullable
         @Override
-        public Object deserialize(Field field, ResultSet resultSet, String columnName) throws SQLException {
+        public Object acquisition(Field field, ResultSet resultSet, String columnName) throws SQLException {
             int sex = resultSet.getInt(columnName);
             if (sex == 1) {
                 return MAN;
@@ -350,7 +347,7 @@ Assert.assertEquals(AnnotationTestModel.Sex.WOMAN, resultEntity.getSex());
 
 ##### 数据库到实体
 - 对于实体`entity`的每一个字段
-- 当数据库查询执行成功(sql执行成功)后, 立即使用`conversion()`中的`deserialize(field, resultSet, columnName)`进行数据库结果集的获取  
+- 当数据库查询执行成功(sql执行成功)后, 立即使用`conversion()`中的`acquisition(field, resultSet, columnName)`进行数据库结果集的获取  
 - 当在`record`上使用`toObject()/toObject(SomeEntity.class)`等方法时, 使用`conversion()`中的`deserialize(field, originalValue)`进行结果的序列化
 - 最终体现在实体上
 
