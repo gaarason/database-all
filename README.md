@@ -8,17 +8,16 @@ Eloquent ORM for Java
 ## 简介 Introduction
 
 - 让连接数据库以及对数据库进行增删改查操作变得非常简单，不论希望使用原生 SQL、还是查询构造器，还是 Eloquent ORM。
-- It makes connecting to the database and adding, deleting, modifying and querying the database very simple, whether you want to use native SQL, query builder, or Eloquent ORM.
-
 - Eloquent ORM 提供一个美观、简单的与数据库打交道的 ActiveRecord
   实现，每个数据表都对应一个与该表数据结构对应的实体（Entity），以及的进行交互的模型（Model），通过模型类，你可以对数据表进行查询、插入、更新、删除等操作，并将结果反映到实体实例化的 java 对象中。
+- 对于关联关系 Eloquent ORM 提供了富有表现力的声明方式，与简洁的使用方法，并专注在内部进行查询与内存优化，在复杂的关系中有仍然有着良好的体验。
+- 支持原生Java8,Java11,Java17应用, 支持SpringBoot 2x 以及 3x ,兼容于其他常见的 ORM 框架, 以及常见的数据源 (DataSource)。
+
+
+- It makes connecting to the database and adding, deleting, modifying and querying the database very simple, whether you want to use native SQL, query builder, or Eloquent ORM.
 - Eloquent ORM provides a beautiful and simple ActiveRecord for working with databases
   Implementation, each data table corresponds to an entity (Entity) corresponding to the data structure of the table, and a model (Model) for interaction. Through the model class, you can query, insert, update, delete and other operations on the data table. , and reflect the results into the java object instantiated by the entity.
-
-- 对于关联关系 Eloquent ORM 提供了富有表现力的声明方式，与简洁的使用方法，并专注在内部进行查询与内存优化，在复杂的关系中有仍然有着良好的体验。
 - For relationships, Eloquent ORM provides expressive declaration methods and concise usage methods. It focuses on internal query and memory optimization, and still has a good experience in complex relationships.
-
-- 支持原生Java8,Java11,Java17应用, 支持SpringBoot 2x 以及 3x ,兼容于其他常见的 ORM 框架, 以及常见的数据源 (DataSource)。
 - Supports native Java8, Java11, Java17 applications, supports SpringBoot 2x and 3x, and is compatible with other common ORM frameworks and common data sources (DataSource).
 
 ## 目录
@@ -141,10 +140,12 @@ public void simpleQuery() {
 ## 完整体验 Complete experience
 
 - 借助 [生成代码 Generate](/document/generate.md), 自动化地为每个数据表都定义一个与该表数据结构对应的实体（Entity）， 以及的进行交互的模型（Model）
-- With the help of [生成代码 Generate](/document/generate.md), each data table is automatically defined with an entity (Entity) corresponding to the data structure of the table, and a model (Model) for interaction.
 - 在模型（Model）中, 通过 [查询构造器 Query Builder](/document/query.md) 你可以对数据表进行查询、插入、更新、删除等操作，并将结果反映到 [查询结果集 Record](/document/record.md) 中
-- In the model, through the [查询构造器 Query Builder](/document/query.md) you can query, insert, update, delete and other operations on the data table, and reflect the results to the [查询结果集 Record](/document/record.md) in
 - 在 [查询结果集 Record](/document/record.md) 中可以快速的将结果转化为的 java 实体（Entity）对象， 以及其他数据结构以及处理操作
-- In [查询结果集 Record](/document/record.md), the results can be quickly converted into java entity objects, as well as other data structures and processing operations.
 - 通过在实体（Entity）中应用各种的声明式注解进行 [数据映射 Mapping](/document/mapping.md)， 便可以方便的在模型（Model）中应用诸如 [关联关系 Relationship](/document/relationship.md)、ORM以及各种自定义操作
+
+
+- With the help of [生成代码 Generate](/document/generate.md), each data table is automatically defined with an entity (Entity) corresponding to the data structure of the table, and a model (Model) for interaction.
+- In the model, through the [查询构造器 Query Builder](/document/query.md) you can query, insert, update, delete and other operations on the data table, and reflect the results to the [查询结果集 Record](/document/record.md) in
+- In [查询结果集 Record](/document/record.md), the results can be quickly converted into java entity objects, as well as other data structures and processing operations.
 - By applying various declarative annotations to [数据映射 Mapping](/document/mapping.md) in the Entity, you can easily apply [关联关系 Relationship](/document/relationship.md), ORM and various custom operations
