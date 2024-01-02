@@ -4,15 +4,15 @@ Eloquent ORM for Java
 
 ## 目录
 
-* [注册配置](/document/bean.md)
-* [数据映射](/document/mapping.md)
-* [数据模型](/document/model.md)
-* [查询结果集](/document/record.md)
-* [查询构造器](/document/query.md)
-* [生成代码](/document/generate.md)
-* [关联关系](/document/relationship.md)
+* [注册配置 Configuration](/document/bean.md)
+* [数据映射 Mapping](/document/mapping.md)
+* [数据模型 Model](/document/model.md)
+* [查询结果集 Record](/document/record.md)
+* [查询构造器 Query Builder](/document/query.md)
+* [生成代码 Generate](/document/generate.md)
+* [关联关系 Relationship](/document/relationship.md)
 * [GraalVM](/document/graalvm.md)
-* [版本信息](/document/version.md)
+* [版本信息 Version](/document/version.md)
     * [版本规范](#版本规范)
     * [版本升级指引](#版本升级指引)
 
@@ -52,18 +52,18 @@ Eloquent ORM for Java
 
 ### 4.8.0
 
-- 支持多态关联关系, 对于 `@hasOneOrMany`, `@belongsTo`, `@belongsToMany`增加多态属性
+- 支持多态关联关系 Relationship, 对于 `@hasOneOrMany`, `@belongsTo`, `@belongsToMany`增加多态属性
 - 支持关联集合查询, 在`Builder`中, 增加`withCount()`, `withMax()`,`withMin()`,`withAvg()`,`withSum()`
 - 支持关联反向筛选, 在`Builder`中, 增加`whereHas()`, `whereNotHas()`
 
 ### 4.7.0
 
-- 支持自定义关联关系, 增加`@Relation`用于标注自定义的关联关系注解, 并指明其解析器
+- 支持自定义关联关系 Relationship, 增加`@Relation`用于标注自定义的关联关系 Relationship注解, 并指明其解析器
 
 ### 4.6.0
 
 - 优化`@HasOneOrMany(),@BelongsTo(),@BelongsToMany()`的实现
-- 关联关系定义时, 对于复数关系, 在原本仅支持`List<F>`的基础上, 增加数据类型支持`F[]`/`ArrayList<F>`/`LinkedHashSet<F>`/`LinkedList<F>`/`Set<F>`
+- 关联关系 Relationship定义时, 对于复数关系, 在原本仅支持`List<F>`的基础上, 增加数据类型支持`F[]`/`ArrayList<F>`/`LinkedHashSet<F>`/`LinkedList<F>`/`Set<F>`
 - 在`Builder`中, 增加`setBuilder(builder)`/`mergerBuilder(builder)`
 - 接口（`Record`/`RecordList`/`Builder`）实现序列化接口，以支持 RPC 传递
 
@@ -104,7 +104,7 @@ Eloquent ORM for Java
 ### 4.0.0
 
 - 在`Record`中, 增加 `saveByPrimaryKey()`, 更改`fillEntity()`返回值
-- 查询结果集(`RecordList`) 现在是`LinkedList`的子类, 而非之前的的`ArrayList`, 同时更改了`pop()`/`push(element)`的行为, 并移除了`prepend(element)`
+- 查询结果集 Record(`RecordList`) 现在是`LinkedList`的子类, 而非之前的的`ArrayList`, 同时更改了`pop()`/`push(element)`的行为, 并移除了`prepend(element)`
 
 - 在`Builder`中, 增加 `select(anyEntity)`, `select(anyEntityClass)`更改`where(entity)`为`where(anyEntity)`,`having(entity)`
   为`having(anyEntity)`返回值
@@ -136,17 +136,17 @@ Eloquent ORM for Java
 
 ### 3.4.0
 
-- 在查询构造器(`Builder`)中, 增加`dealChunk(num, column, chunkFunctionalInterface)`支持是用索引条件的分块查询
-- 在查询构造器(`Builder`)中, 增加`firstOrderBy(closure)`支持将闭包中的排序字段添加到首部
+- 在查询构造器 Query(`Builder`)中, 增加`dealChunk(num, column, chunkFunctionalInterface)`支持是用索引条件的分块查询
+- 在查询构造器 Query(`Builder`)中, 增加`firstOrderBy(closure)`支持将闭包中的排序字段添加到首部
 
 ### 3.3.1
 
-- 在查询构造器(`Builder`)中, 使`dealChunk()`当结果集为空时, 不再进行回调
-- 在查询构造器(`Builder`)中, 表达式风格的列名与属性名, 现在支持父类实体
+- 在查询构造器 Query(`Builder`)中, 使`dealChunk()`当结果集为空时, 不再进行回调
+- 在查询构造器 Query(`Builder`)中, 表达式风格的列名与属性名, 现在支持父类实体
 
 ### 3.2.0
 
-- 在查询构造器(`Builder`)中,将原生查询的绑定参数类型由`Collection<String>`更改为`Collection<?>`
+- 在查询构造器 Query(`Builder`)中,将原生查询的绑定参数类型由`Collection<String>`更改为`Collection<?>`
 - 在模型(`Model`)中, 将事件方法`log(String sql, Collection<String> parameterList)`
   更改为`log(String sql, Collection<?> parameterList)`
 - 在模型(`GeneralModel`)中, 实现`log.debug`
@@ -154,36 +154,36 @@ Eloquent ORM for Java
 
 ### 3.1.0
 
-- 在查询构造器(`Builder`)中增加对于表达式风格的列名与属性名的支持
-- 在查询结果集(`Record`)中增加对于表达式风格的列名与属性名的支持
-- 在查询结果集合(`RecordList`)中增加对于表达式风格的列名与属性名的支持
+- 在查询构造器 Query(`Builder`)中增加对于表达式风格的列名与属性名的支持
+- 在查询结果集 Record(`Record`)中增加对于表达式风格的列名与属性名的支持
+- 在查询结果集 Record合(`RecordList`)中增加对于表达式风格的列名与属性名的支持
 
 ### 3.0.0
 
 - 重写了底层的语法构造器(`Grammar`), 使其可以在任意语句下, 完成参数绑定.
-- 在查询构造器(`Builder`)中增加`toSql(sqlType, closure)`/`whereRaw(sqlPart, parameters)`/`havingRaw(sqlPart, parameters)`
+- 在查询构造器 Query(`Builder`)中增加`toSql(sqlType, closure)`/`whereRaw(sqlPart, parameters)`/`havingRaw(sqlPart, parameters)`
   /`orderByRaw(sqlPart)`
-- 在查询构造器(`Builder`)中增加`when(condition, closure)`/`when(condition, closure, closure)`
-- 在查询构造器(`Builder`)中增加`whereKeywords(value, column...)`/`whereKeywordsIgnoreNull(value, column...)`
+- 在查询构造器 Query(`Builder`)中增加`when(condition, closure)`/`when(condition, closure, closure)`
+- 在查询构造器 Query(`Builder`)中增加`whereKeywords(value, column...)`/`whereKeywordsIgnoreNull(value, column...)`
   /`havingKeywords(value, column...)`/`havingKeywordsIgnoreNull(value, column...)`等方法
-- 在查询构造器(`Builder`)中增加`whereMayLikeIgnoreNull(map)/whereMayLikeIgnoreNull(column, value)`
+- 在查询构造器 Query(`Builder`)中增加`whereMayLikeIgnoreNull(map)/whereMayLikeIgnoreNull(column, value)`
   /`havingMayLikeIgnoreNull(map)/havingMayLikeIgnoreNull(column, value)`
-- 在查询构造器(`Builder`)中增加`andWhereIgnoreEmpty(closure)`/`orWhereIgnoreEmpty(closure)`/`andHavingIgnoreEmpty(closure)`
+- 在查询构造器 Query(`Builder`)中增加`andWhereIgnoreEmpty(closure)`/`orWhereIgnoreEmpty(closure)`/`andHavingIgnoreEmpty(closure)`
   /`orHavingIgnoreEmpty(closure)`
 
 ### 2.22.0
 
-- 在查询构造器(`Builder`)中增加`whereMayLike`/`havingMayLike`系列执行方法`whereMayLike(column, value)`/`whereMayLike(entity)`
+- 在查询构造器 Query(`Builder`)中增加`whereMayLike`/`havingMayLike`系列执行方法`whereMayLike(column, value)`/`whereMayLike(entity)`
   /`whereMayLike(map)`/`havingMayLike(column, value)`/`havingMayLike(entity)`/`havingMayLike(map)`
-- 在查询构造器(`Builder`)中增加`whereRaw(list)`/`havingRaw(list)`
+- 在查询构造器 Query(`Builder`)中增加`whereRaw(list)`/`havingRaw(list)`
 - 增加`GaarasonAutoconfiguration`接口, 程序会自动通过包扫描, 完成加载对其子类加载, 并调用其`init()` 完成初始化
 - `InstanceCreatorFunctionalInterface`接口中, 增加默认的`getOrder()`方法. 用于支持, 在调用`ContainerProvider.register()`进行优先级判断.
 
 ### 2.21.0
 
-- 在查询构造器(`Builder`)中增加`whereLike`/`havingLike`系列执行方法`whereLike(column, value)`/`whereLike(entity)`/`whereLike(map)`
+- 在查询构造器 Query(`Builder`)中增加`whereLike`/`havingLike`系列执行方法`whereLike(column, value)`/`whereLike(entity)`/`whereLike(map)`
   /`havingLike(column, value)`/`havingLike(entity)`/`havingLike(map)`
-- 修复查询构造器(`Builder`)中使用`where(entity)`/`having(entity)`等方法时, 当实体`entity`中`@Column`中`insertable=false`时, 不正确的行为.
+- 修复查询构造器 Query(`Builder`)中使用`where(entity)`/`having(entity)`等方法时, 当实体`entity`中`@Column`中`insertable=false`时, 不正确的行为.
 
 ### 2.20.0
 
@@ -203,7 +203,7 @@ Eloquent ORM for Java
 
 ### 2.18.0
 
-- 在查询构造器(`Builder`)中增加`join`系列执行方法`joinRaw(sqlPart)`/`join(joinType, table, joinConditions)`
+- 在查询构造器 Query(`Builder`)中增加`join`系列执行方法`joinRaw(sqlPart)`/`join(joinType, table, joinConditions)`
   /`join(joinType, tempTable, alias, joinConditions)`
 
 ### 2.17.0
@@ -213,7 +213,7 @@ Eloquent ORM for Java
 
 ### 2.16.2
 
-- 修复查询结果集(`Record`)中使用`fillEntity(entity)`等方法时,由于实体`entity`存在复杂继承时引发的错误
+- 修复查询结果集 Record(`Record`)中使用`fillEntity(entity)`等方法时,由于实体`entity`存在复杂继承时引发的错误
 
 ### 2.16.1
 
@@ -221,11 +221,11 @@ Eloquent ORM for Java
 
 ### 2.16.0
 
-- 在查询构造器(`Builder`)中增加执行方法`simplePaginateMapStyle(currentPage, perPage)`/`paginateMapStyle(currentPage, perPage)`
+- 在查询构造器 Query(`Builder`)中增加执行方法`simplePaginateMapStyle(currentPage, perPage)`/`paginateMapStyle(currentPage, perPage)`
 
 ### 2.15.0
 
-- 在查询构造器(`Builder`)中增加执行方法`insertMapStyle(entityMap)`/`insertMapStyle(entityMapList)`/`insertGetIdMapStyle(entityMap)`
+- 在查询构造器 Query(`Builder`)中增加执行方法`insertMapStyle(entityMap)`/`insertMapStyle(entityMapList)`/`insertGetIdMapStyle(entityMap)`
   /`insertGetIdOrFailMapStyle(entityMap)`/`insertGetIdsMapStyle(entityMapList)`/`updateMapStyle(entityMap)`
 
 ### 2.14.0
@@ -245,18 +245,18 @@ Eloquent ORM for Java
 ### 2.11.0
 
 - 在模型(`Model`)中增加方法`create(entity)`
-- 在查询结果集(`Record`)中增加方法`isDirty()`/`getDirty()`/`getDirtyMap()`/`isDirty(fieldName)`/`isClean()`/`isClean(fieldName)`
+- 在查询结果集 Record(`Record`)中增加方法`isDirty()`/`getDirty()`/`getDirtyMap()`/`isDirty(fieldName)`/`isClean()`/`isClean(fieldName)`
   /`getOriginal()`/`getOriginal(fieldName)`
-- 在查询结果集(`RecordList`)中增加方法`avg(fieldName)`/`sum(fieldName)`/`max(fieldName)`/`min(fieldName)`/`mode(fieldName)`
+- 在查询结果集 Record(`RecordList`)中增加方法`avg(fieldName)`/`sum(fieldName)`/`max(fieldName)`/`min(fieldName)`/`mode(fieldName)`
   /`median(fieldName)`/`chunk(closure, newSize)`/`chunk(newSize)`/`chunkToMap(newSize)`/`contains(fieldName, value)`
   /`contains(closure)`/`count()`/`countBy(closure)`/`countBy(fieldName)`/`every(closure)`/`filter(closure)`/`filter()`
   /`filter(fieldName)`/`reject(closure)`/`first(closure)`/`first()`/`groupBy(closure)`/`groupBy(fieldName)`
-- 在查询结果集(`RecordList`)中增加方法`implode(fieldName, delimiter)`/`implode(closure, delimiter)`/`keyBy(fieldName)`
+- 在查询结果集 Record(`RecordList`)中增加方法`implode(fieldName, delimiter)`/`implode(closure, delimiter)`/`keyBy(fieldName)`
   /`keyBy(closure)`/`last(closure)`/`last()`/`mapToGroups(closureKey, closureValue)`
   /`mapWithKeys(closureKey, closureValue)`/`pluck(fieldName)`/`pluck(fieldNameForValue, fieldNameForKey)`/`shift()`
   /`pop()`/`prepend(element)`/`push(element)`/`put(index, element)`/`pull(index)`/`random()`/`random(count)`/`reverse()`
   /`sortBy(closure, ase)`/`sortBy(closure)`/`sortBy(fieldName)`
-- 在查询结果集(`RecordList`)中增加方法`sortByDesc(fieldName)`/`sortByDesc(closure) `/`splice(offset)`/`splice(offset, taken)`
+- 在查询结果集 Record(`RecordList`)中增加方法`sortByDesc(fieldName)`/`sortByDesc(closure) `/`splice(offset)`/`splice(offset, taken)`
   /`take(count)`/`unique(closure)`/`unique(fieldName)`
 
 ### 2.10.0
@@ -264,19 +264,19 @@ Eloquent ORM for Java
 - 整体改进，数据库字段值为null的兼容性，但依然建议数据库字段不使用null
 - 在模型(`Model`)中增加方法`findOrFail(Object id)`/`find(Object id)`/`findMany(Object... ids)`
 - 在模型(`Model`)中变更方法`findMany(Collection<K> ids)` -> `findMany(Collection<Object> ids)`
-- 在查询构造器(`Builder`)中增加方法`whereIgnoreNull(column, symbol, value)`/`whereIgnoreNull(column, value)`/`whereIgnoreNull(map)`
+- 在查询构造器 Query(`Builder`)中增加方法`whereIgnoreNull(column, symbol, value)`/`whereIgnoreNull(column, value)`/`whereIgnoreNull(map)`
   /`whereInIgnoreEmpty(column, valueList)`/`whereInIgnoreEmpty(column, valueArray)`
   /`whereNotInIgnoreEmpty(column, valueList)`/`whereNotInIgnoreEmpty(column, valueArray)`
-- 在查询构造器(`Builder`)中增加方法`havingIgnoreNull(column, symbol, value)`/`havingIgnoreNull(column, value)`
+- 在查询构造器 Query(`Builder`)中增加方法`havingIgnoreNull(column, symbol, value)`/`havingIgnoreNull(column, value)`
   /`havingIgnoreNull(map)`/`havingInIgnoreEmpty(column, valueList)`/`havingInIgnoreEmpty(column, valueArray)`
   /`havingNotInIgnoreEmpty(column, valueList)`/`havingNotInIgnoreEmpty(column, valueArray)`
-- 在查询构造器(`Builder`)中增加方法`dataIgnoreNull(column, value)`/`dataIgnoreNull(map)`
+- 在查询构造器 Query(`Builder`)中增加方法`dataIgnoreNull(column, value)`/`dataIgnoreNull(map)`
 
 ### 2.9.0
 
 - 在模型(`Model`)中增加方法`findOrNew(entity)`/`findByPrimaryKeyOrNew(entity)`/`findByPrimaryKeyOrCreate(entity)`
   /`findOrNew(conditionEntity, complementEntity)`/`updateByPrimaryKeyOrCreate(entity)`
-- 在查询结果集(`Record`)中增加方法`fillEntity(entity)`
+- 在查询结果集 Record(`Record`)中增加方法`fillEntity(entity)`
 
 ### 2.8.0
 
@@ -286,15 +286,15 @@ Eloquent ORM for Java
 
 - 在模型(`Model`)中增加方法`findOrCreate(entity)`/`findOrCreate(conditionEntity, complementEntity)`
   /`updateOrCreate(conditionEntity, complementEntity)`
-- 在查询构造器(`Builder`)中增加方法`Builder<T, K> where(T entity)`/`Builder<T, K> where(Map<String, Object> map)`
+- 在查询构造器 Query(`Builder`)中增加方法`Builder<T, K> where(T entity)`/`Builder<T, K> where(Map<String, Object> map)`
   /`Builder<T, K> having(T entity)`/`Builder<T, K> having(Map<String, Object> map)`
 
 ### 2.6.0
 
 - 在实体中增加对`java.sql.Date`/`java.sql.Time`/`java.sql.Timestamp`/`BigDecimal`/`Blob`/`Clob`类型的支持, 其中`Blob`/`Clob`仅支持查询
 
-- 将关联关系`Bind`中部分方法， 中间表数据参数类型由`Map<String, String>`变更到`Map<String, Object>`
-- 将关联关系`Bind`中部分方法， 手动指定目标表的主键， 参数类型由`String`、`Collection<String> ids`变更到`Object`、`Collection<Object> ids`
+- 将关联关系 Relationship`Bind`中部分方法， 中间表数据参数类型由`Map<String, String>`变更到`Map<String, Object>`
+- 将关联关系 Relationship`Bind`中部分方法， 手动指定目标表的主键， 参数类型由`String`、`Collection<String> ids`变更到`Object`、`Collection<Object> ids`
 
 ```java
 int attach(Record<?, ?> targetRecord,Map<String, Object> relationDataMap);
@@ -344,16 +344,16 @@ Builder<T, K> data(Map<String, Object> map);
 
 新增加
 
-- 新提供关联关系相关注解`@HasOneOrMany()`,`@BelongsTo()`,`@BelongsToMany()`
-- 新提供关联关系相关执行`Record::with(String column, GenerateSqlPart builderClosure, RelationshipRecordWith recordClosure)`
+- 新提供关联关系 Relationship相关注解`@HasOneOrMany()`,`@BelongsTo()`,`@BelongsToMany()`
+- 新提供关联关系 Relationship相关执行`Record::with(String column, GenerateSqlPart builderClosure, RelationshipRecordWith recordClosure)`
   与 `RecordList::with()` 与 `Builer::with()` 方法签名类似, 接受3个参数
 
 ### 2.0.x->2.1.x
 
 新增加
 
-- 新提供关联关系相关注解`@HasOneOrMany()`,`@BelongsTo()`,`@BelongsToMany()`
-- 新提供关联关系相关执行`Record::with(String column, GenerateSqlPart builderClosure, RelationshipRecordWith recordClosure)`
+- 新提供关联关系 Relationship相关注解`@HasOneOrMany()`,`@BelongsTo()`,`@BelongsToMany()`
+- 新提供关联关系 Relationship相关执行`Record::with(String column, GenerateSqlPart builderClosure, RelationshipRecordWith recordClosure)`
   与 `RecordList::with()` 与 `Builer::with()` 方法签名类似, 接受3个参数
 
 ### 1.0.x->2.0.x

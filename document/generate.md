@@ -4,22 +4,22 @@ Eloquent ORM for Java
 
 ## 目录
 
-* [注册配置](/document/bean.md)
-* [数据映射](/document/mapping.md)
-* [数据模型](/document/model.md)
-* [查询结果集](/document/record.md)
-* [查询构造器](/document/query.md)
-* [关联关系](/document/relationship.md)
-* [生成代码](/document/generate.md)
+* [注册配置 Configuration](/document/bean.md)
+* [数据映射 Mapping](/document/mapping.md)
+* [数据模型 Model](/document/model.md)
+* [查询结果集 Record](/document/record.md)
+* [查询构造器 Query Builder](/document/query.md)
+* [关联关系 Relationship](/document/relationship.md)
+* [生成代码 Generate](/document/generate.md)
     * [总览](#总览)
     * [非spring](#非spring)
     * [spring](#spring)
 * [GraalVM](/document/graalvm.md)
-* [版本信息](/document/version.md)
+* [版本信息 Version](/document/version.md)
 
 ## 总览
 
-通过数据库连接信息, 自动生成代码(`entity`,`model`)
+通过数据库连接信息, 自动生成代码 Generate(`entity`,`model`)
 
 ## 非spring
 
@@ -246,7 +246,7 @@ public class TestApplicationTests {
 
     // 执行此方法即可生成    
     @Test
-    public void 生成代码() {
+    public void generate() {
         // set
         // 风格切换
         generator.setStyle(Style.ENTITY);

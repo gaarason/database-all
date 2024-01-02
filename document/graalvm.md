@@ -4,18 +4,18 @@ Eloquent ORM for Java
 
 ## 目录
 
-* [注册配置](/document/bean.md)
-* [数据映射](/document/mapping.md)
-* [数据模型](/document/model.md)
-* [查询结果集](/document/record.md)
-* [查询构造器](/document/query.md)
-* [生成代码](/document/generate.md)
-* [关联关系](/document/relationship.md)
+* [注册配置 Configuration](/document/bean.md)
+* [数据映射 Mapping](/document/mapping.md)
+* [数据模型 Model](/document/model.md)
+* [查询结果集 Record](/document/record.md)
+* [查询构造器 Query Builder](/document/query.md)
+* [生成代码 Generate](/document/generate.md)
+* [关联关系 Relationship](/document/relationship.md)
 * [GraalVM](/document/graalvm.md)
     * [总览](#总览)
     * [配置注解](#配置注解)
     * [注意事项](#注意事项)
-* [版本信息](/document/version.md)
+* [版本信息 Version](/document/version.md)
 
 ## 总览
 

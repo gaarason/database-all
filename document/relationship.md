@@ -4,12 +4,12 @@ Eloquent ORM for Java
 
 ## 目录
 
-* [注册配置](/document/bean.md)
-* [数据映射](/document/mapping.md)
-* [数据模型](/document/model.md)
-* [查询结果集](/document/record.md)
-* [查询构造器](/document/query.md)
-* [关联关系](/document/relationship.md)
+* [注册配置 Configuration](/document/bean.md)
+* [数据映射 Mapping](/document/mapping.md)
+* [数据模型 Model](/document/model.md)
+* [查询结果集 Record](/document/record.md)
+* [查询构造器 Query Builder](/document/query.md)
+* [关联关系 Relationship](/document/relationship.md)
     * [总览](#总览)
     * [关系定义](#关系定义)
         * [常规](#常规)
@@ -48,14 +48,14 @@ Eloquent ORM for Java
         * [解除关系](#解除关系)
         * [同步关系](#同步关系)
         * [切换关系](#切换关系)
-* [生成代码](/document/generate.md)
+* [生成代码 Generate](/document/generate.md)
 * [GraalVM](/document/graalvm.md)
-* [版本信息](/document/version.md)
+* [版本信息 Version](/document/version.md)
 
 ## 总览
 
 数据表经常要与其它表做关联，比如一篇博客文章可能有很多评论，或者一个订单会被关联到下单用户   
-Eloquent 让组织和处理这些关联关系变得简单，并且支持多种不同类型的关联关系，更重要的是会进行查询优化，这点在多层级关系的情况下尤其明显
+Eloquent 让组织和处理这些关联关系 Relationship变得简单，并且支持多种不同类型的关联关系 Relationship，更重要的是会进行查询优化，这点在多层级关系的情况下尤其明显
 
 ## 关系定义
 

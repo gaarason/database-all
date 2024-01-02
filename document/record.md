@@ -4,10 +4,10 @@ Eloquent ORM for Java
 
 ## 目录
 
-* [注册配置](/document/bean.md)
-* [数据映射](/document/mapping.md)
-* [数据模型](/document/model.md)
-* [查询结果集](/document/record.md)
+* [注册配置 Configuration](/document/bean.md)
+* [数据映射 Mapping](/document/mapping.md)
+* [数据模型 Model](/document/model.md)
+* [查询结果集 Record](/document/record.md)
     * [总览](#总览)
     * [普通java对象](#普通java对象)
     * [通用map对象](#通用map对象)
@@ -62,11 +62,11 @@ Eloquent ORM for Java
             * [splice](#splice)
             * [take](#take)
             * [unique](#unique)
-* [查询构造器](/document/query.md)
-* [关联关系](/document/relationship.md)
-* [生成代码](/document/generate.md)
+* [查询构造器 Query Builder](/document/query.md)
+* [关联关系 Relationship](/document/relationship.md)
+* [生成代码 Generate](/document/generate.md)
 * [GraalVM](/document/graalvm.md)
-* [版本信息](/document/version.md)
+* [版本信息 Version](/document/version.md)
 
 ## 总览
 
@@ -120,7 +120,7 @@ Record<Student, Long> recordCopy = Record.deserialize(serialize);
 ## ORM
 
 对于`gaarason.database.eloquent.Record<T, K>`对象提供ORM相关的能力  
-所有操作均可触发[数据模型](/document/model.md)`事件`
+所有操作均可触发[数据模型 Model](/document/model.md)`事件`
 
 ### 基本操作
 

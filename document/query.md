@@ -4,11 +4,11 @@ Eloquent ORM for Java
 
 ## 目录
 
-* [注册配置](/document/bean.md)
-* [数据映射](/document/mapping.md)
-* [数据模型](/document/model.md)
-* [查询结果集](/document/record.md)
-* [查询构造器](/document/query.md)
+* [注册配置 Configuration](/document/bean.md)
+* [数据映射 Mapping](/document/mapping.md)
+* [数据模型 Model](/document/model.md)
+* [查询结果集 Record](/document/record.md)
+* [查询构造器 Query Builder](/document/query.md)
     * [表达式风格](#表达式风格)
     * [原生语句](#原生语句)
         * [原生查询](#原生查询)
@@ -66,10 +66,10 @@ Eloquent ORM for Java
         * [随机抽样](#随机抽样)
         * [构造器序列化](#构造器序列化)
         * [构造器传递](#构造器传递)
-* [关联关系](/document/relationship.md)
-* [生成代码](/document/generate.md)
+* [关联关系 Relationship](/document/relationship.md)
+* [生成代码 Generate](/document/generate.md)
 * [GraalVM](/document/graalvm.md)
-* [版本信息](/document/version.md)
+* [版本信息 Version](/document/version.md)
 
 ## 总览
 
@@ -352,7 +352,7 @@ int update = studentModel.newQuery().where("id", "3").updateMapStyle(map);
 ## 删除
 
 当前model如果非软删除, 则`默认删除`与`强力删除`效果一致  
-`软删除`定义以及启用,请看[数据模型](/document/model.md)  
+`软删除`定义以及启用,请看[数据模型 Model](/document/model.md)  
 当一个删除语句没有`where`时,将会抛出`ConfirmOperationException`
 
 ### 默认删除

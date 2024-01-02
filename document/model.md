@@ -4,26 +4,26 @@ Eloquent ORM for Java
 
 ## 目录
 
-* [注册配置](/document/bean.md)
-* [数据映射](/document/mapping.md)
-* [数据模型](/document/model.md)
+* [注册配置 Configuration](/document/bean.md)
+* [数据映射 Mapping](/document/mapping.md)
+* [数据模型 Model](/document/model.md)
     * [总览](#总览)
     * [数据库连接](#数据库连接)
     * [事件](#事件)
     * [作用域](#作用域)
         * [自定义查询作用域](#自定义查询作用域)
         * [软删除](#软删除)
-* [查询结果集](/document/record.md)
-* [查询构造器](/document/query.md)
-* [关联关系](/document/relationship.md)
-* [生成代码](/document/generate.md)
+* [查询结果集 Record](/document/record.md)
+* [查询构造器 Query Builder](/document/query.md)
+* [关联关系 Relationship](/document/relationship.md)
+* [生成代码 Generate](/document/generate.md)
 * [GraalVM](/document/graalvm.md)
-* [版本信息](/document/version.md)
+* [版本信息 Version](/document/version.md)
 
 ## 总览
 
-数据模型是将数据库操作集中声明的对象, 理解为`表`  
-[反向生成代码](/document/generate.md)
+数据模型 Model是将数据库操作集中声明的对象, 理解为`表`  
+[反向生成代码 Generate](/document/generate.md)
 
 ## 数据库连接
 

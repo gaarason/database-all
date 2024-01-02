@@ -4,8 +4,8 @@ Eloquent ORM for Java
 
 ## 目录
 
-* [注册配置](/document/bean.md)
-* [数据映射](/document/mapping.md)
+* [注册配置 Configuration](/document/bean.md)
+* [数据映射 Mapping](/document/mapping.md)
     * [总览](#总览)
     * [数据库建议](#数据库建议)
     * [注解](#注解)
@@ -29,18 +29,18 @@ Eloquent ORM for Java
         * [BelongsToMany](#BelongsToMany)
         * [HasMany](#HasMany)
         * [HasOne](#HasOne)
-* [数据模型](/document/model.md)
-* [查询结果集](/document/record.md)
-* [查询构造器](/document/query.md)
-* [关联关系](/document/relationship.md)
-* [生成代码](/document/generate.md)
+* [数据模型 Model](/document/model.md)
+* [查询结果集 Record](/document/record.md)
+* [查询构造器 Query Builder](/document/query.md)
+* [关联关系 Relationship](/document/relationship.md)
+* [生成代码 Generate](/document/generate.md)
 * [GraalVM](/document/graalvm.md)
-* [版本信息](/document/version.md)
+* [版本信息 Version](/document/version.md)
 
 ## 总览
 
 数据映射是用将数据库字段与java对象进行相互转换的必要手段, 理解为`数据`  
-[反向生成代码](/document/generate.md)  
+[反向生成代码 Generate](/document/generate.md)  
 **数据类型应该使用包装类型替代基本类型 例如使用`Integer`替代`int`**  
 任意一个普通pojo对象即可, 下面是一个例子
 
@@ -354,22 +354,22 @@ Assert.assertEquals(AnnotationTestModel.Sex.WOMAN, resultEntity.getSex());
 ### BelongsTo
 
 - 一对一关系  
-  见关联关系
+  见关联关系 Relationship
 
 ### BelongsToMany
 
 - 多对多关系  
-  见关联关系
+  见关联关系 Relationship
 
 ### HasMany
 
 - 一对多关系  
-  见关联关系
+  见关联关系 Relationship
 
 ### HasOne
 
 - 一对一关系  
-  见关联关系
+  见关联关系 Relationship
 
 
 

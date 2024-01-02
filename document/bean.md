@@ -4,7 +4,7 @@ Eloquent ORM for Java
 
 ## 目录
 
-* [注册配置](/document/bean.md)
+* [注册配置 Configuration](/document/bean.md)
     * [spring boot](#spring)
         * [单连接](#单连接)
             * [单库连接](#单库连接)
@@ -15,15 +15,15 @@ Eloquent ORM for Java
     * [拓展配置](#拓展配置)
         * [包扫描](#包扫描)
         * [新增支持的数据库](#新增支持的数据库)
-        * [自定义查询构造器方法](#自定义查询构造器方法)
-* [数据映射](/document/mapping.md)
-* [数据模型](/document/model.md)
-* [查询结果集](/document/record.md)
-* [查询构造器](/document/query.md)
-* [关联关系](/document/relationship.md)
-* [生成代码](/document/generate.md)
+        * [自定义查询构造器 Query方法](#自定义查询构造器 Query方法)
+* [数据映射 Mapping](/document/mapping.md)
+* [数据模型 Model](/document/model.md)
+* [查询结果集 Record](/document/record.md)
+* [查询构造器 Query Builder](/document/query.md)
+* [关联关系 Relationship](/document/relationship.md)
+* [生成代码 Generate](/document/generate.md)
 * [GraalVM](/document/graalvm.md)
-* [版本信息](/document/version.md)
+* [版本信息 Version](/document/version.md)
 
 ## spring
 
