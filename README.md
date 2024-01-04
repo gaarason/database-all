@@ -3,6 +3,13 @@
 [![](https://jitpack.io/v/gaarason/database-all.svg)](https://jitpack.io/#gaarason/database-all)
 [![](https://img.shields.io/github/stars/gaarason/database-all)](https://github.com/gaarason/database-all)
 
+[![](https://img.shields.io/badge/JDK-8-green.svg)]()
+[![](https://img.shields.io/badge/JDK-11-green.svg)]()
+[![](https://img.shields.io/badge/JDK-17-green.svg)]()
+[![](https://img.shields.io/badge/SpringBoot-v2.x-blue.svg)]()
+[![](https://img.shields.io/badge/SpringBoot-v3.x-blue.svg)]()
+
+
 Eloquent ORM for Java
 
 ## 简介 Introduction
