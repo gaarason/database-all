@@ -6,8 +6,8 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.extra.Bind;
-import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.core.Container;
 import gaarason.database.eloquent.record.BindBean;
@@ -29,7 +29,10 @@ import gaarason.database.util.StringUtils;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * 结果集对象
@@ -117,7 +120,7 @@ public class RecordBean<T, K> implements Record<T, K> {
         if (!stringObjectMap.isEmpty()) {
             hasBind = true;
             // 通知
-            model.retrieved(this);
+            model.eventRecordRetrieved(this);
         } else {
             hasBind = false;
         }
@@ -311,13 +314,13 @@ public class RecordBean<T, K> implements Record<T, K> {
     @Override
     public boolean save() {
         // aop阻止
-        if (!model.saving(this)) {
+        if (!model.eventRecordSaving(this)) {
             return false;
         }
         // 执行
         boolean success = hasBind ? update() : insert();
         // aop通知
-        model.saved(this);
+        model.eventRecordSaved(this);
         // 响应
         return success;
     }
@@ -325,7 +328,7 @@ public class RecordBean<T, K> implements Record<T, K> {
     @Override
     public boolean saveByPrimaryKey() {
         // aop阻止
-        if (!model.saving(this)) {
+        if (!model.eventRecordSaving(this)) {
             return false;
         }
         boolean success = false;
@@ -346,7 +349,7 @@ public class RecordBean<T, K> implements Record<T, K> {
         }
 
         // aop通知
-        model.saved(this);
+        model.eventRecordSaved(this);
         // 响应
         return success;
     }
@@ -363,7 +366,7 @@ public class RecordBean<T, K> implements Record<T, K> {
             throw new PrimaryKeyNotFoundException();
         }
         // aop阻止
-        if (!model.deleting(this)) {
+        if (!model.eventRecordDeleting(this)) {
             return false;
         }
         // 执行
@@ -375,7 +378,7 @@ public class RecordBean<T, K> implements Record<T, K> {
             entity = toObjectWithoutRelationship();
             hasBind = false;
             // 通知
-            model.deleted(this);
+            model.eventRecordDeleted(this);
         }
         // 响应
         return success;
@@ -404,7 +407,7 @@ public class RecordBean<T, K> implements Record<T, K> {
             throw new PrimaryKeyNotFoundException();
         }
         // 阻止
-        if (!model.restoring(this)) {
+        if (!model.eventRecordRestoring(this)) {
             return false;
         }
         // 执行
@@ -445,7 +448,7 @@ public class RecordBean<T, K> implements Record<T, K> {
         if (!metadataMap.isEmpty()) {
             hasBind = true;
             // 通知
-            model.retrieved(this);
+            model.eventRecordRetrieved(this);
         } else {
             hasBind = false;
         }
@@ -520,7 +523,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      */
     protected boolean insert() {
         // aop阻止
-        if (!model.creating(this)) {
+        if (!model.eventRecordCreating(this)) {
             return false;
         }
         // entity 2 map
@@ -536,7 +539,7 @@ public class RecordBean<T, K> implements Record<T, K> {
             // 更新自身
             selfUpdate(entityMap);
             // 通知
-            model.created(this);
+            model.eventRecordCreated(this);
         }
         // 响应
         return success;
@@ -564,7 +567,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      */
     protected boolean updateByPrimaryKey(@Nullable Object primaryKeyValue) {
         // 阻止
-        if (!model.updating(this)) {
+        if (!model.eventRecordUpdating(this)) {
             return false;
         }
         // entity 2 map
@@ -577,7 +580,7 @@ public class RecordBean<T, K> implements Record<T, K> {
             // 更新自身
             selfUpdate(entityMap);
             // aop通知
-            model.updated(this);
+            model.eventRecordUpdated(this);
         }
         // 响应
         return success;

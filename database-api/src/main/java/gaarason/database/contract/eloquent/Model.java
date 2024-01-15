@@ -10,7 +10,7 @@ import gaarason.database.exception.PrimaryKeyNotFoundException;
  * @author xt
  */
 public interface Model<T, K>
-    extends Query<T, K>, NativeQuery<T, K>, ORMEvent<T, K>, QueryEvent<T, K>, SoftDelete<T, K> {
+    extends Query<T, K>, NativeQuery<T, K>, RecordEvent<T, K>, QueryEvent<T, K>, SoftDelete<T, K> {
 
     /**
      * 返回当前的模型

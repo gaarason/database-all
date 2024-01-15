@@ -9,18 +9,19 @@ import java.util.List;
 
 /**
  * 事件
+ * 除了使用原始SQL方式时不会触发, ORM风格以及newQuery风格, 都会触发
  * 查询 : retrieving -> retrieved
- * 新增 : saving -> creating -> created -> saved
- * 更新 : saving -> updating -> updated -> saved
+ * 新增 : creating -> created
+ * 更新 : updating -> updated
  * 删除 : deleting -> deleted
  * 恢复 : restoring -> restored
  * <p>
- * 其中以 record 为参数的事件, 仅在使用ORM风格时, 会触发
- * 其中以 builder 为参数的事件, 除了使用原始SQL方式时不会触发, ORM风格以及newQuery风格, 都会触发
- * 当同时声明了 record 与 builder 为参数的相同事件时, 先触发 record
+ * 其中以 eventRecord 为方法名前缀的事件, 仅在使用ORM风格时, 会触发
+ * 其中以 eventQuery 为方法名前缀的事件, 除了使用原始SQL方式时不会触发, ORM风格以及newQuery风格, 都会触发
  * log 总是在执行前触发
  * @param <T> 实体类
  * @param <K> 主键类型
+ * @see RecordEvent
  * @author xt
  */
 public interface QueryEvent<T, K> {
@@ -41,14 +42,14 @@ public interface QueryEvent<T, K> {
      * 查询数据时
      * @param builder 查询构造器
      */
-    default void retrieving(Builder<T, K> builder) {
+    default void eventQueryRetrieving(Builder<T, K> builder) {
     }
 
     /**
      * 查询数据后
      * @param record 结果集
      */
-    default void retrieved(Record<T, K> record) {
+    default void eventQueryRetrieved(Record<T, K> record) {
 
     }
 
@@ -56,7 +57,7 @@ public interface QueryEvent<T, K> {
      * 查询数据后
      * @param records 结果集合
      */
-    default void retrieved(RecordList<T, K> records) {
+    default void eventQueryRetrieved(RecordList<T, K> records) {
 
     }
 
@@ -64,7 +65,7 @@ public interface QueryEvent<T, K> {
      * 插入数据时
      * @param builder 查询构造器.
      */
-    default void creating(Builder<T, K> builder) {
+    default void eventQueryCreating(Builder<T, K> builder) {
     }
 
     /**
@@ -72,7 +73,7 @@ public interface QueryEvent<T, K> {
      * 3个created()事件, 相互互补, 不会重复; 具体触发哪一个, 取决于调用的执行方法(所预期的返回值)
      * @param rows 受影响的行数
      */
-    default void created(int rows) {
+    default void eventQueryCreated(int rows) {
 
     }
 
@@ -81,7 +82,7 @@ public interface QueryEvent<T, K> {
      * 3个created()事件, 相互互补, 不会重复; 具体触发哪一个, 取决于调用的执行方法(所预期的返回值)
      * @param primaryKeyValue 主键值列表
      */
-    default void created(K primaryKeyValue) {
+    default void eventQueryCreated(K primaryKeyValue) {
 
     }
 
@@ -90,7 +91,7 @@ public interface QueryEvent<T, K> {
      * 3个created()事件, 相互互补, 不会重复; 具体触发哪一个, 取决于调用的执行方法(所预期的返回值)
      * @param primaryKeyValues 主键值列表
      */
-    default void created(List<K> primaryKeyValues) {
+    default void eventQueryCreated(List<K> primaryKeyValues) {
 
     }
 
@@ -98,14 +99,14 @@ public interface QueryEvent<T, K> {
      * 更新数据时
      * @param builder 查询构造器
      */
-    default void updating(Builder<T, K> builder) {
+    default void eventQueryUpdating(Builder<T, K> builder) {
     }
 
     /**
      * 更新数据后
      * @param rows 受影响的行数
      */
-    default void updated(int rows) {
+    default void eventQueryUpdated(int rows) {
 
     }
 
@@ -113,14 +114,14 @@ public interface QueryEvent<T, K> {
      * 删除数据时
      * @param builder 查询构造器
      */
-    default void deleting(Builder<T, K> builder) {
+    default void eventQueryDeleting(Builder<T, K> builder) {
     }
 
     /**
      * 删除数据后
      * @param rows 受影响的行数
      */
-    default void deleted(int rows) {
+    default void eventQueryDeleted(int rows) {
 
     }
 
@@ -128,14 +129,14 @@ public interface QueryEvent<T, K> {
      * 恢复数据时
      * @param builder 查询构造器
      */
-    default void restoring(Builder<T, K> builder) {
+    default void eventQueryRestoring(Builder<T, K> builder) {
     }
 
     /**
      * 恢复数据后
      * @param rows 受影响的行数
      */
-    default void restored(int rows) {
+    default void eventQueryRestored(int rows) {
 
     }
 }

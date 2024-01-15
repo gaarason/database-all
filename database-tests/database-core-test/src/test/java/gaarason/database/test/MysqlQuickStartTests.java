@@ -98,6 +98,13 @@ public class MysqlQuickStartTests {
             return gaarasonDataSourceWrapper;
         }
 
+
+        @Override
+        public void log(String sql, Collection<?> parameterList) {
+            String format = String.format(sql.replace("?", "\"%s\""), parameterList.toArray());
+            log.info("SQL complete         : {}", format);
+        }
+
         /**
          * 定义 entity
          */

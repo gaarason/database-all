@@ -15,7 +15,7 @@ Eloquent ORM for Java
     * [拓展配置](#拓展配置)
         * [包扫描](#包扫描)
         * [新增支持的数据库](#新增支持的数据库)
-        * [自定义查询构造器 Query方法](#自定义查询构造器 Query方法)
+        * [自定义查询构造器Query方法](#自定义查询构造器Query方法)
 * [数据映射 Mapping](/document/mapping.md)
 * [数据模型 Model](/document/model.md)
 * [查询结果集 Record](/document/record.md)
@@ -567,7 +567,7 @@ public class H2Autoconfiguration implements GaarasonAutoconfiguration {
 }
 ```
 
-### 自定义查询构造器方法
+### 自定义查询构造器Query方法
 
 - 对于`model`中使用`newQuery()`返回的`Builder`对象,进行修改.
 - 举例修改 `MySqlBuilder` 中的 `limit(int)` 方法.

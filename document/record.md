@@ -120,7 +120,7 @@ Record<Student, Long> recordCopy = Record.deserialize(serialize);
 ## ORM
 
 对于`gaarason.database.eloquent.Record<T, K>`对象提供ORM相关的能力  
-所有操作均可触发[数据模型 Model](/document/model.md)`事件`
+所有操作均可触发[数据模型 Model](/document/model.md#orm事件)`事件`
 
 ### 基本操作
 

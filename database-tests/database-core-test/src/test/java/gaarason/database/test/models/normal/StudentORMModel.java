@@ -19,7 +19,7 @@ public class StudentORMModel extends SingleModel<StudentORMModel.Entity, Integer
     }
 
     @Override
-    public boolean updating(Record<Entity, Integer> record) {
+    public boolean eventRecordUpdating(Record<Entity, Integer> record) {
         if (record.getEntity().getId() == 9) {
             System.out.println("正要修改id为9的数据, 但是拒绝");
             return false;
@@ -28,7 +28,7 @@ public class StudentORMModel extends SingleModel<StudentORMModel.Entity, Integer
     }
 
     @Override
-    public void retrieved(Record<Entity, Integer> tkRecord) {
+    public void eventQueryRetrieved(Record<Entity, Integer> tkRecord) {
         System.out.println("已经从数据库中查询到数据");
     }
 

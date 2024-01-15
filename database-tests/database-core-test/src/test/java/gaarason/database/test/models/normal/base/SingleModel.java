@@ -110,7 +110,7 @@ public class SingleModel<T, K> extends Model<T, K> {
      * @return 继续操作
      */
     @Override
-    public boolean creating(Record<T, K> record) {
+    public boolean eventRecordCreating(Record<T, K> record) {
         return true;
     }
 }

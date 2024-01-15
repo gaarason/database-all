@@ -25,6 +25,12 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 5.2.0
+
+- 在`Model`中, 修改了定义事件的相关的方法名 (原 `retrieved`, `creating`, `created`, `updating`, `updated`, `saving`, `saved`, `deleting`, `deleted`, `restoring`, `restored`) , 使之更不易混淆, 并在[数据模型 Model](/document/model.md#事件)中提示事件触发次序 
+- 在`Model`中, query 相关事件方法以`eventQuery`为方法前缀, 包含`eventQueryRetrieving`,`eventQueryRetrieved`,`eventQueryRetrieved`,`eventQueryCreating`,`eventQueryCreated`,`eventQueryUpdating`,`eventQueryUpdated`,`eventQueryDeleting`,`eventQueryDeleted`,`eventQueryRestoring`,`eventQueryRestored`
+- 在`Model`中, record 相关事件方法以`recordQuery`为方法前缀, 包含`eventRecordRetrieved`,`eventRecordRetrieved`,`eventRecordCreating`,`eventRecordCreated`,`eventRecordUpdating`,`eventRecordUpdated`,`eventRecordDeleting`,`eventRecordDeleted`,`eventRecordRestoring`,`eventRecordRestored`
+
 ### 5.1.0
 
 - 在代码生成中, 增加对 javax 以及 jakarta 的兼容

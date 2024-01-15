@@ -48,56 +48,56 @@ public abstract class ExecuteLevel2Builder<T, K> extends ExecuteLevel1Builder<T,
     @Override
     public int insert() throws SQLRuntimeException {
         // 事件
-        model.creating(this);
+        model.eventQueryCreating(this);
         int rows = updateSql(SqlType.INSERT);
-        model.created(rows);
+        model.eventQueryCreated(rows);
         return rows;
     }
 
     @Override
     public int update() throws SQLRuntimeException {
         // 事件
-        model.updating(this);
+        model.eventQueryUpdating(this);
         int rows = updateSql(SqlType.UPDATE);
-        model.updated(rows);
+        model.eventQueryUpdated(rows);
         return rows;
     }
 
     @Override
     public int restore() throws SQLRuntimeException {
         // 事件
-        model.restoring(this);
+        model.eventQueryRestoring(this);
         int rows = model.restore(this);
-        model.restored(rows);
+        model.eventQueryRestored(rows);
         return rows;
     }
 
     @Override
     public int delete() throws SQLRuntimeException {
         // 事件
-        model.deleting(this);
+        model.eventQueryDeleting(this);
         int rows = model.delete(this);
-        model.deleted(rows);
+        model.eventQueryDeleted(rows);
         return rows;
     }
 
     @Override
     public int forceDelete() throws SQLRuntimeException {
         // 事件
-        model.deleting(this);
+        model.eventQueryDeleting(this);
         int rows = updateSql(SqlType.DELETE);
-        model.deleted(rows);
+        model.eventQueryDeleted(rows);
         return rows;
     }
 
     @Override
     public K insertGetId() throws SQLRuntimeException {
         // 事件
-        model.creating(this);
+        model.eventQueryCreating(this);
         Grammar.SQLPartInfo sqlPartInfo = toSQLPartInfo(SqlType.INSERT);
         K id = executeGetId(sqlPartInfo.getSqlString(), sqlPartInfo.getParameters());
         if (id != null) {
-            model.created(id);
+            model.eventQueryCreated(id);
         }
         return id;
     }
@@ -105,10 +105,10 @@ public abstract class ExecuteLevel2Builder<T, K> extends ExecuteLevel1Builder<T,
     @Override
     public List<K> insertGetIds() throws SQLRuntimeException {
         // 事件
-        model.creating(this);
+        model.eventQueryCreating(this);
         Grammar.SQLPartInfo sqlPartInfo = toSQLPartInfo(SqlType.INSERT);
         List<K> ids = executeGetIds(sqlPartInfo.getSqlString(), sqlPartInfo.getParameters());
-        model.created(ids);
+        model.eventQueryCreated(ids);
         return ids;
     }
 
@@ -116,7 +116,7 @@ public abstract class ExecuteLevel2Builder<T, K> extends ExecuteLevel1Builder<T,
     public Record<T, K> firstOrFail() throws SQLRuntimeException, EntityNotFoundException {
         limit(1);
         // 事件
-        model.retrieving(this);
+        model.eventQueryRetrieving(this);
 
         Grammar.SQLPartInfo sqlPartInfo = toSQLPartInfo(SqlType.SELECT);
         String sql = sqlPartInfo.getSqlString();
@@ -124,14 +124,14 @@ public abstract class ExecuteLevel2Builder<T, K> extends ExecuteLevel1Builder<T,
         Record<T, K> record = queryOrFail(sql, parameterList);
 
         // 事件
-        model.retrieved(record);
+        model.eventQueryRetrieved(record);
         return record;
     }
 
     @Override
     public RecordList<T, K> get() throws SQLRuntimeException {
         // 事件
-        model.retrieving(this);
+        model.eventQueryRetrieving(this);
 
         // sql组装执行
         Grammar.SQLPartInfo sqlPartInfo = toSQLPartInfo(SqlType.SELECT);
@@ -140,7 +140,7 @@ public abstract class ExecuteLevel2Builder<T, K> extends ExecuteLevel1Builder<T,
         RecordList<T, K> records = queryList(sql, parameterList);
 
         // 事件
-        model.retrieved(records);
+        model.eventQueryRetrieved(records);
         return records;
     }
 

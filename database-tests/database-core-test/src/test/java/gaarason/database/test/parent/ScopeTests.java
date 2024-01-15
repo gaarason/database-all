@@ -3,6 +3,7 @@ package gaarason.database.test.parent;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.test.models.normal.StudentEventModel;
 import gaarason.database.test.models.normal.StudentSoftDeleteModel;
 import gaarason.database.test.parent.base.BaseTests;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,8 @@ import java.util.List;
 abstract public class ScopeTests extends BaseTests {
 
     protected static StudentSoftDeleteModel studentModel = new StudentSoftDeleteModel();
+
+    protected static StudentEventModel studentEventModel = new StudentEventModel();
 
     @Override
     protected GaarasonDataSource getGaarasonDataSource() {
@@ -57,5 +60,27 @@ abstract public class ScopeTests extends BaseTests {
 
         RecordList<StudentSoftDeleteModel.Entity, Integer> records = studentModel.onlyTrashed().get();
         Assert.assertEquals(records.size(), 0);
+    }
+
+    @Test
+    public void event_新增() {
+        Record<StudentEventModel.Entity, Integer> record = studentEventModel.newRecord();
+        StudentEventModel.Entity entity = record.getEntity();
+        entity.setName("张test");
+        record.save();
+    }
+    @Test
+    public void event_查询_修改() {
+        Record<StudentEventModel.Entity, Integer> record = studentEventModel.findOrFail(1);
+        StudentEventModel.Entity entity = record.getEntity();
+        entity.setName("张test");
+        record.save();
+    }
+    @Test
+    public void event_查询_删除() {
+        Record<StudentEventModel.Entity, Integer> record = studentEventModel.findOrFail(1);
+        System.out.println(record);
+        record.delete();
+        System.out.println(record);
     }
 }
