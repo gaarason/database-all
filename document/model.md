@@ -220,11 +220,9 @@ public class StudentModel extends BaseModel<Student, Long> {
     }
 
 }
+```
 
 需要注意的是, `eventQueryCreated`方法包含3个不同的方法重载, 分别对应不同的响应类型.
-
-
-```
 
 ## 作用域
 

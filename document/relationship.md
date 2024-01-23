@@ -15,7 +15,7 @@ Eloquent ORM for Java
         * [常规](#常规)
             * [一对一](#一对一)
             * [一对多](#一对多)
-            * [反向一对多/一对一](#反向一对多/一对一)
+            * [反向一对多/一对一](#反向一对多)
             * [多对多](#多对多)
         * [多态](#多态)
             * [多态一对一](#多态一对一)
@@ -42,7 +42,7 @@ Eloquent ORM for Java
             * [withAvg](#withAvg)
             * [withSum](#withSum)
     * [关联反向筛选](#关联反向筛选)
-        * [whereHas/whereNotHas](#whereHas/whereNotHas)
+        * [whereHas/whereNotHas](#whereHas)
     * [更新关系](#更新关系)
         * [附加关系](#附加关系)
         * [解除关系](#解除关系)
@@ -119,7 +119,9 @@ public class Teacher implements Serializable {
 }
 ```
 
-#### 反向一对多/一对一
+#### 反向一对多  
+
+反向一对多/一对一  
 
 `@BelongsTo()` 其中包含2个属性:
 
@@ -719,7 +721,7 @@ teachers.get(0).getStudentsMaxAge()
 ## 关联反向筛选
 - 使用从表关系筛选主表结果
 - 检索模型记录时, 你可能希望根据关系的存在限制结果. 例如, 假设要检索至少有一条评论的所有博客文章.
-### whereHas/whereNotHas
+### whereHas
 
 - whereHas/whereNotHas(relationFieldName)
 ```java

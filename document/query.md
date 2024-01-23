@@ -223,7 +223,7 @@ studentModel.where("age","<","9").dealChunk(2000, records -> {
     // do something
     records.toObjectList();
     return true;
-    });
+});
 ```
 
 ##### 使用索引分页
@@ -657,20 +657,20 @@ Record<Student, Long> record = studentModel.newQuery().where("id", null).first()
 // select * from `student` where `name`like"小%"
 studentModel.newQuery().whereLikeIgnoreNull("name", "小%").get();
 
-// select * from `student` where `name`like"小"
-    studentModel.newQuery().whereLikeIgnoreNull("name", "小").get();
+// select * from `student` where `name`like"%小%"
+studentModel.newQuery().whereLikeIgnoreNull("name", "小").get();
 
 // select * from `student` where `name`like"%卡"
-    Map<String, Object> likeMap = new HashMap<>();
-    likeMap.put("name", "%卡");
+Map<String, Object> likeMap = new HashMap<>();
+likeMap.put("name", "%卡");
 
-    entityList3 = studentModel.newQuery().whereLikeIgnoreNull(likeMap).get();
+entityList3 = studentModel.newQuery().whereLikeIgnoreNull(likeMap).get();
 
 // select * from `student` where `name`like"%卡"
-    StudentModel.Entity student = new StudentModel.Entity();
-    student.setName("%卡");
+StudentModel.Entity student = new StudentModel.Entity();
+student.setName("%卡");
 
-    studentModel.newQuery().whereLikeIgnoreNull(student).get();
+studentModel.newQuery().whereLikeIgnoreNull(student).get();
 ```
 
 #### whereMayLike  whereMayLikeIgnoreNull
