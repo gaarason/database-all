@@ -679,7 +679,7 @@ List<Teacher> teachers = teacherModel.newQuery()
     .toObjectList();
 
 // 查看结果
-    teachers.get(0).getStudentsMaxAge()
+teachers.get(0).getStudentsMaxAge()
 ```
 
 
