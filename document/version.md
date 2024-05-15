@@ -28,6 +28,7 @@ Eloquent ORM for Java
 ### 5.3.0
 
 - 在`Builder`中, 增加了位操作的相关的方法, `whereBit()`, `whereBitNot()`,`whereBitIn()`,`whereBitNotIn()`,`whereBitStrictIn()`,`whereBitStrictNotIn()`,`dataBit()`,`dataBitIncrease()`,`dataBitDecrease()`
+- 在`@Column`中, 增加 `conversion` 接口的通用位处理`FieldConversion.Bit`
 
 ### 5.2.0
 

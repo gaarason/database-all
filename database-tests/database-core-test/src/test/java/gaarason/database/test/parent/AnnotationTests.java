@@ -10,6 +10,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -57,9 +58,9 @@ abstract public class AnnotationTests extends BaseTests {
         Integer id = annotationTestModel.newQuery().from(entity).insertGetId(entity);
 
         AnnotationTestModel.EnumEntity resultEntity = annotationTestModel.newQuery()
-            .from(entity)
-            .findOrFail(id)
-            .toObject(AnnotationTestModel.EnumEntity.class);
+                .from(entity)
+                .findOrFail(id)
+                .toObject(AnnotationTestModel.EnumEntity.class);
 
         Assert.assertEquals(name, resultEntity.getName());
         Assert.assertEquals(AnnotationTestModel.Sex.WOMAN, resultEntity.getSex());
@@ -75,9 +76,9 @@ abstract public class AnnotationTests extends BaseTests {
         Integer id = annotationTestModel.newQuery().from(entity).insertGetId(entity);
 
         AnnotationTestModel.Enum2Entity resultEntity = annotationTestModel.newQuery()
-            .from(entity)
-            .findOrFail(id)
-            .toObject(AnnotationTestModel.Enum2Entity.class);
+                .from(entity)
+                .findOrFail(id)
+                .toObject(AnnotationTestModel.Enum2Entity.class);
 
         Assert.assertEquals(name, resultEntity.getName());
         Assert.assertEquals(AnnotationTestModel.Sex.MAN, resultEntity.getSex());
@@ -90,9 +91,9 @@ abstract public class AnnotationTests extends BaseTests {
         Integer id = annotationTestModel.newQuery().from(entity).insertGetId(entity);
 
         AnnotationTestModel.Enum3Entity resultEntity = annotationTestModel.newQuery()
-            .from(entity)
-            .findOrFail(id)
-            .toObject(AnnotationTestModel.Enum3Entity.class);
+                .from(entity)
+                .findOrFail(id)
+                .toObject(AnnotationTestModel.Enum3Entity.class);
 
         Assert.assertEquals(AnnotationTestModel.Name.CIAO_LI, resultEntity.getName());
         // 数据库默认值 1
@@ -131,6 +132,42 @@ abstract public class AnnotationTests extends BaseTests {
 
         AnnotationTestModel.PrimaryKeyEntity res = annotationTestModel.findOrFail(id).toObject();
         Assert.assertEquals(0, res.getInfos().size());
+    }
+
+    @Test
+    public void Bit序列化_null() {
+        AnnotationTestModel.BitEntity bitEntity = new AnnotationTestModel.BitEntity();
+        bitEntity.setHobby(new ArrayList<>());
+
+        bitEntity.getHobby().add(1L);
+        bitEntity.getHobby().add(2L);
+        bitEntity.getHobby().add(4L);
+
+        Integer id = annotationTestModel.newQuery().from(bitEntity).insertGetId(bitEntity);
+        AnnotationTestModel.BitEntity entity = annotationTestModel.newQuery()
+                .from(bitEntity)
+                .where("id", id)
+                .firstOrFail()
+                .toObject(AnnotationTestModel.BitEntity.class);
+        List<Long> hobby = entity.getHobby();
+        Assert.assertEquals(3, hobby.size());
+        Assert.assertTrue(hobby.contains(1L) && hobby.contains(2L) && hobby.contains(4L));
+
+        annotationTestModel.newQuery()
+                .from(bitEntity)
+                .where("id", id)
+                .dataBitDecrement("hobby", Arrays.asList(1, 2, 3))
+                .dataBitIncrement("hobby", Arrays.asList(8,9))
+                .update();
+        AnnotationTestModel.BitEntity entity2 = annotationTestModel.newQuery()
+                .from(bitEntity)
+                .where("id", id)
+                .firstOrFail()
+                .toObject(AnnotationTestModel.BitEntity.class);
+        List<Long> hobby2 = entity2.getHobby();
+
+        Assert.assertEquals(3, hobby2.size());
+        Assert.assertTrue(hobby2.contains(4L) && hobby2.contains(8L) && hobby2.contains(9L));
     }
 
 

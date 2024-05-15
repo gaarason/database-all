@@ -969,7 +969,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         Integer id = studentModel.newQuery().insertGetId();
         studentModel.newQuery().where("id", id).dataBit(StudentModel.Entity::getSex, objects).update();
         Byte sex = studentModel.findOrFail(id).getEntity().getSex();
-        Assert.assertEquals(BitUtils.pack(objects), sex.longValue());
+        Assert.assertEquals(BitUtils.packs(objects), sex.longValue());
 
         // 多增加2个
         Integer id2 = studentModel.newQuery().insertGetId();

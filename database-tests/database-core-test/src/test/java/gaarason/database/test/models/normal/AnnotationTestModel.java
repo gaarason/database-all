@@ -214,4 +214,36 @@ public class AnnotationTestModel extends SingleModel<AnnotationTestModel.Primary
         @Column(name = "updated_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
         private Date updatedAt;
     }
+
+
+    @Data
+    @Table(name = "student")
+    public static class BitEntity implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        @Primary
+        private Integer id;
+
+        @Column(length = 20)
+        private String name;
+
+        private Byte age;
+
+        @Column(conversion = FieldConversion.EnumInteger.class)
+        private Sex sex;
+
+        @Column(conversion = FieldConversion.Bit.class)
+        private List<Long> hobby;
+
+        @Column(name = "teacher_id")
+        private Integer teacherId;
+
+        @Column(name = "created_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
+        private Date createdAt;
+
+        @Column(name = "updated_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
+        private Date updatedAt;
+    }
+
 }

@@ -64,6 +64,7 @@ public interface FieldConversion<F, D> {
      * 实现依赖于jackson
      * 需要手动引入 com.fasterxml.jackson.core: jackson-databind
      * 需要手动引入 com.fasterxml.jackson.datatype: jackson-datatype-jsr310
+     * 数据库列一般使用 varchar
      */
     interface Json extends FieldConversion<Object, String> {
 
@@ -71,6 +72,7 @@ public interface FieldConversion<F, D> {
 
     /**
      * 枚举序列化, 使用枚举类的次序
+     * 数据库列一般使用 int
      */
     interface EnumInteger extends FieldConversion<Enum<?>, Integer> {
 
@@ -78,8 +80,18 @@ public interface FieldConversion<F, D> {
 
     /**
      * 枚举序列化, 使用枚举类的名称
+     * 数据库列一般使用 varchar
      */
     interface EnumString extends FieldConversion<Enum<?>, String> {
+
+    }
+
+    /**
+     * 按位序列化
+     * eg : 将3个元素的集合 [0,1,2] 序列化为 (1 << 0) | (1 << 1) | (1 << 2) ,即单个数字 7
+     * 数据库列一般使用 int, bigint ...
+     */
+    interface Bit extends FieldConversion<Object, Object> {
 
     }
 }

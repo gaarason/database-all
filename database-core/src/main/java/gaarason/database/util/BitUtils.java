@@ -1,9 +1,8 @@
 package gaarason.database.util;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import gaarason.database.lang.Nullable;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -19,7 +18,7 @@ public final class BitUtils {
      * @param options 选项 eg: 0,1,2,3,4
      * @return 十进制数字
      */
-    public static long pack(Collection<Object> options) {
+    public static long packs(@Nullable Collection<Object> options) {
         return setOptions(0, options);
     }
 
@@ -28,7 +27,10 @@ public final class BitUtils {
      * @param option 选项 eg: 0,1,2,3,4
      * @return 十进制数字
      */
-    public static long pack(Object option) {
+    public static long pack(@Nullable Object option) {
+        if (option == null) {
+            return 0;
+        }
         long l = Long.parseLong(String.valueOf(option));
         return setOption(0, l);
     }
@@ -38,9 +40,22 @@ public final class BitUtils {
      * @param options 选项 eg: 0,1,2,3,4
      * @return 十进制数字
      */
-    public static long pack(Object... options) {
+    public static long packArr(Object... options) {
         List<Object> collect = Arrays.stream(options).collect(Collectors.toList());
         return setOptions(0, collect);
+    }
+
+    /**
+     * 解包成选项
+     * @param packValue 打包后的十进制数字 eg: 0
+     * @return 选项列表
+     */
+    public static List<Long> unpack(@Nullable Object packValue) {
+        if (packValue == null) {
+            return Collections.emptyList();
+        }
+        long packValueLong = Long.parseLong(String.valueOf(packValue));
+        return unpack(packValueLong);
     }
 
     /**
@@ -79,8 +94,11 @@ public final class BitUtils {
      * @param options 选项值 eg: 0,1,2,3,4
      * @return 新值
      */
-    public static long setOptions(Object packValue, Collection<Object> options) {
+    public static long setOptions(Object packValue, @Nullable Collection<Object> options) {
         long packValueLong = Long.parseLong(String.valueOf(packValue));
+        if (options == null) {
+            return packValueLong;
+        }
         List<Long> longList = new ArrayList<>();
         for (Object option : options) {
             longList.add(Long.parseLong(String.valueOf(option)));

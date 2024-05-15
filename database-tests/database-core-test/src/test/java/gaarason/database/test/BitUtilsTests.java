@@ -15,7 +15,7 @@ public class BitUtilsTests {
 
     @Test
     public void packAndUnpack() {
-        long pack = BitUtils.pack(0, 1, 2);
+        long pack = BitUtils.packArr(0, 1, 2);
         Assert.assertEquals(7, pack);
 
         List<Long> unpack = BitUtils.unpack(pack);
@@ -26,13 +26,13 @@ public class BitUtilsTests {
 
     @Test
     public void pack() {
-        long pack = BitUtils.pack(0, 1, 2);
+        long pack = BitUtils.packArr(0, 1, 2);
         Assert.assertEquals(7, pack);
 
-        long pack2 = BitUtils.pack(1, 2);
+        long pack2 = BitUtils.packArr(1, 2);
         Assert.assertEquals(6, pack2);
 
-        long pack3 = BitUtils.pack(1, 3);
+        long pack3 = BitUtils.packArr(1, 3);
         Assert.assertEquals(10, pack3);
     }
 

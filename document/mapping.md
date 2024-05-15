@@ -22,6 +22,7 @@ Eloquent ORM for Java
                 * [Json](#Json)
                 * [EnumInteger](#EnumInteger)
                 * [EnumString](#EnumString)
+                * [Bit](#Bit)
             * [执行顺序](#执行顺序)
                 * [实体到数据库](#实体到数据库)
                 * [数据库到实体](#数据库到实体)
@@ -221,8 +222,11 @@ public class Entity implements Serializable {
 #### 类型转化
 - conversion
 - 序列与反序列化
-- 业务上可以自行实现 `FieldConversion` 接口, 已确定本字段特定的序列化与反序列化方式
+- 业务上可以自行实现 `FieldConversion` 接口, 已确定本字段特定的序列化与反序列化方式  
+
 ```java
+// 例如, 需要自定义对性别 的序列化与反序列化
+// 以便将数据库中的1,2, 序列化为对象上的自定义的枚举类型Sex
 public enum Sex {
     MAN,
     WOMAN,
@@ -274,30 +278,13 @@ public enum Sex {
 @Table(name = "student")
 public class EnumEntity implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
-    @Primary
-    private Integer id;
-
-    @Column(length = 20)
-    private String name;
-
-    private Byte age;
-
+    // other ...
+    
     /**
      * 声明使用自定义的字段类型转化
      */
     @Column(conversion = Sex.SexConversion.class)
     private Sex sex;
-
-    @Column(name = "teacher_id")
-    private Integer teacherId;
-
-    @Column(name = "created_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
-    private Date createdAt;
-
-    @Column(name = "updated_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
-    private Date updatedAt;
 }
 
 /**
@@ -307,8 +294,11 @@ String name = "test_people";
 AnnotationTestModel.EnumEntity entity = new AnnotationTestModel.EnumEntity();
 entity.setSex(AnnotationTestModel.Sex.WOMAN);
 entity.setName(name);
+
+// 普通插入
 Integer id = annotationTestModel.newQuery().from(entity).insertGetId(entity);
 
+// 获取后自动转化
 AnnotationTestModel.EnumEntity resultEntity = annotationTestModel.newQuery()
     .from(entity)
     .findOrFail(id)
@@ -336,6 +326,10 @@ Assert.assertEquals(AnnotationTestModel.Sex.WOMAN, resultEntity.getSex());
 ##### EnumString
 - conversion() 可选值为 FieldConversion.EnumString.class, 以枚举类型的`名称`进行序列化与反序列化
 - 数据库列一般使用 varchar
+
+##### Bit
+- conversion() 可选值为 FieldConversion.Bit.class, 将集合按位进行序列化与反序列化
+- 数据库列一般使用 int, bigint
 
 #### 执行顺序
 ##### 实体到数据库
