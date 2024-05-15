@@ -4,6 +4,7 @@ import gaarason.database.appointment.EntityUseType;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
+import gaarason.database.util.BitUtils;
 import gaarason.database.util.ObjectUtils;
 
 import java.util.ArrayList;
@@ -80,6 +81,30 @@ public abstract class DataBuilder<T, K> extends ExecuteLevel3Builder<T, K> {
         ArrayList<Object> parameters = new ArrayList<>();
         String sqlPart = backQuote(column) + '=' + backQuote(column) + '-' +
             grammar.replaceValueAndFillParameters(steps, parameters);
+        return dataGrammar(sqlPart, parameters);
+    }
+
+    @Override
+    public Builder<T, K> dataBit(String column, Collection<Object> values) {
+        long packed = BitUtils.pack(values);
+        return data(column, packed);
+    }
+
+    @Override
+    public Builder<T, K> dataBitIncrement(String column, Collection<Object> values) {
+        long packed = BitUtils.pack(values);
+        ArrayList<Object> parameters = new ArrayList<>();
+        String sqlPart = backQuote(column) + '=' + backQuote(column) + '|' +
+                grammar.replaceValueAndFillParameters(packed, parameters);
+        return dataGrammar(sqlPart, parameters);
+    }
+
+    @Override
+    public  Builder<T, K> dataBitDecrement(String column, Collection<Object> values) {
+        long packed = BitUtils.pack(values);
+        ArrayList<Object> parameters = new ArrayList<>();
+        String sqlPart = backQuote(column) + '=' + backQuote(column) + "& ~" +
+                grammar.replaceValueAndFillParameters(packed, parameters);
         return dataGrammar(sqlPart, parameters);
     }
 }

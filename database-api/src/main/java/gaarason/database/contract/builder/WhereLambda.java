@@ -1,8 +1,8 @@
 package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.lang.Nullable;
 
 import java.util.Arrays;
@@ -26,6 +26,65 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      */
     default <F> Builder<T, K> where(ColumnFunctionalInterface<T, F> column, String symbol, Object value) {
         return where(lambda2ColumnName(column), symbol, value);
+    }
+    /**
+     * 列包含选项值
+     * @param column 列名表达式(位存储)
+     * @param value 选项值(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    default <F> Builder<T, K> whereBit(ColumnFunctionalInterface<T, F> column, Object value) {
+        return whereBit(lambda2ColumnName(column), value);
+    }
+
+    /**
+     * 列不包含选项值
+     * @param column 列名表达式(位存储)
+     * @param value 选项值(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    default <F> Builder<T, K> whereBitNot(ColumnFunctionalInterface<T, F> column, Object value) {
+        return whereBitNot(lambda2ColumnName(column), value);
+    }
+
+    /**
+     * 列包含选项值其一
+     * @param column 列名表达式(位存储)
+     * @param values 选项值(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    default <F, W> Builder<T, K> whereBitIn(ColumnFunctionalInterface<T, F> column, Collection<W> values) {
+        return whereBitIn(lambda2ColumnName(column), values);
+    }
+
+    /**
+     * 列不包含选项值其一
+     * @param column 列名表达式(位存储)
+     * @param values 选项值(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    default <F> Builder<T, K> whereBitNotIn(ColumnFunctionalInterface<T, F> column, Collection<?> values) {
+        return whereBitNotIn(lambda2ColumnName(column), values);
+    }
+
+    /**
+     * 列完全包含所有选项值
+     * @param column 列名表达式(位存储)
+     * @param values 选项值(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    default <F> Builder<T, K> whereBitStrictIn(ColumnFunctionalInterface<T, F> column, Collection<?> values) {
+        return whereBitStrictIn(lambda2ColumnName(column), values);
+    }
+
+    /**
+     * 列完全不包含所有选项值
+     * @param column 列名表达式(位存储)
+     * @param values 选项值(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    default <F> Builder<T, K> whereBitStrictNotIn(ColumnFunctionalInterface<T, F> column, Collection<?> values) {
+        return whereBitStrictNotIn(lambda2ColumnName(column), values);
     }
 
     /**

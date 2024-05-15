@@ -25,9 +25,13 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 5.3.0
+
+- 在`Builder`中, 增加了位操作的相关的方法, `whereBit()`, `whereBitNot()`,`whereBitIn()`,`whereBitNotIn()`,`whereBitStrictIn()`,`whereBitStrictNotIn()`,`dataBit()`,`dataBitIncrease()`,`dataBitDecrease()`
+
 ### 5.2.0
 
-- 在`Model`中, 修改了定义事件的相关的方法名 (原 `retrieved`, `creating`, `created`, `updating`, `updated`, `saving`, `saved`, `deleting`, `deleted`, `restoring`, `restored`) , 使之更不易混淆, 并在[数据模型 Model](/document/model.md#事件)中提示事件触发次序 
+- 在`Model`中, 修改了定义事件的相关的方法名 (原 `retrieved`, `creating`, `created`, `updating`, `updated`, `saving`, `saved`, `deleting`, `deleted`, `restoring`, `restored`) , 使之更不易混淆, 并在[数据模型 Model](/document/model.md#事件)中提示事件触发次序
 - 在`Model`中, query 相关事件方法以`eventQuery`为方法前缀, 包含`eventQueryRetrieving`,`eventQueryRetrieved`,`eventQueryRetrieved`,`eventQueryCreating`,`eventQueryCreated`,`eventQueryUpdating`,`eventQueryUpdated`,`eventQueryDeleting`,`eventQueryDeleted`,`eventQueryRestoring`,`eventQueryRestored`
 - 在`Model`中, record 相关事件方法以`recordQuery`为方法前缀, 包含`eventRecordRetrieved`,`eventRecordRetrieved`,`eventRecordCreating`,`eventRecordCreated`,`eventRecordUpdating`,`eventRecordUpdated`,`eventRecordDeleting`,`eventRecordDeleted`,`eventRecordRestoring`,`eventRecordRestored`
 

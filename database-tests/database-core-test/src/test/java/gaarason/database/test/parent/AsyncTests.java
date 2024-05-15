@@ -50,10 +50,10 @@ abstract public class AsyncTests extends BaseTests {
         future.get();
 
         long t3 = System.currentTimeMillis();
-        Assert.assertTrue(t2 - t1 < 100);
-        Assert.assertTrue(t3 - t2 > second * 1000);
         System.out.println(t2 - t1);
         System.out.println(t3 - t2);
+        Assert.assertTrue(t2 - t1 < 100);
+        Assert.assertTrue(t3 - t2 > second * 1000);
         System.out.println("ok");
     }
 

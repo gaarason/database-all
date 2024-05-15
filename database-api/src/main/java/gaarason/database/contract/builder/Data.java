@@ -3,6 +3,7 @@ package gaarason.database.contract.builder;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.lang.Nullable;
 
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -72,5 +73,29 @@ public interface Data<T, K> {
      * @return 查询构造器
      */
     Builder<T, K> dataDecrement(String column, Object steps);
+
+    /**
+     * 字段设定选项值
+     * @param column 列名(位存储)
+     * @param values 选项值集合(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    Builder<T, K> dataBit(String column, Collection<Object> values);
+
+    /**
+     * 字段增定选项值
+     * @param column 列名(位存储)
+     * @param values 选项值集合(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    Builder<T, K> dataBitIncrement(String column, Collection<Object> values);
+
+    /**
+     * 字段移除选项值
+     * @param column 列名(位存储)
+     * @param values 选项值集合(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    Builder<T, K> dataBitDecrement(String column, Collection<Object> values);
 
 }

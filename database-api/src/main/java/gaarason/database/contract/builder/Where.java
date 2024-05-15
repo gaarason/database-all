@@ -48,6 +48,54 @@ public interface Where<T, K> {
     Builder<T, K> where(String column, String symbol, Object value);
 
     /**
+     * 列包含选项值
+     * @param column 列名(位存储)
+     * @param value 选项值(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    Builder<T, K> whereBit(String column, Object value);
+
+    /**
+     * 列不包含选项值
+     * @param column 列名(位存储)
+     * @param value 选项值(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    Builder<T, K> whereBitNot(String column, Object value);
+
+    /**
+     * 列包含选项值其一
+     * @param column 列名(位存储)
+     * @param values 选项值(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    Builder<T, K> whereBitIn(String column, Collection<?> values);
+
+    /**
+     * 列不包含选项值其一
+     * @param column 列名(位存储)
+     * @param values 选项值(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    Builder<T, K> whereBitNotIn(String column, Collection<?> values);
+
+    /**
+     * 列完全包含所有选项值
+     * @param column 列名(位存储)
+     * @param values 选项值(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    Builder<T, K> whereBitStrictIn(String column, Collection<?> values);
+
+    /**
+     * 列完全不包含所有选项值
+     * @param column 列名(位存储)
+     * @param values 选项值(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    Builder<T, K> whereBitStrictNotIn(String column, Collection<?> values);
+
+    /**
      * 比较列与值(忽略值为null的情况)
      * @param column 列名
      * @param symbol 比较关系

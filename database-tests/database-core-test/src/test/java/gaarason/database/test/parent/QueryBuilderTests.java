@@ -14,6 +14,7 @@ import gaarason.database.test.models.normal.StudentModel;
 import gaarason.database.test.models.normal.StudentReversal;
 import gaarason.database.test.parent.base.BaseTests;
 import gaarason.database.test.utils.MultiThreadUtil;
+import gaarason.database.util.BitUtils;
 import gaarason.database.util.LocalDateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
@@ -307,7 +308,28 @@ abstract public class QueryBuilderTests extends BaseTests {
         StudentModel.Entity entity2 = studentModel.newQuery().where("id", "4").firstOrFail().toObject();
         Assert.assertEquals(entity2.getId().intValue(), 4);
         Assert.assertEquals(entity2.getAge(), Byte.valueOf("13"));
+    }
 
+    @Test
+    public void 更新_字段自增自减_位() {
+        ArrayList<Object> objects = new ArrayList<>();
+        objects.add(4);
+        objects.add(5);
+        int update = studentModel.newQuery().dataBitIncrement(StudentModel.Entity::getSex, objects).whereRaw("id=4").update();
+        Assert.assertEquals(update, 1);
+        StudentModel.Entity entity = studentModel.newQuery().where("id", "4").firstOrFail().toObject();
+        Assert.assertEquals(entity.getId().intValue(), 4);
+        List<Long> unpack = BitUtils.unpack(entity.getSex().longValue());
+        System.out.println(unpack);
+        Assert.assertTrue(unpack.contains(4L) && unpack.contains(5L));
+
+        int update2 = studentModel.newQuery().dataBitDecrement(StudentModel.Entity::getSex, objects).whereRaw("id=4").update();
+        Assert.assertEquals(update2, 1);
+        StudentModel.Entity entity2 = studentModel.newQuery().where("id", "4").firstOrFail().toObject();
+        Assert.assertEquals(entity2.getId().intValue(), 4);
+        List<Long> unpack2 = BitUtils.unpack(entity2.getSex().longValue());
+        System.out.println(unpack2);
+        Assert.assertTrue(!unpack2.contains(4L) && !unpack2.contains(5L));
     }
 
     @Test
@@ -936,6 +958,84 @@ abstract public class QueryBuilderTests extends BaseTests {
             .get()
             .toObjectList();
         Assert.assertEquals(entityList3.size(), 1);
+    }
+
+    @Test
+    public void 条件_whereBit() {
+        ArrayList<Object> objects = new ArrayList<>();
+        objects.add(5);
+        objects.add(6);
+        int size = studentModel.newQuery().get().size();
+        Integer id = studentModel.newQuery().insertGetId();
+        studentModel.newQuery().where("id", id).dataBit(StudentModel.Entity::getSex, objects).update();
+        Byte sex = studentModel.findOrFail(id).getEntity().getSex();
+        Assert.assertEquals(BitUtils.pack(objects), sex.longValue());
+
+        // 多增加2个
+        Integer id2 = studentModel.newQuery().insertGetId();
+        studentModel.newQuery().where("id", id2).dataBit(StudentModel.Entity::getSex, Collections.singletonList(5)).update();
+        Integer id3 = studentModel.newQuery().insertGetId();
+        studentModel.newQuery().where("id", id3).dataBit(StudentModel.Entity::getSex, Collections.singletonList(6)).update();
+
+        List<StudentModel.Entity> list = studentModel.newQuery()
+                .whereBit(StudentModel.Entity::getSex, 5)
+                .orderBy(StudentModel.Entity::getId)
+                .get()
+                .toObjectList();
+        Assert.assertEquals(2, list.size());
+        Assert.assertEquals(id, list.get(0).getId());
+        Assert.assertEquals(id2, list.get(1).getId());
+
+        List<StudentModel.Entity> list2 = studentModel.newQuery()
+                .whereBit(StudentModel.Entity::getSex, 6)
+                .orderBy(StudentModel.Entity::getId)
+                .get()
+                .toObjectList();
+        Assert.assertEquals(2, list2.size());
+        Assert.assertEquals(id, list2.get(0).getId());
+        Assert.assertEquals(id3, list2.get(1).getId());
+
+        List<StudentModel.Entity> list3 = studentModel.newQuery()
+                .whereBit(StudentModel.Entity::getSex, 7)
+                .orderBy(StudentModel.Entity::getId)
+                .get()
+                .toObjectList();
+        Assert.assertEquals(0, list3.size());
+
+        List<StudentModel.Entity> list4 = studentModel.newQuery()
+                .whereBitIn(StudentModel.Entity::getSex, objects)
+                .orderBy(StudentModel.Entity::getId)
+                .get()
+                .toObjectList();
+        Assert.assertEquals(3, list4.size());
+        Assert.assertEquals(id, list4.get(0).getId());
+        Assert.assertEquals(id2, list4.get(1).getId());
+        Assert.assertEquals(id3, list4.get(2).getId());
+
+        List<StudentModel.Entity> list5 = studentModel.newQuery()
+                .whereBitNotIn(StudentModel.Entity::getSex, objects)
+                .orderBy(StudentModel.Entity::getId)
+                .get()
+                .toObjectList();
+        Assert.assertEquals(size + 2, list5.size());
+        Assert.assertFalse(list5.stream().anyMatch(e -> e.getId().equals(id)));
+
+        List<StudentModel.Entity> list6 = studentModel.newQuery()
+                .whereBitStrictIn(StudentModel.Entity::getSex, objects)
+                .orderBy(StudentModel.Entity::getId)
+                .get()
+                .toObjectList();
+        Assert.assertEquals(1, list6.size());
+        Assert.assertEquals(id, list6.get(0).getId());
+
+        List<StudentModel.Entity> list7 = studentModel.newQuery()
+                .whereBitStrictNotIn(StudentModel.Entity::getSex, objects)
+                .orderBy(StudentModel.Entity::getId)
+                .get()
+                .toObjectList();
+        Assert.assertEquals(size, list7.size());
+        Assert.assertFalse(list7.stream().anyMatch(e -> e.getId().equals(id) ||  e.getId().equals(id2) ||  e.getId().equals(id3)));
+
     }
 
     @Test

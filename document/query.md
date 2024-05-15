@@ -41,6 +41,7 @@ Eloquent ORM for Java
         * [字段(不)在两值之间](#字段(不)在两值之间)
         * [字段(不)在范围内](#字段(不)在范围内)
         * [字段(不)为null](#字段(不)为null)
+        * [字段(不)包含位](#字段(不)包含位)
         * [子查询](#子查询)
         * [且](#且)
         * [或](#或)
@@ -573,14 +574,30 @@ Assert.assertEquals(min4.toString(), "3");
 
 ## 自增或自减
 
-#### dataDecrement  dataIncrement
-
+### dataIncrement dataDecrement  
+列在原值的基础上增加(减少)值
 ```java
-// update `student` set`age`= `age`-2  where id=4 
-int update = studentModel.newQuery().dataDecrement("age", 2).whereRaw("id=4").update();
-
 // update `student` set`age`= `age`+4  where id=4 
 int update2 = studentModel.newQuery().dataIncrement("age", 4).whereRaw("id=4").update();
+
+// update `student` set`age`= `age`-2  where id=4 
+int update = studentModel.newQuery().dataDecrement("age", 2).whereRaw("id=4").update();
+```
+
+### dataBitIncrement dataBitDecrement 
+列(位存储)增加(移除)指定的选项  
+重复执行时, 幂等
+```java
+// 目标选项集合
+ArrayList<Object> objects = new ArrayList<>();
+objects.add(4);
+objects.add(5);
+
+// update student set `sex`=`sex`| "48"  where id=4
+int update = studentModel.newQuery().dataBitIncrement(StudentModel.Entity::getSex, objects).whereRaw("id=4").update();
+
+// update student set `sex`=`sex`& ~ "48"  where id=4
+int update2 = studentModel.newQuery().dataBitDecrement(StudentModel.Entity::getSex, objects).whereRaw("id=4").update();
 ```
 
 ## select
@@ -834,6 +851,59 @@ studentModel.newQuery().whereNull("id").get();
 studentModel.newQuery().whereNotNull("id").get();
 ```
 
+### 字段(不)包含位
+
+对于多选的业务场景, 使用数字类型按位存贮, 有着极高的空间利用效率  
+例如, 业务中需要保存用户的爱好, 爱好多选项为 : 0-听歌,1-旅游,2-观音,3-垂钓,4-游戏.  
+那么在数据库中定义一个tinyint列, 初始值0, 对应2进制为00000000  
+当用户的爱好是 1-旅游,2-观音,3-垂钓时, 更改2进制对应的位值(右到左), 即00001110, 对应的十进制为14  
+   
+这边提供了高效, 且友好的使用方式
+
+#### whereBit whereBitNot
+列包(不)含选项值
+```java
+// 查询有爱好6的学生
+// select * from student where (`hobby`&64)>0
+studentModel.newQuery().whereBit(StudentModel.Entity::getHobby, 6).get();
+
+// 查询没有爱好6的学生
+// select * from student where (`hobby`&64)=0
+studentModel.newQuery().whereBitNot(StudentModel.Entity::getHobby, 6).get();
+```
+
+#### whereBitIn whereBitNotIn
+列包(不)含选项值其一
+
+```java
+List<Object> list = new ArrayList<>();
+list.add(5);
+list.add(6);
+// 查询有爱好5或者爱好6的学生
+// select * from student where (((`hobby`&32)>0) or ((`hobby`&64)>0))
+studentModel.newQuery().whereBitIn(StudentModel.Entity::getHobby, list).get();
+
+// 查询没有爱好5或者爱好6的学生
+// select * from student where (((`hobby`&32)=0) or ((`hobby`&64)=0))
+studentModel.newQuery().whereBitNotIn(StudentModel.Entity::getHobby, list).get();
+```
+
+#### whereBitStrictIn whereBitStrictNotIn
+列包完全(不)含所有选项值
+
+```java
+List<Object> list = new ArrayList<>();
+list.add(5);
+list.add(6);
+// 查询有爱好5和爱好6的学生
+// select * from student where (((`hobby`&32)>0) and ((`hobby`&64)>0))
+studentModel.newQuery().whereBitStrictIn(StudentModel.Entity::getHobby, list).get();
+
+// 查询没有爱好5和爱好6的学生
+// select * from student where (((`hobby`&32)=0) and ((`hobby`&64)=0))
+studentModel.newQuery().whereBitStrictNotIn(StudentModel.Entity::getHobby, list).get();
+```
+
 ### 子查询
 
 #### whereSubQuery
@@ -1025,7 +1095,7 @@ RecordList<StudentModel.Entity, Integer> records3 = studentModel.newQuery().wher
 
 ## data
 
-#### data
+### data
 
 ```java
 Map<String, String> map = new HashMap<>();
@@ -1050,7 +1120,7 @@ int num = studentModel.newQuery().data(mapHasNull).where("id", "3").update();
 int num = studentModel.newQuery().data("name","小明").data("age",null).where("id", "3").update();
 ```
 
-#### dataIgnoreNull
+### dataIgnoreNull
 
 会忽略为`null`的值
 
@@ -1064,6 +1134,14 @@ int num = studentModel.newQuery().dataIgnoreNull(map).where("id", "3").update();
 
 // update `student` set`age`="7" where `id`="3"
 int num = studentModel.newQuery().dataIgnoreNull("name",null).data("age","7").where("id", "3").update();
+```
+
+### dateBit
+
+```java
+// 将id为1的学生的爱好设置为5
+// update student set `sex`= "32"  where `id`= "1" 
+studentModel.newQuery().where("id", 1).dataBit(StudentModel.Entity::getBobby, Collections.singletonList(5)).update();
 ```
 
 ## union

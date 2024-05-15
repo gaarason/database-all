@@ -6,6 +6,7 @@ import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
+import gaarason.database.util.BitUtils;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
@@ -60,6 +61,66 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
         String sqlPart = backQuote(column) + symbol + grammar.replaceValueAndFillParameters(value, parameters);
         whereGrammar(sqlPart, parameters, " and ");
         return this;
+    }
+
+    @Override
+    public Builder<T, K> whereBit(String column, Object value) {
+        long packed = BitUtils.pack(value);
+        // column & 1
+        String sqlPart1 = backQuote(column) + "&" + packed;
+        // ( column & 1 ) > 0
+        String sqlPart2 = FormatUtils.bracket(sqlPart1) + ">0";
+        return whereRaw(sqlPart2);
+    }
+
+    @Override
+    public Builder<T, K> whereBitNot(String column, Object value) {
+        long packed = BitUtils.pack(value);
+        // column & 1
+        String sqlPart1 = backQuote(column) + "&" + packed;
+        // ( column & 1 ) > 0
+        String sqlPart2 = FormatUtils.bracket(sqlPart1) + "=0";
+        return whereRaw(sqlPart2);
+    }
+
+    @Override
+    public Builder<T, K> whereBitIn(String column, Collection<?> values) {
+        return andWhere(builder -> {
+            for (Object value : values) {
+                builder.orWhere(builder1 -> builder1.whereBit(column, value));
+            }
+            return builder;
+        });
+    }
+
+    @Override
+    public Builder<T, K> whereBitNotIn(String column, Collection<?> values) {
+        return andWhere(builder -> {
+            for (Object value : values) {
+                builder.orWhere(builder1 -> builder1.whereBitNot(column, value));
+            }
+            return builder;
+        });
+    }
+
+    @Override
+    public Builder<T, K> whereBitStrictIn(String column, Collection<?> values) {
+        return andWhere(builder -> {
+            for (Object value : values) {
+                builder.whereBit(column, value);
+            }
+            return builder;
+        });
+    }
+
+    @Override
+    public Builder<T, K> whereBitStrictNotIn(String column, Collection<?> values) {
+        return andWhere(builder -> {
+            for (Object value : values) {
+                builder.whereBitNot(column, value);
+            }
+            return builder;
+        });
     }
 
     @Override
@@ -392,14 +453,14 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     public Builder<T, K> whereBetween(String column, Object min, Object max) {
         Collection<Object> parameters = new ArrayList<>();
         return whereBetweenRaw(backQuote(column), grammar.replaceValueAndFillParameters(min, parameters),
-            grammar.replaceValueAndFillParameters(max, parameters), parameters);
+                grammar.replaceValueAndFillParameters(max, parameters), parameters);
     }
 
     @Override
     public Builder<T, K> whereBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters) {
         String sqlPart = column + " between " + min + " and " + max;
         return whereGrammar(sqlPart, ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters),
-            " and ");
+                " and ");
     }
 
     @Override
@@ -411,14 +472,14 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     public Builder<T, K> whereNotBetween(String column, Object min, Object max) {
         Collection<Object> parameters = new ArrayList<>();
         return whereNotBetweenRaw(backQuote(column), grammar.replaceValueAndFillParameters(min, parameters),
-            grammar.replaceValueAndFillParameters(max, parameters), parameters);
+                grammar.replaceValueAndFillParameters(max, parameters), parameters);
     }
 
     @Override
     public Builder<T, K> whereNotBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters) {
         String sqlPart = column + " not between " + min + " and " + max;
         return whereGrammar(sqlPart, ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters),
-            " and ");
+                " and ");
     }
 
     @Override
