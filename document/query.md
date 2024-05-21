@@ -1139,7 +1139,7 @@ int num = studentModel.newQuery().dataIgnoreNull("name",null).data("age","7").wh
 ```
 
 ### dateBit
-
+将列的值设定为指定选项(多选项 0,1,2,3,4....)
 ```java
 // 将id为1的学生的爱好设置为5
 // update student set `sex`= "32"  where `id`= "1" 
