@@ -33,6 +33,8 @@ Eloquent ORM for Java
         * [avg](#avg)
         * [sum](#sum)
     * [自增或自减](#自增或自减)
+        * [列在原值的基础上增加(减少)值](#列在原值的基础上增加(减少)值)
+        * [列(位存储)增加(移除)指定的选项](#列(位存储)增加(移除)指定的选项)
     * [select](#select)
     * [when](#when)
     * [where](#where)
@@ -573,8 +575,8 @@ Assert.assertEquals(min4.toString(), "3");
 ```
 
 ## 自增或自减
-
-### dataIncrement dataDecrement  
+### 列在原值的基础上增加(减少)值
+#### dataIncrement dataDecrement  
 列在原值的基础上增加(减少)值
 ```java
 // update `student` set`age`= `age`+4  where id=4 
@@ -583,8 +585,8 @@ int update2 = studentModel.newQuery().dataIncrement("age", 4).whereRaw("id=4").u
 // update `student` set`age`= `age`-2  where id=4 
 int update = studentModel.newQuery().dataDecrement("age", 2).whereRaw("id=4").update();
 ```
-
-### dataBitIncrement dataBitDecrement 
+### 列(位存储)增加(移除)指定的选项
+#### dataBitIncrement dataBitDecrement 
 列(位存储)增加(移除)指定的选项  
 重复执行时, 幂等
 ```java
