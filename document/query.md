@@ -1022,7 +1022,6 @@ RecordList<StudentModel.Entity, Integer> student_as_t = studentModel.newQuery()
     .get();
 List<Map<String, Object>> maps = student_as_t.toMapList();
 
-
 // select `o`.* from `student` as `o` left join `student` as `s` on (`o`.`id`=`s`.`id`) order by `id` asc
 RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().select("o.*")
     .from("student as o")
@@ -1038,7 +1037,6 @@ RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().selec
     .orderBy("o.id").get();
 List<Map<String, Object>> maps = records.toMapList();
 
-
 // 找出age最大的男生/女生的信息(有同年龄的就都找出来)
 // select `student`.* from `student` inner join (select `sex`,max(age) as 'max_age' from `student` group by `sex`)t on (`student`.`sex`=`t`.`sex` and `student`.`age`=`t`.`max_age`);
 RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().select("student.*")
@@ -1049,10 +1047,12 @@ List<StudentModel.Entity> entities = records.toObjectList();
 ```
 
 ## limit
-
+限制获取的数量
 ```java
+// 跳过2条, 取3条
 RecordList<Student, Long>> records = studentModel.newQuery().orderBy("id", OrderBy.DESC).limit(2, 3).get();
 
+// 取2条记录
 RecordList<Student, Long>> records = studentModel.newQuery().orderBy("id", OrderBy.DESC).limit(2).get();
 ```
 
@@ -1081,14 +1081,17 @@ Assert.assertEquals(count.intValue(), 2);
 ```
 
 ## index
+指定索引
 
 #### forceIndex  ignoreIndex
 
 用以指定使用的索引或者不使用的索引
 
 ```java
+// 指定使用PRI索引
 RecordList<StudentModel.Entity, Integer> records1 = studentModel.newQuery().whereRaw("1").forceIndex("PRI").get();
 
+// 指定不使用PRI索引
 RecordList<StudentModel.Entity, Integer> records2 = studentModel.newQuery().whereRaw("1").ignoreIndex("PRI").get();
 
 // 举个例子, 不要在意细节
@@ -1170,7 +1173,7 @@ RecordList<Student, Long>> records = studentModel.newQuery()
     - 通过`@EnableTransactionManagement` 开启事物管理后使用 `@Transactional` 管理亦可，此时的事务特性遵循`Spring`规范。
 
 ### 手动事物
-
+请手动捕获异常, 以确保 rollBack()/commit() 的正确执行, 以释放连接
 ```java
 // 开启事物
 studentModel.newQuery().begin();
@@ -1193,7 +1196,7 @@ studentModel.newQuery().commit();
 - 语义表达性更直观
 - 自动处理死锁异常
 
-无返回值
+#### 无返回值
 
 ```java
 // 开启事物
@@ -1204,7 +1207,7 @@ studentModel.newQuery().transaction(() -> {
 }, 3);
 ```
 
-有返回值
+#### 有返回值
 
 ```java
 // 开启事物
@@ -1262,7 +1265,6 @@ studentModel.newQuery().transaction(()->{
 ```java
 Paginate<Student> paginate = studentModel.newQuery().orderBy("id").simplePaginate(1, 3);
 
-
 Paginate<Map<String, Object>> paginateMap = studentModel.newQuery().orderBy("id").simplePaginateMapStyle(1, 3);
 ```
 
@@ -1270,7 +1272,7 @@ Paginate<Map<String, Object>> paginateMap = studentModel.newQuery().orderBy("id"
 
 #### paginate
 
-包含总数的分页
+包含总数的分页, 会额外执行一次总数查询
 
 ```java
 Paginate<Student> paginate = studentModel.newQuery().orderBy("id").paginate(1, 4);
@@ -1300,6 +1302,7 @@ studentModel.newQuery().where("sex","1").inRandomOrder("id").limit(5).get().toOb
 #### serializeToString serialize deserialize
 
 ```java
+// 一个未使用过的, 查询构造器
 Builder<Student, Integer> builder = studentModel.newQuery().with("teachersBelongsToMany",b->{
     return b.limit(student1.getAge());
 });

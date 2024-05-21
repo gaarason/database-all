@@ -5,7 +5,7 @@ Eloquent ORM for Java
 ## 目录
 
 * [注册配置 Configuration](/document/bean.md)
-    * [spring boot](#spring)
+    * [SpringBoot](#SpringBoot)
         * [单连接](#单连接)
             * [单库连接](#单库连接)
             * [读写分离](#读写分离)
@@ -25,7 +25,7 @@ Eloquent ORM for Java
 * [GraalVM](/document/graalvm.md)
 * [版本信息 Version](/document/version.md)
 
-## spring
+## SpringBoot
 
 - 使用 spring boot 的自动配置能力完成 `配置`->`DataSource`->`GaarasonDataSource`, 得到可用的`GaarasonDataSource`
 - 使用 spring 的依赖注入能力完成 `Model`中的`GaarasonDataSource`注入
@@ -36,123 +36,9 @@ Eloquent ORM for Java
 
 #### 单库连接
 
-- 读写都在同一数据库
-- 对于基础的单一数据库链接的场景, 使用提供的`database-spring-boot-starter`, 即可以零配置使用
-
-参考配置 如下, 以`gaarason/database/spring/boot/starter/configurations/GaarasonDatabaseAutoConfiguration.java`实际为准
-
-```java
-@Configuration
-@AutoConfigureAfter({DruidDataSourceAutoConfigure.class, DataSourceAutoConfiguration.class})
-@Import({GeneralModel.class, GeneralGenerator.class})
-public class GaarasonDatabaseAutoConfiguration {
-
-    private static final Log LOGGER = LogFactory.getLog(GaarasonDatabaseAutoConfiguration.class);
-
-    /**
-     * Spring配置GaarasonDatabaseProperties
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    @ConfigurationProperties(prefix = GaarasonDatabaseProperties.PREFIX)
-    public GaarasonDatabaseProperties gaarasonDatabaseProperties() {
-        return new GaarasonDatabaseProperties();
-    }
-
-    /**
-     * 容器初始化
-     * @param applicationContext 应用上下文
-     * @param gaarasonDatabaseProperties 配置
-     * @return 容器
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    public Container container(ApplicationContext applicationContext, GaarasonDatabaseProperties gaarasonDatabaseProperties){
-        // 简单获取 @SpringBootApplication 所在的包名
-        final String springBootApplicationPackage = applicationContext.getBeansWithAnnotation(
-                SpringBootApplication.class)
-            .entrySet()
-            .iterator()
-            .next()
-            .getValue()
-            .getClass()
-            .getPackage().getName();
-
-        /*
-         * 将配置合并
-         * 认定 GaarasonDatabaseScan 的解析一定在此之前完成了.
-         * 默认使用 @SpringBootApplication 所在的包路径
-         */
-        gaarasonDatabaseProperties.mergeScan(GaarasonDatabaseScanRegistrar.getScan())
-            .fillPackageWhenIsEmpty(springBootApplicationPackage)
-            .fillAndVerify();
-
-        // 从配置创建全新容器
-        ContainerBootstrap container = ContainerBootstrap.build(gaarasonDatabaseProperties);
-
-        /*
-         * 序列化的必要步骤
-         */
-        container.signUpIdentification("primary-container");
-
-        container.defaultRegister();
-
-        // 注册 model实例获取方式
-        container.getBean(ModelInstanceProvider.class).register(modelClass -> {
-            try {
-                return ObjectUtils.typeCast(applicationContext.getBean(modelClass));
-            } catch (BeansException e) {
-                return ObjectUtils.typeCast(
-                    applicationContext.getBean(StringUtils.lowerFirstChar(modelClass.getSimpleName())));
-            }
-        });
-        LOGGER.info("Model instance provider has been registered success.");
-
-        container.bootstrapGaarasonAutoconfiguration();
-
-        container.initialization();
-
-        LOGGER.info("Container has completed initialization.");
-        return container;
-    }
-
-    @Configuration
-    public static class GaarasonDataSourceAutoconfigure {
-
-        @Resource
-        private DataSource dataSource;
-
-        @Resource
-        private Container container;
-
-        /**
-         * 数据源配置
-         * @return 数据源
-         */
-        @Primary
-        @Bean(autowireCandidate = false)
-        @ConditionalOnMissingBean(GaarasonDataSource.class)
-        public GaarasonDataSource gaarasonDataSource() {
-            LOGGER.info("GaarasonDataSource init with " + dataSource.getClass().getName());
-            // 创建 GaarasonDataSource
-            return GaarasonDataSourceBuilder.build(dataSource, container);
-        }
-
-        /**
-         * Spring 事物管理器
-         * @return 事物管理器
-         */
-        @Primary
-        @Bean
-        @ConditionalOnMissingBean(GaarasonTransactionManager.class)
-        public GaarasonTransactionManager gaarasonTransactionManager() {
-            LOGGER.info("GaarasonTransactionManager init");
-            return new GaarasonTransactionManager(gaarasonDataSource());
-        }
-    }
-
-}
-```
+- 读写都在同一数据库的典型场景
+- 使用提供的`database-spring-boot-starter`, 即可以零配置使用
+- 详见[GaarasonDatabaseAutoConfiguration.java](/database-spring-boot-starter/src/main/java/gaarason/database/spring/boot/starter/configurations/GaarasonDatabaseAutoConfiguration.java)
 
 #### 读写分离
 
