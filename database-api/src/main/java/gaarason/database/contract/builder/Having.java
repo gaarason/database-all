@@ -45,7 +45,53 @@ public interface Having<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> having(String column, String symbol, Object value);
+    Builder<T, K> having(String column, String symbol, Object value);/**
+     * 列包含选项值
+     * @param column 列名(位存储)
+     * @param value 选项值(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    Builder<T, K> havingBit(String column, Object value);
+
+    /**
+     * 列不包含选项值
+     * @param column 列名(位存储)
+     * @param value 选项值(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    Builder<T, K> havingBitNot(String column, Object value);
+
+    /**
+     * 列包含选项值其一
+     * @param column 列名(位存储)
+     * @param values 选项值(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    Builder<T, K> havingBitIn(String column, Collection<?> values);
+
+    /**
+     * 列不包含选项值其一
+     * @param column 列名(位存储)
+     * @param values 选项值(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    Builder<T, K> havingBitNotIn(String column, Collection<?> values);
+
+    /**
+     * 列完全包含所有选项值
+     * @param column 列名(位存储)
+     * @param values 选项值(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    Builder<T, K> havingBitStrictIn(String column, Collection<?> values);
+
+    /**
+     * 列完全不包含所有选项值
+     * @param column 列名(位存储)
+     * @param values 选项值(eg: 0,1,2,3)
+     * @return 查询构造器
+     */
+    Builder<T, K> havingBitStrictNotIn(String column, Collection<?> values);
 
     /**
      * 比较列与值(忽略值为null的情况)

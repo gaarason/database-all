@@ -25,6 +25,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 5.4.0
+
+- 在`Builder`中, 增加了位操作的相关的方法, `havingBit()`, `havingBitNot()`,`havingBitIn()`,`havingBitNotIn()`,`havingBitStrictIn()`,`havingBitStrictNotIn()`,`dataBit()`,`dataBitIncrease()`,`dataBitDecrease()`
+
 ### 5.3.0
 
 - 在`Builder`中, 增加了位操作的相关的方法, `whereBit()`, `whereBitNot()`,`whereBitIn()`,`whereBitNotIn()`,`whereBitStrictIn()`,`whereBitStrictNotIn()`,`dataBit()`,`dataBitIncrease()`,`dataBitDecrease()`

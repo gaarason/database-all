@@ -5,6 +5,7 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
+import gaarason.database.util.BitUtils;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
@@ -59,6 +60,66 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
         String sqlPart = backQuote(column) + symbol + grammar.replaceValueAndFillParameters(value, parameters);
         havingGrammar(sqlPart, parameters, " and ");
         return this;
+    }
+
+    @Override
+    public Builder<T, K> havingBit(String column, Object value) {
+        long packed = BitUtils.pack(value);
+        // column & 1
+        String sqlPart1 = backQuote(column) + "&" + packed;
+        // ( column & 1 ) > 0
+        String sqlPart2 = FormatUtils.bracket(sqlPart1) + ">0";
+        return havingRaw(sqlPart2);
+    }
+
+    @Override
+    public Builder<T, K> havingBitNot(String column, Object value) {
+        long packed = BitUtils.pack(value);
+        // column & 1
+        String sqlPart1 = backQuote(column) + "&" + packed;
+        // ( column & 1 ) > 0
+        String sqlPart2 = FormatUtils.bracket(sqlPart1) + "=0";
+        return havingRaw(sqlPart2);
+    }
+
+    @Override
+    public Builder<T, K> havingBitIn(String column, Collection<?> values) {
+        return andHaving(builder -> {
+            for (Object value : values) {
+                builder.orHaving(builder1 -> builder1.havingBit(column, value));
+            }
+            return builder;
+        });
+    }
+
+    @Override
+    public Builder<T, K> havingBitNotIn(String column, Collection<?> values) {
+        return andHaving(builder -> {
+            for (Object value : values) {
+                builder.orHaving(builder1 -> builder1.havingBitNot(column, value));
+            }
+            return builder;
+        });
+    }
+
+    @Override
+    public Builder<T, K> havingBitStrictIn(String column, Collection<?> values) {
+        return andHaving(builder -> {
+            for (Object value : values) {
+                builder.havingBit(column, value);
+            }
+            return builder;
+        });
+    }
+
+    @Override
+    public Builder<T, K> havingBitStrictNotIn(String column, Collection<?> values) {
+        return andHaving(builder -> {
+            for (Object value : values) {
+                builder.havingBitNot(column, value);
+            }
+            return builder;
+        });
     }
 
     @Override
