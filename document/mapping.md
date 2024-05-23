@@ -23,6 +23,7 @@ Eloquent ORM for Java
                 * [EnumInteger](#EnumInteger)
                 * [EnumString](#EnumString)
                 * [Bit](#Bit)
+                * [自定义类型转化](#自定义类型转化)
             * [执行顺序](#执行顺序)
                 * [实体到数据库](#实体到数据库)
                 * [数据库到实体](#数据库到实体)
@@ -111,8 +112,8 @@ public static class Info {
 
 ### Table
 
-- `gaarason.database.eloquent.annotation.Table` 用于确定当前`pojo`映射的数据表名
-- 当`pojo`的类名是对应表名的大驼峰时,可以省略(eg: `temp.pojo.SupTeacher`对应数据表`sup_teacher`时,可以省略)
+- `gaarason.database.eloquent.annotation.Table` 用于确定当前`entity`映射的数据表名
+- 当`entity`的类名是对应表名的大驼峰时,可以省略(eg: `temp.pojo.SupTeacher`对应数据表`sup_teacher`时,可以省略)
 
 ### Primary
 
@@ -181,14 +182,16 @@ Assert.assertEquals(200, record0.getEntity().getId().intValue());
 #### 使用策略
 - strategy
 - 是否在插入/更新/条件时使用本字段的值  
-- 当 insertStrategy() == FieldStrategy.Default.class 时(默认), insertStrategy() = strategy(), 即 FieldStrategy.NotNull.class (默认)
-- 当 updateStrategy() == FieldStrategy.Default.class 时(默认), updateStrategy() = strategy(), 即 FieldStrategy.NotNull.class (默认)
-- 当 conditionStrategy() == FieldStrategy.Default.class 时(默认), conditionStrategy() = strategy(), 即 FieldStrategy.NotNull.class (默认)
+- 默认 insertStrategy() == FieldStrategy.Default.class , 即 insertStrategy() 取用 strategy() 的值
+- 默认 updateStrategy() == FieldStrategy.Default.class , 即 updateStrategy() 取用 strategy() 的值
+- 默认 conditionStrategy() == FieldStrategy.Default.class , 即 conditionStrategy() 取用 strategy() 的值
+- 默认 strategy() == FieldStrategy.NotNull.class, 即非null时使用
 
 #### 是否查询
 - selectable
 - 缺省时是否查询本字段
-- 当 selectable() == false 时, select * 查询将略过本字段, 主要对于大字段使用
+- 使用 select * 查询将略过本字段
+- 主要对于大字段使用
 
 #### 字段填充
 - fill
@@ -223,6 +226,31 @@ public class Entity implements Serializable {
 - conversion
 - 序列与反序列化
 - 业务上可以自行实现 `FieldConversion` 接口, 已确定本字段特定的序列化与反序列化方式  
+
+
+##### Default
+- conversion() 默认值为 FieldConversion.Default.class, 可以解决绝大多数的基本类型的序列化与反序列化
+
+##### Json
+- conversion() 可选值为 FieldConversion.Json.class, 以json规范进行序列化与反序列化, 数据的字段应该为合法的json字符串
+- 实现依赖于`jackson`, 需要自行引入 `com.fasterxml.jackson.core: jackson-databind` 以及 `com.fasterxml.jackson.datatype: jackson-datatype-jsr310`依赖项
+- 因为`json规范`的兼容性细节较多, 所以业务上也可以参考`JsonConversion`自行实现, 与使用
+- 数据库列一般使用 varchar
+
+##### EnumInteger
+- conversion() 可选值为 FieldConversion.EnumInteger.class, 以枚举类型的`自然次序`进行序列化与反序列化
+- 枚举类型的自然次序从 0 开始
+- 数据库列一般使用 int
+
+##### EnumString
+- conversion() 可选值为 FieldConversion.EnumString.class, 以枚举类型的`名称`进行序列化与反序列化
+- 数据库列一般使用 varchar
+
+##### Bit
+- conversion() 可选值为 FieldConversion.Bit.class, 将集合按位进行序列化与反序列化
+- 数据库列一般使用 int, bigint
+
+##### 自定义类型转化
 
 ```java
 // 例如, 需要自定义对性别 的序列化与反序列化
@@ -309,27 +337,6 @@ Assert.assertEquals(AnnotationTestModel.Sex.WOMAN, resultEntity.getSex());
 
 ```
 
-##### Default
-- conversion() 默认值为 FieldConversion.Default.class, 可以解决绝大多数的基本类型的序列化与反序列化
-
-##### Json
-- conversion() 可选值为 FieldConversion.Json.class, 以json规范进行序列化与反序列化, 数据的字段应该为合法的json字符串
-- 实现依赖于`jackson`, 需要自行引入 `com.fasterxml.jackson.core: jackson-databind` 以及 `com.fasterxml.jackson.datatype: jackson-datatype-jsr310`依赖项
-- 因为`json规范`的兼容性细节较多, 所以业务上也可以参考`JsonConversion`自行实现, 与使用
-- 数据库列一般使用 varchar
-
-##### EnumInteger
-- conversion() 可选值为 FieldConversion.EnumInteger.class, 以枚举类型的`自然次序`进行序列化与反序列化
-- 枚举类型的自然次序从 0 开始
-- 数据库列一般使用 int
-
-##### EnumString
-- conversion() 可选值为 FieldConversion.EnumString.class, 以枚举类型的`名称`进行序列化与反序列化
-- 数据库列一般使用 varchar
-
-##### Bit
-- conversion() 可选值为 FieldConversion.Bit.class, 将集合按位进行序列化与反序列化
-- 数据库列一般使用 int, bigint
 
 #### 执行顺序
 ##### 实体到数据库
