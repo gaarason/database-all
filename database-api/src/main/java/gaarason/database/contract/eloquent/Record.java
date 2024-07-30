@@ -45,12 +45,14 @@ public interface Record<T, K> extends Friendly<T, K>, OperationLambda<T, K>,
 
     /**
      * 数据实体
+     * 此对于此实体的修改, 可以通过其相关的 record 进行保存(save)等操作
      * @return 数据实体
      */
     T getEntity();
 
     /**
      * 数据实体(将外部实体的覆盖到自身, 会更改引用)
+     * 可以通过其相关的 record 进行保存(save)等操作
      * @param entity 实体对象
      * @return 数据实体
      */
@@ -58,6 +60,7 @@ public interface Record<T, K> extends Friendly<T, K>, OperationLambda<T, K>,
 
     /**
      * 数据实体(将外部实体的属性合并到自身)
+     * 可以通过其相关的 record 进行保存(save)等操作
      * @param entity 实体对象
      * @return 查询结果集
      */
