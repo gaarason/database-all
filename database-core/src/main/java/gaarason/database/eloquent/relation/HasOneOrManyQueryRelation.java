@@ -337,12 +337,12 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
             HasOneOrMany hasOneOrMany = field.getAnnotation(HasOneOrMany.class);
             sonModel = getModelInstance(field);
             sonModelForeignKey = hasOneOrMany.sonModelForeignKey();
-            localModelLocalKey = "".equals(hasOneOrMany.localModelLocalKey()) ? getPrimaryKeyColumnName(sonModel) :
+            localModelLocalKey = hasOneOrMany.localModelLocalKey().isEmpty() ? getPrimaryKeyColumnName(sonModel) :
                 hasOneOrMany.localModelLocalKey();
             sonModelMorphKey = hasOneOrMany.sonModelMorphKey();
-            sonModelMorphValue = "".equals(hasOneOrMany.sonModelMorphValue()) ? localModel.getTableName() :
+            sonModelMorphValue = hasOneOrMany.sonModelMorphValue().isEmpty() ? localModel.getTableName() :
                 hasOneOrMany.sonModelMorphValue();
-            enableMorph = !"".equals(sonModelMorphKey);
+            enableMorph = !sonModelMorphKey.isEmpty();
         }
     }
 

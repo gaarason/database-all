@@ -196,8 +196,8 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @param fieldTargetValue 对象的属性的目标值
      * @return 对象列表
      */
-    protected Map<String, Object> findObj(List<Map<String, Object>> relationshipObjectList, String columnName,
-        Object fieldTargetValue) {
+    protected static Map<String, Object> findObj(List<Map<String, Object>> relationshipObjectList, String columnName,
+                                                 Object fieldTargetValue) {
 
         if (ObjectUtils.isEmpty(relationshipObjectList)) {
             return Collections.emptyMap();

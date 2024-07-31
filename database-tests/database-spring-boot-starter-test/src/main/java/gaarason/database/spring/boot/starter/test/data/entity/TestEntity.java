@@ -76,7 +76,7 @@ public class TestEntity implements Serializable {
         @Override
         public Object acquisition(Field field, ResultSet resultSet, String columnName) throws SQLException {
             String valueOfDB = resultSet.getString(columnName);
-            if (valueOfDB == null || valueOfDB.equals("")) {
+            if (valueOfDB == null || valueOfDB.isEmpty()) {
                 return valueOfDB;
             }
             try {

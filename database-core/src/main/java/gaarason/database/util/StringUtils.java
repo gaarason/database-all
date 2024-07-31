@@ -163,7 +163,7 @@ public class StringUtils {
      */
     public static String ltrim(String str, String character) {
         final int length = character.length();
-        if ("".equals(str) || str.length() < length) {
+        if (str.isEmpty() || str.length() < length) {
             return str;
         }
         return str.substring(0, length).equals(character) ? ltrim(str.substring(length), character) : str;
@@ -177,7 +177,7 @@ public class StringUtils {
      */
     public static String rtrim(String str, String character) {
         final int length = character.length();
-        if ("".equals(str) || str.length() < length) {
+        if (str.isEmpty() || str.length() < length) {
             return str;
         }
         return str.substring(str.length() - length).equals(character) ?
@@ -190,7 +190,7 @@ public class StringUtils {
      * @return 是否
      */
     public static boolean isJavaIdentifier(@Nullable String input) {
-        if (input != null && input.length() > 0) {
+        if (input != null && !input.isEmpty()) {
             int pos = 0;
             if (Character.isJavaIdentifierStart(input.charAt(pos))) {
                 while (++pos < input.length()) {

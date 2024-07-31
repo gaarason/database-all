@@ -90,7 +90,7 @@ public final class EntityUtils {
     public static String columnName(Field field) {
         if (field.isAnnotationPresent(Column.class)) {
             Column column = field.getAnnotation(Column.class);
-            if (!"".equals(column.name())) {
+            if (!column.name().isEmpty()) {
                 return column.name();
             }
         }

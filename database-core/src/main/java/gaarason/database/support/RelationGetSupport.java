@@ -202,7 +202,7 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
                     fieldRelationMember.fieldSet(entity, objects);
                 } else {
                     // 关系属性赋值 - 单数
-                    fieldRelationMember.fieldSet(entity, objects.size() == 0 ? null : objects.get(0));
+                    fieldRelationMember.fieldSet(entity, objects.isEmpty() ? null : objects.get(0));
                 }
             }
         }

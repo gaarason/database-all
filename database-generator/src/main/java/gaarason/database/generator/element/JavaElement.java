@@ -52,7 +52,7 @@ public class JavaElement {
                 // eg:value = "消息id",
                 stringBuilder.append(attribute.getName()).append(" = ").append(attribute.getValue()).append(", ");
             }
-            if (annotation.getAttributes().size() > 0) {
+            if (!annotation.getAttributes().isEmpty()) {
                 stringBuilder.deleteCharAt(stringBuilder.length() - 1).deleteCharAt(stringBuilder.length() - 1);
             }
             stringBuilder.append(")\n");

@@ -67,7 +67,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Mark Reinhold
  * @see java.util.HashMap
  * @see java.lang.ref.SoftReference
- * @see sun.misc.SoftCache
+ * sun.misc.SoftCache
  * @since 1.2
  */
 

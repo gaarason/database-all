@@ -199,23 +199,14 @@ public class Generator {
      * @param password 数据库密码
      */
     public Generator(String jdbcUrl, String username, String password) {
-        DruidDataSource druidDataSource = new DruidDataSource();
-        druidDataSource.setUrl(jdbcUrl);
-        druidDataSource.setUsername(username);
-        druidDataSource.setPassword(password);
-        druidDataSource.setDbType("com.alibaba.druid.pool.DruidDataSource");
-        druidDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        druidDataSource.setInitialSize(20);
-        druidDataSource.setMaxActive(20);
-        druidDataSource.setLoginTimeout(3);
-        druidDataSource.setQueryTimeout(3);
+        DruidDataSource druidDataSource = getDruidDataSource(jdbcUrl, username, password);
 
         ToolModel.gaarasonDataSource = GaarasonDataSourceBuilder.build(druidDataSource);
 
         this.model = ToolModel.gaarasonDataSource.getContainer()
-                                                 .getBean(ModelShadowProvider.class)
-                                                 .getByModelClass(ToolModel.class)
-                                                 .getModel();
+                .getBean(ModelShadowProvider.class)
+                .getByModelClass(ToolModel.class)
+                .getModel();
     }
 
     /**
@@ -226,9 +217,9 @@ public class Generator {
         ToolModel.gaarasonDataSource = GaarasonDataSourceBuilder.build(dataSource,
                 ContainerBootstrap.build().autoBootstrap());
         this.model = ToolModel.gaarasonDataSource.getContainer()
-                                                 .getBean(ModelShadowProvider.class)
-                                                 .getByModelClass(ToolModel.class)
-                                                 .getModel();
+                .getBean(ModelShadowProvider.class)
+                .getByModelClass(ToolModel.class)
+                .getModel();
     }
 
     /**
@@ -240,6 +231,17 @@ public class Generator {
      * @param container 容器
      */
     public Generator(String jdbcUrl, String username, String password, Container container) {
+        DruidDataSource druidDataSource = getDruidDataSource(jdbcUrl, username, password);
+
+        ToolModel.gaarasonDataSource = GaarasonDataSourceBuilder.build(druidDataSource, container);
+
+        this.model = ToolModel.gaarasonDataSource.getContainer()
+                .getBean(ModelShadowProvider.class)
+                .getByModelClass(ToolModel.class)
+                .getModel();
+    }
+
+    private static DruidDataSource getDruidDataSource(String jdbcUrl, String username, String password) {
         DruidDataSource druidDataSource = new DruidDataSource();
         druidDataSource.setUrl(jdbcUrl);
         druidDataSource.setUsername(username);
@@ -250,13 +252,7 @@ public class Generator {
         druidDataSource.setMaxActive(20);
         druidDataSource.setLoginTimeout(3);
         druidDataSource.setQueryTimeout(3);
-
-        ToolModel.gaarasonDataSource = GaarasonDataSourceBuilder.build(druidDataSource, container);
-
-        this.model = ToolModel.gaarasonDataSource.getContainer()
-                                                 .getBean(ModelShadowProvider.class)
-                                                 .getByModelClass(ToolModel.class)
-                                                 .getModel();
+        return druidDataSource;
     }
 
     /**
@@ -266,9 +262,9 @@ public class Generator {
     public Generator(DataSource dataSource, Container container) {
         ToolModel.gaarasonDataSource = GaarasonDataSourceBuilder.build(dataSource, container);
         this.model = ToolModel.gaarasonDataSource.getContainer()
-                                                 .getBean(ModelShadowProvider.class)
-                                                 .getByModelClass(ToolModel.class)
-                                                 .getModel();
+                .getBean(ModelShadowProvider.class)
+                .getByModelClass(ToolModel.class)
+                .getModel();
     }
 
     /**
@@ -319,12 +315,11 @@ public class Generator {
 
         templateHelper = new TemplateHelper(style, outputDir);
 
-        baseModelNamespace = namespace + ("".equals(modelDir) ? "" : ("." + modelDir)) + ("".equals(
-                baseModelDir) ? "" : ("." + baseModelDir));
-        baseEntityNamespace = namespace + ("".equals(entityDir) ? "" : ("." + entityDir)) + ("".equals(
-                baseEntityDir) ? "" : ("." + baseEntityDir));
-        modelNamespace = namespace + ("".equals(modelDir) ? "" : ("." + modelDir));
-        entityNamespace = namespace + ("".equals(entityDir) ? "" : ("." + entityDir));
+        baseModelNamespace = namespace + (modelDir.isEmpty() ? "" : ("." + modelDir)) + (
+                baseModelDir.isEmpty() ? "" : ("." + baseModelDir));
+        baseEntityNamespace = namespace + (entityDir.isEmpty() ? "" : ("." + entityDir)) + (baseEntityDir.isEmpty() ? "" : ("." + baseEntityDir));
+        modelNamespace = namespace + (modelDir.isEmpty() ? "" : ("." + modelDir));
+        entityNamespace = namespace + (entityDir.isEmpty() ? "" : ("." + entityDir));
     }
 
     /**
@@ -729,9 +724,9 @@ public class Generator {
         parameters.add(DBName());
         parameters.add(tableName);
         return getModel().nativeQueryList(
-                                 "select * from information_schema.`columns` where table_schema = ? and table_name = ? order by ordinal_position",
-                                 parameters)
-                         .toMapList();
+                        "select * from information_schema.`columns` where table_schema = ? and table_name = ? order by ordinal_position",
+                        parameters)
+                .toMapList();
     }
 
     /**

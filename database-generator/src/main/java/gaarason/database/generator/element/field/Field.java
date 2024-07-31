@@ -182,7 +182,7 @@ public class Field extends JavaElement {
                                 FinalVariable.Symbol.CLASS : "") + (!ObjectUtils.isNull(columnConversion) ?
                 ", conversion = " + element.type2Name(columnConversion) + FinalVariable.Symbol.CLASS : "") +
                 (length != null && length != 255 ? ", length = " + length + "L" : "") +
-                (!"".equals(comment) ? ", comment = \"" + comment + "\"" : "") +
+                (!comment.isEmpty() ? ", comment = \"" + comment + "\"" : "") +
 
                 ")\n";
     }
@@ -192,7 +192,7 @@ public class Field extends JavaElement {
      */
     public String toAnnotationSwaggerAnnotationsApiModelProperty() {
         // 字段没有注释的情况下, 使用字段名
-        String value = "".equals(comment) ? columnName : comment;
+        String value = comment.isEmpty() ? columnName : comment;
 
         return indentation() + element.anno2Name("io.swagger.annotations.ApiModelProperty") + "(" +
 
@@ -210,7 +210,7 @@ public class Field extends JavaElement {
      */
     public String toAnnotationOrgHibernateValidatorConstraintValidator(Generator.JdkDependVersion version) {
         // 字段没有注释的情况下, 使用字段名
-        String describe = "".equals(comment) ? columnName : comment;
+        String describe = comment.isEmpty() ? columnName : comment;
         String prefix = version.name().toLowerCase();
         switch (javaClassification) {
             case NUMERIC:

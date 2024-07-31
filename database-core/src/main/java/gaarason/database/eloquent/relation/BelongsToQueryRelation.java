@@ -344,12 +344,12 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
             BelongsTo belongsTo = field.getAnnotation(BelongsTo.class);
             parentModel = getModelInstance(field);
             localModelForeignKey = belongsTo.localModelForeignKey();
-            parentModelLocalKey = "".equals(belongsTo.parentModelLocalKey()) ? getPrimaryKeyColumnName(parentModel) :
+            parentModelLocalKey = belongsTo.parentModelLocalKey().isEmpty() ? getPrimaryKeyColumnName(parentModel) :
                 belongsTo.parentModelLocalKey();
             localModelMorphKey = belongsTo.localModelMorphKey();
-            localModelMorphValue = "".equals(belongsTo.localModelMorphValue()) ? parentModel.getTableName() :
+            localModelMorphValue = belongsTo.localModelMorphValue().isEmpty() ? parentModel.getTableName() :
                 belongsTo.localModelMorphValue();
-            enableMorph = !"".equals(localModelMorphKey);
+            enableMorph = !localModelMorphKey.isEmpty();
         }
     }
 }

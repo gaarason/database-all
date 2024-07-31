@@ -100,7 +100,7 @@ public final class FormatUtils {
                 String column = someElse.replace(table + '.', ""); // eg: amount
                 temp = column.equals("*") ? symbol + table + symbol + "." + column :
                     symbol + table + symbol + "." + symbol + column + symbol;
-            } else if ("".equals(someElse)) {
+            } else if (someElse.isEmpty()) {
                 temp = "";
             } else {
                 temp = symbol + someElse + symbol;

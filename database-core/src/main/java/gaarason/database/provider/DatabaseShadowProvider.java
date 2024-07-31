@@ -33,13 +33,7 @@ public final class DatabaseShadowProvider {
         ConcurrentHashMap<String, LinkedHashMap<String, DBColumn>> manyTableInfoMap = INFO.get(gaarasonDataSource);
         if (manyTableInfoMap == null) {
             synchronized (gaarasonDataSource) {
-                manyTableInfoMap = INFO.get(gaarasonDataSource);
-                if (manyTableInfoMap == null) {
-                    // 获取表信息
-                    manyTableInfoMap = new ConcurrentHashMap<>(16);
-                    // 进入缓存
-                    INFO.put(gaarasonDataSource, manyTableInfoMap);
-                }
+                manyTableInfoMap = INFO.computeIfAbsent(gaarasonDataSource, k -> new ConcurrentHashMap<>(16));
             }
         }
         return getTableFromGaarasonDataSource(gaarasonDataSource, manyTableInfoMap, table);

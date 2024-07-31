@@ -637,24 +637,24 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
             BelongsToMany belongsToMany = field.getAnnotation(BelongsToMany.class);
             relationModel = getModelInstance(belongsToMany.relationModel()); // user_teacher
             foreignKeyForLocalModel = belongsToMany.foreignKeyForLocalModel(); // user_id
-            localModelLocalKey = "".equals(belongsToMany.localModelLocalKey()) ? getPrimaryKeyColumnName(localModel) :
+            localModelLocalKey = belongsToMany.localModelLocalKey().isEmpty() ? getPrimaryKeyColumnName(localModel) :
                 belongsToMany.localModelLocalKey(); // user.id
             targetModel = getModelInstance(field); // teacher
             foreignKeyForTargetModel = belongsToMany.foreignKeyForTargetModel(); // teacher_id
             targetModelLocalKey =
-                "".equals(belongsToMany.targetModelLocalKey()) ? getPrimaryKeyColumnName(targetModel) :
+                    belongsToMany.targetModelLocalKey().isEmpty() ? getPrimaryKeyColumnName(targetModel) :
                     belongsToMany.targetModelLocalKey();  // teacher.id
 
             morphKeyForLocalModel = belongsToMany.morphKeyForLocalModel();
-            morphValueForLocalModel = "".equals(belongsToMany.morphValueForLocalModel()) ? localModel.getTableName() :
+            morphValueForLocalModel = belongsToMany.morphValueForLocalModel().isEmpty() ? localModel.getTableName() :
                 belongsToMany.morphValueForLocalModel();
             morphKeyForTargetModel = belongsToMany.morphKeyForTargetModel();
             morphValueForTargetModel =
-                "".equals(belongsToMany.morphValueForTargetModel()) ? targetModel.getTableName() :
+                    belongsToMany.morphValueForTargetModel().isEmpty() ? targetModel.getTableName() :
                     belongsToMany.morphValueForTargetModel();
 
-            enableLocalModelMorph = !"".equals(morphKeyForLocalModel);
-            enableTargetModelMorph = !"".equals(morphKeyForTargetModel);
+            enableLocalModelMorph = !morphKeyForLocalModel.isEmpty();
+            enableTargetModelMorph = !morphKeyForTargetModel.isEmpty();
         }
     }
 }
