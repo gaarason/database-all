@@ -165,7 +165,7 @@ public final class EntityUtils {
     }
 
     /**
-     * 返回 clazz 中的指定属性(public/protected/private)
+     * 返回 clazz 中的指定属性(包含public/protected/private)
      * 依次向上, 找到为止
      * @param clazz 类型
      * @param name 属性名称
@@ -177,7 +177,7 @@ public final class EntityUtils {
         try {
             return clazz.getDeclaredField(name);
         } catch (NoSuchFieldException e) {
-            if (!superclass.equals(Object.class)) {
+            if (superclass != null && !Object.class.equals(superclass)) {
                 return getDeclaredFieldContainParent(superclass, name);
             }
             throw e;

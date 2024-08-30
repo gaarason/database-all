@@ -187,8 +187,7 @@ public final class ObjectUtils {
             for (String attr : attrArr) {
                 Field field = EntityUtils.getDeclaredFieldContainParent(tempClass, attr);
                 tempClass = field.getType();
-                boolean contains =
-                    new ArrayList<>(Arrays.asList(tempClass.getInterfaces())).contains(Collection.class);
+                boolean contains = getInterfaces(tempClass).contains(Collection.class);
                 // 如果是集合类型, 那么使用泛型对象
                 if (contains) {
                     Type genericType = field.getGenericType();

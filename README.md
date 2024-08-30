@@ -6,6 +6,8 @@
 [![](https://img.shields.io/badge/JDK-8-green.svg)]()
 [![](https://img.shields.io/badge/JDK-11-green.svg)]()
 [![](https://img.shields.io/badge/JDK-17-green.svg)]()
+[![](https://img.shields.io/badge/JDK-21-green.svg)]()
+
 [![](https://img.shields.io/badge/SpringBoot-v2.x-blue.svg)]()
 [![](https://img.shields.io/badge/SpringBoot-v3.x-blue.svg)]()
 

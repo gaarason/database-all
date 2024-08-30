@@ -41,9 +41,12 @@ public class MysqlQuickStartTests {
 
     @Test
     public void findMany() {
+        // todo check 不稳定的测试结果, 原因未知
         TestModel testModel = new TestModel();
         RecordList<TestModel.Inner, Integer> many = testModel.findMany(Arrays.asList(1, 2, 3));
         RecordList<TestModel.Inner, Integer> many1 = testModel.findMany(1, 2, 3);
+        System.out.println(many);
+        System.out.println(many1);
         Assert.assertEquals(3, many.size());
         Assert.assertEquals(many1.size(), 3);
         RecordList<TestModel.Inner, Integer> many2 = testModel.findMany(1, "2", 3L);
