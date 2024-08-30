@@ -281,7 +281,7 @@ public class StudentModel extends Model<Student, Integer> {
 
 ## 非spring
 
-- 在不使用 spring 的场景下, 本质上是一致, `配置`->`DataSource`->`GaarasonDataSource`, 并将`GaarasonDataSource`与`Model`连接起来
+- 在不使用 spring 的场景下, 本质上是一致的, `配置`->`DataSource`->`GaarasonDataSource`, 并将`GaarasonDataSource`与`Model`连接起来
 
 ```java
 /**

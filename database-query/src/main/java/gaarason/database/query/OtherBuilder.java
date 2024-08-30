@@ -138,7 +138,6 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
         return this;
     }
 
-
     @Override
     public Builder<T, K> sharedLock() {
         grammar.set(Grammar.SQLPartType.LOCK, "lock in share mode", null);

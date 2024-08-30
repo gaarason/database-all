@@ -176,7 +176,7 @@ Assert.assertEquals(200, record0.getEntity().getId().intValue());
 ### Column
 
 - `gaarason.database.eloquent.annotation.Column` 用于确定每个数据字段的具体属性
-- 通过对于`Column`的数据设置, 可以精准的控制每一个字段, 在增删查改下的行为
+- 通过对于`Column`的数据设置, 可以精准地控制每一个字段, 在增删查改下的行为
 - 如果某个数据对象没有`Primary`注解, 则大多数`ORM`操作将被禁用
 
 #### 使用策略
