@@ -205,10 +205,10 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingKeywords(@Nullable Object value, Collection<String> columns) {
-        andHaving(builder -> {
+    public Builder<T, K> havingAny(@Nullable Object value, Collection<String> columns) {
+        andHavingIgnoreEmpty(builder -> {
             for (String column : columns) {
-                builder.orHaving(builderInner -> builderInner.havingMayLike(column, value));
+                builder.orHavingIgnoreEmpty(builderInner -> builderInner.havingLike(column, value));
             }
             return builder;
         });
@@ -216,23 +216,24 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingKeywords(@Nullable Object value, String... columns) {
-        return havingKeywords(value, Arrays.asList(columns));
+    public Builder<T, K> havingAny(@Nullable Object value, String... columns) {
+        return havingAny(value, Arrays.asList(columns));
     }
 
     @Override
-    public Builder<T, K> havingKeywordsIgnoreNull(@Nullable Object value, Collection<String> columns) {
-        return andHavingIgnoreEmpty(builder -> {
+    public Builder<T, K> havingAll(@Nullable Object value, Collection<String> columns) {
+        andHavingIgnoreEmpty(builder -> {
             for (String column : columns) {
-                builder.orHavingIgnoreEmpty(builderInner -> builderInner.havingMayLikeIgnoreNull(column, value));
+                builder.andHavingIgnoreEmpty(builderInner -> builderInner.havingLike(column, value));
             }
             return builder;
         });
+        return this;
     }
 
     @Override
-    public Builder<T, K> havingKeywordsIgnoreNull(@Nullable Object value, String... columns) {
-        return havingKeywordsIgnoreNull(value, Arrays.asList(columns));
+    public Builder<T, K> havingAll(@Nullable Object value, String... columns) {
+        return havingAll(value, Arrays.asList(columns));
     }
 
     @Override

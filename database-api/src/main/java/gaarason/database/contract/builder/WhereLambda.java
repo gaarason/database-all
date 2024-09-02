@@ -123,50 +123,62 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
     }
 
     /**
-     * 在多个列中, 查找值
-     * 当 value 以 %开头或者结尾时, 使用like查询
-     * 当 value 为 null 时, 使用 is null 查询
-     * 其他情况下, 使用 = 查询
+     * 在多个列中, 查找值, 任一满足
+     * 忽略 value 为 null 、"" 、% 、%% 的情况
+     * 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
+     * sql eg : where ( column1 like %value% or column2 like %value% )
      * @param value 值
-     * @param columns 多个列名表达式
-     * @param <F> 属性类型
+     * @param columns 列名
      * @return 查询构造器
      */
     @SuppressWarnings("unchecked")
-    default <F> Builder<T, K> whereKeywords(@Nullable Object value, ColumnFunctionalInterface<T, F>... columns) {
-        return whereKeywordsIgnoreNull(value, lambda2ColumnName(Arrays.asList(columns)));
+    default <F> Builder<T, K> whereAny(@Nullable Object value, ColumnFunctionalInterface<T, F>... columns) {
+        return whereAny(value, lambda2ColumnName(Arrays.asList(columns)));
+    }
+
+    /**
+     * 在多个列中, 查找值, 全部满足
+     * 忽略 value 为 null 、"" 、% 、%% 的情况
+     * 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
+     * sql eg : where ( column1 like %value% and column2 like %value% )
+     * @param value 值
+     * @param columns 列名集合
+     * @return 查询构造器
+     */
+    @SuppressWarnings("unchecked")
+    default <F> Builder<T, K> whereAll(@Nullable Object value, ColumnFunctionalInterface<T, F>... columns) {
+        return whereAll(value, lambda2ColumnName(Arrays.asList(columns)));
     }
 
     /**
      * "列like值" 的查询条件
+     * 忽略 value 为 null 、"" 、% 、%% 的情况
      * 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
-     * 忽略值为null的情况
-     * 忽略值为 % 、%%的情况
      * @param column 列名表达式
      * @param value 值
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> whereLikeIgnoreNull(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
-        return whereLikeIgnoreNull(lambda2ColumnName(column), value);
+    default <F> Builder<T, K> whereLike(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
+        return whereLike(lambda2ColumnName(column), value);
     }
 
     /**
      * "列 not like值" 的查询条件
+     * 忽略 value 为 null 、"" 、% 、%% 的情况
      * 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
-     * 忽略值为null的情况
-     * 忽略值为 % 、%%的情况
      * @param column 列名表达式
      * @param value 值
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> whereNotLikeIgnoreNull(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
-        return whereNotLikeIgnoreNull(lambda2ColumnName(column), value);
+    default <F> Builder<T, K> whereNotLike(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
+        return whereNotLike(lambda2ColumnName(column), value);
     }
 
     /**
      * 选择可能的条件类型
+     * 忽略 value 为 % 、%% 的情况
      * 当 value 以 %开头或者结尾时, 使用like查询
      * 当 value 为 null 时, 使用 is null 查询
      * 其他情况下, 使用 = 查询
@@ -181,6 +193,7 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
 
     /**
      * 选择可能的条件类型
+     * 忽略 value 为 % 、%% 的情况
      * 当 value 以 %开头或者结尾时, 使用like查询
      * 当 value 为 null 时, 使用 is null 查询
      * 其他情况下, 使用 = 查询
@@ -195,6 +208,7 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
 
     /**
      * 选择可能的条件类型
+     * 忽略 value 为 null 、% 、%% 的情况
      * 当 value 以 %开头或者结尾时, 使用like查询
      * 当 value 为 null 时, 忽略
      * 其他情况下, 使用 = 查询
@@ -209,6 +223,7 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
 
     /**
      * 选择可能的条件类型
+     * 忽略 value 为 null 、% 、%% 的情况
      * 当 value 以 %开头或者结尾时, 使用not like查询
      * 当 value 为 null 时, 忽略
      * 其他情况下, 使用 != 查询

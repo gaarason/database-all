@@ -205,10 +205,10 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereKeywordsIgnoreNull(@Nullable Object value, Collection<String> columns) {
+    public Builder<T, K> whereAny(@Nullable Object value, Collection<String> columns) {
         andWhereIgnoreEmpty(builder -> {
             for (String column : columns) {
-                builder.orWhereIgnoreEmpty(builderInner -> builderInner.whereLikeIgnoreNull(column, value));
+                builder.orWhereIgnoreEmpty(builderInner -> builderInner.whereLike(column, value));
             }
             return builder;
         });
@@ -216,12 +216,28 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereKeywordsIgnoreNull(@Nullable Object value, String... columns) {
-        return whereKeywordsIgnoreNull(value, Arrays.asList(columns));
+    public Builder<T, K> whereAny(@Nullable Object value, String... columns) {
+        return whereAny(value, Arrays.asList(columns));
     }
 
     @Override
-    public Builder<T, K> whereLikeIgnoreNull(String column, @Nullable Object value) {
+    public Builder<T, K> whereAll(@Nullable Object value, Collection<String> columns) {
+        andWhereIgnoreEmpty(builder -> {
+            for (String column : columns) {
+                builder.andWhereIgnoreEmpty(builderInner -> builderInner.whereLike(column, value));
+            }
+            return builder;
+        });
+        return this;
+    }
+
+    @Override
+    public Builder<T, K> whereAll(@Nullable Object value, String... columns) {
+        return whereAll(value, Arrays.asList(columns));
+    }
+
+    @Override
+    public Builder<T, K> whereLike(String column, @Nullable Object value) {
         if (ObjectUtils.isEmpty(value) || ObjectUtils.isEmpty(StringUtils.replace(value, "%", ""))) {
             return this;
         }
@@ -229,24 +245,24 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereLikeIgnoreNull(@Nullable Object anyEntity) {
+    public Builder<T, K> whereLike(@Nullable Object anyEntity) {
         final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity, EntityUseType.CONDITION);
-        return whereLikeIgnoreNull(columnValueMap);
+        return whereLike(columnValueMap);
     }
 
     @Override
-    public Builder<T, K> whereLikeIgnoreNull(@Nullable Map<String, Object> map) {
+    public Builder<T, K> whereLike(@Nullable Map<String, Object> map) {
         if (ObjectUtils.isEmpty(map)) {
             return this;
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
-            whereLikeIgnoreNull(entry.getKey(), entry.getValue());
+            whereLike(entry.getKey(), entry.getValue());
         }
         return this;
     }
 
     @Override
-    public Builder<T, K> whereNotLikeIgnoreNull(String column, @Nullable Object value) {
+    public Builder<T, K> whereNotLike(String column, @Nullable Object value) {
         if (ObjectUtils.isEmpty(value) || ObjectUtils.isEmpty(StringUtils.replace(value, "%", ""))) {
             return this;
         }
@@ -254,18 +270,18 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereNotLikeIgnoreNull(@Nullable Object anyEntity) {
+    public Builder<T, K> whereNotLike(@Nullable Object anyEntity) {
         final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity, EntityUseType.CONDITION);
-        return whereNotLikeIgnoreNull(columnValueMap);
+        return whereNotLike(columnValueMap);
     }
 
     @Override
-    public Builder<T, K> whereNotLikeIgnoreNull(@Nullable Map<String, Object> map) {
+    public Builder<T, K> whereNotLike(@Nullable Map<String, Object> map) {
         if (ObjectUtils.isEmpty(map)) {
             return this;
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
-            whereNotLikeIgnoreNull(entry.getKey(), entry.getValue());
+            whereNotLike(entry.getKey(), entry.getValue());
         }
         return this;
     }
@@ -274,7 +290,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     public Builder<T, K> whereMayLike(String column, @Nullable Object value) {
         String s = conversion.castNullable(value, String.class);
         if (!ObjectUtils.isNull(s) && (s.endsWith("%") || s.startsWith("%"))) {
-            return whereLikeIgnoreNull(column, value);
+            return whereLike(column, value);
         } else {
             return where(column, value);
         }
@@ -284,7 +300,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     public Builder<T, K> whereMayNotLike(String column, @Nullable Object value) {
         String s = conversion.castNullable(value, String.class);
         if (!ObjectUtils.isNull(s) && (s.endsWith("%") || s.startsWith("%"))) {
-            return whereNotLikeIgnoreNull(column, value);
+            return whereNotLike(column, value);
         } else {
             return ObjectUtils.isNull(value) ? whereNotNull(column) : where(column, "<>", value);
         }

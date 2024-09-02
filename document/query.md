@@ -665,31 +665,30 @@ Record<Student, Long> record = studentModel.newQuery().where("name", "like", "%�
 Record<Student, Long> record = studentModel.newQuery().where("id", null).first();
 ```
 
-#### whereLikeIgnoreNull
+#### whereLike
 
-- "列like值" 的查询条件
+- "列like值" 的查询条件 
+- 忽略 value 为 null 、"" 、% 、%% 的情况 
 - 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
-- 忽略值为null的情况
-- 忽略值为 % 、%%的情况
 
 ```java
 // select * from `student` where `name`like"小%"
-studentModel.newQuery().whereLikeIgnoreNull("name", "小%").get();
+studentModel.newQuery().whereLike("name", "小%").get();
 
 // select * from `student` where `name`like"%小%"
-studentModel.newQuery().whereLikeIgnoreNull("name", "小").get();
+studentModel.newQuery().whereLike("name", "小").get();
 
 // select * from `student` where `name`like"%卡"
 Map<String, Object> likeMap = new HashMap<>();
 likeMap.put("name", "%卡");
 
-entityList3 = studentModel.newQuery().whereLikeIgnoreNull(likeMap).get();
+entityList3 = studentModel.newQuery().whereLike(likeMap).get();
 
 // select * from `student` where `name`like"%卡"
 StudentModel.Entity student = new StudentModel.Entity();
 student.setName("%卡");
 
-studentModel.newQuery().whereLikeIgnoreNull(student).get();
+studentModel.newQuery().whereLike(student).get();
 ```
 
 #### whereMayLike  whereMayLikeIgnoreNull

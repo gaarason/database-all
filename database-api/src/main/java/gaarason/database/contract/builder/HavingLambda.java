@@ -124,40 +124,37 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
     }
 
     /**
-     * 在多个列中, 查找值
-     * 当 value 以 %开头或者结尾时, 使用like查询
-     * 当 value 为 null 时, 使用 is null 查询
-     * 其他情况下, 使用 = 查询
+     * 在多个列中, 查找值, 任一满足
+     * 忽略 value 为 null 、"" 、% 、%% 的情况
+     * 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
+     * sql eg : having ( column1 like %value% or column2 like %value% )
      * @param value 值
-     * @param columns 多个列名表达式
-     * @param <F> 属性类型
+     * @param columns 列名
      * @return 查询构造器
      */
     @SuppressWarnings("unchecked")
-    default <F> Builder<T, K> havingKeywords(@Nullable Object value, ColumnFunctionalInterface<T, F>... columns) {
-        return havingKeywords(value, lambda2ColumnName(Arrays.asList(columns)));
+    default <F> Builder<T, K> havingAny(@Nullable Object value, ColumnFunctionalInterface<T, F>... columns) {
+        return havingAny(value, lambda2ColumnName(Arrays.asList(columns)));
     }
 
     /**
-     * 在多个列中, 查找值
-     * 当 value 以 %开头或者结尾时, 使用like查询
-     * 当 value 为 null 时, 忽略
-     * 其他情况下, 使用 = 查询
+     * 在多个列中, 查找值, 全部满足
+     * 忽略 value 为 null 、"" 、% 、%% 的情况
+     * 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
+     * sql eg : having ( column1 like %value% and column2 like %value% )
      * @param value 值
-     * @param columns 多个列名表达式
-     * @param <F> 属性类型
+     * @param columns 列名
      * @return 查询构造器
      */
     @SuppressWarnings("unchecked")
-    default <F> Builder<T, K> havingKeywordsIgnoreNull(@Nullable Object value, ColumnFunctionalInterface<T, F>... columns) {
-        return havingKeywordsIgnoreNull(value, lambda2ColumnName(Arrays.asList(columns)));
+    default <F> Builder<T, K> havingAll(@Nullable Object value, ColumnFunctionalInterface<T, F>... columns) {
+        return havingAll(value, lambda2ColumnName(Arrays.asList(columns)));
     }
 
     /**
      * "列like值" 的查询条件
+     * 忽略 value 为 null 、"" 、% 、%% 的情况
      * 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
-     * 忽略值为null的情况
-     * 忽略值为 % 、%%的情况
      * @param column 列名表达式
      * @param value 值
      * @param <F> 属性类型
@@ -169,9 +166,8 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
 
     /**
      * "列 not like值" 的查询条件
+     * 忽略 value 为 null 、"" 、% 、%% 的情况
      * 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
-     * 忽略值为null的情况
-     * 忽略值为 % 、%%的情况
      * @param column 列名表达式
      * @param value 值
      * @param <F> 属性类型

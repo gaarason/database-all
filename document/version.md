@@ -25,6 +25,12 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 5.5.0
+
+- 在`Builder`中, 增加了部分方法, `havingAny()`, `havingAll()`,`whereAny()`,`whereAll()`
+- 在`Builder`中, 移除了部分方法, `havingKeywordsIgnoreNull()`, `whereKeywordsIgnoreNull()`
+- 在`Builder`中, 更名了部分方法, `whereLikeIgnoreNull()` -> `whereLike()`
+
 ### 5.4.0
 
 - 在`Builder`中, 增加了位操作的相关的方法, `havingBit()`, `havingBitNot()`,`havingBitIn()`,`havingBitNotIn()`,`havingBitStrictIn()`,`havingBitStrictNotIn()`
