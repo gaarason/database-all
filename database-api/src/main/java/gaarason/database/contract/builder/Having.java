@@ -172,7 +172,7 @@ public interface Having<T, K> {
      * @param columns 列名
      * @return 查询构造器
      */
-    Builder<T, K> havingAny(@Nullable Object value, Collection<String> columns);
+    Builder<T, K> havingAnyLike(@Nullable Object value, Collection<String> columns);
 
     /**
      * 在多个列中, 查找值, 任一满足
@@ -183,7 +183,7 @@ public interface Having<T, K> {
      * @param columns 列名
      * @return 查询构造器
      */
-    Builder<T, K> havingAny(@Nullable Object value, String... columns);
+    Builder<T, K> havingAnyLike(@Nullable Object value, String... columns);
 
     /**
      * 在多个列中, 查找值, 全部满足
@@ -194,7 +194,7 @@ public interface Having<T, K> {
      * @param columns 列名集合
      * @return 查询构造器
      */
-    Builder<T, K> havingAll(@Nullable Object value, Collection<String> columns);
+    Builder<T, K> havingAllLike(@Nullable Object value, Collection<String> columns);
 
     /**
      * 在多个列中, 查找值, 全部满足
@@ -205,7 +205,7 @@ public interface Having<T, K> {
      * @param columns 列名
      * @return 查询构造器
      */
-    Builder<T, K> havingAll(@Nullable Object value, String... columns);
+    Builder<T, K> havingAllLike(@Nullable Object value, String... columns);
 
     /**
      * "列like值" 的查询条件

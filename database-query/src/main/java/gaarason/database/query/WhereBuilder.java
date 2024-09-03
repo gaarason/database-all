@@ -205,7 +205,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereAny(@Nullable Object value, Collection<String> columns) {
+    public Builder<T, K> whereAnyLike(@Nullable Object value, Collection<String> columns) {
         andWhereIgnoreEmpty(builder -> {
             for (String column : columns) {
                 builder.orWhereIgnoreEmpty(builderInner -> builderInner.whereLike(column, value));
@@ -216,12 +216,12 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereAny(@Nullable Object value, String... columns) {
-        return whereAny(value, Arrays.asList(columns));
+    public Builder<T, K> whereAnyLike(@Nullable Object value, String... columns) {
+        return whereAnyLike(value, Arrays.asList(columns));
     }
 
     @Override
-    public Builder<T, K> whereAll(@Nullable Object value, Collection<String> columns) {
+    public Builder<T, K> whereAllLike(@Nullable Object value, Collection<String> columns) {
         andWhereIgnoreEmpty(builder -> {
             for (String column : columns) {
                 builder.andWhereIgnoreEmpty(builderInner -> builderInner.whereLike(column, value));
@@ -232,8 +232,8 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereAll(@Nullable Object value, String... columns) {
-        return whereAll(value, Arrays.asList(columns));
+    public Builder<T, K> whereAllLike(@Nullable Object value, String... columns) {
+        return whereAllLike(value, Arrays.asList(columns));
     }
 
     @Override

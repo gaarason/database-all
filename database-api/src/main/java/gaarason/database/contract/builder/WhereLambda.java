@@ -132,8 +132,8 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * @return 查询构造器
      */
     @SuppressWarnings("unchecked")
-    default <F> Builder<T, K> whereAny(@Nullable Object value, ColumnFunctionalInterface<T, F>... columns) {
-        return whereAny(value, lambda2ColumnName(Arrays.asList(columns)));
+    default <F> Builder<T, K> whereAnyLike(@Nullable Object value, ColumnFunctionalInterface<T, F>... columns) {
+        return whereAnyLike(value, lambda2ColumnName(Arrays.asList(columns)));
     }
 
     /**
@@ -146,8 +146,8 @@ public interface WhereLambda<T, K> extends Where<T, K>, Support<T, K> {
      * @return 查询构造器
      */
     @SuppressWarnings("unchecked")
-    default <F> Builder<T, K> whereAll(@Nullable Object value, ColumnFunctionalInterface<T, F>... columns) {
-        return whereAll(value, lambda2ColumnName(Arrays.asList(columns)));
+    default <F> Builder<T, K> whereAllLike(@Nullable Object value, ColumnFunctionalInterface<T, F>... columns) {
+        return whereAllLike(value, lambda2ColumnName(Arrays.asList(columns)));
     }
 
     /**

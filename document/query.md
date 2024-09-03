@@ -667,9 +667,9 @@ Record<Student, Long> record = studentModel.newQuery().where("id", null).first()
 
 #### whereLike
 
-- "列like值" 的查询条件 
-- 忽略 value 为 null 、"" 、% 、%% 的情况 
-- 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
+* "列like值" 的查询条件
+* 忽略 value 为 null 、"" 、% 、%% 的情况
+* 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
 
 ```java
 // select * from `student` where `name`like"小%"
@@ -690,14 +690,43 @@ student.setName("%卡");
 
 studentModel.newQuery().whereLike(student).get();
 ```
+#### whereAnyLike
+
+* 在多个列中, 查找值, 任一满足
+* 忽略 value 为 null 、"" 、% 、%% 的情况
+* 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
+* sql eg : where ( column1 like %value% or column2 like %value% )
+
+```java
+// select * from `student`
+studentModel.newQuery().whereAny(null, "name", "age", "id").get()
+
+// select * from `student` where ((`name`like"%1") or (`age`like"%1") or (`id`like"%1")) and ((`name`like"%张") or (`age`like"%张") or (`id`like"%张"))
+studentModel.newQuery().whereAny("%1", "name", "age", "id").whereKeywords("%张", "name", "age", "id").get()
+
+```
+#### whereAllLike
+
+* 在多个列中, 查找值, 全部满足
+* 忽略 value 为 null 、"" 、% 、%% 的情况
+* 其中值如果没有在开头或结尾自行包含 % 符号，则在开头以及结尾拼接 % 符号
+* sql eg : where ( column1 like %value% and column2 like %value% )
+
+```java
+// select * from `student`
+studentModel.newQuery().whereAny(null, "name", "age", "id").get()
+
+// select * from `student` where ((`name`like"%1") and (`age`like"%1") and (`id`like"%1"))
+studentModel.newQuery().whereAllLike("%1", "name", "age", "id").get()
+
+```
 
 #### whereMayLike  whereMayLikeIgnoreNull
 
-选择可能的条件类型
-
+* 选择可能的条件类型
+* 忽略 value 为 % 、%% 的情况
 * 当 value 以 %开头或者结尾时, 使用like查询
-* whereMayLike 当 value 为 null 时, 使用 is null 查询
-* whereMayLikeIgnoreNull 当 value 为 null 时, 忽略
+* 当 value 为 null 时, 使用 is null 查询
 * 其他情况下, 使用 = 查询
 
 ```java
@@ -726,38 +755,6 @@ student.setDes("卡");
 studentModel.newQuery().whereMayLike(student).get();
 ```
 
-#### whereKeywords  whereKeywordsIgnoreNull
-
-在多个列中, 查找值
-
-* 当 value 以 %开头或者结尾时, 使用like查询
-* whereKeywords 当 value 为 null 时, 使用 is null 查询
-* whereKeywordsIgnoreNull 当 value 为 null 时, 忽略
-* 其他情况下, 使用 = 查询
-
-```java
-// select * from `student` where ((`name`="小") or (`age`="小") or (`id`="小"))
-studentModel.newQuery().whereKeywords("小", "name", "age", "id").get()
-    
-// select * from `student` where ((`name`like"小%") or (`age`like"小%") or (`id`like"小%"))
-studentModel.newQuery().whereKeywords("小%", "name", "age", "id").get()
-    
-// select * from `student` where ((`name`is null) or (`age`is null) or (`id`is null))
-studentModel.newQuery().whereKeywords(null, "name", "age", "id").get()
-    
-// select * from `student`
-studentModel.newQuery().whereKeywordsIgnoreNull(null, "name", "age", "id").get()
-
-// select * from `student` where ((`name`like"%1") or (`age`like"%1") or (`id`like"%1")) and ((`name`like"%张") or (`age`like"%张") or (`id`like"%张"))
-studentModel.newQuery().whereKeywords("%1", "name", "age", "id").whereKeywords("%张", "name", "age", "id").get()
-
-// select * from `student` where ((`name`like"%1") or (`age`like"%1") or (`id`like"%1")) and ((`name`like"%张") or (`age`like"%张") or (`id`like"%张"))
-studentModel.newQuery().whereKeywordsIgnoreNull("%1", "name", "age", "id").whereKeywordsIgnoreNull("%张", "name", "age", "id").get()
-
-// select * from `student`
-studentModel.newQuery().whereKeywordsIgnoreNull(null, "name", "age", "id").whereKeywordsIgnoreNull(null, "name", "age", "id").get()
-
-```
 
 #### whereIgnoreNull
 

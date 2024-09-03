@@ -205,7 +205,7 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingAny(@Nullable Object value, Collection<String> columns) {
+    public Builder<T, K> havingAnyLike(@Nullable Object value, Collection<String> columns) {
         andHavingIgnoreEmpty(builder -> {
             for (String column : columns) {
                 builder.orHavingIgnoreEmpty(builderInner -> builderInner.havingLike(column, value));
@@ -216,12 +216,12 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingAny(@Nullable Object value, String... columns) {
-        return havingAny(value, Arrays.asList(columns));
+    public Builder<T, K> havingAnyLike(@Nullable Object value, String... columns) {
+        return havingAnyLike(value, Arrays.asList(columns));
     }
 
     @Override
-    public Builder<T, K> havingAll(@Nullable Object value, Collection<String> columns) {
+    public Builder<T, K> havingAllLike(@Nullable Object value, Collection<String> columns) {
         andHavingIgnoreEmpty(builder -> {
             for (String column : columns) {
                 builder.andHavingIgnoreEmpty(builderInner -> builderInner.havingLike(column, value));
@@ -232,8 +232,8 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingAll(@Nullable Object value, String... columns) {
-        return havingAll(value, Arrays.asList(columns));
+    public Builder<T, K> havingAllLike(@Nullable Object value, String... columns) {
+        return havingAllLike(value, Arrays.asList(columns));
     }
 
     @Override

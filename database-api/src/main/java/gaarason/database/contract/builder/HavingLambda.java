@@ -133,8 +133,8 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @return 查询构造器
      */
     @SuppressWarnings("unchecked")
-    default <F> Builder<T, K> havingAny(@Nullable Object value, ColumnFunctionalInterface<T, F>... columns) {
-        return havingAny(value, lambda2ColumnName(Arrays.asList(columns)));
+    default <F> Builder<T, K> havingAnyLike(@Nullable Object value, ColumnFunctionalInterface<T, F>... columns) {
+        return havingAnyLike(value, lambda2ColumnName(Arrays.asList(columns)));
     }
 
     /**
@@ -147,8 +147,8 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @return 查询构造器
      */
     @SuppressWarnings("unchecked")
-    default <F> Builder<T, K> havingAll(@Nullable Object value, ColumnFunctionalInterface<T, F>... columns) {
-        return havingAll(value, lambda2ColumnName(Arrays.asList(columns)));
+    default <F> Builder<T, K> havingAllLike(@Nullable Object value, ColumnFunctionalInterface<T, F>... columns) {
+        return havingAllLike(value, lambda2ColumnName(Arrays.asList(columns)));
     }
 
     /**

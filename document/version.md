@@ -27,7 +27,7 @@ Eloquent ORM for Java
 
 ### 5.5.0
 
-- 在`Builder`中, 增加了部分方法, `havingAny()`, `havingAll()`,`whereAny()`,`whereAll()`
+- 在`Builder`中, 增加了部分方法, `havingAnyLike()`, `havingAllLike()`,`whereAnyLike()`,`whereAllLike()`
 - 在`Builder`中, 移除了部分方法, `havingKeywordsIgnoreNull()`, `whereKeywordsIgnoreNull()`
 - 在`Builder`中, 更名了部分方法, `whereLikeIgnoreNull()` -> `whereLike()`
 

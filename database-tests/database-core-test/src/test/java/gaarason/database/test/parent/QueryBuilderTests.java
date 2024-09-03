@@ -1212,50 +1212,50 @@ abstract public class QueryBuilderTests extends BaseTests {
     public void 条件_whereAny() {
 
         List<StudentModel.Entity> list0 = studentModel.newQuery()
-            .whereAny("小", StudentModel.Entity::getName, StudentModel.Entity::getAge, StudentModel.Entity::getId)
+            .whereAnyLike("小", StudentModel.Entity::getName, StudentModel.Entity::getAge, StudentModel.Entity::getId)
             .get()
             .toObjectList();
         Assert.assertEquals(5, list0.size());
 
         List<StudentModel.Entity> list = studentModel.newQuery()
-            .whereAny("小", "name", "age", "id")
+            .whereAnyLike("小", "name", "age", "id")
             .get()
             .toObjectList();
         Assert.assertEquals(5, list.size());
 
         List<StudentModel.Entity> list1 = studentModel.newQuery()
-            .whereAny("小%", "name", "age", "id")
+            .whereAnyLike("小%", "name", "age", "id")
             .get()
             .toObjectList();
         Assert.assertEquals(5, list1.size());
 
         List<StudentModel.Entity> list2 = studentModel.newQuery()
-            .whereAny(null, "name", "age", "id")
+            .whereAnyLike(null, "name", "age", "id")
             .get()
             .toObjectList();
         Assert.assertEquals(10, list2.size());
 
         List<StudentModel.Entity> list3 = studentModel.newQuery()
-            .whereAny(2, "name", "age", "id")
+            .whereAnyLike(2, "name", "age", "id")
             .get()
             .toObjectList();
         Assert.assertEquals(1, list3.size());
 
         List<StudentModel.Entity> list4 = studentModel.newQuery()
-            .whereAny(6, "name", "age", "id")
+            .whereAnyLike(6, "name", "age", "id")
             .get()
             .toObjectList();
         Assert.assertEquals(3, list4.size());
 
         List<StudentModel.Entity> list5 = studentModel.newQuery()
-            .whereAny("%6", "name", "age", "id")
+            .whereAnyLike("%6", "name", "age", "id")
             .get()
             .toObjectList();
         Assert.assertEquals(3, list5.size());
 
         List<StudentModel.Entity> list7 = studentModel.newQuery()
-            .whereAny("%1", "name", "age", "id")
-            .whereAny("%张", "name", "age", "id")
+            .whereAnyLike("%1", "name", "age", "id")
+            .whereAnyLike("%张", "name", "age", "id")
             .get()
             .toObjectList();
         Assert.assertEquals(1, list7.size());
@@ -1265,7 +1265,7 @@ abstract public class QueryBuilderTests extends BaseTests {
     @Test
     public void 条件_whereAll() {
         List<StudentModel.Entity> list0 = studentModel.newQuery()
-                .whereAll("小", StudentModel.Entity::getName, StudentModel.Entity::getAge, StudentModel.Entity::getId)
+                .whereAllLike("小", StudentModel.Entity::getName, StudentModel.Entity::getAge, StudentModel.Entity::getId)
                 .get()
                 .toObjectList();
         Assert.assertEquals(0, list0.size());
@@ -1275,78 +1275,78 @@ abstract public class QueryBuilderTests extends BaseTests {
     public void 条件_havingAny() {
 
         List<StudentModel.Entity> list0 = studentModel.newQuery()
-            .havingAny("小", StudentModel.Entity::getName, StudentModel.Entity::getAge, StudentModel.Entity::getId)
+            .havingAnyLike("小", StudentModel.Entity::getName, StudentModel.Entity::getAge, StudentModel.Entity::getId)
             .get()
             .toObjectList();
         Assert.assertEquals(5, list0.size());
 
         List<StudentModel.Entity> list = studentModel.newQuery()
-            .havingAny("小", "name", "age", "id")
+            .havingAnyLike("小", "name", "age", "id")
             .get()
             .toObjectList();
         Assert.assertEquals(5, list.size());
 
         List<StudentModel.Entity> list1 = studentModel.newQuery()
-            .havingAny("小%", "name", "age", "id")
+            .havingAnyLike("小%", "name", "age", "id")
             .get()
             .toObjectList();
         Assert.assertEquals(5, list1.size());
 
         List<StudentModel.Entity> list2 = studentModel.newQuery()
-            .havingAny(null, "name", "age", "id")
+            .havingAnyLike(null, "name", "age", "id")
             .get()
             .toObjectList();
         Assert.assertEquals(10, list2.size());
 
         List<StudentModel.Entity> list3 = studentModel.newQuery()
-            .havingAny(2, "name", "age", "id")
+            .havingAnyLike(2, "name", "age", "id")
             .get()
             .toObjectList();
         Assert.assertEquals(1, list3.size());
 
         List<StudentModel.Entity> list4 = studentModel.newQuery()
-            .havingAny(6, "name", "age", "id")
+            .havingAnyLike(6, "name", "age", "id")
             .get()
             .toObjectList();
         Assert.assertEquals(3, list4.size());
 
         List<StudentModel.Entity> list5 = studentModel.newQuery()
-            .havingAny("%6", "name", "age", "id")
+            .havingAnyLike("%6", "name", "age", "id")
             .get()
             .toObjectList();
         Assert.assertEquals(3, list5.size());
 
         List<StudentModel.Entity> list6 = studentModel.newQuery()
-            .havingAny(null, "name", "age", "id")
+            .havingAnyLike(null, "name", "age", "id")
             .get()
             .toObjectList();
         Assert.assertEquals(10, list6.size());
 
         List<StudentModel.Entity> list7 = studentModel.newQuery()
-            .havingAny("%1", "name", "age", "id")
-            .havingAny("%张", "name", "age", "id")
+            .havingAnyLike("%1", "name", "age", "id")
+            .havingAnyLike("%张", "name", "age", "id")
             .get()
             .toObjectList();
         Assert.assertEquals(1, list7.size());
 
         List<StudentModel.Entity> list8 = studentModel.newQuery()
-            .havingAny("%1", "name", "age", "id")
-            .havingAny("%张", "name", "age", "id")
+            .havingAnyLike("%1", "name", "age", "id")
+            .havingAnyLike("%张", "name", "age", "id")
             .get()
             .toObjectList();
         Assert.assertEquals(1, list8.size());
 
         List<StudentModel.Entity> list9 = studentModel.newQuery()
-            .havingAny(null, "name", "age", "id")
-            .havingAny(null, "name", "age", "id")
+            .havingAnyLike(null, "name", "age", "id")
+            .havingAnyLike(null, "name", "age", "id")
             .get()
             .toObjectList();
         Assert.assertEquals(10, list9.size());
 
         List<StudentModel.Entity> list10 = studentModel.newQuery()
-            .havingAny(null, StudentModel.Entity::getName, StudentModel.Entity::getAge,
+            .havingAnyLike(null, StudentModel.Entity::getName, StudentModel.Entity::getAge,
                 StudentModel.Entity::getId)
-            .havingAny(null, StudentModel.Entity::getName, StudentModel.Entity::getAge,
+            .havingAnyLike(null, StudentModel.Entity::getName, StudentModel.Entity::getAge,
                 StudentModel.Entity::getId)
             .get()
             .toObjectList();
@@ -1356,7 +1356,7 @@ abstract public class QueryBuilderTests extends BaseTests {
     @Test
     public void 条件_havingAll() {
         List<StudentModel.Entity> list0 = studentModel.newQuery()
-                .havingAll("小", StudentModel.Entity::getName, StudentModel.Entity::getAge, StudentModel.Entity::getId)
+                .havingAllLike("小", StudentModel.Entity::getName, StudentModel.Entity::getAge, StudentModel.Entity::getId)
                 .get()
                 .toObjectList();
         Assert.assertEquals(0, list0.size());
