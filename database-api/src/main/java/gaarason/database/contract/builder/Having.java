@@ -598,6 +598,13 @@ public interface Having<T, K> {
     Builder<T, K> havingColumn(String column1, String column2);
 
     /**
+     * 否定
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    Builder<T, K> havingNot(BuilderWrapper<T, K> closure);
+
+    /**
      * 且
      * @param closure 闭包
      * @return 查询构造器

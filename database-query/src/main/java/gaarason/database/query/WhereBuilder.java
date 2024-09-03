@@ -206,13 +206,12 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
 
     @Override
     public Builder<T, K> whereAnyLike(@Nullable Object value, Collection<String> columns) {
-        andWhereIgnoreEmpty(builder -> {
+        return andWhereIgnoreEmpty(builder -> {
             for (String column : columns) {
                 builder.orWhereIgnoreEmpty(builderInner -> builderInner.whereLike(column, value));
             }
             return builder;
         });
-        return this;
     }
 
     @Override
@@ -222,13 +221,12 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
 
     @Override
     public Builder<T, K> whereAllLike(@Nullable Object value, Collection<String> columns) {
-        andWhereIgnoreEmpty(builder -> {
+        return andWhereIgnoreEmpty(builder -> {
             for (String column : columns) {
                 builder.andWhereIgnoreEmpty(builderInner -> builderInner.whereLike(column, value));
             }
             return builder;
         });
-        return this;
     }
 
     @Override
@@ -564,6 +562,12 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     @Override
     public Builder<T, K> whereColumn(String column1, String column2) {
         return whereColumn(column1, "=", column2);
+    }
+
+    @Override
+    public Builder<T, K> whereNot(BuilderWrapper<T, K> closure) {
+        Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.WHERE);
+        return whereGrammar("!" + FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " and ");
     }
 
     @Override

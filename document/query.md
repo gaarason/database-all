@@ -33,21 +33,22 @@ Eloquent ORM for Java
         * [avg](#avg)
         * [sum](#sum)
     * [自增或自减](#自增或自减)
-        * [列在原值的基础上增加(减少)值](#列在原值的基础上增加(减少)值)
-        * [列(位存储)增加(移除)指定的选项](#列(位存储)增加(移除)指定的选项)
+        * [列在原值的基础上增加值](#列在原值的基础上增加值)
+        * [位存储增加指定的选项](#位存储增加指定的选项)
     * [select](#select)
     * [when](#when)
     * [where](#where)
         * [字段与值的比较](#字段与值的比较)
         * [字段之间的比较](#字段之间的比较)
-        * [字段(不)在两值之间](#字段(不)在两值之间)
-        * [字段(不)在范围内](#字段(不)在范围内)
-        * [字段(不)为null](#字段(不)为null)
-        * [字段(不)包含位](#字段(不)包含位)
+        * [字段在两值之间](#字段在两值之间)
+        * [字段在范围内](#字段在范围内)
+        * [字段为null](#字段为null)
+        * [字段包含位](#字段包含位)
         * [子查询](#子查询)
         * [且](#且)
         * [或](#或)
-        * [条件为真(假)](#条件为真(假))
+        * [否定](#否定)
+        * [条件为真](#条件为真)
     * [having](#having)
     * [order](#order)
     * [group](#group)
@@ -575,7 +576,7 @@ Assert.assertEquals(min4.toString(), "3");
 ```
 
 ## 自增或自减
-### 列在原值的基础上增加(减少)值
+### 列在原值的基础上增加值
 #### dataIncrement dataDecrement  
 列在原值的基础上增加(减少)值
 ```java
@@ -585,7 +586,7 @@ int update2 = studentModel.newQuery().dataIncrement("age", 4).whereRaw("id=4").u
 // update `student` set`age`= `age`-2  where id=4 
 int update = studentModel.newQuery().dataDecrement("age", 2).whereRaw("id=4").update();
 ```
-### 列(位存储)增加(移除)指定的选项
+### 位存储增加指定的选项
 #### dataBitIncrement dataBitDecrement 
 列(位存储)增加(移除)指定的选项  
 重复执行时, 幂等
@@ -780,7 +781,7 @@ Record<Student, Long> record = studentModel.newQuery().whereIgnoreNull(map).firs
 Record<Student, Long> record = studentModel.newQuery().whereColumn("id", ">", "sex").first();
 ```
 
-### 字段(不)在两值之间
+### 字段在两值之间
 
 #### whereBetween whereNotBetween
 
@@ -792,7 +793,7 @@ RecordList<Student, Long>> records = studentModel.newQuery().whereBetween("id", 
 RecordList<Student, Long>> records = studentModel.newQuery().whereNotBetween("id", "3", "5").get();
 ```
 
-### 字段(不)在范围内
+### 字段在范围内
 
 #### whereIn whereNotIn
 
@@ -837,7 +838,7 @@ idListHasNull.add(null)
 RecordList<Student, Long>> records = studentModel.newQuery().whereNotInIgnoreEmpty("id", idListHasNull).get();
 ```
 
-### 字段(不)为null
+### 字段为null
 
 #### whereNull  whereNotNull
 
@@ -849,7 +850,7 @@ studentModel.newQuery().whereNull("id").get();
 studentModel.newQuery().whereNotNull("id").get();
 ```
 
-### 字段(不)包含位
+### 字段包含位
 
 对于多选的业务场景, 使用数字类型按位存贮, 有着极高的空间利用效率  
 例如, 业务中需要保存用户的爱好, 爱好多选项为 : 0-听歌,1-旅游,2-观音,3-垂钓,4-游戏.  
@@ -946,8 +947,20 @@ RecordList<Student, Long>> records = studentModel.newQuery().where("id", "3").or
     (builder) -> builder.whereRaw("id=4")
 ).get();
 ```
+### 否定
 
-### 条件为真(假)
+#### whereNot
+否定一组给定的查询约束
+```java
+// select * from student where `id`= "3"  and (!(id<>4))
+studentModel.newQuery().where(StudentModel.Entity::getId, "3").andWhere(
+        builder -> builder.whereNot(
+                b -> b.whereRaw("id<>4")
+        )
+).get()
+```
+
+### 条件为真
 
 #### whereExists  whereNotExists
 

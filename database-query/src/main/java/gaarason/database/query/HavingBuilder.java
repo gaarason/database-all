@@ -206,13 +206,12 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
 
     @Override
     public Builder<T, K> havingAnyLike(@Nullable Object value, Collection<String> columns) {
-        andHavingIgnoreEmpty(builder -> {
+        return andHavingIgnoreEmpty(builder -> {
             for (String column : columns) {
                 builder.orHavingIgnoreEmpty(builderInner -> builderInner.havingLike(column, value));
             }
             return builder;
         });
-        return this;
     }
 
     @Override
@@ -222,13 +221,12 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
 
     @Override
     public Builder<T, K> havingAllLike(@Nullable Object value, Collection<String> columns) {
-        andHavingIgnoreEmpty(builder -> {
+        return andHavingIgnoreEmpty(builder -> {
             for (String column : columns) {
                 builder.andHavingIgnoreEmpty(builderInner -> builderInner.havingLike(column, value));
             }
             return builder;
         });
-        return this;
     }
 
     @Override
@@ -557,6 +555,11 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
         return havingColumn(column1, "=", column2);
     }
 
+    @Override
+    public Builder<T, K> havingNot(BuilderWrapper<T, K> closure) {
+        Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.HAVING);
+        return havingGrammar("!" + FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " and ");
+    }
     @Override
     public Builder<T, K> andHaving(BuilderWrapper<T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.HAVING);

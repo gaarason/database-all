@@ -1632,20 +1632,28 @@ abstract public class QueryBuilderTests extends BaseTests {
     @Test
     public void 条件_andWhere() {
         List<StudentModel.Entity> entityList0 = studentModel.newQuery().where(StudentModel.Entity::getId, "3").andWhere(
-            (builder) -> builder.whereRaw("id=4")
+                (builder) -> builder.whereRaw("id=4")
         ).get().toObjectList();
         Assert.assertEquals(entityList0.size(), 0);
 
         List<StudentModel.Entity> entityList1 = studentModel.newQuery().where("id", "3").andWhere(
-            (builder) -> builder.whereRaw("id=4")
+                (builder) -> builder.whereRaw("id=4")
         ).get().toObjectList();
         Assert.assertEquals(entityList1.size(), 0);
 
         List<StudentModel.Entity> entityList2 = studentModel.newQuery().where("id", "7").andWhere(
-            (builder) -> builder.whereBetween("id", "4", "10").where("age", ">", "11")
+                (builder) -> builder.whereBetween("id", "4", "10").where("age", ">", "11")
         ).get().toObjectList();
         Assert.assertEquals(entityList2.size(), 1);
         Assert.assertEquals(entityList2.get(0).getId().intValue(), 7);
+    }
+
+    @Test
+    public void 条件_whereNot() {
+        List<StudentModel.Entity> entityList0 = studentModel.newQuery().where(StudentModel.Entity::getId, "3").andWhere(
+                (builder) -> builder.whereNot(b -> b.whereRaw("id<>4"))
+        ).get().toObjectList();
+        Assert.assertEquals(entityList0.size(), 0);
     }
 
     @Test
@@ -1998,6 +2006,14 @@ abstract public class QueryBuilderTests extends BaseTests {
         ).get().toObjectList();
         Assert.assertEquals(entityList2.size(), 1);
         Assert.assertEquals(entityList2.get(0).getId().intValue(), 7);
+    }
+
+    @Test
+    public void 筛选_havingNot() {
+        List<StudentModel.Entity> entityList0 = studentModel.newQuery().where(StudentModel.Entity::getId, "3").andHaving(
+                (builder) -> builder.havingNot(b -> b.havingRaw("id<>4"))
+        ).get().toObjectList();
+        Assert.assertEquals(entityList0.size(), 0);
     }
 
     @Test
