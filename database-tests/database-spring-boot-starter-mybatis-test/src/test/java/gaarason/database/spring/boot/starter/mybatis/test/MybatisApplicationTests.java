@@ -20,7 +20,7 @@ public class MybatisApplicationTests {
     private TService tService;
 
     @Test
-    void test1() {
+    void testRollback() throws TestException {
         int id = 1;
 
         generalModel.newQuery().from("student").where("id", id).data("age", 6).update();
@@ -29,11 +29,10 @@ public class MybatisApplicationTests {
 
         System.out.println("原始, age : " + age);
 
-
         int newAge = Integer.parseInt(String.valueOf(age)) + 99;
 
         try {
-            tService.doSomething(id, newAge);
+            tService.doSomethingError(id, newAge);
         } catch (TestException e) {
             System.out.println("意料中的异常抛出");
         }
@@ -42,6 +41,28 @@ public class MybatisApplicationTests {
         System.out.println("事务回滚后, age : " + ageBySelect);
 
         Assertions.assertEquals(age, ageBySelect);
+    }
+
+    @Test
+    void testCommit() throws TestException {
+        int id = 1;
+
+        generalModel.newQuery().from("student").where("id", id).data("age", 6).update();
+
+        Object age = generalModel.newQuery().from("student").where("id", id).firstOrFail().toMap().get("age");
+
+        System.out.println("原始, age : " + age);
+
+        int newAge = Integer.parseInt(String.valueOf(age)) + 55;
+
+        tService.doSomething(id, newAge);
+
+        Object ageBySelectV2 = generalModel.newQuery().from("student").where("id", id).firstOrFail().toMap().get("age");
+
+        System.out.println("事务提交后, age : " + ageBySelectV2);
+
+        Assertions.assertEquals(newAge, ageBySelectV2);
+
 
     }
 

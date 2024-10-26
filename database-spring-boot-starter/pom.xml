@@ -15,8 +15,8 @@
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <gaarason.database.springboot.version>2.7.3</gaarason.database.springboot.version>
-        <gaarason.database.druid.version>1.2.9</gaarason.database.druid.version>
+        <gaarason.database.springboot.version>2.7.18</gaarason.database.springboot.version>
+        <gaarason.database.druid.version>1.2.23</gaarason.database.druid.version>
     </properties>
 
     <dependencyManagement>
@@ -46,6 +46,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>

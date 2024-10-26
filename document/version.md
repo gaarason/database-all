@@ -25,6 +25,11 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 5.5.1
+
+- 修复, 在`SpringBoot`中使用事务注解时, 事务提交可能异常失败的问题
+- 部分依赖升级
+
 ### 5.5.0
 
 - 在`Builder`中, 增加了部分方法, `whereNot()`, `havingNot()`, `havingAnyLike()`, `havingAllLike()`,`whereAnyLike()`,`whereAllLike()`

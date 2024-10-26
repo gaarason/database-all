@@ -18,7 +18,7 @@ public class TService {
     private GeneralModel generalModel;
 
     @Transactional(rollbackFor = TestException.class)
-    public void doSomething(int id, int age) throws TestException {
+    public void doSomethingError(int id, int age) throws TestException {
 
         studentMapper.updateAgeById(id, age);
 
@@ -27,5 +27,15 @@ public class TService {
         System.out.println("通过mybatis更新后, age : " + ageBySelect);
 
         throw new TestException();
+    }
+
+    @Transactional(rollbackFor = TestException.class)
+    public void doSomething(int id, int age) throws TestException {
+
+        studentMapper.updateAgeById(id, age);
+
+        Object ageBySelect = generalModel.newQuery().from("student").where("id", id).firstOrFail().toMap().get("age");
+
+        System.out.println("通过mybatis更新后, age : " + ageBySelect);
     }
 }

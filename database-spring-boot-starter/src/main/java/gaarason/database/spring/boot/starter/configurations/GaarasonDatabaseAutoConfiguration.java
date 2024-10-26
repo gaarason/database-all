@@ -5,7 +5,7 @@ import gaarason.database.autoconfiguration.MssqlAutoconfiguration;
 import gaarason.database.autoconfiguration.MysqlAutoconfiguration;
 import gaarason.database.bootstrap.ContainerBootstrap;
 import gaarason.database.config.GaarasonDatabaseProperties;
-import gaarason.database.connection.GaarasonDataSourceBuilder;
+import gaarason.database.connection.GaarasonSmartDataSourceWrapper;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.core.Container;
 import gaarason.database.eloquent.GeneralModel;
@@ -158,7 +158,8 @@ public class GaarasonDatabaseAutoConfiguration {
         public GaarasonDataSource gaarasonDataSource(DataSource dataSource, Container container) {
             LOGGER.info("GaarasonDataSource init with " + dataSource.getClass().getName());
             // 创建 GaarasonDataSource
-            return GaarasonDataSourceBuilder.build(dataSource, container);
+            return new GaarasonSmartDataSourceWrapper(Collections.singletonList(dataSource), container);
+//            return GaarasonDataSourceBuilder.build(dataSource, container);
         }
 
         /**
