@@ -3,12 +3,14 @@ package gaarason.database.spring.boot.starter.mybatis.test.service;
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.spring.boot.starter.mybatis.test.TestException;
 import gaarason.database.spring.boot.starter.mybatis.test.mybatis.mapper.StudentMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
 @Service
+@Slf4j
 public class TService {
 
     @Resource
@@ -36,6 +38,8 @@ public class TService {
 
         Object ageBySelect = generalModel.newQuery().from("student").where("id", id).firstOrFail().toMap().get("age");
 
-        System.out.println("通过mybatis更新后, age : " + ageBySelect);
+        int newAge = studentMapper.selectById(id);
+
+        log.info("通过mybatis更新后, age : " + ageBySelect + ", newAge : " + newAge);
     }
 }

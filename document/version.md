@@ -25,6 +25,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 5.5.2
+
+- 修复, 在`SpringBoot`中同时使用`Mybatis`时, `Mybatis`所持有的事务外的产生的的数据库链接, 无法正常释放的问题
+
 ### 5.5.1
 
 - 修复, 在`SpringBoot`中使用事务注解时, 事务提交可能异常失败的问题

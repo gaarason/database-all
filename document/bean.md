@@ -108,7 +108,7 @@ public class GaarasonDatabaseAutoConfiguration {
             List<DataSource> readDataSourceList = new ArrayList<>();
             readDataSourceList.add(dataSourceSlave0());
             readDataSourceList.add(dataSourceSlave1());
-            return GaarasonDataSourceBuilder.build(dataSourceList, readDataSourceList, container);
+            return new GaarasonSmartDataSourceWrapper(dataSourceList, readDataSourceList, container);
         }
 
         /**

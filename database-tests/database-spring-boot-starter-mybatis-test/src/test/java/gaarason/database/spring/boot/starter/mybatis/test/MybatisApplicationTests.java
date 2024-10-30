@@ -1,6 +1,7 @@
 package gaarason.database.spring.boot.starter.mybatis.test;
 
 import gaarason.database.eloquent.GeneralModel;
+import gaarason.database.spring.boot.starter.mybatis.test.mybatis.mapper.StudentMapper;
 import gaarason.database.spring.boot.starter.mybatis.test.service.TService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
@@ -18,6 +19,9 @@ public class MybatisApplicationTests {
 
     @Resource
     private TService tService;
+
+    @Resource
+    private StudentMapper studentMapper;
 
     @Test
     void testRollback() throws TestException {
@@ -62,8 +66,23 @@ public class MybatisApplicationTests {
         System.out.println("事务提交后, age : " + ageBySelectV2);
 
         Assertions.assertEquals(newAge, ageBySelectV2);
+    }
 
+    @Test
+    void testManyRun() throws TestException {
+        int id = 1;
+        generalModel.newQuery().from("student").where("id", id).data("age", 6).update();
 
+        for (int i = 0; i < 99; i++) {
+            Object age = generalModel.newQuery().from("student").where("id", id).firstOrFail().toMap().get("age");
+            log.info("原始, age : " + age);
+            int newAge = Integer.parseInt(String.valueOf(age)) + 1;
+            tService.doSomething(id, newAge);
+            // 事务外查询
+            log.info("事务外 mybatis 查询次数: " + (i + 1));
+            int selectById = studentMapper.selectById(id);
+            Assertions.assertEquals(newAge, selectById);
+        }
     }
 
 }

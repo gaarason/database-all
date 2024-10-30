@@ -20,6 +20,6 @@ public class GaarasonSmartDataSourceWrapper extends GaarasonDataSourceWrapper im
 
     @Override
     public boolean shouldClose(Connection con) {
-        return false;
+        return !isLocalThreadInTransaction();
     }
 }
