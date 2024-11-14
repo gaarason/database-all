@@ -146,6 +146,7 @@ public static class CustomPrimaryKey implements IdGenerator<Integer> {
 
     @Override
     public Integer nextId() {
+        // 你的自定义id生成算法
         return id.getAndIncrement();
     }
 }

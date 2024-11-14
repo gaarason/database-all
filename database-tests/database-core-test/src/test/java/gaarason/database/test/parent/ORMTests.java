@@ -152,9 +152,13 @@ abstract public class ORMTests extends BaseTests {
         entity.setAge(Byte.valueOf("44"));
         entity.setSex(Byte.valueOf("1"));
         entity.setTeacherId(1);
+        Assert.assertNull(entity.getId());
         boolean save = record.save();
+        Assert.assertEquals(20, record.getEntity().getId().intValue());
         Assert.assertTrue(save);
         System.out.println(record);
+        StudentORMModel.Entity object = record.toObject();
+        Assert.assertEquals(20, object.getId().intValue());
         Record<StudentORMModel.Entity, Integer> r = studentORMModel.findOrFail(20);
         Assert.assertEquals(r.toObject().getName(), "小超超");
         Assert.assertEquals(record.getEntity().getId().intValue(), 20);

@@ -16,8 +16,8 @@ Eloquent ORM for Java
     * [ORM](#ORM)
         * [基本操作](#基本操作)
             * [新增](#新增)
-                * [自动主键](/document/mapping.md)
-                * [自定义主键](/document/mapping.md)
+                * [自动主键](/document/mapping.md#自动主键)
+                * [自定义主键](/document/mapping.md#自定义主键)
             * [查询](#查询)
             * [更新](#更新)
             * [删除](#删除)
@@ -141,7 +141,12 @@ student.setName("肖邦");
 
 // 保存
 record.save();
+
+// 数据库中的主键id, 需要数据库支持
+student.getId();
 ```
+
+主键的相关其他可以参考 [@Primary](/document/mapping.md#Primary) 注解的使用
 
 #### 查询
 
