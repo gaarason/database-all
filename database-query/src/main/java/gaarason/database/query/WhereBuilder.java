@@ -85,42 +85,66 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
 
     @Override
     public Builder<T, K> whereBitIn(String column, Collection<?> values) {
-        return andWhere(builder -> {
-            for (Object value : values) {
-                builder.orWhere(builder1 -> builder1.whereBit(column, value));
-            }
-            return builder;
-        });
+        long packed = BitUtils.packs(ObjectUtils.typeCast(values));
+        // column & 1
+        String sqlPart1 = backQuote(column) + "&" + packed;
+        // ( column & 1 ) != 0
+        String sqlPart2 = FormatUtils.bracket(sqlPart1) + "!=0";
+        return whereRaw(sqlPart2);
+//        return andWhere(builder -> {
+//            for (Object value : values) {
+//                builder.orWhere(builder1 -> builder1.whereBit(column, value));
+//            }
+//            return builder;
+//        });
     }
 
     @Override
     public Builder<T, K> whereBitNotIn(String column, Collection<?> values) {
-        return andWhere(builder -> {
-            for (Object value : values) {
-                builder.orWhere(builder1 -> builder1.whereBitNot(column, value));
-            }
-            return builder;
-        });
+        long packed = BitUtils.packs(ObjectUtils.typeCast(values));
+        // column ^ 1
+        String sqlPart1 = backQuote(column) + "^" + packed;
+        // ( column ^ 1 ) != 0
+        String sqlPart2 = FormatUtils.bracket(sqlPart1) + "!=0";
+        return whereRaw(sqlPart2);
+//        return andWhere(builder -> {
+//            for (Object value : values) {
+//                builder.orWhere(builder1 -> builder1.whereBitNot(column, value));
+//            }
+//            return builder;
+//        });
     }
 
     @Override
     public Builder<T, K> whereBitStrictIn(String column, Collection<?> values) {
-        return andWhere(builder -> {
-            for (Object value : values) {
-                builder.whereBit(column, value);
-            }
-            return builder;
-        });
+        long packed = BitUtils.packs(ObjectUtils.typeCast(values));
+        // column & 1
+        String sqlPart1 = backQuote(column) + "&" + packed;
+        // ( column & 1 ) = 1
+        String sqlPart2 = FormatUtils.bracket(sqlPart1) + "=" + packed;
+        return whereRaw(sqlPart2);
+//        return andWhere(builder -> {
+//            for (Object value : values) {
+//                builder.whereBit(column, value);
+//            }
+//            return builder;
+//        });
     }
 
     @Override
     public Builder<T, K> whereBitStrictNotIn(String column, Collection<?> values) {
-        return andWhere(builder -> {
-            for (Object value : values) {
-                builder.whereBitNot(column, value);
-            }
-            return builder;
-        });
+        long packed = BitUtils.packs(ObjectUtils.typeCast(values));
+        // column & 1
+        String sqlPart1 = backQuote(column) + "&" + packed;
+        // ( column & 1 ) = 0
+        String sqlPart2 = FormatUtils.bracket(sqlPart1) + "=" + 0;
+        return whereRaw(sqlPart2);
+//        return andWhere(builder -> {
+//            for (Object value : values) {
+//                builder.whereBitNot(column, value);
+//            }
+//            return builder;
+//        });
     }
 
     @Override

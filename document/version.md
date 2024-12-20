@@ -25,6 +25,11 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 5.5.3
+
+- 在`Builder`中, 集合类位操作的相关的方法, `havingBitIn()`,`havingBitNotIn()`,`havingBitStrictIn()`,`havingBitStrictNotIn()`由数据库逻辑实现, 改为数据库位操作实现
+
+
 ### 5.5.2
 
 - 修复, 在`SpringBoot`中同时使用`Mybatis`时, `Mybatis`所持有的事务外的产生的的数据库链接, 无法正常释放的问题
