@@ -253,6 +253,8 @@ public class Entity implements Serializable {
 
 ##### 自定义类型转化
 
+自定义的`Conversion`在单个容器中, 会以单例的形式运行.
+
 ```java
 // 例如, 需要自定义对性别 的序列化与反序列化
 // 以便将数据库中的1,2, 序列化为对象上的自定义的枚举类型Sex
@@ -324,15 +326,16 @@ AnnotationTestModel.EnumEntity entity = new AnnotationTestModel.EnumEntity();
 entity.setSex(AnnotationTestModel.Sex.WOMAN);
 entity.setName(name);
 
-// 普通插入
+// 插入时 自动转化
 Integer id = annotationTestModel.newQuery().from(entity).insertGetId(entity);
 
-// 获取后自动转化
+// 获取后 自动转化
 AnnotationTestModel.EnumEntity resultEntity = annotationTestModel.newQuery()
     .from(entity)
     .findOrFail(id)
     .toObject(AnnotationTestModel.EnumEntity.class);
 
+// 断言验证
 Assert.assertEquals(name, resultEntity.getName());
 Assert.assertEquals(AnnotationTestModel.Sex.WOMAN, resultEntity.getSex());
 
