@@ -245,8 +245,55 @@ database.slave1.useGlobalDataSourceStat=${useGlobalDataSourceStat}
 ### 多连接
 
 - 多个数据库连接(GaarasonDataSource), 一般场景是根据业务的上下文, 来确定使用哪个( GaarasonDataSource ), 兼容于读写分离
-- 建议自定义代理类, 继承`GaarasonDataSourceWrapper`(即实现`GaarasonDataSource`接口),
-  并重写`protected DataSource getRealDataSource(boolean isWriteOrTransaction)`
+- ~~建议自定义代理类, 继承`GaarasonDataSourceWrapper`(即实现`GaarasonDataSource`接口),
+  并重写`protected DataSource getRealDataSource(boolean isWriteOrTransaction)`~~
+
+#### 示例使用
+Web 场景下, 根据当前请求, 动态切换`GaarasonDataSource`
+```java
+@Repository
+public class StudentModel extends Model<Student, Integer> {
+    
+    @Resource
+    private GaarasonDataSource gaarasonDataSource1;
+    
+    @Resource
+    private GaarasonDataSource gaarasonDataSource2;
+    
+    @Override
+    public GaarasonDataSource getGaarasonDataSource() {
+        // 2. 根据当前业务, 选择 GaarasonDataSource
+        Object re = getHttpServletRequest().getAttribute("xx");
+        if(re == 1) {
+            return gaarasonDataSource1;
+        }
+        return gaarasonDataSource2;
+    }
+
+    /**
+     * 普通业务调用
+     */
+    public void doSomeThing(){
+        // 1. 记录当前业务
+        // 当然常见的情况是, 写在 Web 过滤器或者拦截器等地方
+        getHttpServletRequest().setAttribute("xx", "aa");
+        
+        newQuery().where("name", "alice").first();
+    }
+
+    /**
+     * 获取当前 web 线程的 request
+     * @return request
+     */
+    public static HttpServletRequest getHttpServletRequest() {
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if(requestAttributes == null) {
+            throw new BusinessHPException("No HttpServletRequest");
+        }
+        return requestAttributes.getRequest();
+    }
+}
+```
 
 ### 使用GaarasonDataSource
 
