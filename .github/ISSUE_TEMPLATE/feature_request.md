@@ -1,8 +1,8 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
+about: 有一个很棒的点子 ? 请告诉我 !
 title: "[Feature]在xx场景下增加/改进xx功能"
-labels: ''
+labels: enhancement
 assignees: ''
 
 ---

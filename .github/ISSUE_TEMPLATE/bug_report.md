@@ -1,8 +1,8 @@
 ---
 name: Bug report
-about: Create a report to help us improve
-title: "[BUG]在xx情况下使用xx功能出现xx问题"
-labels: ''
+about: 使用中出现了不符合预期的情况 ? 请告诉我 !
+title: "[Bug]在xx情况下使用xx功能出现xx问题"
+labels: bug
 assignees: ''
 
 ---
