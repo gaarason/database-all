@@ -19,7 +19,7 @@ public class MssqlAutoconfiguration implements GaarasonAutoconfiguration {
 
                 @Override
                 public Integer getOrder() {
-                    return InstanceCreatorFunctionalInterface.super.getOrder();
+                    return InstanceCreatorFunctionalInterface.super.getOrder() - 1;
                 }
             });
     }

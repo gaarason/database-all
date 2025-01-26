@@ -422,11 +422,13 @@ public class TestModel extends Model<TestModel.Inner, Integer> {
 程序中, 会扫描`Model`类型, 并解析其信息; 会扫描`GaarasonAutoconfiguration`类型, 完成自动自定义配置
 
 由于`java8` 与`其他8以上java版本`的`ClassLoader`在实现上的差别, 使得当`packages`不指定时, `java8`会扫描所有包, 而`其他8以上java版本`则完全不扫描  
-因此, `java8`以上的版本, 必须配置本项; `java8`为了更快的启动 (更高效/准确的扫描), 也建议配置本项
+因此, `java8`以上的版本, 必须配置本项; `java8`为了更快的启动 (更高效/准确的扫描), 也建议配置本项   
 
-- Java代码中指定`System.setProperty("gaarason.database.scan.packages", "you.package1,you.package2")`
-- Jvm启动时指定`-Dgaarason.database.scan.packages=you.package1,you.package2`
-- SpringBoot下使用 `@GaarasonDatabaseScan("you.package1,you.package2")`
+以下的配置方式, 选择其一即可
+
+- Java 代码中指定`System.setProperty("gaarason.database.scan.packages", "you.package1,you.package2")`
+- Jvm 启动时指定`-Dgaarason.database.scan.packages=you.package1,you.package2`
+- SpringBoot 下使用 `@GaarasonDatabaseScan("you.package1,you.package2")`
 
 ### 新增支持的数据库
 
