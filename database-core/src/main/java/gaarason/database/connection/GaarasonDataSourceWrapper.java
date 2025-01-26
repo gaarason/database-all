@@ -13,7 +13,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Savepoint;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 
 /**
@@ -244,9 +248,9 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
      */
     protected DataSource getRealDataSource(boolean isWriteOrTransaction) {
         if (!hasSlave || isWriteOrTransaction) {
-            return masterDataSourceList.get((new Random()).nextInt(masterDataSourceList.size()));
+            return masterDataSourceList.get(ThreadLocalRandom.current().nextInt(masterDataSourceList.size()));
         } else {
-            return slaveDataSourceList.get((new Random()).nextInt(slaveDataSourceList.size()));
+            return slaveDataSourceList.get(ThreadLocalRandom.current().nextInt(slaveDataSourceList.size()));
         }
     }
 

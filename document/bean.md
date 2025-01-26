@@ -241,60 +241,6 @@ database.slave1.connectionProperties=${connectionProperties}
 database.slave1.useGlobalDataSourceStat=${useGlobalDataSourceStat}
 
 ```
-
-### 多连接
-
-- 多个数据库连接(GaarasonDataSource), 一般场景是根据业务的上下文, 来确定使用哪个( GaarasonDataSource ), 兼容于读写分离
-- ~~建议自定义代理类, 继承`GaarasonDataSourceWrapper`(即实现`GaarasonDataSource`接口),
-  并重写`protected DataSource getRealDataSource(boolean isWriteOrTransaction)`~~
-
-#### 示例使用
-Web 场景下, 根据当前请求, 动态切换`GaarasonDataSource`
-```java
-@Repository
-public class StudentModel extends Model<Student, Integer> {
-    
-    @Resource
-    private GaarasonDataSource gaarasonDataSource1;
-    
-    @Resource
-    private GaarasonDataSource gaarasonDataSource2;
-    
-    @Override
-    public GaarasonDataSource getGaarasonDataSource() {
-        // 2. 根据当前业务, 选择 GaarasonDataSource
-        Object re = getHttpServletRequest().getAttribute("xx");
-        if(re == 1) {
-            return gaarasonDataSource1;
-        }
-        return gaarasonDataSource2;
-    }
-
-    /**
-     * 普通业务调用
-     */
-    public void doSomeThing(){
-        // 1. 记录当前业务
-        // 当然常见的情况是, 写在 Web 过滤器或者拦截器等地方
-        getHttpServletRequest().setAttribute("xx", "aa");
-        
-        newQuery().where("name", "alice").first();
-    }
-
-    /**
-     * 获取当前 web 线程的 request
-     * @return request
-     */
-    public static HttpServletRequest getHttpServletRequest() {
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        if(requestAttributes == null) {
-            throw new BusinessHPException("No HttpServletRequest");
-        }
-        return requestAttributes.getRequest();
-    }
-}
-```
-
 ### 使用GaarasonDataSource
 
 ```java
@@ -325,6 +271,179 @@ public class StudentModel extends Model<Student, Integer> {
     }
 }
 ```
+
+### 多连接
+
+- 多个数据库连接(DataSource), 一般场景是根据业务的上下文, 来确定使用哪个( DataSource ), 兼容于读写分离
+- 建议自定义代理类, 继承`GaarasonDataSourceWrapper`(即实现`GaarasonDataSource`接口),
+  并重写`protected DataSource getRealDataSource(boolean isWriteOrTransaction)`
+
+#### 示例使用
+Web 场景下, 根据当前请求, 动态切换`DataSource`
+
+1. 定义`GaarasonSmartDataSourceMultipleLinksWrapper`(即实现`GaarasonDataSource`接口),
+   并重写`protected DataSource getRealDataSource(boolean isWriteOrTransaction)`
+```java
+public class GaarasonSmartDataSourceMultipleLinksWrapper extends GaarasonSmartDataSourceWrapper {
+
+    /**
+     * 每组链接 (写连接, 读链接)
+     */
+    protected final Map<String, List<List<DataSource>>> dataSourceMap;
+
+
+    public GaarasonSmartDataSourceMultipleLinksWrapper(Map<String, List<List<DataSource>>> dataSourceMap, Container container) {
+        // 不再使用原数据结构
+        super(Collections.emptyList(), Collections.emptyList(), container);
+        // 使用新的
+        this.dataSourceMap = dataSourceMap;
+    }
+
+    @Override
+    protected DataSource getRealDataSource(boolean isWriteOrTransaction) {
+        Object databaseLink = "";
+        // 选择合适的链接
+        databaseLink = getHttpServletRequest().getAttribute("databaseLink");
+
+        List<List<DataSource>> lists = dataSourceMap.get(String.valueOf(databaseLink));
+
+        if(ObjectUtils.isEmpty(lists)) {
+            throw new RuntimeException();
+        }
+        
+        List<DataSource> masterDataSourceList = lists.get(0);
+        List<DataSource> slaveDataSourceList = lists.size() > 1 ? lists.get(1) : Collections.emptyList();
+        boolean hasSlave = !ObjectUtils.isEmpty(slaveDataSourceList);
+
+        if (!hasSlave || isWriteOrTransaction) {
+            return masterDataSourceList.get(ThreadLocalRandom.current().nextInt(masterDataSourceList.size()));
+        } else {
+            return slaveDataSourceList.get(ThreadLocalRandom.current().nextInt(slaveDataSourceList.size()));
+        }
+    }
+
+    /**
+     * 2个写链接, 通过名字区分
+     */
+    public static GaarasonSmartDataSourceMultipleLinksWrapper build(DataSource dataSource1, DataSource dataSource2, Container container) {
+        Map<String, List<List<DataSource>>> dataSourceMap = new HashMap<>();
+        List<List<DataSource>> listOfName1 = dataSourceMap.computeIfAbsent("name1", k -> new ArrayList<>());
+        listOfName1.add(0, Collections.singletonList(dataSource1));
+
+        List<List<DataSource>> listOfName2 = dataSourceMap.computeIfAbsent("name2", k -> new ArrayList<>());
+        listOfName2.add(0, Collections.singletonList(dataSource2));
+
+        return new GaarasonSmartDataSourceMultipleLinksWrapper(dataSourceMap, container);
+    }
+
+
+    /**
+     * 示例, 获取当前 web 线程的 request
+     * @return request
+     */
+    public static HttpServletRequest getHttpServletRequest() {
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if(requestAttributes == null) {
+            throw new BusinessHPException("No HttpServletRequest");
+        }
+        return requestAttributes.getRequest();
+    }
+}
+
+```
+2. 配置`GaarasonSmartDataSourceMultipleLinksWrapper`
+
+```java
+import java.util.HashMap;
+
+@Configuration
+@AutoConfigureBefore({DruidDataSourceAutoConfigure.class, DataSourceAutoConfiguration.class})
+@EnableConfigurationProperties({GaarasonDatabaseProperties.class})
+@Import({GeneralModel.class, GeneralGenerator.class})
+public class GaarasonDatabaseAutoConfiguration {
+
+    private static final Log LOGGER = LogFactory.getLog(GaarasonDatabaseAutoConfiguration.class);
+
+    // 省略其他配置项
+    // ....
+
+
+    @Configuration
+    public static class GaarasonDataSourceAutoconfigure {
+
+        @Resource
+        private Container container;
+
+        // 库1
+        @Bean
+        @ConfigurationProperties(prefix = "database.master1")
+        public DataSource dataSourceMaster1() {
+            return DruidDataSourceBuilder.create().build();
+        }
+
+        // 库2
+        @Bean
+        @ConfigurationProperties(prefix = "database.master2")
+        public DataSource dataSourceMaster2() {
+            return DruidDataSourceBuilder.create().build();
+        }
+
+        @Primary
+        @Bean
+        public GaarasonDataSource gaarasonDataSource(DataSource dataSourceMaster1, DataSource dataSourceMaster2, Container container) {
+            GaarasonSmartDataSourceMultipleLinksWrapper.build(dataSourceMaster1, dataSourceMaster2, container);
+        }
+
+        @Primary
+        @Bean
+        public GaarasonTransactionManager gaarasonTransactionManager(GaarasonDataSource gaarasonDataSource) {
+            return new GaarasonTransactionManager(gaarasonDataSource);
+        }
+    }
+}
+```
+3. 在业务入口处, 记录当前需要使用的链接 示例为 web 过滤器
+```java
+public class LoggingFilter implements Filter {
+
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        if (request instanceof HttpServletRequest) {
+            HttpServletRequest httpRequest = (HttpServletRequest) request;
+
+            // 业务判断
+            // ....
+            // 记录标记
+            request.setAttribute("databaseLink", "name1");
+        }
+
+        // 继续处理请求
+        chain.doFilter(request, response);
+    }
+}
+```
+
+4. 业务使用
+
+```java
+@Repository
+public class StudentModel extends Model<Student, Integer> {
+    
+    @Resource
+    private GaarasonDataSource gaarasonDataSource;
+
+    /**
+     * 普通业务调用
+     */
+    public void doSomeThing(){
+        newQuery().where("name", "alice").first();
+    }
+}
+```
+
+
 
 ## 非spring
 
