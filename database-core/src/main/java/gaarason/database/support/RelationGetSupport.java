@@ -236,6 +236,7 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
         @Nullable Builder<?, ?> builder, RecordWrapper relationshipRecordWith,
         GenerateRecordListFunctionalInterface closure) {
         // 有缓存有直接返回, 没有就执行后返回
+        // 此处降低查询次数
         RecordList<?, ?> recordList = getRecordsInCache(cacheRecords, builder, closure);
         // 使用复制结果
         RecordList<?, ?> recordsCopy = RecordFactory.copyRecordList(recordList);

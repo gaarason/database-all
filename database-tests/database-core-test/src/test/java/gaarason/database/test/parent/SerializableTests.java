@@ -205,4 +205,29 @@ abstract public class SerializableTests extends BaseTests {
 
 
     }
+//
+//    // 抽象父类
+//    public static abstract class Builder<B extends Builder<B, T, K>, T, K> {
+//        // 泛型方法，返回调用它的类的实例类型
+//        public abstract B getSelf();
+//
+//        // 其他父类方法...
+//    }
+//
+//    // 子类
+//    public static class MysqlBuilder<T, K> extends Builder<MysqlBuilder<T, K>, T, K > {
+//        @Override
+//        public MysqlBuilder<T, K> getSelf() {
+//            return this;
+//        }
+//
+//        // 子类特有的方法...
+//    }
+//
+//    public void ttt() {
+//        MysqlBuilder<Object, Object> objectObjectMysqlBuilder = new MysqlBuilder<>();
+//
+//
+//    }
+
 }

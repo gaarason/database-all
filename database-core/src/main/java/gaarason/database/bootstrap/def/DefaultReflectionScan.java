@@ -34,6 +34,7 @@ public class DefaultReflectionScan implements ReflectionScan {
 
     /**
      * 获取真实反射扫描器
+     * 配置扫描路径
      * @return Reflections
      */
     protected static Reflections getReflections(GaarasonDatabaseProperties properties) {

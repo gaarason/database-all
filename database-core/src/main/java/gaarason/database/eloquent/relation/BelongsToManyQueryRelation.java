@@ -50,6 +50,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     @Nullable
     public Builder<?, ?> prepareRelationBuilder(List<Map<String, Object>> metadata) {
         return belongsToManyTemplate.relationModel.newQuery()
+            .select(belongsToManyTemplate.foreignKeyForLocalModel, belongsToManyTemplate.foreignKeyForTargetModel)
             .whereIn(belongsToManyTemplate.foreignKeyForLocalModel,
                 getColumnInMapList(metadata, belongsToManyTemplate.localModelLocalKey))
             .when(enableLocalModelMorph, builder -> builder.where(belongsToManyTemplate.morphKeyForLocalModel,
@@ -86,7 +87,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
             ObjectUtils.typeCast(belongsToManyTemplate.targetModel.newQuery()));
 
 
-        return targetBuilder.select(belongsToManyTemplate.targetModel.getEntityClass())
+        return selectFill(targetBuilder, belongsToManyTemplate.targetModel.getEntityClass())
             .whereIn(belongsToManyTemplate.targetModelLocalKey, targetModelForeignKeySet);
 
     }

@@ -135,10 +135,7 @@ public final class RecordFactory {
         RecordList<T, K> recordList = new RecordListBean<>(originalRecordList.getOriginalSql(),
             originalRecordList.getContainer());
         for (Record<T, K> originalRecord : originalRecordList) {
-            Model<T, K> model = originalRecord.getModel();
-            Map<String, Object> metadataMap = copy(originalRecord.getMetadataMap());
-            String originalSql = originalRecord.getOriginalSql();
-            recordList.add(new RecordBean<>(model, metadataMap, originalSql));
+            recordList.add(new RecordBean<>(originalRecord));
         }
         // 使用引用
         recordList.setCacheMap(copy(originalRecordList.getCacheMap()));

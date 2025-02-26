@@ -59,6 +59,7 @@ public class GaarasonDatabaseAutoConfiguration {
      * 容器初始化
      * @param applicationContext 应用上下文
      * @param gaarasonDatabaseProperties 配置
+     * @see gaarason.database.spring.boot.starter.annotation.GaarasonDatabaseScan
      * @return 容器
      */
     @Bean
@@ -71,8 +72,8 @@ public class GaarasonDatabaseAutoConfiguration {
 
         /*
          * 将配置合并
-         * 认定 GaarasonDatabaseScan 的解析一定在此之前完成了.
-         * 默认使用 spring boot 的包扫描路径
+         * 认定 @GaarasonDatabaseScan 的解析一定在此之前完成了.
+         * 缺省时, 使用 spring boot 的包扫描路径
          */
         gaarasonDatabaseProperties.mergeScan(GaarasonDatabaseScanRegistrar.getScan())
             .fillPackageWhenIsEmpty(packageOnSpringBoot)

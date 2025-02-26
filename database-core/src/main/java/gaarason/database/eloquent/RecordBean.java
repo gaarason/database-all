@@ -100,7 +100,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      * @param stringObjectMap 元数据
      */
     public RecordBean(Model<T, K> model, Map<String, Object> stringObjectMap, String originalSql) {
-        initRecordBean(model, stringObjectMap, originalSql);
+        initNewRecord(model, stringObjectMap, originalSql);
     }
 
     /**
@@ -108,21 +108,43 @@ public class RecordBean<T, K> implements Record<T, K> {
      * @param model 数据模型
      */
     public RecordBean(Model<T, K> model) {
-        initRecordBean(model, Collections.emptyMap(), "");
+        initNewRecord(model, Collections.emptyMap(), "");
     }
 
-    public void initRecordBean(Model<T, K> model, Map<String, Object> stringObjectMap, String originalSql) {
+    /**
+     * 由已存在的 Record 生成
+     * @param recordBean 已经完成初始化的 Record
+     */
+    public RecordBean(Record<T, K> recordBean) {
+        initRecord(recordBean.getModel(), recordBean.getMetadataMap(), recordBean.getOriginalSql());
+        this.entity = recordBean.getEntity();
+    }
+
+    protected void initNewRecord(Model<T, K> model, Map<String, Object> stringObjectMap, String originalSql) {
+        initRecord(model, stringObjectMap, originalSql);
+        this.entity = toObjectWithoutRelationship();
+        // 通知
+        model.eventRecordRetrieved(this);
+    }
+
+    protected void initRecord(Model<T, K> model, Map<String, Object> stringObjectMap, String originalSql) {
         this.entityClass = model.getEntityClass();
         this.model = model;
         this.modelShadow = model.getGaarasonDataSource().getContainer().getBean(ModelShadowProvider.class);
         this.originalSql = originalSql;
-        this.entity = init(stringObjectMap);
-        if (!stringObjectMap.isEmpty()) {
-            hasBind = true;
-            // 通知
-            model.eventRecordRetrieved(this);
-        } else {
-            hasBind = false;
+        init(stringObjectMap);
+        hasBind = !metadataMap.isEmpty();
+    }
+
+    /**
+     * 初始化数据
+     * @param stringObjectMap 元数据
+     */
+    protected void init(Map<String, Object> stringObjectMap) {
+        // 如果不是统同一个(引用相同)对象, 则手动赋值下
+        if (metadataMap != stringObjectMap) {
+            metadataMap.clear();
+            metadataMap.putAll(stringObjectMap);
         }
     }
 
@@ -190,18 +212,6 @@ public class RecordBean<T, K> implements Record<T, K> {
         return relationMap;
     }
 
-    /**
-     * 初始化数据
-     * @param stringObjectMap 元数据
-     */
-    protected T init(Map<String, Object> stringObjectMap) {
-        // 如果不是统同一个(引用相同)对象, 则手动赋值下
-        if (metadataMap != stringObjectMap) {
-            metadataMap.clear();
-            metadataMap.putAll(stringObjectMap);
-        }
-        return toObjectWithoutRelationship();
-    }
 
     /**
      * 将元数据map转化为普通map
@@ -444,7 +454,8 @@ public class RecordBean<T, K> implements Record<T, K> {
 
     @Override
     public Record<T, K> refresh(Map<String, Object> metadataMap) {
-        this.entity = init(metadataMap);
+        init(metadataMap);
+        this.entity = toObjectWithoutRelationship();
         if (!metadataMap.isEmpty()) {
             hasBind = true;
             // 通知
@@ -642,6 +653,6 @@ public class RecordBean<T, K> implements Record<T, K> {
             .getByModelClass(ObjectUtils.typeCast(modelClass))
             .getModel();
 
-        initRecordBean(ObjectUtils.typeCast(model), ObjectUtils.typeCast(map), sql);
+        initNewRecord(ObjectUtils.typeCast(model), ObjectUtils.typeCast(map), sql);
     }
 }

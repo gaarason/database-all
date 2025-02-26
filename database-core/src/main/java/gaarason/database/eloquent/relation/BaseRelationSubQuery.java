@@ -5,6 +5,7 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
+import gaarason.database.contract.query.Grammar;
 import gaarason.database.eloquent.RecordListBean;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
@@ -124,6 +125,16 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
         // 应该目标表的主键列表
         return targetRecords.toList(
             recordTemp -> recordTemp.getMetadataMap().get(recordTemp.getModel().getPrimaryKeyColumnName()));
+    }
+
+    /**
+     * 填充 select
+     * @param queryBuilder 查询构造器
+     * @param getEntityClass 目标实体
+     * @return 查询构造器
+     */
+    protected static Builder<?, ?> selectFill(Builder<?, ?> queryBuilder, Class<?> getEntityClass){
+        return  queryBuilder.getGrammar().isEmpty(Grammar.SQLPartType.SELECT) ? queryBuilder.select(getEntityClass) : queryBuilder;
     }
 
     /**

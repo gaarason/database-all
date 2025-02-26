@@ -206,13 +206,17 @@ abstract public class RelationTests extends BaseTests {
 
     @Test
     public void 一对一关系_一对多关系_快捷用法() {
-        Student student =
-            studentModel.newQuery().where("id", "1")
-                .firstOrFail()
-                .with("teacher.student", builder -> builder.whereIn("id", "1", "2", "3"))
-                .with("relationshipStudentTeachers", builder -> builder.whereNotIn("id", "13"))
-                .toObject();
-        System.out.println(student);
+        List<Student> objectList = studentModel.newQuery()
+                .where("id", 1)
+                .with("relationshipStudentTeachers", builder -> builder.select("student_id","note"))
+                .get()
+                .toObjectList();
+
+        // todo
+        // 查询上, 增加对于 各种外键的默认值
+
+        System.out.println(objectList);
+        Assert.assertNull(objectList.get(0).getRelationshipStudentTeachers().get(0).getCreatedAt());
     }
 
 
@@ -1282,6 +1286,7 @@ abstract public class RelationTests extends BaseTests {
                 "relationshipStudentTeachers.teacher.relationshipStudentTeachers",
                 builder -> builder.orderBy("student_id"),
                 record2 -> record2.with("student")).paginate(1, 4);
+
         System.out.println(paginate);
         Assert.assertEquals(paginate.getCurrentPage(), 1);
         Assert.assertNotNull(paginate.getFrom());
