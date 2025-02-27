@@ -87,7 +87,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
             ObjectUtils.typeCast(belongsToManyTemplate.targetModel.newQuery()));
 
 
-        return selectFill(targetBuilder, belongsToManyTemplate.targetModel.getEntityClass())
+        return selectFill(targetBuilder, belongsToManyTemplate.targetModel.getEntityClass(), belongsToManyTemplate.targetModelLocalKey)
             .whereIn(belongsToManyTemplate.targetModelLocalKey, targetModelForeignKeySet);
 
     }

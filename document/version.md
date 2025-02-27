@@ -25,6 +25,11 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 5.5.4
+
+- 优化对于使用关系查询(`with`)时, 对于内部`RelationGetSupport.toObjectList()`调用过多的问题, 以提高性能
+- 优化对于使用关系查询(`with`)时, 手动指定目标表查询列 (`select`)的情况, 优先使用指定的`select`和必要关系键, 缺省时查询所有列
+
 ### 5.5.3
 
 - 在`Builder`中, 集合类位操作的相关的方法, `havingBitIn()`,`havingBitNotIn()`,`havingBitStrictIn()`,`havingBitStrictNotIn()`由数据库逻辑实现, 改为数据库位操作实现

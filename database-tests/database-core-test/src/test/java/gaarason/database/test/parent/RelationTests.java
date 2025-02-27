@@ -205,18 +205,24 @@ abstract public class RelationTests extends BaseTests {
 
 
     @Test
-    public void 一对一关系_一对多关系_快捷用法() {
+    public void 指定select() {
         List<Student> objectList = studentModel.newQuery()
                 .where("id", 1)
-                .with("relationshipStudentTeachers", builder -> builder.select("student_id","note"))
+                .with("relationshipStudentTeachers", builder -> builder.select("note"))
+                .with(Student::getTeachersBelongsToMany, builder -> builder.select("name"))
+                .with(Student::getTeacher, builder -> builder.select("age"))
                 .get()
                 .toObjectList();
-
-        // todo
-        // 查询上, 增加对于 各种外键的默认值
-
         System.out.println(objectList);
+        // @HasOneOrMany
         Assert.assertNull(objectList.get(0).getRelationshipStudentTeachers().get(0).getCreatedAt());
+        Assert.assertNotNull(objectList.get(0).getRelationshipStudentTeachers().get(0).getNote());
+        // @BelongsToMany
+        Assert.assertNull(objectList.get(0).getTeachersBelongsToMany().get(0).getCreatedAt());
+        Assert.assertNotNull(objectList.get(0).getTeachersBelongsToMany().get(0).getName());
+        // BelongsTo
+        Assert.assertNull(objectList.get(0).getTeacher().getCreatedAt());
+        Assert.assertNotNull(objectList.get(0).getTeacher().getAge());
     }
 
 

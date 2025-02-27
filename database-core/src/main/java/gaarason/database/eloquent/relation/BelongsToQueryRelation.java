@@ -65,7 +65,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
             getColumnInMapList(metadata, belongsToTemplate.localModelForeignKey);
 
         return ObjectUtils.isEmpty(objectSet) ? null :
-            selectFill(customBuilder.execute(ObjectUtils.typeCast(belongsToTemplate.parentModel.newQuery())), belongsToTemplate.parentModel.getEntityClass())
+            selectFill(customBuilder.execute(ObjectUtils.typeCast(belongsToTemplate.parentModel.newQuery())), belongsToTemplate.parentModel.getEntityClass(), belongsToTemplate.parentModelLocalKey)
                 .whereIn(belongsToTemplate.parentModelLocalKey, objectSet);
     }
 

@@ -131,10 +131,11 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * 填充 select
      * @param queryBuilder 查询构造器
      * @param getEntityClass 目标实体
+     * @param keys 各种key
      * @return 查询构造器
      */
-    protected static Builder<?, ?> selectFill(Builder<?, ?> queryBuilder, Class<?> getEntityClass){
-        return  queryBuilder.getGrammar().isEmpty(Grammar.SQLPartType.SELECT) ? queryBuilder.select(getEntityClass) : queryBuilder;
+    protected static Builder<?, ?> selectFill(Builder<?, ?> queryBuilder, Class<?> getEntityClass, String... keys){
+        return  queryBuilder.getGrammar().isEmpty(Grammar.SQLPartType.SELECT) ? queryBuilder.select(getEntityClass) : queryBuilder.select(keys);
     }
 
     /**

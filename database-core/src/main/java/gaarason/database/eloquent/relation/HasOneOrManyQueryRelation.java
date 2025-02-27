@@ -70,7 +70,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
         setWhere(metadata, queryBuilder);
 
 //        return queryBuilder.select(hasOneOrManyTemplate.sonModel.getEntityClass());
-        return selectFill(queryBuilder, hasOneOrManyTemplate.sonModel.getEntityClass());
+        return selectFill(queryBuilder, hasOneOrManyTemplate.sonModel.getEntityClass(), hasOneOrManyTemplate.sonModelForeignKey);
     }
 
     @Override
