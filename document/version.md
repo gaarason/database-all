@@ -25,6 +25,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 5.5.5
+
+- 代码优化以提高性能
+
 ### 5.5.4
 
 - 优化对于使用关系查询(`with`)时, 对于内部`RelationGetSupport.toObjectList()`调用过多的问题, 以提高性能

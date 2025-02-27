@@ -507,7 +507,22 @@ abstract public class RelationTests extends BaseTests {
     }
 
     @Test
+    public void ss() {
+        // 19.380 s with JProfiler
+        for (int i = 0; i < 10; i++) {
+            Student student3 =
+                    studentModel.newQuery()
+                            .firstOrFail()
+                            .with("teacher.students.relationshipStudentTeachers", builder -> builder, record -> record.with(
+                                    "teacher.students.teacher.students.teacher.students",
+                                    builder -> builder.whereIn("id", "3", "2"),
+                                    record8 -> record8.with("teacher"))).toObject();
+        }
+    }
+
+    @Test
     public void 一对一关系_一对多关系_无线级关系_builder筛选2_快捷方式2() {
+        log.info("start");
         Student student3 =
             studentModel.newQuery()
                 .firstOrFail()
@@ -516,6 +531,7 @@ abstract public class RelationTests extends BaseTests {
                     builder -> builder.whereIn("id", "3", "2"),
                     record8 -> record8.with("teacher"))).toObject();
 
+        log.info("end");
         // 同样的断言
         assert1(student3);
     }

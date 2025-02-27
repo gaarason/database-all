@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * 数据库实体信息
@@ -55,6 +56,14 @@ public class EntityMember<T, K> extends Container.SimpleKeeper implements Serial
      * 可查询的`数据库字段`数组
      */
     private final List<String> selectColumnList = new LinkedList<>();
+
+    /**
+     * 可查询的`数据库字段`字符
+     * key : 反引号, 双引号
+     * value :`id`,`name`,`age`
+     * @see #getSelectColumnString(String, Supplier)
+     */
+    private final Map<String, String> selectColumnStringMap = new HashMap<>();
 
     /**
      * 主键信息
@@ -378,6 +387,26 @@ public class EntityMember<T, K> extends Container.SimpleKeeper implements Serial
         return primaryKeyMember;
     }
 
+    /**
+     * 存取 column string
+     * @param symbol 反引号, 双引号
+     * @param func 获取 column string
+     * @return column string
+     */
+    public String getSelectColumnString(String symbol, Supplier<String> func) {
+        String columnString = selectColumnStringMap.get(symbol);
+        if(columnString == null) {
+            synchronized (selectColumnStringMap) {
+                columnString = selectColumnStringMap.get(symbol);
+                if(columnString == null) {
+                    columnString = func.get();
+                    selectColumnStringMap.put(symbol, columnString);
+                }
+            }
+        }
+        return columnString;
+    }
+
     // ---------------------------- simple getter ---------------------------- //
 
     public Class<T> getEntityClass() {
@@ -404,5 +433,4 @@ public class EntityMember<T, K> extends Container.SimpleKeeper implements Serial
     public List<String> getSelectColumnList() {
         return selectColumnList;
     }
-
 }

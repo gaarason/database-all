@@ -257,7 +257,7 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
     protected static RecordList<?, ?> getRecordsInCache(Map<String, RecordList<?, ?>> cacheRecords,
         @Nullable Builder<?, ?> builder, GenerateRecordListFunctionalInterface closure) {
         // 缓存keyName
-        String cacheKey = builder == null ? "" : builder.toSql(SqlType.SELECT);
+        String cacheKey = builder == null ? "" : builder.toSql(SqlType.SELECT, (sql, parameters) -> sql + parameters);
 
         // 有缓存有直接返回, 没有就执行后返回
         return cacheRecords.computeIfAbsent(cacheKey, theKey -> closure.execute());

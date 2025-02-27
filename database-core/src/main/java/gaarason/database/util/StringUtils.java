@@ -83,6 +83,10 @@ public class StringUtils {
             .replaceAll(replacement);
     }
 
+    public static String toSql(String sql, Collection<?> parameter) {
+        return String.format(replace(sql, " ? ", "\"%s\""), parameter.toArray());
+    }
+
     /**
      * 将首字符转化为小写
      * @param str 原字符串

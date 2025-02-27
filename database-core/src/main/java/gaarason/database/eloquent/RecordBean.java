@@ -292,7 +292,7 @@ public class RecordBean<T, K> implements Record<T, K> {
     public Record<T, K> with(String fieldName, BuilderWrapper<?, ?> builderClosure,
         RecordWrapper recordClosure) {
         // 效验参数
-        if (!ObjectUtils.checkProperties(entityClass, fieldName)) {
+        if (!ObjectUtils.checkPropertiesCache(entityClass, fieldName)) {
             throw new RelationNotFoundException(fieldName, entityClass);
         }
 

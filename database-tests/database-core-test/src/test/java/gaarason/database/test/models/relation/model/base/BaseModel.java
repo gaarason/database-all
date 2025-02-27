@@ -6,6 +6,7 @@ import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.eloquent.Model;
 import gaarason.database.exception.base.BaseException;
 import gaarason.database.test.utils.DatabaseTypeUtil;
+import gaarason.database.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
@@ -99,8 +100,11 @@ abstract public class BaseModel<T extends Serializable, K extends Serializable> 
 
     @Override
     public void log(String sql, Collection<?> parameterList) {
-        String format = String.format(sql.replace(" ? ", "\"%s\""), parameterList.toArray());
+
+//        String format = String.format(sql.replace(" ? ", "\"%s\""), parameterList.toArray());
+        String format = StringUtils.toSql(sql, parameterList);
         log.info("SQL complete         : {}", format);
+
     }
 
 }

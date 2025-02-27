@@ -15,6 +15,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -27,6 +28,9 @@ public final class ObjectUtils {
      * 线程安全随机对象
      */
     private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
+
+    private static final ConcurrentHashMap.KeySetView<String, Boolean> CACHE = ConcurrentHashMap.newKeySet();
+
 
     private ObjectUtils() {
     }
@@ -171,6 +175,18 @@ public final class ObjectUtils {
             return null;
         }
         return typeCast(original);
+    }
+
+    /**
+     * 属性是否在类中存在(多层级)
+     * 集合类型的属性,将会使用第一个泛型类型
+     * @param detectedClass 待检测的类
+     * @param multipleAttribute 检测的属性 eg: teacher.student.id
+     * @return 是否存在
+     */
+    public static boolean checkPropertiesCache(Class<?> detectedClass, String multipleAttribute) {
+        return CacheUtils.get(() -> ObjectUtils.checkProperties(detectedClass, multipleAttribute),
+                ObjectUtils.class, "checkProperties", detectedClass, multipleAttribute);
     }
 
     /**

@@ -4,10 +4,13 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
+import gaarason.database.support.EntityMember;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Select查询构造器
@@ -59,7 +62,15 @@ public abstract class SelectBuilder<T, K> extends OrderBuilder<T, K> {
 
     @Override
     public Builder<T, K> select(Class<?> anyEntityClass) {
-        return select(modelShadowProvider.parseAnyEntityWithCache(anyEntityClass).getSelectColumnList());
+        EntityMember<?, Object> entityMember = modelShadowProvider.parseAnyEntityWithCache(anyEntityClass);
+        List<String> columnList = entityMember.getSelectColumnList();
+        // 缓存存取
+        String columnString = entityMember.getSelectColumnString(
+                gaarasonDataSource.getQueryBuilder().getValueSymbol(),
+                () -> columnList.stream().map(this::backQuote).collect(
+                        Collectors.joining(", ")));
+
+        return selectRaw(columnString);
     }
 
     @Override
