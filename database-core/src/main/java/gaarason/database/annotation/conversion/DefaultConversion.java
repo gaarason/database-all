@@ -14,6 +14,9 @@ import java.sql.SQLException;
  */
 public class DefaultConversion extends Container.SimpleKeeper implements FieldConversion.Default {
 
+    @Nullable
+    protected ConversionConfig conversionConfig = null;
+
     public DefaultConversion(Container container) {
         super(container);
     }
@@ -27,12 +30,19 @@ public class DefaultConversion extends Container.SimpleKeeper implements FieldCo
     @Nullable
     @Override
     public Object acquisition(Field field, ResultSet resultSet, String column) throws SQLException {
-        return getContainer().getBean(ConversionConfig.class).getValueFromJdbcResultSet(field, resultSet, column);
+        return conversion().getValueFromJdbcResultSet(field, resultSet, column);
     }
 
     @Nullable
     @Override
     public Object deserialize(Field field, @Nullable Object originalValue) {
-        return getContainer().getBean(ConversionConfig.class).castNullable(originalValue, field.getType());
+        return conversion().castNullable(originalValue, field.getType());
+    }
+
+    protected ConversionConfig conversion() {
+        if(conversionConfig == null) {
+            conversionConfig = getContainer().getBean(ConversionConfig.class);
+        }
+        return conversionConfig;
     }
 }

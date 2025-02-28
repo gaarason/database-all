@@ -7,6 +7,8 @@ import gaarason.database.logging.Log;
 import gaarason.database.logging.LogFactory;
 
 import java.lang.reflect.Constructor;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * 类的相关操作
@@ -14,6 +16,8 @@ import java.lang.reflect.Constructor;
 public final class ClassUtils {
 
     private static final Log LOGGER = LogFactory.getLog(ClassUtils.class);
+
+    private static final ConcurrentMap<Class<?>, Constructor<?>> CONSTRUCTOR_CACHE = new ConcurrentHashMap<>();
 
     @Nullable
     private static final ClassLoader SYSTEM_CLASS_LOADER;
@@ -49,9 +53,17 @@ public final class ClassUtils {
      */
     public static <T> T newInstance(Class<T> clazz) {
         try {
-            Constructor<T> constructor = clazz.getDeclaredConstructor();
+            Constructor<?> constructor = CONSTRUCTOR_CACHE.computeIfAbsent(clazz, k -> {
+                try {
+                    Constructor<?> constructor1 = k.getDeclaredConstructor();
+                    constructor1.setAccessible(true);
+                    return constructor1;
+                } catch (NoSuchMethodException e) {
+                    throw new ObjectNewInstanceException(k, e);
+                }
+            });
             constructor.setAccessible(true);
-            return constructor.newInstance();
+            return ObjectUtils.typeCast(constructor.newInstance());
         } catch (Throwable e) {
             throw new ObjectNewInstanceException(clazz, e);
         }

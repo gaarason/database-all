@@ -388,7 +388,7 @@ abstract public class RelationTests extends BaseTests {
                 .firstOrFail()
                 .with("teacher.students.teacher.students.teacher")
                 .toObject();
-        System.out.println(student3);
+        log.info("---------------- : " + student3);
 
         Assert.assertEquals(student3.getId().intValue(), 1);
         Assert.assertEquals(student3.getTeacherId().intValue(), 6);
@@ -507,17 +507,23 @@ abstract public class RelationTests extends BaseTests {
     }
 
     @Test
-    public void ss() {
-        // 19.380 s with JProfiler
+    public void with性能() {
+        Student student = null;
+        // 5.5.3  with JProfiler  19.380 s
+        // 5.5.5  with JProfiler  8 s
         for (int i = 0; i < 10; i++) {
-            Student student3 =
+            log.info("------ start");
+            student =
                     studentModel.newQuery()
                             .firstOrFail()
                             .with("teacher.students.relationshipStudentTeachers", builder -> builder, record -> record.with(
                                     "teacher.students.teacher.students.teacher.students",
                                     builder -> builder.whereIn("id", "3", "2"),
                                     record8 -> record8.with("teacher"))).toObject();
+            log.info("------ end");
+
         }
+        log.info("------ data:" + student);
     }
 
     @Test

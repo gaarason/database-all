@@ -13,7 +13,6 @@ import gaarason.database.core.Container;
 import gaarason.database.eloquent.record.BindBean;
 import gaarason.database.exception.EntityAttributeInvalidException;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
-import gaarason.database.exception.RelationNotFoundException;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.GodProvider;
 import gaarason.database.provider.ModelShadowProvider;
@@ -291,10 +290,6 @@ public class RecordBean<T, K> implements Record<T, K> {
     @Override
     public Record<T, K> with(String fieldName, BuilderWrapper<?, ?> builderClosure,
         RecordWrapper recordClosure) {
-        // 效验参数
-        if (!ObjectUtils.checkPropertiesCache(entityClass, fieldName)) {
-            throw new RelationNotFoundException(fieldName, entityClass);
-        }
 
         String[] columnArr = fieldName.split("\\.");
         // 快捷类型
