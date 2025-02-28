@@ -24,22 +24,22 @@ import java.util.*;
  */
 public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
-    private final BelongsToManyTemplate belongsToManyTemplate;
+    protected final BelongsToManyTemplate belongsToManyTemplate;
 
     /**
      * 人造关系键
      */
-    private static final String RELATION_KEY = "@R@";
+    protected static final String RELATION_KEY = "@R@";
 
     /**
      * 是否多态 - 本表
      */
-    private boolean enableLocalModelMorph;
+    protected boolean enableLocalModelMorph;
 
     /**
      * 是否多态 - 目标表
      */
-    private boolean enableTargetModelMorph;
+    protected boolean enableTargetModelMorph;
 
     public BelongsToManyQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
         super(modelShadowProvider, model);
@@ -612,27 +612,27 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
                 belongsToManyTemplate.morphValueForTargetModel));
     }
 
-    class BelongsToManyTemplate {
+    public class BelongsToManyTemplate {
 
-        final Model<?, ?> relationModel; // user_teacher
+        final public Model<?, ?> relationModel; // user_teacher
 
-        final String foreignKeyForLocalModel;// user_id
+        final public String foreignKeyForLocalModel;// user_id
 
-        final String localModelLocalKey; // user.id
+        final public String localModelLocalKey; // user.id
 
-        final Model<?, ?> targetModel; // teacher
+        final public Model<?, ?> targetModel; // teacher
 
-        final String foreignKeyForTargetModel; // teacher_id
+        final public String foreignKeyForTargetModel; // teacher_id
 
-        final String targetModelLocalKey;  // teacher.id
+        final public String targetModelLocalKey;  // teacher.id
 
-        final String morphKeyForLocalModel;
+        final public String morphKeyForLocalModel;
 
-        final String morphValueForLocalModel;
+        final public String morphValueForLocalModel;
 
-        final String morphKeyForTargetModel;
+        final public String morphKeyForTargetModel;
 
-        final String morphValueForTargetModel;
+        final public String morphValueForTargetModel;
 
         BelongsToManyTemplate(Field field) {
             BelongsToMany belongsToMany = field.getAnnotation(BelongsToMany.class);

@@ -21,24 +21,24 @@ import java.util.*;
  */
 public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
-    private final BelongsToTemplate belongsToTemplate;
+    protected final BelongsToTemplate belongsToTemplate;
 
     /**
      * 是否多态
      */
-    private boolean enableMorph;
+    protected boolean enableMorph;
 
     /**
      * 关系键的默认值, 仅在解除关系时使用
      */
     @Nullable
-    private final Object defaultLocalModelForeignKeyValue;
+    protected final Object defaultLocalModelForeignKeyValue;
 
     /**
      * 多态的默认值, 仅在解除关系时使用
      */
     @Nullable
-    private final Object defaultLocalModelMorphValue;
+    protected final Object defaultLocalModelMorphValue;
 
     public BelongsToQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
         super(modelShadowProvider, model);
@@ -327,17 +327,17 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
         return belongsToTemplate.parentModel.getGaarasonDataSource().getContainer();
     }
 
-    class BelongsToTemplate {
+    public class BelongsToTemplate {
 
-        final Model<?, ?> parentModel;
+        final public Model<?, ?> parentModel;
 
-        final String localModelForeignKey;
+        final public String localModelForeignKey;
 
-        final String parentModelLocalKey;
+        final public String parentModelLocalKey;
 
-        final String localModelMorphKey;
+        final public String localModelMorphKey;
 
-        final String localModelMorphValue;
+        final public String localModelMorphValue;
 
         BelongsToTemplate(Field field) {
             BelongsTo belongsTo = field.getAnnotation(BelongsTo.class);

@@ -25,6 +25,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 5.5.7
+
+- 关联关系相关实现类`HasOneOrManyQueryRelation`,`BelongsToQueryRelation`,`BelongsToManyQueryRelation`更改可见性, 是其更易被继承
+
 ### 5.5.6
 
 - 代码优化以提高性能

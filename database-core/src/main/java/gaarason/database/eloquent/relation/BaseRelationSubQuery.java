@@ -37,7 +37,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * 空的结果集
      */
     @Nullable
-    private RecordList<?, ?> emptyRecordList = null;
+    protected RecordList<?, ?> emptyRecordList = null;
 
     protected BaseRelationSubQuery(ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
         this.modelShadowProvider = modelShadowProvider;

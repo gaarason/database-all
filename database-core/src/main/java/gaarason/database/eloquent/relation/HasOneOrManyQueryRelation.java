@@ -24,24 +24,24 @@ import java.util.Map;
  */
 public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
-    private final HasOneOrManyTemplate hasOneOrManyTemplate;
+    protected final HasOneOrManyTemplate hasOneOrManyTemplate;
 
     /**
      * 是否多态
      */
-    private boolean enableMorph;
+    protected boolean enableMorph;
 
     /**
      * 目标模型外键的默认值, 仅在解除关系时使用
      */
     @Nullable
-    private final Object defaultSonModelForeignKeyValue;
+    protected final Object defaultSonModelForeignKeyValue;
 
     /**
      * 目标模型多态的默认值, 仅在解除关系时使用
      */
     @Nullable
-    private final Object defaultSonModelMorphValue;
+    protected final Object defaultSonModelMorphValue;
 
     public HasOneOrManyQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
         super(modelShadowProvider, model);
@@ -322,17 +322,17 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
         return hasOneOrManyTemplate.sonModel.getGaarasonDataSource().getContainer();
     }
 
-    class HasOneOrManyTemplate {
+    public class HasOneOrManyTemplate {
 
-        final Model<?, ?> sonModel;
+        final public Model<?, ?> sonModel;
 
-        final String sonModelForeignKey;
+        final public String sonModelForeignKey;
 
-        final String localModelLocalKey;
+        final public String localModelLocalKey;
 
-        final String sonModelMorphKey;
+        final public String sonModelMorphKey;
 
-        final String sonModelMorphValue;
+        final public String sonModelMorphValue;
 
         HasOneOrManyTemplate(Field field) {
             HasOneOrMany hasOneOrMany = field.getAnnotation(HasOneOrMany.class);
