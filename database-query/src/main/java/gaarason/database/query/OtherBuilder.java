@@ -39,7 +39,7 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
                 selectRaw(groupInfo.getSqlString(), groupInfo.getParameters());
             }
 
-            builder = model.newQuery().from(alias + "sub", subBuilder -> this);
+            builder = model.withTrashed().from(alias + "sub", subBuilder -> this);
         }
         // 不存在 group, 但存在 select
         else if (!grammar.isEmpty(Grammar.SQLPartType.SELECT)) {

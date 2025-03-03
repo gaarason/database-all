@@ -1,5 +1,6 @@
 package gaarason.database.test.parent;
 
+import gaarason.database.appointment.Paginate;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
@@ -31,6 +32,15 @@ abstract public class ScopeTests extends BaseTests {
     protected List<TABLE> getInitTables() {
         return Arrays.asList(TABLE.student);
     }
+
+    @Test
+    public void 软删除_group() {
+        Paginate<StudentSoftDeleteModel.Entity> paginate = studentModel.newQuery().select("sex").group("sex").orderBy("sex").paginate(1, 15);
+        Assert.assertEquals(2, paginate.getItemList().size());
+        Assert.assertEquals(1, paginate.getItemList().get(0).getSex().intValue());
+        Assert.assertEquals(2, paginate.getItemList().get(1).getSex().intValue());
+    }
+
     @Test
     public void 软删除与恢复() {
         int id = studentModel.newQuery().where("id", "5").delete();

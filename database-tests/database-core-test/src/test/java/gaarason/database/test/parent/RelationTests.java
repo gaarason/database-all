@@ -515,6 +515,7 @@ abstract public class RelationTests extends BaseTests {
             log.info("------ start");
             student =
                     studentModel.newQuery()
+                            .orderBy("id", OrderBy.ASC)
                             .firstOrFail()
                             .with("teacher.students.relationshipStudentTeachers", builder -> builder, record -> record.with(
                                     "teacher.students.teacher.students.teacher.students",
