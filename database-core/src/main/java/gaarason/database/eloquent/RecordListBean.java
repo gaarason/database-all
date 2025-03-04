@@ -1,11 +1,12 @@
 package gaarason.database.eloquent;
 
+import gaarason.database.appointment.RelationCache;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.FilterRecordAttributeFunctionalInterface;
-import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.core.Container;
 import gaarason.database.exception.AbnormalParameterException;
@@ -125,9 +126,9 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
     }
 
     @Override
-    public List<T> toObjectList(Map<String, RecordList<?, ?>> cacheRelationRecordList) {
+    public List<T> toObjectList(RelationCache cache) {
         RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(container, this, true);
-        return tkRelationGetSupport.toObjectList(cacheRelationRecordList);
+        return tkRelationGetSupport.toObjectList(cache);
     }
 
     @Override

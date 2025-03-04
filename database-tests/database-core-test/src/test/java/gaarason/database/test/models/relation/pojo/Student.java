@@ -2,6 +2,7 @@ package gaarason.database.test.models.relation.pojo;
 
 import gaarason.database.annotation.*;
 import gaarason.database.annotation.base.Relation;
+import gaarason.database.appointment.RelationCache;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
@@ -144,15 +145,25 @@ public class Student extends BaseEntity implements Serializable {
         }
 
         @Override
+        public String filterBatchRecordCacheKey(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList) {
+            // 子表的外键字段名
+            String column = hasOneTemplate.sonModelForeignKey;
+            // 本表的关系键值
+            Object value = theRecord.getMetadataMap().get(hasOneTemplate.localModelLocalKey);
+
+            return getClass() + column + "|" + value;
+        }
+
+        @Override
         public List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
-            Map<String, RecordList<?, ?>> cacheRelationRecordList) {
+                RelationCache cache) {
             // 子表的外键字段名
             String column = hasOneTemplate.sonModelForeignKey;
             // 本表的关系键值
             Object value = theRecord.getMetadataMap().get(hasOneTemplate.localModelLocalKey);
 
             assert value != null;
-            return findObjList(targetRecordList.toObjectList(cacheRelationRecordList), column, value);
+            return findObjList(targetRecordList.toObjectList(cache), column, value);
         }
 
         @Override

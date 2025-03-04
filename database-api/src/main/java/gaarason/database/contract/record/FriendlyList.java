@@ -1,6 +1,6 @@
 package gaarason.database.contract.record;
 
-import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.appointment.RelationCache;
 import gaarason.database.contract.function.FilterRecordAttributeFunctionalInterface;
 
 import java.util.List;
@@ -28,10 +28,10 @@ public interface FriendlyList<T, K> {
 
     /**
      * 转化为对象列表
-     * @param cacheRelationRecordList 结果集缓存(用于优化递归算法)
+     * @param cache 结果集缓存(用于优化递归算法)
      * @return 对象列表
      */
-    List<T> toObjectList(Map<String, RecordList<?, ?>> cacheRelationRecordList);
+    List<T> toObjectList(RelationCache cache);
 
     /**
      * 转化为map list

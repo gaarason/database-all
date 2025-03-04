@@ -2,6 +2,7 @@ package gaarason.database.eloquent.relation;
 
 import gaarason.database.annotation.BelongsToMany;
 import gaarason.database.appointment.JoinType;
+import gaarason.database.appointment.RelationCache;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
@@ -13,6 +14,7 @@ import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.EntityMember;
 import gaarason.database.support.FieldMember;
+import gaarason.database.util.JsonUtils;
 import gaarason.database.util.ObjectUtils;
 
 import java.lang.reflect.Field;
@@ -207,7 +209,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
     @Override
     public Map<String, Object> filterBatchRecordByRelationOperation(Record<?, ?> theRecord,
-        RecordList<?, ?> targetRecordList, Map<String, RecordList<?, ?>> cacheRelationRecordList) {
+        RecordList<?, ?> targetRecordList, RelationCache cache) {
 
         // 本表的关系键值
         Object value = theRecord.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey);
@@ -215,10 +217,22 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         return findObj(targetRecordList.getMetadata(), RELATION_KEY, value);
     }
 
+
     @Override
-    public List<Object> filterBatchRecord(Record<?, ?> theRecord,
-        RecordList<?, ?> targetRecordList,
-        Map<String, RecordList<?, ?>> cacheRelationRecordList) {
+    public String filterBatchRecordCacheKey(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList) {
+        // 目标关系表的外键字段名
+        String targetModelLocalKey = belongsToManyTemplate.targetModelLocalKey;
+        // 本表的关系键值
+        Object localModelLocalKeyValue = theRecord.getMetadataMap().get(belongsToManyTemplate.localModelLocalKey);
+        // 本表应该关联的 目标表的关系键的集合
+        Set<Object> targetModelLocalKayValueSet = targetRecordList.getCacheMap().get(localModelLocalKeyValue);
+
+        return getClass() + "|" +targetModelLocalKey + "|" + localModelLocalKeyValue + "|" + JsonUtils.objectToJson(targetModelLocalKayValueSet);
+    }
+
+
+    @Override
+    public List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList, RelationCache cache) {
         // 目标关系表的外键字段名
         String targetModelLocalKey = belongsToManyTemplate.targetModelLocalKey;
         // 本表的关系键值
@@ -237,7 +251,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
             FieldMember<?> fieldMember = entityMember.getFieldMemberByColumnName(targetModelLocalKey);
 
 
-            List<?> objects = targetRecordList.toObjectList(cacheRelationRecordList);
+            List<?> objects = targetRecordList.toObjectList(cache);
 
             for (Object obj : objects) {
                 // 目标表的关系键的值
