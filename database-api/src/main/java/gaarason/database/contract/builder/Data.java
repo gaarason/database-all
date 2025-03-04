@@ -12,14 +12,14 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public interface Data<T, K> {
+public interface Data<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 数据更新
      * @param sqlPart sql片段 eg: age=15,name="dd"
      * @return 查询构造器
      */
-    Builder<T, K> dataRaw(@Nullable String sqlPart);
+    B dataRaw(@Nullable String sqlPart);
 
     /**
      * 数据更新
@@ -27,7 +27,7 @@ public interface Data<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> data(String column, @Nullable Object value);
+    B data(String column, @Nullable Object value);
 
     /**
      * 数据更新(忽略值为null的情况)
@@ -35,28 +35,28 @@ public interface Data<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> dataIgnoreNull(String column, @Nullable Object value);
+    B dataIgnoreNull(String column, @Nullable Object value);
 
     /**
      * 数据更新
      * @param anyEntity 任意实体对象
      * @return 查询构造器
      */
-    Builder<T, K> data(Object anyEntity);
+    B data(Object anyEntity);
 
     /**
      * 数据更新
      * @param map Map<String column, String value>
      * @return 查询构造器
      */
-    Builder<T, K> data(Map<String, Object> map);
+    B data(Map<String, Object> map);
 
     /**
      * 数据更新(忽略值为null的情况)
      * @param map Map<String column, String value>
      * @return 查询构造器
      */
-    Builder<T, K> dataIgnoreNull(@Nullable Map<String, Object> map);
+    B dataIgnoreNull(@Nullable Map<String, Object> map);
 
     /**
      * 字段自增
@@ -64,7 +64,7 @@ public interface Data<T, K> {
      * @param steps 步长
      * @return 查询构造器
      */
-    Builder<T, K> dataIncrement(String column, Object steps);
+    B dataIncrement(String column, Object steps);
 
     /**
      * 字段自减
@@ -72,7 +72,7 @@ public interface Data<T, K> {
      * @param steps 步长
      * @return 查询构造器
      */
-    Builder<T, K> dataDecrement(String column, Object steps);
+    B dataDecrement(String column, Object steps);
 
     /**
      * 字段设定选项值
@@ -80,7 +80,7 @@ public interface Data<T, K> {
      * @param values 选项值集合(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    Builder<T, K> dataBit(String column, Collection<Object> values);
+    B dataBit(String column, Collection<Object> values);
 
     /**
      * 字段增定选项值
@@ -88,7 +88,7 @@ public interface Data<T, K> {
      * @param values 选项值集合(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    Builder<T, K> dataBitIncrement(String column, Collection<Object> values);
+    B dataBitIncrement(String column, Collection<Object> values);
 
     /**
      * 字段移除选项值
@@ -96,6 +96,6 @@ public interface Data<T, K> {
      * @param values 选项值集合(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    Builder<T, K> dataBitDecrement(String column, Collection<Object> values);
+    B dataBitDecrement(String column, Collection<Object> values);
 
 }

@@ -12,7 +12,7 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public interface DataLambda<T, K> extends Data<T, K>, Support<T, K> {
+public interface DataLambda<B extends Builder<B, T, K>, T, K> extends Data<B, T, K>, Support<B, T, K> {
 
     /**
      * 数据更新
@@ -21,7 +21,7 @@ public interface DataLambda<T, K> extends Data<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> data(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
+    default <F> B data(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
         return data(lambda2ColumnName(column), value);
     }
 
@@ -32,7 +32,7 @@ public interface DataLambda<T, K> extends Data<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> dataIgnoreNull(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
+    default <F> B dataIgnoreNull(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
         return dataIgnoreNull(lambda2ColumnName(column), value);
     }
 
@@ -43,7 +43,7 @@ public interface DataLambda<T, K> extends Data<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> dataIncrement(ColumnFunctionalInterface<T, F> column, Object steps) {
+    default <F> B dataIncrement(ColumnFunctionalInterface<T, F> column, Object steps) {
         return dataIncrement(lambda2ColumnName(column), steps);
     }
 
@@ -54,7 +54,7 @@ public interface DataLambda<T, K> extends Data<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> dataDecrement(ColumnFunctionalInterface<T, F> column, Object steps) {
+    default <F> B dataDecrement(ColumnFunctionalInterface<T, F> column, Object steps) {
         return dataDecrement(lambda2ColumnName(column), steps);
     }
 
@@ -64,7 +64,7 @@ public interface DataLambda<T, K> extends Data<T, K>, Support<T, K> {
      * @param values 选项值集合(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    default <F> Builder<T, K> dataBit(ColumnFunctionalInterface<T, F> column, Collection<Object> values) {
+    default <F> B dataBit(ColumnFunctionalInterface<T, F> column, Collection<Object> values) {
         return dataBit(lambda2ColumnName(column), values);
     }
 
@@ -74,7 +74,7 @@ public interface DataLambda<T, K> extends Data<T, K>, Support<T, K> {
      * @param values 选项值集合(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    default <F> Builder<T, K> dataBitIncrement(ColumnFunctionalInterface<T, F> column, Collection<Object> values) {
+    default <F> B dataBitIncrement(ColumnFunctionalInterface<T, F> column, Collection<Object> values) {
         return dataBitIncrement(lambda2ColumnName(column), values);
     }
 
@@ -84,7 +84,7 @@ public interface DataLambda<T, K> extends Data<T, K>, Support<T, K> {
      * @param values 选项值集合(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    default <F> Builder<T, K> dataBitDecrement(ColumnFunctionalInterface<T, F> column, Collection<Object> values) {
+    default <F> B dataBitDecrement(ColumnFunctionalInterface<T, F> column, Collection<Object> values) {
         return dataBitDecrement(lambda2ColumnName(column), values);
     }
 

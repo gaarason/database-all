@@ -37,7 +37,7 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
      * @param builder 查询构造器
      * @return 查询构造器
      */
-    protected Builder<T, K> apply(Builder<T, K> builder) {
+    protected <B extends Builder<B, T, K>> B apply(B builder) {
         return builder;
     }
 
@@ -45,14 +45,15 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
      * 原始查询构造器
      * @return 原始查询构造器
      */
-    protected Builder<T, K> theBuilder() {
+    protected <B extends Builder<B, T, K>> B theBuilder() {
         GaarasonDataSource gaarasonDataSource = getGaarasonDataSource();
-        return apply(gaarasonDataSource.getQueryBuilder().newBuilder(gaarasonDataSource, this));
+        B builder = gaarasonDataSource.getQueryBuilder().newBuilder(gaarasonDataSource, this);
+        return apply(builder);
     }
 
     @Override
-    public Builder<T, K> newQuery() {
-        Builder<T, K> builder = theBuilder();
+    public <B extends Builder<B, T, K>> B newQuery() {
+        B builder = theBuilder();
         if (softDeleting()) {
             scopeSoftDelete(builder);
         }
@@ -60,15 +61,15 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
     }
 
     @Override
-    public Builder<T, K> withTrashed() {
-        Builder<T, K> builder = theBuilder();
+    public <B extends Builder<B, T, K>> B withTrashed() {
+        B builder = theBuilder();
         scopeSoftDeleteWithTrashed(builder);
         return builder;
     }
 
     @Override
-    public Builder<T, K> onlyTrashed() {
-        Builder<T, K> builder = theBuilder();
+    public <B extends Builder<B, T, K>> B onlyTrashed() {
+        B builder = theBuilder();
         scopeSoftDeleteOnlyTrashed(builder);
         return builder;
     }

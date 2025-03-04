@@ -1,6 +1,7 @@
 package gaarason.database.contract.builder;
 
 import gaarason.database.appointment.AggregatesType;
+import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 
 import java.math.BigDecimal;
@@ -9,7 +10,7 @@ import java.math.BigDecimal;
  * 统计
  * @author xt
  */
-public interface AggregatesLambda<T, K> extends Aggregates, Support<T, K> {
+public interface AggregatesLambda<B extends Builder<B, T, K>, T, K> extends Aggregates, Support<B, T, K> {
 
     /**
      * 统计

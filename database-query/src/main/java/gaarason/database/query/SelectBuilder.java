@@ -18,50 +18,50 @@ import java.util.stream.Collectors;
  * @param <K>
  * @author xt
  */
-public abstract class SelectBuilder<T, K> extends OrderBuilder<T, K> {
+public abstract class SelectBuilder<B extends Builder<B, T, K>, T, K> extends OrderBuilder<B, T, K> {
 
-    protected Builder<T, K> selectGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
+    protected B selectGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
         grammar.addSmartSeparator(Grammar.SQLPartType.SELECT, sqlPart, parameters, ",");
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> select(String column) {
+    public B select(String column) {
         String sqlPart = backQuote(column);
         return selectRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> selectRaw(@Nullable String sqlPart) {
+    public B selectRaw(@Nullable String sqlPart) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
             selectGrammar(sqlPart, null);
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> selectRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters) {
+    public B selectRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
             selectGrammar(sqlPart, ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters));
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> select(String... columnArray) {
+    public B select(String... columnArray) {
         for (String column : columnArray) {
             select(column);
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> select(Object anyEntity) {
+    public B select(Object anyEntity) {
         return select(anyEntity.getClass());
     }
 
     @Override
-    public Builder<T, K> select(Class<?> anyEntityClass) {
+    public B select(Class<?> anyEntityClass) {
         EntityMember<?, Object> entityMember = modelShadowProvider.parseAnyEntityWithCache(anyEntityClass);
         List<String> columnList = entityMember.getSelectColumnList();
         // 缓存存取
@@ -74,28 +74,28 @@ public abstract class SelectBuilder<T, K> extends OrderBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> select(Collection<String> columnList) {
+    public B select(Collection<String> columnList) {
         for (String column : columnList) {
             select(column);
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> selectFunction(String function, String parameter, @Nullable String alias) {
+    public B selectFunction(String function, String parameter, @Nullable String alias) {
         String sqlPart =
             function + FormatUtils.bracket(parameter) + (alias == null ? "" : " as " + FormatUtils.quotes(alias));
         return selectRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> selectFunction(String function, String parameter) {
+    public B selectFunction(String function, String parameter) {
         return selectFunction(function, parameter, null);
     }
 
     // todo test
     @Override
-    public Builder<T, K> selectFunction(String function, BuilderWrapper<T, K> closure,
+    public B selectFunction(String function, BuilderWrapper<T, K> closure,
         @Nullable String alias) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String completeSql = sqlPartInfo.getSqlString();
@@ -106,13 +106,13 @@ public abstract class SelectBuilder<T, K> extends OrderBuilder<T, K> {
 
     // todo test
     @Override
-    public Builder<T, K> selectFunction(String function, BuilderWrapper<T, K> closure) {
+    public B selectFunction(String function, BuilderWrapper<T, K> closure) {
         return selectFunction(function, closure, null);
 
     }
 
     @Override
-    public Builder<T, K> selectCustom(String columnName, String value) {
+    public B selectCustom(String columnName, String value) {
         return selectRaw(value + " as " + backQuote(columnName));
     }
 }

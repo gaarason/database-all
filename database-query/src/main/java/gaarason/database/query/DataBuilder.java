@@ -17,59 +17,59 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public abstract class DataBuilder<T, K> extends ExecuteLevel3Builder<T, K> {
+public abstract class DataBuilder<B extends Builder<B, T, K>, T, K>  extends ExecuteLevel3Builder<B, T, K> {
 
-    protected Builder<T, K> dataGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
+    protected B dataGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
         grammar.addSmartSeparator(Grammar.SQLPartType.DATA, sqlPart, parameters, ",");
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> dataRaw(@Nullable String sqlPart) {
+    public B dataRaw(@Nullable String sqlPart) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
             dataGrammar(sqlPart, null);
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> data(String column, @Nullable Object value) {
+    public B data(String column, @Nullable Object value) {
         ArrayList<Object> parameters = new ArrayList<>();
         String sqlPart = backQuote(column) + '=' + grammar.replaceValueAndFillParameters(value, parameters);
         return dataGrammar(sqlPart, parameters);
     }
 
     @Override
-    public Builder<T, K> dataIgnoreNull(String column, @Nullable Object value) {
-        return ObjectUtils.isNull(value) ? this : data(column, value);
+    public B dataIgnoreNull(String column, @Nullable Object value) {
+        return ObjectUtils.isNull(value) ? getSelf() : data(column, value);
     }
 
     @Override
-    public Builder<T, K> data(Object anyEntity) {
+    public B data(Object anyEntity) {
         final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity, EntityUseType.UPDATE);
         return data(columnValueMap);
     }
 
     @Override
-    public Builder<T, K> data(Map<String, Object> map) {
+    public B data(Map<String, Object> map) {
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             data(entry.getKey(), entry.getValue());
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> dataIgnoreNull(@Nullable Map<String, Object> map) {
+    public B dataIgnoreNull(@Nullable Map<String, Object> map) {
         if (!ObjectUtils.isEmpty(map)) {
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 dataIgnoreNull(entry.getKey(), entry.getValue());
             }
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> dataIncrement(String column, Object steps) {
+    public B dataIncrement(String column, Object steps) {
         ArrayList<Object> parameters = new ArrayList<>();
         String sqlPart = backQuote(column) + '=' + backQuote(column) + '+' +
             grammar.replaceValueAndFillParameters(steps, parameters);
@@ -77,7 +77,7 @@ public abstract class DataBuilder<T, K> extends ExecuteLevel3Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> dataDecrement(String column, Object steps) {
+    public B dataDecrement(String column, Object steps) {
         ArrayList<Object> parameters = new ArrayList<>();
         String sqlPart = backQuote(column) + '=' + backQuote(column) + '-' +
             grammar.replaceValueAndFillParameters(steps, parameters);
@@ -85,13 +85,13 @@ public abstract class DataBuilder<T, K> extends ExecuteLevel3Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> dataBit(String column, Collection<Object> values) {
+    public B dataBit(String column, Collection<Object> values) {
         long packed = BitUtils.packs(values);
         return data(column, packed);
     }
 
     @Override
-    public Builder<T, K> dataBitIncrement(String column, Collection<Object> values) {
+    public B dataBitIncrement(String column, Collection<Object> values) {
         long packed = BitUtils.packs(values);
         ArrayList<Object> parameters = new ArrayList<>();
         String sqlPart = backQuote(column) + '=' + backQuote(column) + '|' +
@@ -100,7 +100,7 @@ public abstract class DataBuilder<T, K> extends ExecuteLevel3Builder<T, K> {
     }
 
     @Override
-    public  Builder<T, K> dataBitDecrement(String column, Collection<Object> values) {
+    public  B dataBitDecrement(String column, Collection<Object> values) {
         long packed = BitUtils.packs(values);
         ArrayList<Object> parameters = new ArrayList<>();
         String sqlPart = backQuote(column) + '=' + backQuote(column) + "& ~" +

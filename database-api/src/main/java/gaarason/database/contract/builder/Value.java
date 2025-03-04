@@ -11,20 +11,20 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public interface Value<T, K> {
+public interface Value<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 插入数据使用
      * @param values 值列表
      * @return 查询构造器
      */
-    Builder<T, K> value(@Nullable Collection<?> values);
+    B value(@Nullable Collection<?> values);
 
     /**
      * 批量插入数据使用
      * @param valuesList 值列表的列表
      * @return 查询构造器
      */
-    Builder<T, K> valueList(Collection<? extends Collection<?>> valuesList);
+    B valueList(Collection<? extends Collection<?>> valuesList);
 
 }

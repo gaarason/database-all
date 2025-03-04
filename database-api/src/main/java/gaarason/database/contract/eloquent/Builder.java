@@ -9,11 +9,11 @@ import gaarason.database.contract.support.ExtendedSerializable;
  * @param <K> 主键类型
  * @author xt
  */
-public interface Builder<T, K>
-    extends Debug, ColumnLambda<T, K>, Union<T, K>, Support<T, K>, From<T, K>, ExecuteLambda<T, K>,
-    WithLambda<T, K>, SelectLambda<T, K>, OrderLambda<T, K>, Limit<T, K>, GroupLambda<T, K>,
-    Value<T, K>, DataLambda<T, K>, Transaction, AggregatesLambda<T, K>, Pager<T, K>, Index<T, K>, Lock<T, K>,
-    Native<T, K>, JoinLambda<T, K>, AbilityLambda<T, K>, When<T, K>, WhereLambda<T, K>, HavingLambda<T, K>,
+public interface Builder<B extends Builder<B, T, K>, T, K>
+    extends Debug, ColumnLambda<B, T, K>, Union<B, T, K>, Support<B, T, K>, From<B, T, K>, ExecuteLambda<B, T, K>,
+    WithLambda<B, T, K>, SelectLambda<B, T, K>, OrderLambda<B, T, K>, Limit<B, T, K>, GroupLambda<B, T, K>,
+    Value<B, T, K>, DataLambda<B, T, K>, Transaction, AggregatesLambda<B, T, K>, Pager<B, T, K>, Index<B, T, K>, Lock<B, T, K>,
+    Native<T, K>, JoinLambda<B, T, K>, AbilityLambda<B, T, K>, When<B, T, K>, WhereLambda<B, T, K>, HavingLambda<B, T, K>,
     ExtendedSerializable {
 
     /**
@@ -23,7 +23,7 @@ public interface Builder<T, K>
      * @param <N> 主键类型
      * @return 查询构造器
      */
-    static <M, N> Builder<M, N> deserialize(byte[] bytes) {
+    static <L extends Builder<L, M, N>, M, N> Builder<L, M, N> deserialize(byte[] bytes) {
         return ExtendedSerializable.deserialize(bytes);
     }
 
@@ -34,7 +34,7 @@ public interface Builder<T, K>
      * @param <N> 主键类型
      * @return 查询构造器
      */
-    static <M, N> Builder<M, N> deserialize(String serializeStr) {
+    static <L extends Builder<L, M, N>, M, N> Builder<L, M, N> deserialize(String serializeStr) {
         return ExtendedSerializable.deserialize(serializeStr);
     }
 

@@ -68,8 +68,8 @@ abstract public class SerializableTests extends BaseTests {
 
     @Test
     public void Builder序列化_deepCopy() {
-        Builder<Student, Long> builder = studentModel.newQuery().where(Student::getId, 4);
-        Builder<Student, Long> deepCopyBuilder = ObjectUtils.deepCopy(builder);
+        Builder<?, Student, Long> builder = studentModel.newQuery().where(Student::getId, 4);
+        Builder<?, Student, Long> deepCopyBuilder = ObjectUtils.deepCopy(builder);
         Student student = deepCopyBuilder.firstOrFail().toObject();
         Assert.assertEquals(4, student.getId().intValue());
     }
@@ -142,7 +142,7 @@ abstract public class SerializableTests extends BaseTests {
         Student student1 = new Student();
         student1.setAge(3);
 
-        Builder<Student, Long> builder = studentModel.newQuery().with("teachersBelongsToMany", b -> {
+        Builder<?, Student, Long> builder = studentModel.newQuery().with("teachersBelongsToMany", b -> {
             return b.limit(student1.getAge());
         });
 
@@ -156,7 +156,7 @@ abstract public class SerializableTests extends BaseTests {
         Assert.assertFalse(ObjectUtils.isEmpty(student));
         Assert.assertNotNull(student.get(0).getTeachersBelongsToMany());
 
-        Builder<Student, Long> builderCopy = Builder.deserialize(serialize);
+        Builder<?, Student, Long> builderCopy = Builder.deserialize(serialize);
 
         System.out.println(builderCopy);
 

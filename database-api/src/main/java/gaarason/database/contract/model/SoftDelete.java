@@ -15,12 +15,12 @@ public interface SoftDelete<T, K> {
      * @param builder 查询构造器
      * @return 删除的行数
      */
-    int delete(Builder<T, K> builder);
+    int delete(Builder<?, T, K> builder);
 
     /**
      * 恢复软删除
      * @param builder 查询构造器
      * @return 删除的行数
      */
-    int restore(Builder<T, K> builder);
+    int restore(Builder<?, T, K> builder);
 }

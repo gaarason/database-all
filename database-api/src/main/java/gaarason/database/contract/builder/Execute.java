@@ -1,5 +1,6 @@
 package gaarason.database.contract.builder;
 
+import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.ChunkFunctionalInterface;
@@ -17,7 +18,7 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public interface Execute<T, K> {
+public interface Execute<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 单个查询

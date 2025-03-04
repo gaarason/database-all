@@ -9,7 +9,7 @@ import gaarason.database.contract.function.ColumnFunctionalInterface;
  * @param <K>
  * @author xt
  */
-public interface OrderLambda<T, K> extends Order<T, K>, Support<T, K> {
+public interface OrderLambda<B extends Builder<B, T, K>, T, K> extends Order<B, T, K>, Support<B, T, K> {
 
     /**
      * 排序
@@ -18,7 +18,7 @@ public interface OrderLambda<T, K> extends Order<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> orderBy(ColumnFunctionalInterface<T, F> column,
+    default <F> B orderBy(ColumnFunctionalInterface<T, F> column,
         gaarason.database.appointment.OrderBy orderByType) {
         return orderBy(lambda2ColumnName(column), orderByType);
     }
@@ -29,7 +29,7 @@ public interface OrderLambda<T, K> extends Order<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> orderBy(ColumnFunctionalInterface<T, F> column) {
+    default <F> B orderBy(ColumnFunctionalInterface<T, F> column) {
         return orderBy(lambda2ColumnName(column));
     }
 }

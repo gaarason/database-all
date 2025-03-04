@@ -14,7 +14,7 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
+public interface HavingLambda<B extends Builder<B, T, K>, T, K> extends Having<B, T, K>, Support<B, T, K> {
 
     /**
      * 比较列与值
@@ -24,7 +24,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> having(ColumnFunctionalInterface<T, F> column, String symbol, Object value) {
+    default <F> B having(ColumnFunctionalInterface<T, F> column, String symbol, Object value) {
         return having(lambda2ColumnName(column), symbol, value);
     }
 
@@ -34,7 +34,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param value 选项值(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingBit(ColumnFunctionalInterface<T, F> column, Object value) {
+    default <F> B havingBit(ColumnFunctionalInterface<T, F> column, Object value) {
         return havingBit(lambda2ColumnName(column), value);
     }
 
@@ -44,7 +44,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param value 选项值(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingBitNot(ColumnFunctionalInterface<T, F> column, Object value) {
+    default <F> B havingBitNot(ColumnFunctionalInterface<T, F> column, Object value) {
         return havingBitNot(lambda2ColumnName(column), value);
     }
 
@@ -54,7 +54,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param values 选项值(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    default <F, W> Builder<T, K> havingBitIn(ColumnFunctionalInterface<T, F> column, Collection<W> values) {
+    default <F, W> B havingBitIn(ColumnFunctionalInterface<T, F> column, Collection<W> values) {
         return havingBitIn(lambda2ColumnName(column), values);
     }
 
@@ -64,7 +64,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param values 选项值(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingBitNotIn(ColumnFunctionalInterface<T, F> column, Collection<?> values) {
+    default <F> B havingBitNotIn(ColumnFunctionalInterface<T, F> column, Collection<?> values) {
         return havingBitNotIn(lambda2ColumnName(column), values);
     }
 
@@ -74,7 +74,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param values 选项值(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingBitStrictIn(ColumnFunctionalInterface<T, F> column, Collection<?> values) {
+    default <F> B havingBitStrictIn(ColumnFunctionalInterface<T, F> column, Collection<?> values) {
         return havingBitStrictIn(lambda2ColumnName(column), values);
     }
 
@@ -84,7 +84,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param values 选项值(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingBitStrictNotIn(ColumnFunctionalInterface<T, F> column, Collection<?> values) {
+    default <F> B havingBitStrictNotIn(ColumnFunctionalInterface<T, F> column, Collection<?> values) {
         return havingBitStrictNotIn(lambda2ColumnName(column), values);
     }
 
@@ -97,7 +97,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingIgnoreNull(ColumnFunctionalInterface<T, F> column, String symbol, @Nullable Object value) {
+    default <F> B havingIgnoreNull(ColumnFunctionalInterface<T, F> column, String symbol, @Nullable Object value) {
         return havingIgnoreNull(lambda2ColumnName(column), symbol, value);
     }
 
@@ -108,7 +108,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> having(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
+    default <F> B having(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
         return having(lambda2ColumnName(column), value);
     }
 
@@ -119,7 +119,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingIgnoreNull(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
+    default <F> B havingIgnoreNull(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
         return havingIgnoreNull(lambda2ColumnName(column), value);
     }
 
@@ -133,7 +133,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @return 查询构造器
      */
     @SuppressWarnings("unchecked")
-    default <F> Builder<T, K> havingAnyLike(@Nullable Object value, ColumnFunctionalInterface<T, F>... columns) {
+    default <F> B havingAnyLike(@Nullable Object value, ColumnFunctionalInterface<T, F>... columns) {
         return havingAnyLike(value, lambda2ColumnName(Arrays.asList(columns)));
     }
 
@@ -147,7 +147,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @return 查询构造器
      */
     @SuppressWarnings("unchecked")
-    default <F> Builder<T, K> havingAllLike(@Nullable Object value, ColumnFunctionalInterface<T, F>... columns) {
+    default <F> B havingAllLike(@Nullable Object value, ColumnFunctionalInterface<T, F>... columns) {
         return havingAllLike(value, lambda2ColumnName(Arrays.asList(columns)));
     }
 
@@ -160,7 +160,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingLike(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
+    default <F> B havingLike(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
         return havingLike(lambda2ColumnName(column), value);
     }
 
@@ -173,7 +173,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingNotLike(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
+    default <F> B havingNotLike(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
         return havingNotLike(lambda2ColumnName(column), value);
     }
 
@@ -187,7 +187,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingMayLike(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
+    default <F> B havingMayLike(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
         return havingMayLike(lambda2ColumnName(column), value);
     }
 
@@ -201,7 +201,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingMayNotLike(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
+    default <F> B havingMayNotLike(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
         return havingMayNotLike(lambda2ColumnName(column), value);
     }
 
@@ -215,7 +215,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingMayLikeIgnoreNull(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
+    default <F> B havingMayLikeIgnoreNull(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
         return havingMayLikeIgnoreNull(lambda2ColumnName(column), value);
     }
 
@@ -229,7 +229,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingMayNotLikeIgnoreNull(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
+    default <F> B havingMayNotLikeIgnoreNull(ColumnFunctionalInterface<T, F> column, @Nullable Object value) {
         return havingMayNotLikeIgnoreNull(lambda2ColumnName(column), value);
     }
 
@@ -241,7 +241,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingSubQuery(ColumnFunctionalInterface<T, F> column, String symbol, String completeSql) {
+    default <F> B havingSubQuery(ColumnFunctionalInterface<T, F> column, String symbol, String completeSql) {
         return havingSubQuery(lambda2ColumnName(column), symbol, completeSql);
     }
 
@@ -253,8 +253,8 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingSubQuery(ColumnFunctionalInterface<T, F> column, String symbol,
-        BuilderWrapper<T, K> closure) {
+    default <F> B havingSubQuery(ColumnFunctionalInterface<T, F> column, String symbol,
+        BuilderWrapper<B, T, K> closure) {
         return havingSubQuery(lambda2ColumnName(column), symbol, closure);
     }
 
@@ -265,7 +265,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingIn(ColumnFunctionalInterface<T, F> column, Collection<?> valueList) {
+    default <F> B havingIn(ColumnFunctionalInterface<T, F> column, Collection<?> valueList) {
         return havingIn(lambda2ColumnName(column), valueList);
     }
 
@@ -276,7 +276,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingInIgnoreEmpty(ColumnFunctionalInterface<T, F> column, @Nullable Collection<?> valueList) {
+    default <F> B havingInIgnoreEmpty(ColumnFunctionalInterface<T, F> column, @Nullable Collection<?> valueList) {
         return havingInIgnoreEmpty(lambda2ColumnName(column), valueList);
     }
 
@@ -287,7 +287,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingIn(ColumnFunctionalInterface<T, F> column, Object... valueArray) {
+    default <F> B havingIn(ColumnFunctionalInterface<T, F> column, Object... valueArray) {
         return havingIn(lambda2ColumnName(column), valueArray);
     }
 
@@ -298,7 +298,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingInIgnoreEmpty(ColumnFunctionalInterface<T, F> column, @Nullable Object... valueArray) {
+    default <F> B havingInIgnoreEmpty(ColumnFunctionalInterface<T, F> column, @Nullable Object... valueArray) {
         return havingInIgnoreEmpty(lambda2ColumnName(column), valueArray);
     }
 
@@ -309,7 +309,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingInRaw(ColumnFunctionalInterface<T, F> column, String sql) {
+    default <F> B havingInRaw(ColumnFunctionalInterface<T, F> column, String sql) {
         return havingInRaw(lambda2ColumnName(column), sql);
     }
 
@@ -320,8 +320,8 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingIn(ColumnFunctionalInterface<T, F> column,
-        BuilderWrapper<T, K> closure) {
+    default <F> B havingIn(ColumnFunctionalInterface<T, F> column,
+        BuilderWrapper<B, T, K> closure) {
         return havingIn(lambda2ColumnName(column), closure);
     }
 
@@ -332,7 +332,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingNotIn(ColumnFunctionalInterface<T, F> column, Collection<?> valueList) {
+    default <F> B havingNotIn(ColumnFunctionalInterface<T, F> column, Collection<?> valueList) {
         return havingNotIn(lambda2ColumnName(column), valueList);
     }
 
@@ -343,7 +343,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingNotInIgnoreEmpty(ColumnFunctionalInterface<T, F> column,
+    default <F> B havingNotInIgnoreEmpty(ColumnFunctionalInterface<T, F> column,
         @Nullable Collection<?> valueList) {
         return havingNotInIgnoreEmpty(lambda2ColumnName(column), valueList);
     }
@@ -355,7 +355,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingNotIn(ColumnFunctionalInterface<T, F> column, Object... valueArray) {
+    default <F> B havingNotIn(ColumnFunctionalInterface<T, F> column, Object... valueArray) {
         return havingNotIn(lambda2ColumnName(column), valueArray);
     }
 
@@ -366,7 +366,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingNotInIgnoreEmpty(ColumnFunctionalInterface<T, F> column, @Nullable Object... valueArray) {
+    default <F> B havingNotInIgnoreEmpty(ColumnFunctionalInterface<T, F> column, @Nullable Object... valueArray) {
         return havingNotInIgnoreEmpty(lambda2ColumnName(column), valueArray);
     }
 
@@ -377,7 +377,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingNotInRaw(ColumnFunctionalInterface<T, F> column, String sql) {
+    default <F> B havingNotInRaw(ColumnFunctionalInterface<T, F> column, String sql) {
         return havingNotInRaw(lambda2ColumnName(column), sql);
     }
 
@@ -388,8 +388,8 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingNotIn(ColumnFunctionalInterface<T, F> column,
-        BuilderWrapper<T, K> closure) {
+    default <F> B havingNotIn(ColumnFunctionalInterface<T, F> column,
+        BuilderWrapper<B, T, K> closure) {
         return havingNotIn(lambda2ColumnName(column), closure);
     }
 
@@ -401,7 +401,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingBetween(ColumnFunctionalInterface<T, F> column, Object min, Object max) {
+    default <F> B havingBetween(ColumnFunctionalInterface<T, F> column, Object min, Object max) {
         return havingBetween(lambda2ColumnName(column), min, max);
     }
 
@@ -413,7 +413,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingNotBetween(ColumnFunctionalInterface<T, F> column, Object min, Object max) {
+    default <F> B havingNotBetween(ColumnFunctionalInterface<T, F> column, Object min, Object max) {
         return havingNotBetween(lambda2ColumnName(column), min, max);
     }
 
@@ -423,7 +423,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingNull(ColumnFunctionalInterface<T, F> column) {
+    default <F> B havingNull(ColumnFunctionalInterface<T, F> column) {
         return havingNull(lambda2ColumnName(column));
     }
 
@@ -433,7 +433,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingNotNull(ColumnFunctionalInterface<T, F> column) {
+    default <F> B havingNotNull(ColumnFunctionalInterface<T, F> column) {
         return havingNotNull(lambda2ColumnName(column));
     }
 
@@ -445,7 +445,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingColumn(ColumnFunctionalInterface<T, F> column1, String symbol,
+    default <F> B havingColumn(ColumnFunctionalInterface<T, F> column1, String symbol,
         ColumnFunctionalInterface<T, F> column2) {
         return havingColumn(lambda2ColumnName(column1), symbol, lambda2ColumnName(column2));
     }
@@ -457,7 +457,7 @@ public interface HavingLambda<T, K> extends Having<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> havingColumn(ColumnFunctionalInterface<T, F> column1, ColumnFunctionalInterface<T, F> column2) {
+    default <F> B havingColumn(ColumnFunctionalInterface<T, F> column1, ColumnFunctionalInterface<T, F> column2) {
         return havingColumn(lambda2ColumnName(column1), lambda2ColumnName(column2));
     }
 

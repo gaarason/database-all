@@ -23,7 +23,7 @@ import java.util.*;
  * @param <K>
  * @author xt
  */
-public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T, K> {
+public abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends ExecuteLevel2Builder<B, T, K> {
 
     @Override
     public Record<T, K> find(@Nullable Object id) throws SQLRuntimeException {
@@ -184,7 +184,7 @@ public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T,
         int offset = 0;
         boolean flag;
         do {
-            Builder<T, K> cloneBuilder = clone();
+            Builder<B, T, K> cloneBuilder = clone();
             cloneBuilder.limit(offset, num);
             RecordList<T, K> records = cloneBuilder.get();
             flag = !records.isEmpty() && chunkFunctionalInterface.execute(records) && (records.size() == num);
@@ -198,7 +198,7 @@ public abstract class ExecuteLevel3Builder<T, K> extends ExecuteLevel2Builder<T,
         boolean flag;
         Object columnValue = null;
         do {
-            Builder<T, K> cloneBuilder = clone();
+            Builder<B, T, K> cloneBuilder = clone();
             cloneBuilder.whereIgnoreNull(column, ">", columnValue)
                 .firstOrderBy(builder -> builder.orderBy(column))
                 .limit(num);

@@ -13,7 +13,7 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public interface Join<T, K> {
+public interface Join<B extends Builder<B, T, K>, T, K> {
 
 
     /**
@@ -21,7 +21,7 @@ public interface Join<T, K> {
      * @param sqlPart sql片段
      * @return 查询构造器
      */
-    Builder<T, K> joinRaw(@Nullable String sqlPart);
+    B joinRaw(@Nullable String sqlPart);
 
     /**
      * 连接查询, 加入sql片段
@@ -29,7 +29,7 @@ public interface Join<T, K> {
      * @param parameters 绑定的参数
      * @return 查询构造器
      */
-    Builder<T, K> joinRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters);
+    B joinRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters);
 
     /**
      * 连接查询
@@ -39,7 +39,7 @@ public interface Join<T, K> {
      * @param column2 字段2
      * @return 查询构造器
      */
-    Builder<T, K> join(String table, String column1, String symbol, String column2);
+    B join(String table, String column1, String symbol, String column2);
 
     /**
      * 连接查询
@@ -50,7 +50,7 @@ public interface Join<T, K> {
      * @param column2 字段2
      * @return 查询构造器
      */
-    Builder<T, K> join(JoinType joinType, String table, String column1, String symbol,
+    B join(JoinType joinType, String table, String column1, String symbol,
         String column2);
 
     /**
@@ -60,7 +60,7 @@ public interface Join<T, K> {
      * @param joinConditions 连接条件
      * @return 查询构造器
      */
-    Builder<T, K> join(JoinType joinType, String table, BuilderWrapper<T, K> joinConditions);
+    B join(JoinType joinType, String table, BuilderWrapper<B, T, K> joinConditions);
 
     /**
      * 连接查询(含子查询)
@@ -70,6 +70,6 @@ public interface Join<T, K> {
      * @param joinConditions 连接条件
      * @return 查询构造器
      */
-    Builder<T, K> join(JoinType joinType, BuilderWrapper<T, K> tempTable, String alias,
-        BuilderWrapper<T, K> joinConditions);
+    B join(JoinType joinType, BuilderWrapper<B, T, K> tempTable, String alias,
+        BuilderWrapper<B, T, K> joinConditions);
 }

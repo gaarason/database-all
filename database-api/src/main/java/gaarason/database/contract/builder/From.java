@@ -12,14 +12,14 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public interface From<T, K> {
+public interface From<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 更改查询的表名
      * @param sqlPart sql片段
      * @return 查询构造器
      */
-    Builder<T, K> fromRaw(@Nullable String sqlPart);
+    B fromRaw(@Nullable String sqlPart);
 
     /**
      * 更改查询的表名
@@ -27,21 +27,21 @@ public interface From<T, K> {
      * @param parameters 绑定的参数
      * @return 查询构造器
      */
-    Builder<T, K> fromRaw(@Nullable String sqlPart, Collection<?> parameters);
+    B fromRaw(@Nullable String sqlPart, Collection<?> parameters);
 
     /**
      * 更改查询的表名
      * @param table 表名
      * @return 查询构造器
      */
-    Builder<T, K> from(String table);
+    B from(String table);
 
     /**
      * 更改查询的表名
      * @param anyEntity 任意实体对象
      * @return 查询构造器
      */
-    Builder<T, K> from(Object anyEntity);
+    B from(Object anyEntity);
 
     /**
      * 临时表查询
@@ -49,7 +49,7 @@ public interface From<T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> from(String alias, BuilderWrapper<T, K> closure);
+    B from(String alias, BuilderWrapper<B, T, K> closure);
 
     /**
      * 临时表查询
@@ -57,5 +57,5 @@ public interface From<T, K> {
      * @param sql 完整查询语句
      * @return 查询构造器
      */
-    Builder<T, K> from(String alias, String sql);
+    B from(String alias, String sql);
 }

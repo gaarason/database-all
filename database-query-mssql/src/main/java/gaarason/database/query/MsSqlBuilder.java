@@ -1,6 +1,5 @@
 package gaarason.database.query;
 
-import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.util.FormatUtils;
 
@@ -13,12 +12,17 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public class MsSqlBuilder<T, K> extends OtherBuilder<T, K> {
+public class MsSqlBuilder<T, K> extends OtherBuilder<MsSqlBuilder<T, K>, T, K> {
 
     private static final long serialVersionUID = 1L;
 
     @Override
-    public Builder<T, K> limit(Object offset, Object take) {
+    public MsSqlBuilder<T, K> getSelf() {
+        return this;
+    }
+
+    @Override
+    public MsSqlBuilder<T, K> limit(Object offset, Object take) {
         Collection<Object> parameters = new ArrayList<>(2);
         String sqlPart = "offset " + grammar.replaceValueAndFillParameters(offset, parameters) + " rows fetch next " +
             grammar.replaceValueAndFillParameters(take, parameters) + " rows only";
@@ -27,7 +31,7 @@ public class MsSqlBuilder<T, K> extends OtherBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> limit(Object take) {
+    public MsSqlBuilder<T, K> limit(Object take) {
         return limit(0, take);
     }
 

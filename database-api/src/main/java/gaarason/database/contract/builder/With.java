@@ -2,6 +2,7 @@ package gaarason.database.contract.builder;
 
 import gaarason.database.appointment.AggregatesType;
 import gaarason.database.contract.eloquent.Builder;
+import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.lang.Nullable;
@@ -12,14 +13,14 @@ import gaarason.database.lang.Nullable;
  * @param <K>
  * @author xt
  */
-public interface With<T, K> {
+public interface With<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 渴求式关联
      * @param fieldName 所关联的Model(当前模块的属性名)
      * @return 关联的Model的查询构造器
      */
-    Builder<T, K> with(String fieldName);
+    B with(String fieldName);
 
     /**
      * 渴求式关联
@@ -28,7 +29,7 @@ public interface With<T, K> {
      * @return 关联的Model的查询构造器
      * @see WithLambda
      */
-    default Builder<T, K> withMany(String fieldName) {
+    default B withMany(String fieldName) {
         return with(fieldName);
     }
 
@@ -38,7 +39,7 @@ public interface With<T, K> {
      * @param builderClosure 所关联的Model的查询构造器约束
      * @return 关联的Model的查询构造器
      */
-    <F> Builder<T, K> with(String fieldName, BuilderWrapper<F, ?> builderClosure);
+    <F> B with(String fieldName, BuilderWrapper<?, F, ?> builderClosure);
 
     /**
      * 渴求式关联
@@ -48,7 +49,7 @@ public interface With<T, K> {
      * @return 关联的Model的查询构造器
      * @see WithLambda
      */
-    default <F> Builder<T, K> withMany(String fieldName, BuilderWrapper<F, ?> builderClosure) {
+    default <F> B withMany(String fieldName, BuilderWrapper<?, F, ?> builderClosure) {
         return with(fieldName, builderClosure);
     }
 
@@ -59,7 +60,7 @@ public interface With<T, K> {
      * @param recordClosure 所关联的Model的再一级关联
      * @return 关联的Model的查询构造器
      */
-    <F> Builder<T, K> with(String fieldName, BuilderWrapper<F, ?> builderClosure,
+    <F> B with(String fieldName, BuilderWrapper<?, F, ?> builderClosure,
         RecordWrapper recordClosure);
 
     /**
@@ -71,7 +72,7 @@ public interface With<T, K> {
      * @return 关联的Model的查询构造器
      * @see WithLambda
      */
-    default <F> Builder<T, K> withMany(String fieldName, BuilderWrapper<F, ?> builderClosure,
+    default <F> B withMany(String fieldName, BuilderWrapper<?, F, ?> builderClosure,
         RecordWrapper recordClosure) {
         return with(fieldName, builderClosure, recordClosure);
     }
@@ -84,7 +85,7 @@ public interface With<T, K> {
      * @param alisaFieldName 查询结果的别名
      * @return 查询构造器
      */
-    Builder<T, K> withOperation(String fieldName, BuilderWrapper<?, ?> operationBuilder, BuilderWrapper<?, ?> customBuilder, String alisaFieldName);
+    B withOperation(String fieldName, BuilderAnyWrapper operationBuilder, BuilderAnyWrapper customBuilder, String alisaFieldName);
 
     /**
      * 对关联关系进行统计操作
@@ -95,76 +96,76 @@ public interface With<T, K> {
      * @param alisaFieldName 查询结果的别名
      * @return 查询构造器
      */
-    Builder<T, K> withAggregate(AggregatesType op, String fieldName, String column,
-        BuilderWrapper<?, ?> customBuilder, @Nullable String alisaFieldName);
+    B withAggregate(AggregatesType op, String fieldName, String column,
+            BuilderAnyWrapper customBuilder, @Nullable String alisaFieldName);
 
-    default Builder<T, K> withCount(String fieldName, String column,
-        BuilderWrapper<?, ?> builderClosure, @Nullable String alisaFieldName) {
+    default B withCount(String fieldName, String column,
+            BuilderAnyWrapper builderClosure, @Nullable String alisaFieldName) {
         return withAggregate(AggregatesType.count, fieldName, column, builderClosure, alisaFieldName);
     }
 
-    default Builder<T, K> withCount(String fieldName) {
+    default B withCount(String fieldName) {
         String alisaFieldName = fieldName + "Count";
-        return withCount(fieldName, "*", BuilderWrapper.empty(), alisaFieldName);
+        return withCount(fieldName, "*", BuilderAnyWrapper.empty(), alisaFieldName);
     }
 
-    default Builder<T, K> withCount(String fieldName, String column) {
-        return withCount(fieldName, column, BuilderWrapper.empty(), null);
+    default B withCount(String fieldName, String column) {
+        return withCount(fieldName, column, BuilderAnyWrapper.empty(), null);
     }
 
-    default Builder<T, K> withCount(String fieldName, String column, String alisaFieldName) {
-        return withCount(fieldName, column, BuilderWrapper.empty(), alisaFieldName);
+    default B withCount(String fieldName, String column, String alisaFieldName) {
+        return withCount(fieldName, column, BuilderAnyWrapper.empty(), alisaFieldName);
     }
 
-    default Builder<T, K> withMax(String fieldName, String column,
-        BuilderWrapper<?, ?> builderClosure, @Nullable String alisaFieldName) {
+    default B withMax(String fieldName, String column,
+            BuilderAnyWrapper builderClosure, @Nullable String alisaFieldName) {
         return withAggregate(AggregatesType.max, fieldName, column, builderClosure, alisaFieldName);
     }
 
-    default Builder<T, K> withMax(String fieldName, String column) {
-        return withMax(fieldName, column, BuilderWrapper.empty(), null);
+    default B withMax(String fieldName, String column) {
+        return withMax(fieldName, column, BuilderAnyWrapper.empty(), null);
     }
 
-    default Builder<T, K> withMax(String fieldName, String column, String alisaFieldName) {
-        return withMax(fieldName, column, BuilderWrapper.empty(), alisaFieldName);
+    default B withMax(String fieldName, String column, String alisaFieldName) {
+        return withMax(fieldName, column, BuilderAnyWrapper.empty(), alisaFieldName);
     }
 
-    default Builder<T, K> withMin(String fieldName, String column,
-        BuilderWrapper<?, ?> builderClosure, @Nullable String alisaFieldName) {
+    default B withMin(String fieldName, String column,
+            BuilderAnyWrapper builderClosure, @Nullable String alisaFieldName) {
         return withAggregate(AggregatesType.min, fieldName, column, builderClosure, alisaFieldName);
     }
 
-    default Builder<T, K> withMin(String fieldName, String column) {
-        return withMin(fieldName, column, BuilderWrapper.empty(), null);
+    default B withMin(String fieldName, String column) {
+        return withMin(fieldName, column, BuilderAnyWrapper.empty(), null);
     }
 
-    default Builder<T, K> withMin(String fieldName, String column, String alisaFieldName) {
-        return withMin(fieldName, column, BuilderWrapper.empty(), alisaFieldName);
+    default B withMin(String fieldName, String column, String alisaFieldName) {
+        return withMin(fieldName, column, BuilderAnyWrapper.empty(), alisaFieldName);
     }
 
-    default Builder<T, K> withAvg(String fieldName, String column,
-        BuilderWrapper<?, ?> builderClosure, @Nullable String alisaFieldName) {
+    default B withAvg(String fieldName, String column,
+            BuilderAnyWrapper builderClosure, @Nullable String alisaFieldName) {
         return withAggregate(AggregatesType.avg, fieldName, column, builderClosure, alisaFieldName);
     }
 
-    default Builder<T, K> withAvg(String fieldName, String column) {
-        return withAvg(fieldName, column, BuilderWrapper.empty(), null);
+    default B withAvg(String fieldName, String column) {
+        return withAvg(fieldName, column, BuilderAnyWrapper.empty(), null);
     }
 
-    default Builder<T, K> withAvg(String fieldName, String column, String alisaFieldName) {
-        return withAvg(fieldName, column, BuilderWrapper.empty(), alisaFieldName);
+    default B withAvg(String fieldName, String column, String alisaFieldName) {
+        return withAvg(fieldName, column, BuilderAnyWrapper.empty(), alisaFieldName);
     }
 
-    default Builder<T, K> withSum(String fieldName, String column,
-        BuilderWrapper<?, ?> builderClosure, @Nullable String alisaFieldName) {
+    default B withSum(String fieldName, String column,
+            BuilderAnyWrapper builderClosure, @Nullable String alisaFieldName) {
         return withAggregate(AggregatesType.sum, fieldName, column, builderClosure, alisaFieldName);
     }
 
-    default Builder<T, K> withSum(String fieldName, String column) {
-        return withSum(fieldName, column, BuilderWrapper.empty(), null);
+    default B withSum(String fieldName, String column) {
+        return withSum(fieldName, column, BuilderAnyWrapper.empty(), null);
     }
 
-    default Builder<T, K> withSum(String fieldName, String column, String alisaFieldName) {
-        return withSum(fieldName, column, BuilderWrapper.empty(), alisaFieldName);
+    default B withSum(String fieldName, String column, String alisaFieldName) {
+        return withSum(fieldName, column, BuilderAnyWrapper.empty(), alisaFieldName);
     }
 }

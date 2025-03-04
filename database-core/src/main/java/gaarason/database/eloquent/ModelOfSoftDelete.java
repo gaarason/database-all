@@ -16,12 +16,12 @@ public abstract class ModelOfSoftDelete<T, K> extends ModelBase<T, K> implements
     private static final String DEFAULT_SOFT_DELETED_VALUE_NO = "0";
 
     @Override
-    public int delete(Builder<T, K> builder) {
+    public int delete(Builder<?, T, K> builder) {
         return softDeleting() ? softDelete(builder) : builder.forceDelete();
     }
 
     @Override
-    public int restore(Builder<T, K> builder) {
+    public int restore(Builder<?, T, K> builder) {
         return softDeleteRestore(builder);
     }
 
@@ -36,7 +36,7 @@ public abstract class ModelOfSoftDelete<T, K> extends ModelBase<T, K> implements
      * 软删除查询作用域(反)
      * @param builder 查询构造器
      */
-    protected void scopeSoftDeleteOnlyTrashed(Builder<T, K> builder) {
+    protected void scopeSoftDeleteOnlyTrashed(Builder<?, T, K> builder) {
         builder.where(DEFAULT_SOFT_DELETED_COLUMN_NAME, DEFAULT_SOFT_DELETED_VALUE_YSE);
     }
 
@@ -44,7 +44,7 @@ public abstract class ModelOfSoftDelete<T, K> extends ModelBase<T, K> implements
      * 软删除查询作用域(全)
      * @param builder 查询构造器
      */
-    protected void scopeSoftDeleteWithTrashed(Builder<T, K> builder) {
+    protected void scopeSoftDeleteWithTrashed(Builder<?, T, K> builder) {
 
     }
 
@@ -52,7 +52,7 @@ public abstract class ModelOfSoftDelete<T, K> extends ModelBase<T, K> implements
      * 软删除查询作用域
      * @param builder 查询构造器
      */
-    protected void scopeSoftDelete(Builder<T, K> builder) {
+    protected void scopeSoftDelete(Builder<?, T, K> builder) {
         builder.where(DEFAULT_SOFT_DELETED_COLUMN_NAME, DEFAULT_SOFT_DELETED_VALUE_NO);
     }
 
@@ -61,7 +61,7 @@ public abstract class ModelOfSoftDelete<T, K> extends ModelBase<T, K> implements
      * @param builder 查询构造器
      * @return 删除的行数
      */
-    protected int softDelete(Builder<T, K> builder) {
+    protected int softDelete(Builder<?, T, K> builder) {
         return builder.data(DEFAULT_SOFT_DELETED_COLUMN_NAME, DEFAULT_SOFT_DELETED_VALUE_YSE).update();
     }
 
@@ -70,7 +70,7 @@ public abstract class ModelOfSoftDelete<T, K> extends ModelBase<T, K> implements
      * @param builder 查询构造器
      * @return 恢复的行数
      */
-    protected int softDeleteRestore(Builder<T, K> builder) {
+    protected int softDeleteRestore(Builder<?, T, K> builder) {
         return builder.data(DEFAULT_SOFT_DELETED_COLUMN_NAME, DEFAULT_SOFT_DELETED_VALUE_NO).update();
     }
 

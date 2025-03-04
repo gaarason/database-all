@@ -12,7 +12,7 @@ import java.io.Serializable;
  * @author xt
  */
 @FunctionalInterface
-public interface BuilderWrapper<T, K> extends Serializable {
+public interface BuilderWrapper<B extends Builder<B, T, K>, T, K> extends Serializable {
 
     /**
      * 通用空实现
@@ -25,7 +25,7 @@ public interface BuilderWrapper<T, K> extends Serializable {
      * @param builder 生成器
      * @return 生成器
      */
-    Builder<T, K> execute(Builder<T, K> builder);
+    Builder<B, T, K> execute(Builder<B, T, K> builder);
 
     /**
      * 通用空实现
@@ -34,7 +34,7 @@ public interface BuilderWrapper<T, K> extends Serializable {
      * @return 生成代码片段
      */
     @SuppressWarnings("unchecked")
-    static <TT, KK> BuilderWrapper<TT, KK> empty() {
-        return (BuilderWrapper<TT, KK>) EMPTY;
+    static <BB extends Builder<BB, TT, KK>, TT, KK> BuilderWrapper<BB, TT, KK> empty() {
+        return (BuilderWrapper<BB, TT, KK>) EMPTY;
     }
 }

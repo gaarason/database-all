@@ -24,12 +24,12 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
+public abstract class OtherBuilder<B extends Builder<B, T, K>, T, K> extends WhereBuilder<B, T, K> {
 
     @Override
     public <R> R aggregate(AggregatesType op, String column) {
         String alias = StringUtils.getRandomString(6);
-        Builder<T, K> builder = this;
+        B builder = getSelf();
 
         // 存在 group
         if (!grammar.isEmpty(Grammar.SQLPartType.GROUP)) {
@@ -39,7 +39,7 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
                 selectRaw(groupInfo.getSqlString(), groupInfo.getParameters());
             }
 
-            builder = model.withTrashed().from(alias + "sub", subBuilder -> this);
+            builder = model.withTrashed().from(alias + "sub", subBuilder -> getSelf());
         }
         // 不存在 group, 但存在 select
         else if (!grammar.isEmpty(Grammar.SQLPartType.SELECT)) {
@@ -51,57 +51,57 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> forceIndex(String indexName) {
+    public B forceIndex(String indexName) {
         grammar.addSmartSeparator(Grammar.SQLPartType.FORCE_INDEX, FormatUtils.column(indexName), null);
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> ignoreIndex(String indexName) {
+    public B ignoreIndex(String indexName) {
         grammar.addSmartSeparator(Grammar.SQLPartType.IGNORE_INDEX, FormatUtils.column(indexName), null);
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> fromRaw(@Nullable String sqlPart) {
+    public B fromRaw(@Nullable String sqlPart) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
             grammar.set(Grammar.SQLPartType.FROM, sqlPart, null);
             grammar.set(Grammar.SQLPartType.TABLE, sqlPart, null);
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> fromRaw(@Nullable String sqlPart, Collection<?> parameters) {
+    public B fromRaw(@Nullable String sqlPart, Collection<?> parameters) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
             grammar.set(Grammar.SQLPartType.FROM, sqlPart, ObjectUtils.typeCast(parameters));
             grammar.set(Grammar.SQLPartType.TABLE, sqlPart, ObjectUtils.typeCast(parameters));
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> from(String table) {
+    public B from(String table) {
         return fromRaw(FormatUtils.column(table));
     }
 
     @Override
-    public Builder<T, K> from(Object anyEntity) {
+    public B from(Object anyEntity) {
         String tableName = modelShadowProvider.parseAnyEntityWithCache(anyEntity.getClass()).getTableName();
         return from(tableName);
     }
 
     @Override
-    public Builder<T, K> from(String alias, BuilderWrapper<T, K> closure) {
+    public B from(String alias, BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sqlPart = FormatUtils.bracket(sqlPartInfo.getSqlString()) + alias;
         grammar.set(Grammar.SQLPartType.FROM, sqlPart, sqlPartInfo.getParameters());
         grammar.set(Grammar.SQLPartType.TABLE, sqlPart, sqlPartInfo.getParameters());
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> from(String alias, String sql) {
+    public B from(String alias, String sql) {
         return fromRaw(FormatUtils.bracket(sql) + alias);
     }
 
@@ -119,107 +119,107 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> value(@Nullable Collection<?> values) {
+    public B value(@Nullable Collection<?> values) {
         if (ObjectUtils.isEmpty(values)) {
             grammar.addSmartSeparator(Grammar.SQLPartType.VALUE, "()", null);
-            return this;
+            return getSelf();
         }
         Collection<Object> parameters = new ArrayList<>();
         String sqlPart = FormatUtils.bracket(grammar.replaceValuesAndFillParameters(values, parameters, ","));
         grammar.addSmartSeparator(Grammar.SQLPartType.VALUE, sqlPart, parameters);
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> valueList(Collection<? extends Collection<?>> valuesList) {
+    public B valueList(Collection<? extends Collection<?>> valuesList) {
         for (Collection<?> values : valuesList) {
             value(values);
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> sharedLock() {
+    public B sharedLock() {
         grammar.set(Grammar.SQLPartType.LOCK, "lock in share mode", null);
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> lockForUpdate() {
+    public B lockForUpdate() {
         grammar.set(Grammar.SQLPartType.LOCK, "for update", null);
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> union(BuilderWrapper<T, K> closure) {
+    public B union(BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         grammar.add(Grammar.SQLPartType.UNION, "union" + FormatUtils.bracket(sqlPartInfo.getSqlString()),
             sqlPartInfo.getParameters());
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> unionAll(BuilderWrapper<T, K> closure) {
+    public B unionAll(BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         grammar.add(Grammar.SQLPartType.UNION, "union all" + FormatUtils.bracket(sqlPartInfo.getSqlString()),
             sqlPartInfo.getParameters());
-        return this;
+        return getSelf();
     }
 
     private boolean unionEachFirstActionMark = true;
 
     @Override
-    public Builder<T, K> union(Builder<?, ?> builder) {
+    public B union(Builder<?, ?, ?> builder) {
         if (unionEachFirstActionMark) {
             setAnyBuilder(builder);
             unionEachFirstActionMark = false;
         } else {
             union(subBuilder -> subBuilder.setAnyBuilder(builder));
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> unionAll(Builder<?, ?> builder) {
+    public B unionAll(Builder<?, ?, ?> builder) {
         if (unionEachFirstActionMark) {
             setAnyBuilder(builder);
             unionEachFirstActionMark = false;
         } else {
             unionAll(subBuilder -> subBuilder.setAnyBuilder(builder));
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> joinRaw(@Nullable String sqlPart) {
+    public B joinRaw(@Nullable String sqlPart) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
             grammar.add(Grammar.SQLPartType.JOIN, sqlPart, null);
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> joinRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters) {
+    public B joinRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
             grammar.add(Grammar.SQLPartType.JOIN, sqlPart,
                 ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters));
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> join(String table, String column1, String symbol, String column2) {
+    public B join(String table, String column1, String symbol, String column2) {
         return join(JoinType.INNER, table, builder -> builder.whereColumn(column1, symbol, column2));
     }
 
     @Override
-    public Builder<T, K> join(JoinType joinType, String table, String column1, String symbol, String column2) {
+    public B join(JoinType joinType, String table, String column1, String symbol, String column2) {
         return join(joinType, table, builder -> builder.whereColumn(column1, symbol, column2));
     }
 
     @Override
-    public Builder<T, K> join(JoinType joinType, BuilderWrapper<T, K> tempTable, String alias,
-        BuilderWrapper<T, K> joinConditions) {
+    public B join(JoinType joinType, BuilderWrapper<B, T, K> tempTable, String alias,
+        BuilderWrapper<B, T, K> joinConditions) {
         Grammar.SQLPartInfo tableInfo = generateSql(tempTable);
         String table = FormatUtils.bracket(tableInfo.getSqlString()) + alias;
 
@@ -234,28 +234,28 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
 
         grammar.add(Grammar.SQLPartType.JOIN, sqlPart, parameters);
 
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> join(JoinType joinType, String table,
-        BuilderWrapper<T, K> joinConditions) {
+    public B join(JoinType joinType, String table,
+        BuilderWrapper<B, T, K> joinConditions) {
         Grammar.SQLPartInfo conditions = generateSql(joinConditions, Grammar.SQLPartType.WHERE);
         String sqlPart = FormatUtils.spaces(joinType.getOperation()) + "join " + table + FormatUtils.spaces("on") +
             FormatUtils.bracket(conditions.getSqlString());
         grammar.add(Grammar.SQLPartType.JOIN, sqlPart, conditions.getParameters());
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> inRandomOrder() {
+    public B inRandomOrder() {
         return inRandomOrder(model.getPrimaryKeyColumnName());
     }
 
     @Override
-    public Builder<T, K> inRandomOrder(String column) {
-        Builder<T, K> sameSubBuilder1 = model.newQuery();
-        Builder<T, K> sameSubBuilder2 = model.newQuery();
+    public B inRandomOrder(String column) {
+        B sameSubBuilder1 = model.newQuery();
+        B sameSubBuilder2 = model.newQuery();
         String maxSql = sameSubBuilder1.selectFunction("max", column, null).toSql(SqlType.SELECT);
         String minSql = sameSubBuilder2.selectFunction("min", column, null).toSql(SqlType.SELECT);
         String floorSql = "rand()*((" + maxSql + ")-(" + minSql + "))+(" + minSql + ")";
@@ -266,57 +266,57 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> when(boolean condition, BuilderWrapper<T, K> closure) {
+    public B when(boolean condition, BuilderWrapper<B, T, K> closure) {
         return when(condition, closure, builder -> builder);
     }
 
     @Override
-    public Builder<T, K> when(boolean condition, BuilderWrapper<T, K> closureIfTrue,
-        BuilderWrapper<T, K> closureIfFalse) {
-        return condition ? closureIfTrue.execute(this) : closureIfFalse.execute(this);
+    public B when(boolean condition, BuilderWrapper<B, T, K> closureIfTrue,
+        BuilderWrapper<B, T, K> closureIfFalse) {
+        return condition ? closureIfTrue.execute(getSelf()) : closureIfFalse.execute(getSelf());
     }
 
 
-    protected Builder<T, K> columnGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
+    protected B columnGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
         grammar.addSmartSeparator(Grammar.SQLPartType.COLUMN, sqlPart, parameters, ",");
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> column(String column) {
+    public B column(String column) {
         String sqlPart = backQuote(column);
         return columnRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> columnRaw(@Nullable String sqlPart) {
+    public B columnRaw(@Nullable String sqlPart) {
         return columnRaw(sqlPart, null);
     }
 
     @Override
-    public Builder<T, K> columnRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters) {
-        return ObjectUtils.isEmpty(sqlPart) ? this :
+    public B columnRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters) {
+        return ObjectUtils.isEmpty(sqlPart) ? getSelf() :
             columnGrammar(sqlPart, ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters));
     }
 
     @Override
-    public Builder<T, K> column(String... columns) {
+    public B column(String... columns) {
         for (String column : columns) {
             column(column);
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> column(Collection<String> columnList) {
+    public B column(Collection<String> columnList) {
         for (String column : columnList) {
             column(column);
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> whereHas(String relationFieldName, BuilderWrapper<?, ?> closure) {
+    public B whereHas(String relationFieldName, BuilderWrapper<?, ?, ?> closure) {
         // 获取关联关系
         EntityMember<T, K> entityMember = modelShadowProvider.parseAnyEntityWithCache(entityClass);
         FieldRelationMember relationMember = entityMember.getFieldRelationMemberByFieldName(
@@ -326,7 +326,7 @@ public abstract class OtherBuilder<T, K> extends WhereBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereNotHas(String relationFieldName, BuilderWrapper<?, ?> closure) {
+    public B whereNotHas(String relationFieldName, BuilderWrapper<?, ?, ?> closure) {
         // 获取关联关系
         EntityMember<T, K> entityMember = modelShadowProvider.parseAnyEntityWithCache(entityClass);
         FieldRelationMember relationMember = entityMember.getFieldRelationMemberByFieldName(

@@ -12,7 +12,7 @@ import java.util.Arrays;
  * @param <K>
  * @author xt
  */
-public interface ColumnLambda<T, K> extends Column<T, K>, Support<T, K> {
+public interface ColumnLambda<B extends Builder<B, T, K>, T, K> extends Column<B, T, K>, Support<B, T, K> {
 
     /**
      * 新增字段
@@ -20,7 +20,7 @@ public interface ColumnLambda<T, K> extends Column<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> column(ColumnFunctionalInterface<T, F> column) {
+    default <F> B column(ColumnFunctionalInterface<T, F> column) {
         return column(lambda2ColumnName(column));
     }
 
@@ -31,7 +31,7 @@ public interface ColumnLambda<T, K> extends Column<T, K>, Support<T, K> {
      * @return 查询构造器
      */
     @SuppressWarnings("unchecked")
-    default <F> Builder<T, K> column(ColumnFunctionalInterface<T, F>... column) {
+    default <F> B column(ColumnFunctionalInterface<T, F>... column) {
         return column(lambda2ColumnName(Arrays.asList(column)));
     }
 

@@ -9,21 +9,21 @@ import gaarason.database.contract.function.BuilderWrapper;
  * @param <K>
  * @author xt
  */
-public interface Union<T, K> {
+public interface Union<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 结果集连接(去重)
      * @param closure 返回代码片段
      * @return 查询构造器
      */
-    Builder<T, K> union(BuilderWrapper<T, K> closure);
+    B union(BuilderWrapper<B, T, K> closure);
 
     /**
      * 结果集连接(不去重)
      * @param closure 返回代码片段
      * @return 查询构造器
      */
-    Builder<T, K> unionAll(BuilderWrapper<T, K> closure);
+    B unionAll(BuilderWrapper<B, T, K> closure);
 
     /**
      * 结果集连接(去重)
@@ -32,7 +32,7 @@ public interface Union<T, K> {
      * @return 查询构造器
      * @see Union#unionAll(Builder)
      */
-    Builder<T, K> union(Builder<?, ?> builder);
+    B union(Builder<?, ?, ?> builder);
 
     /**
      * unionAll 的迭代版本
@@ -72,5 +72,5 @@ public interface Union<T, K> {
      * @param builder 查询构造器
      * @return 查询构造器
      */
-    Builder<T, K> unionAll(Builder<?, ?> builder);
+    B unionAll(Builder<?, ?, ?> builder);
 }

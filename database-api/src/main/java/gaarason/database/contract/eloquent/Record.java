@@ -1,6 +1,6 @@
 package gaarason.database.contract.eloquent;
 
-import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.contract.record.Friendly;
 import gaarason.database.contract.record.OperationLambda;
@@ -128,21 +128,20 @@ public interface Record<T, K> extends Friendly<T, K>, OperationLambda<T, K>,
         /**
          * 操作构造器包装
          */
-        final public BuilderWrapper<?, ?> operationBuilder;
+        final public BuilderAnyWrapper operationBuilder;
 
         /**
          * 查询构造器包装
          */
-        final public BuilderWrapper<?, ?> customBuilder;
+        final public BuilderAnyWrapper customBuilder;
 
         /**
          * 查询结果集包装
          */
         final public RecordWrapper recordWrapper;
 
-        public Relation(String relationFieldName, BuilderWrapper<?, ?> operationBuilder,
-            BuilderWrapper<?, ?> customBuilder,
-            RecordWrapper recordWrapper) {
+        public Relation(String relationFieldName, BuilderAnyWrapper operationBuilder,
+                BuilderAnyWrapper customBuilder, RecordWrapper recordWrapper) {
             this.relationOperation = true;
             this.operationBuilder = operationBuilder;
             this.relationFieldName = relationFieldName;
@@ -150,11 +149,9 @@ public interface Record<T, K> extends Friendly<T, K>, OperationLambda<T, K>,
             this.recordWrapper = recordWrapper;
         }
 
-        public Relation(String relationFieldName,
-            BuilderWrapper<?, ?> customBuilder,
-            RecordWrapper recordWrapper) {
+        public Relation(String relationFieldName, BuilderAnyWrapper customBuilder, RecordWrapper recordWrapper) {
             this.relationOperation = false;
-            this.operationBuilder = BuilderWrapper.empty();
+            this.operationBuilder = BuilderAnyWrapper.empty();
             this.relationFieldName = relationFieldName;
             this.customBuilder = customBuilder;
             this.recordWrapper = recordWrapper;

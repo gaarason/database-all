@@ -13,40 +13,40 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public abstract class GroupBuilder<T, K> extends DataBuilder<T, K> {
+public abstract class GroupBuilder<B extends Builder<B, T, K>, T, K>  extends DataBuilder<B, T, K> {
 
-    protected Builder<T, K> groupGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
+    protected B groupGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
         grammar.addSmartSeparator(Grammar.SQLPartType.GROUP, sqlPart, parameters, ",");
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> groupRaw(@Nullable String sqlPart) {
+    public B groupRaw(@Nullable String sqlPart) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
             groupGrammar(sqlPart, null);
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> group(String column) {
+    public B group(String column) {
         String sqlPart = backQuote(column);
         return groupRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> group(String... columnArray) {
+    public B group(String... columnArray) {
         for (String column : columnArray) {
             group(column);
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> group(Collection<String> columnList) {
+    public B group(Collection<String> columnList) {
         for (String column : columnList) {
             group(column);
         }
-        return this;
+        return getSelf();
     }
 }

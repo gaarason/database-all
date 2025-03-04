@@ -1,8 +1,8 @@
 package gaarason.database.contract.record;
 
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.contract.support.LambdaStyle;
 
@@ -33,7 +33,7 @@ public interface RelationshipListLambda<T, K>
      * @return 关联的Model的查询构造器
      */
     default <F> RecordList<T, K> with(ColumnFunctionalInterface<T, F> fieldName,
-        BuilderWrapper<F, ?> builderClosure) {
+        BuilderWrapper<?, F, ?> builderClosure) {
         return with(lambda2FieldName(fieldName), builderClosure);
     }
 
@@ -46,7 +46,7 @@ public interface RelationshipListLambda<T, K>
      * @return 关联的Model的查询构造器
      */
     default <F> RecordList<T, K> with(ColumnFunctionalInterface<T, F> fieldName,
-        BuilderWrapper<F, ?> builderClosure,
+        BuilderWrapper<?, F, ?> builderClosure,
         RecordWrapper recordClosure) {
         return with(lambda2FieldName(fieldName), builderClosure, recordClosure);
     }

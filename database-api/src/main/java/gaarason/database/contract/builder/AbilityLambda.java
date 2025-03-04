@@ -9,7 +9,7 @@ import gaarason.database.contract.function.ColumnFunctionalInterface;
  * @param <K>
  * @author xt
  */
-public interface AbilityLambda<T, K> extends Ability<T, K>, Support<T, K> {
+public interface AbilityLambda<B extends Builder<B, T, K>, T, K> extends Ability<B, T, K>, Support<B, T, K> {
 
     /**
      * 随机抽样
@@ -18,7 +18,7 @@ public interface AbilityLambda<T, K> extends Ability<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> inRandomOrder(ColumnFunctionalInterface<T, F> column) {
+    default <F> B inRandomOrder(ColumnFunctionalInterface<T, F> column) {
         return inRandomOrder(lambda2ColumnName(column));
     }
 

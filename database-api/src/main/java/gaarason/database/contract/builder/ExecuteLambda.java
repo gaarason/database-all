@@ -1,5 +1,6 @@
 package gaarason.database.contract.builder;
 
+import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.ChunkFunctionalInterface;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.exception.SQLRuntimeException;
@@ -10,7 +11,7 @@ import gaarason.database.exception.SQLRuntimeException;
  * @param <K>
  * @author xt
  */
-public interface ExecuteLambda<T, K> extends Execute<T, K>, Support<T, K> {
+public interface ExecuteLambda<B extends Builder<B, T, K>, T, K> extends Execute<B, T, K>, Support<B, T, K> {
 
     /**
      * 分块获取所有数据(数据库性能好), 并处理

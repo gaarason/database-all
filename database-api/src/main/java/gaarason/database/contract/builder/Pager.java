@@ -1,6 +1,7 @@
 package gaarason.database.contract.builder;
 
 import gaarason.database.appointment.Paginate;
+import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.exception.SQLRuntimeException;
 
 import java.util.Map;
@@ -10,7 +11,7 @@ import java.util.Map;
  * @param <T>
  * @author xt
  */
-public interface Pager<T, K> extends Support<T, K> {
+public interface Pager<B extends Builder<B, T, K>, T, K> extends Support<B, T, K> {
 
     /**
      * 不包含总数的分页

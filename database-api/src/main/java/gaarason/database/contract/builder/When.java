@@ -9,7 +9,7 @@ import gaarason.database.contract.function.BuilderWrapper;
  * @param <K>
  * @author xt
  */
-public interface When<T, K> {
+public interface When<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 当condition==true时, 执行closure
@@ -17,7 +17,7 @@ public interface When<T, K> {
      * @param closure 查询构造
      * @return 查询构造器
      */
-    Builder<T, K> when(boolean condition, BuilderWrapper<T, K> closure);
+    B when(boolean condition, BuilderWrapper<B, T, K> closure);
 
     /**
      * 当condition==true时, 执行closureIfTrue, 反之执行closureIfFalse
@@ -26,8 +26,8 @@ public interface When<T, K> {
      * @param closureIfFalse 查询构造
      * @return 查询构造器
      */
-    Builder<T, K> when(boolean condition, BuilderWrapper<T, K> closureIfTrue,
-        BuilderWrapper<T, K> closureIfFalse);
+    B when(boolean condition, BuilderWrapper<B, T, K> closureIfTrue,
+        BuilderWrapper<B, T, K> closureIfFalse);
 
 
 }

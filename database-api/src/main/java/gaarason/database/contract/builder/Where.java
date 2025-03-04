@@ -14,7 +14,7 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public interface Where<T, K> {
+public interface Where<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 加入sql片段
@@ -22,21 +22,21 @@ public interface Where<T, K> {
      * @param parameters 参数绑定列表
      * @return 查询构造器
      */
-    Builder<T, K> whereRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters);
+    B whereRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters);
 
     /**
      * 加入sql片段
      * @param sqlPart sql片段
      * @return 查询构造器
      */
-    Builder<T, K> whereRaw(@Nullable String sqlPart);
+    B whereRaw(@Nullable String sqlPart);
 
     /**
      * 加入sql片段集合
      * @param sqlParts sql片段集合
      * @return 查询构造器
      */
-    Builder<T, K> whereRaw(@Nullable Collection<String> sqlParts);
+    B whereRaw(@Nullable Collection<String> sqlParts);
 
     /**
      * 比较列与值
@@ -45,7 +45,7 @@ public interface Where<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> where(String column, String symbol, Object value);
+    B where(String column, String symbol, Object value);
 
     /**
      * 列包含选项值
@@ -53,7 +53,7 @@ public interface Where<T, K> {
      * @param value 选项值(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    Builder<T, K> whereBit(String column, Object value);
+    B whereBit(String column, Object value);
 
     /**
      * 列不包含选项值
@@ -61,7 +61,7 @@ public interface Where<T, K> {
      * @param value 选项值(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    Builder<T, K> whereBitNot(String column, Object value);
+    B whereBitNot(String column, Object value);
 
     /**
      * 列包含选项值其一
@@ -69,7 +69,7 @@ public interface Where<T, K> {
      * @param values 选项值(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    Builder<T, K> whereBitIn(String column, Collection<?> values);
+    B whereBitIn(String column, Collection<?> values);
 
     /**
      * 列不包含选项值其一
@@ -77,7 +77,7 @@ public interface Where<T, K> {
      * @param values 选项值(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    Builder<T, K> whereBitNotIn(String column, Collection<?> values);
+    B whereBitNotIn(String column, Collection<?> values);
 
     /**
      * 列完全包含所有选项值
@@ -85,7 +85,7 @@ public interface Where<T, K> {
      * @param values 选项值(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    Builder<T, K> whereBitStrictIn(String column, Collection<?> values);
+    B whereBitStrictIn(String column, Collection<?> values);
 
     /**
      * 列完全不包含所有选项值
@@ -93,7 +93,7 @@ public interface Where<T, K> {
      * @param values 选项值(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    Builder<T, K> whereBitStrictNotIn(String column, Collection<?> values);
+    B whereBitStrictNotIn(String column, Collection<?> values);
 
     /**
      * 比较列与值(忽略值为null的情况)
@@ -102,7 +102,7 @@ public interface Where<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> whereIgnoreNull(String column, String symbol, @Nullable Object value);
+    B whereIgnoreNull(String column, String symbol, @Nullable Object value);
 
     /**
      * 比较列与值相等
@@ -110,7 +110,7 @@ public interface Where<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> where(String column, @Nullable Object value);
+    B where(String column, @Nullable Object value);
 
     /**
      * 比较列与值相等(忽略值为null的情况)
@@ -118,21 +118,21 @@ public interface Where<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> whereIgnoreNull(String column, @Nullable Object value);
+    B whereIgnoreNull(String column, @Nullable Object value);
 
     /**
      * 将对象的属性转化为, 列与值相等的查询条件
      * @param anyEntity 非预定义的实体对象
      * @return 查询构造器
      */
-    Builder<T, K> where(Object anyEntity);
+    B where(Object anyEntity);
 
     /**
      * 列与值相等的查询条件
      * @param map 条件map
      * @return 查询构造器
      */
-    Builder<T, K> where(Map<String, Object> map);
+    B where(Map<String, Object> map);
 
     /**
      * 使用组合条件
@@ -144,7 +144,7 @@ public interface Where<T, K> {
      * @param map 条件map
      * @return 查询构造器
      */
-    Builder<T, K> whereFind(@Nullable Map<String, Object> map);
+    B whereFind(@Nullable Map<String, Object> map);
 
     /**
      * 使用组合条件
@@ -156,14 +156,14 @@ public interface Where<T, K> {
      * @param map 条件map
      * @return 查询构造器
      */
-    Builder<T, K> whereNotFind(@Nullable Map<String, Object> map);
+    B whereNotFind(@Nullable Map<String, Object> map);
 
     /**
      * 列与值相等的查询条件(忽略MAP中，值为null的情况)
      * @param map 条件map
      * @return 查询构造器
      */
-    Builder<T, K> whereIgnoreNull(@Nullable Map<String, Object> map);
+    B whereIgnoreNull(@Nullable Map<String, Object> map);
 
     /**
      * 在多个列中, 查找值, 任一满足
@@ -174,7 +174,7 @@ public interface Where<T, K> {
      * @param columns 列名集合
      * @return 查询构造器
      */
-    Builder<T, K> whereAnyLike(@Nullable Object value, Collection<String> columns);
+    B whereAnyLike(@Nullable Object value, Collection<String> columns);
 
     /**
      * 在多个列中, 查找值, 任一满足
@@ -185,7 +185,7 @@ public interface Where<T, K> {
      * @param columns 列名
      * @return 查询构造器
      */
-    Builder<T, K> whereAnyLike(@Nullable Object value, String... columns);
+    B whereAnyLike(@Nullable Object value, String... columns);
 
     /**
      * 在多个列中, 查找值, 全部满足
@@ -196,7 +196,7 @@ public interface Where<T, K> {
      * @param columns 列名集合
      * @return 查询构造器
      */
-    Builder<T, K> whereAllLike(@Nullable Object value, Collection<String> columns);
+    B whereAllLike(@Nullable Object value, Collection<String> columns);
 
     /**
      * 在多个列中, 查找值, 全部满足
@@ -207,7 +207,7 @@ public interface Where<T, K> {
      * @param columns 列名
      * @return 查询构造器
      */
-    Builder<T, K> whereAllLike(@Nullable Object value, String... columns);
+    B whereAllLike(@Nullable Object value, String... columns);
 
     /**
      * "列like值" 的查询条件
@@ -217,7 +217,7 @@ public interface Where<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> whereLike(String column, @Nullable Object value);
+    B whereLike(String column, @Nullable Object value);
 
     /**
      * 将对象的属性转化为, "列like值" 的查询条件
@@ -226,7 +226,7 @@ public interface Where<T, K> {
      * @param anyEntity 实体对象
      * @return 查询构造器
      */
-    Builder<T, K> whereLike(@Nullable Object anyEntity);
+    B whereLike(@Nullable Object anyEntity);
 
     /**
      * "列like值" 的查询条件
@@ -235,7 +235,7 @@ public interface Where<T, K> {
      * @param map 条件map
      * @return 查询构造器
      */
-    Builder<T, K> whereLike(@Nullable Map<String, Object> map);
+    B whereLike(@Nullable Map<String, Object> map);
 
     /**
      * "列 not like值" 的查询条件
@@ -245,7 +245,7 @@ public interface Where<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> whereNotLike(String column, @Nullable Object value);
+    B whereNotLike(String column, @Nullable Object value);
 
     /**
      * 将对象的属性转化为, "列 not like值" 的查询条件
@@ -254,7 +254,7 @@ public interface Where<T, K> {
      * @param anyEntity 实体对象
      * @return 查询构造器
      */
-    Builder<T, K> whereNotLike(@Nullable Object anyEntity);
+    B whereNotLike(@Nullable Object anyEntity);
 
     /**
      * "列 not like值" 的查询条件
@@ -263,7 +263,7 @@ public interface Where<T, K> {
      * @param map 条件map
      * @return 查询构造器
      */
-    Builder<T, K> whereNotLike(@Nullable Map<String, Object> map);
+    B whereNotLike(@Nullable Map<String, Object> map);
 
     /**
      * 选择可能的条件类型
@@ -275,7 +275,7 @@ public interface Where<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> whereMayLike(String column, @Nullable Object value);
+    B whereMayLike(String column, @Nullable Object value);
 
     /**
      * 选择可能的条件类型
@@ -287,7 +287,7 @@ public interface Where<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> whereMayNotLike(String column, @Nullable Object value);
+    B whereMayNotLike(String column, @Nullable Object value);
 
     /**
      * 选择可能的条件类型
@@ -298,7 +298,7 @@ public interface Where<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> whereMayLikeIgnoreNull(String column, @Nullable Object value);
+    B whereMayLikeIgnoreNull(String column, @Nullable Object value);
 
     /**
      * 选择可能的条件类型
@@ -309,7 +309,7 @@ public interface Where<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> whereMayNotLikeIgnoreNull(String column, @Nullable Object value);
+    B whereMayNotLikeIgnoreNull(String column, @Nullable Object value);
 
     /**
      * 选择可能的条件类型
@@ -320,7 +320,7 @@ public interface Where<T, K> {
      * @param anyEntity 实体对象
      * @return 查询构造器
      */
-    Builder<T, K> whereMayLike(@Nullable Object anyEntity);
+    B whereMayLike(@Nullable Object anyEntity);
 
     /**
      * 选择可能的条件类型
@@ -331,7 +331,7 @@ public interface Where<T, K> {
      * @param anyEntity 实体对象
      * @return 查询构造器
      */
-    Builder<T, K> whereMayNotLike(@Nullable Object anyEntity);
+    B whereMayNotLike(@Nullable Object anyEntity);
 
     /**
      * 选择可能的条件类型
@@ -342,7 +342,7 @@ public interface Where<T, K> {
      * @param map 条件map
      * @return 查询构造器
      */
-    Builder<T, K> whereMayLike(@Nullable Map<String, Object> map);
+    B whereMayLike(@Nullable Map<String, Object> map);
 
     /**
      * 选择可能的条件类型
@@ -353,7 +353,7 @@ public interface Where<T, K> {
      * @param map 条件map
      * @return 查询构造器
      */
-    Builder<T, K> whereMayNotLike(@Nullable Map<String, Object> map);
+    B whereMayNotLike(@Nullable Map<String, Object> map);
 
     /**
      * 选择可能的条件类型
@@ -363,7 +363,7 @@ public interface Where<T, K> {
      * @param map 条件map
      * @return 查询构造器
      */
-    Builder<T, K> whereMayLikeIgnoreNull(@Nullable Map<String, Object> map);
+    B whereMayLikeIgnoreNull(@Nullable Map<String, Object> map);
 
     /**
      * 选择可能的条件类型
@@ -373,7 +373,7 @@ public interface Where<T, K> {
      * @param map 条件map
      * @return 查询构造器
      */
-    Builder<T, K> whereMayNotLikeIgnoreNull(@Nullable Map<String, Object> map);
+    B whereMayNotLikeIgnoreNull(@Nullable Map<String, Object> map);
 
     /**
      * 条件子查询
@@ -382,7 +382,7 @@ public interface Where<T, K> {
      * @param completeSql 完整sql
      * @return 查询构造器
      */
-    Builder<T, K> whereSubQuery(String column, String symbol, String completeSql);
+    B whereSubQuery(String column, String symbol, String completeSql);
 
     /**
      * 条件子查询
@@ -391,7 +391,7 @@ public interface Where<T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> whereSubQuery(String column, String symbol, BuilderWrapper<T, K> closure);
+    B whereSubQuery(String column, String symbol, BuilderWrapper<B, T, K> closure);
 
     /**
      * 列值在范围内
@@ -399,7 +399,7 @@ public interface Where<T, K> {
      * @param valueList 值所在的list
      * @return 查询构造器
      */
-    Builder<T, K> whereIn(String column, Collection<?> valueList);
+    B whereIn(String column, Collection<?> valueList);
 
     /**
      * 列值在范围内(忽略值为空的情况)
@@ -407,7 +407,7 @@ public interface Where<T, K> {
      * @param valueList 值所在的list
      * @return 查询构造器
      */
-    Builder<T, K> whereInIgnoreEmpty(String column, @Nullable Collection<?> valueList);
+    B whereInIgnoreEmpty(String column, @Nullable Collection<?> valueList);
 
     /**
      * 列值在范围内
@@ -415,7 +415,7 @@ public interface Where<T, K> {
      * @param valueArray 值所在的数组
      * @return 查询构造器
      */
-    Builder<T, K> whereIn(String column, Object... valueArray);
+    B whereIn(String column, Object... valueArray);
 
     /**
      * 列值在范围内(忽略值为空的情况)
@@ -423,7 +423,7 @@ public interface Where<T, K> {
      * @param valueArray 值所在的数组
      * @return 查询构造器
      */
-    Builder<T, K> whereInIgnoreEmpty(String column, @Nullable Object... valueArray);
+    B whereInIgnoreEmpty(String column, @Nullable Object... valueArray);
 
     /**
      * 列值在范围内(子查询)
@@ -431,7 +431,7 @@ public interface Where<T, K> {
      * @param sql 完整sql eg:select id from student where age>10
      * @return 查询构造器
      */
-    Builder<T, K> whereInRaw(String column, String sql);
+    B whereInRaw(String column, String sql);
 
     /**
      * 列值在范围内(子查询)
@@ -439,7 +439,7 @@ public interface Where<T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> whereIn(String column, BuilderWrapper<T, K> closure);
+    B whereIn(String column, BuilderWrapper<B, T, K> closure);
 
     /**
      * 列值不在范围内
@@ -447,7 +447,7 @@ public interface Where<T, K> {
      * @param valueList 值所在的list
      * @return 查询构造器
      */
-    Builder<T, K> whereNotIn(String column, Collection<?> valueList);
+    B whereNotIn(String column, Collection<?> valueList);
 
     /**
      * 列值在范围内(忽略值为空的情况)
@@ -455,7 +455,7 @@ public interface Where<T, K> {
      * @param valueList 值所在的list
      * @return 查询构造器
      */
-    Builder<T, K> whereNotInIgnoreEmpty(String column, @Nullable Collection<?> valueList);
+    B whereNotInIgnoreEmpty(String column, @Nullable Collection<?> valueList);
 
     /**
      * 列值在范围内
@@ -463,7 +463,7 @@ public interface Where<T, K> {
      * @param valueArray 值所在的数组
      * @return 查询构造器
      */
-    Builder<T, K> whereNotIn(String column, Object... valueArray);
+    B whereNotIn(String column, Object... valueArray);
 
     /**
      * 列值在范围内(忽略值为空的情况)
@@ -471,7 +471,7 @@ public interface Where<T, K> {
      * @param valueArray 值所在的数组
      * @return 查询构造器
      */
-    Builder<T, K> whereNotInIgnoreEmpty(String column, @Nullable Object... valueArray);
+    B whereNotInIgnoreEmpty(String column, @Nullable Object... valueArray);
 
     /**
      * 列值不在范围内(子查询)
@@ -479,7 +479,7 @@ public interface Where<T, K> {
      * @param sql 完整sql eg:select id from student where age>10
      * @return 查询构造器
      */
-    Builder<T, K> whereNotInRaw(String column, String sql);
+    B whereNotInRaw(String column, String sql);
 
     /**
      * 列值不在范围内(子查询)
@@ -487,7 +487,7 @@ public interface Where<T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> whereNotIn(String column, BuilderWrapper<T, K> closure);
+    B whereNotIn(String column, BuilderWrapper<B, T, K> closure);
 
     /**
      * 列值在两值之间
@@ -496,7 +496,7 @@ public interface Where<T, K> {
      * @param max 值2
      * @return 查询构造器
      */
-    Builder<T, K> whereBetween(String column, Object min, Object max);
+    B whereBetween(String column, Object min, Object max);
 
     /**
      * 列值在两值之间
@@ -506,7 +506,7 @@ public interface Where<T, K> {
      * @param parameters 参数绑定列表
      * @return 查询构造器
      */
-    Builder<T, K> whereBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters);
+    B whereBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters);
 
     /**
      * 列值在两值之间
@@ -515,7 +515,7 @@ public interface Where<T, K> {
      * @param max 值2
      * @return 查询构造器
      */
-    Builder<T, K> whereBetweenRaw(String column, Object min, Object max);
+    B whereBetweenRaw(String column, Object min, Object max);
 
     /**
      * 列值不在两值之间
@@ -524,7 +524,7 @@ public interface Where<T, K> {
      * @param max 值2
      * @return 查询构造器
      */
-    Builder<T, K> whereNotBetween(String column, Object min, Object max);
+    B whereNotBetween(String column, Object min, Object max);
 
     /**
      * 列值不在两值之间
@@ -534,7 +534,7 @@ public interface Where<T, K> {
      * @param parameters 参数绑定列表
      * @return 查询构造器
      */
-    Builder<T, K> whereNotBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters);
+    B whereNotBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters);
 
     /**
      * 列值不在两值之间
@@ -543,63 +543,63 @@ public interface Where<T, K> {
      * @param max 值2
      * @return 查询构造器
      */
-    Builder<T, K> whereNotBetweenRaw(String column, Object min, Object max);
+    B whereNotBetweenRaw(String column, Object min, Object max);
 
     /**
      * 列值为null
      * @param column 列名
      * @return 查询构造器
      */
-    Builder<T, K> whereNull(String column);
+    B whereNull(String column);
 
     /**
      * 列值不为null
      * @param column 列名
      * @return 查询构造器
      */
-    Builder<T, K> whereNotNull(String column);
+    B whereNotNull(String column);
 
     /**
      * exists一个sql
      * @param sql 完整sql
      * @return 查询构造器
      */
-    Builder<T, K> whereExistsRaw(String sql);
+    B whereExistsRaw(String sql);
 
     /**
      * exists一个闭包
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> whereExists(BuilderWrapper<T, K> closure);
+    B whereExists(BuilderWrapper<B, T, K> closure);
 
     /**
      * exists一个闭包
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> whereAnyExists(BuilderAnyWrapper closure);
+    B whereAnyExists(BuilderAnyWrapper closure);
 
     /**
      * not exists一个闭包
      * @param sql 闭包
      * @return 查询构造器
      */
-    Builder<T, K> whereNotExistsRaw(String sql);
+    B whereNotExistsRaw(String sql);
 
     /**
      * not exists一个完整sql
      * @param closure 完整sql
      * @return 查询构造器
      */
-    Builder<T, K> whereNotExists(BuilderWrapper<T, K> closure);
+    B whereNotExists(BuilderWrapper<B, T, K> closure);
 
     /**
      * not exists一个完整sql
      * @param closure 完整sql
      * @return 查询构造器
      */
-    Builder<T, K> whereAnyNotExists(BuilderAnyWrapper closure);
+    B whereAnyNotExists(BuilderAnyWrapper closure);
 
     /**
      * 比较字段与字段
@@ -608,7 +608,7 @@ public interface Where<T, K> {
      * @param column2 列2
      * @return 查询构造器
      */
-    Builder<T, K> whereColumn(String column1, String symbol, String column2);
+    B whereColumn(String column1, String symbol, String column2);
 
     /**
      * 字段与字段相等
@@ -616,49 +616,49 @@ public interface Where<T, K> {
      * @param column2 列2
      * @return 查询构造器
      */
-    Builder<T, K> whereColumn(String column1, String column2);
+    B whereColumn(String column1, String column2);
 
     /**
      * 否定
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> whereNot(BuilderWrapper<T, K> closure);
+    B whereNot(BuilderWrapper<B, T, K> closure);
 
     /**
      * 且
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> andWhere(BuilderWrapper<T, K> closure);
+    B andWhere(BuilderWrapper<B, T, K> closure);
 
     /**
      * 且, 忽略空语句
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> andWhereIgnoreEmpty(BuilderWrapper<T, K> closure);
+    B andWhereIgnoreEmpty(BuilderWrapper<B, T, K> closure);
 
     /**
      * 或
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> orWhere(BuilderWrapper<T, K> closure);
+    B orWhere(BuilderWrapper<B, T, K> closure);
 
     /**
      * 或, 忽略空语句
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> orWhereIgnoreEmpty(BuilderWrapper<T, K> closure);
+    B orWhereIgnoreEmpty(BuilderWrapper<B, T, K> closure);
 
     /**
      * 包含关联数据
      * @param relationFieldName 关系字段
      * @return 查询构造器
      */
-    default Builder<T, K> whereHas(String relationFieldName) {
+    default B whereHas(String relationFieldName) {
         return whereHas(relationFieldName, BuilderWrapper.empty());
     }
 
@@ -668,14 +668,14 @@ public interface Where<T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> whereHas(String relationFieldName, BuilderWrapper<?, ?> closure);
+    B whereHas(String relationFieldName, BuilderWrapper<?, ?, ?> closure);
 
     /**
      * 包含关联数据
      * @param relationFieldName 关系字段
      * @return 查询构造器
      */
-    default Builder<T, K> whereNotHas(String relationFieldName) {
+    default B whereNotHas(String relationFieldName) {
         return whereNotHas(relationFieldName, BuilderWrapper.empty());
     }
 
@@ -685,5 +685,5 @@ public interface Where<T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> whereNotHas(String relationFieldName, BuilderWrapper<?, ?> closure);
+    B whereNotHas(String relationFieldName, BuilderWrapper<?, ?, ?> closure);
 }

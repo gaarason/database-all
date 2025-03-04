@@ -10,34 +10,34 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public interface Group<T, K> {
+public interface Group<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 分组
      * @param sqlPart 原生语句
      * @return 查询构造器
      */
-    Builder<T, K> groupRaw(String sqlPart);
+    B groupRaw(String sqlPart);
 
     /**
      * 分组
      * @param column 列名
      * @return 查询构造器
      */
-    Builder<T, K> group(String column);
+    B group(String column);
 
     /**
      * 分组
      * @param column 列名数组
      * @return 查询构造器
      */
-    Builder<T, K> group(String... column);
+    B group(String... column);
 
     /**
      * 分组
      * @param columnList 列名列表
      * @return 查询构造器
      */
-    Builder<T, K> group(Collection<String> columnList);
+    B group(Collection<String> columnList);
 
 }

@@ -7,8 +7,10 @@ import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.contract.support.ShowType;
 import gaarason.database.exception.ConfirmOperationException;
 import gaarason.database.exception.EntityNotFoundException;
+import gaarason.database.query.MySqlBuilder;
 import gaarason.database.test.models.normal.StudentCombination;
 import gaarason.database.test.models.normal.StudentModel;
 import gaarason.database.test.models.normal.StudentReversal;
@@ -531,7 +533,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         // 数据库数据有限,此处模拟大数据
         新增_多线程_循环_非entity方式();
         System.out.println("插入数据后的内存: " + r.totalMemory());
-        Builder<StudentModel.Entity, Integer> queryBuilder = studentModel.newQuery();
+        Builder<?, StudentModel.Entity, Integer> queryBuilder = studentModel.newQuery();
         for (int i = 0; i < 100; i++) {
             queryBuilder.unionAll((builder -> builder));
         }
@@ -560,7 +562,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         // 数据库数据有限,此处模拟大数据
         新增_多线程_循环_非entity方式();
         System.out.println("插入数据后的内存: " + r.totalMemory());
-        Builder<StudentModel.Entity, Integer> queryBuilder = studentModel.newQuery();
+        Builder<?, StudentModel.Entity, Integer> queryBuilder = studentModel.newQuery();
 
         System.out.println("构造sql后的内存: " + r.totalMemory());
         StringBuilder temp = new StringBuilder();
@@ -589,7 +591,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         // 数据库数据有限,此处模拟大数据
         新增_多线程_循环_非entity方式();
         System.out.println("插入数据后的内存: " + r.totalMemory());
-        Builder<StudentModel.Entity, Integer> queryBuilder = studentModel.newQuery();
+        Builder<?, StudentModel.Entity, Integer> queryBuilder = studentModel.newQuery();
 
         System.out.println("构造sql后的内存: " + r.totalMemory());
         StringBuilder temp = new StringBuilder();
@@ -1496,9 +1498,10 @@ abstract public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 条件_whereIn_closure() {
-        List<StudentModel.Entity> entityList0 = studentModel.newQuery().whereIn(StudentModel.Entity::getId,
+        List<StudentModel.Entity> entityList0 = studentModel.newQuery(new ShowType<MySqlBuilder<StudentModel.Entity, Integer>>() {}).whereIn(StudentModel.Entity::getId,
             builder -> builder.select(StudentModel.Entity::getId).where(StudentModel.Entity::getAge, ">=", "11")
-        ).andWhere(
+        )
+                .andWhere(
             builder -> builder.whereNotIn(StudentModel.Entity::getSex,
                 builder1 -> builder1.select(StudentModel.Entity::getSex).where(StudentModel.Entity::getSex, "1")
             )

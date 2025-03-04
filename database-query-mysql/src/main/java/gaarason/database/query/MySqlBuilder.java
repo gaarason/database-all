@@ -1,6 +1,5 @@
 package gaarason.database.query;
 
-import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.util.FormatUtils;
 
@@ -13,25 +12,30 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public class MySqlBuilder<T, K> extends OtherBuilder<T, K> {
+public class MySqlBuilder<T, K> extends OtherBuilder<MySqlBuilder<T, K>, T, K> {
 
     private static final long serialVersionUID = 1L;
 
     @Override
-    public Builder<T, K> limit(Object offset, Object take) {
-        Collection<Object> parameters = new ArrayList<>(2);
-        String sqlPart = grammar.replaceValueAndFillParameters(offset, parameters) + "," +
-            grammar.replaceValueAndFillParameters(take, parameters);
-        grammar.set(Grammar.SQLPartType.LIMIT, sqlPart, parameters);
+    public MySqlBuilder<T, K> getSelf() {
         return this;
     }
 
     @Override
-    public Builder<T, K> limit(Object take) {
+    public MySqlBuilder<T, K> limit(Object offset, Object take) {
+        Collection<Object> parameters = new ArrayList<>(2);
+        String sqlPart = grammar.replaceValueAndFillParameters(offset, parameters) + "," +
+            grammar.replaceValueAndFillParameters(take, parameters);
+        grammar.set(Grammar.SQLPartType.LIMIT, sqlPart, parameters);
+        return getSelf();
+    }
+
+    @Override
+    public MySqlBuilder<T, K> limit(Object take) {
         Collection<Object> parameters = new ArrayList<>(1);
         String sqlPart = grammar.replaceValueAndFillParameters(take, parameters);
         grammar.set(Grammar.SQLPartType.LIMIT, sqlPart, parameters);
-        return this;
+        return getSelf();
     }
 
     /**
@@ -42,5 +46,9 @@ public class MySqlBuilder<T, K> extends OtherBuilder<T, K> {
     @Override
     protected String backQuote(String something) {
         return FormatUtils.backQuote(something, "`");
+    }
+
+    public MySqlBuilder<T, K> adddddd() {
+        return getSelf();
     }
 }

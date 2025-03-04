@@ -1,6 +1,7 @@
 package gaarason.database.contract.function;
 
 import gaarason.database.contract.eloquent.Builder;
+import gaarason.database.exception.TypeCastException;
 
 import java.io.Serializable;
 
@@ -22,7 +23,7 @@ public interface BuilderAnyWrapper extends Serializable {
      * @param builder 生成器
      * @return 生成器
      */
-    Builder<?, ?> execute(Builder<?, ?> builder);
+    Builder<?, ?, ?> execute(Builder<?, ?, ?> builder);
 
     /**
      * 通用空实现
@@ -30,5 +31,18 @@ public interface BuilderAnyWrapper extends Serializable {
      */
     static BuilderAnyWrapper empty() {
         return EMPTY;
+    }
+
+    static BuilderAnyWrapper turn2(BuilderWrapper<?, ?, ?> builderWrapper) {
+        return builder -> builderWrapper.execute(typeCast(builder));
+    }
+
+    @SuppressWarnings("unchecked")
+    static <T, N> N typeCast(T original) throws TypeCastException {
+        try {
+            return (N) original;
+        } catch (Exception e) {
+            throw new TypeCastException(e.getMessage(), e);
+        }
     }
 }

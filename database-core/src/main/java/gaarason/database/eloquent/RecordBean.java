@@ -6,7 +6,7 @@ import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.extra.Bind;
-import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.core.Container;
@@ -283,12 +283,12 @@ public class RecordBean<T, K> implements Record<T, K> {
     }
 
     @Override
-    public Record<T, K> with(String fieldName, BuilderWrapper<?, ?> builderClosure) {
+    public Record<T, K> with(String fieldName, BuilderAnyWrapper builderClosure) {
         return with(fieldName, builderClosure, theRecord -> theRecord);
     }
 
     @Override
-    public Record<T, K> with(String fieldName, BuilderWrapper<?, ?> builderClosure,
+    public Record<T, K> with(String fieldName, BuilderAnyWrapper builderClosure,
         RecordWrapper recordClosure) {
 
         String[] columnArr = fieldName.split("\\.");

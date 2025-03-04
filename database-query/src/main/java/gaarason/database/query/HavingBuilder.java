@@ -21,49 +21,49 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
+public abstract class HavingBuilder<B extends Builder<B, T, K>, T, K> extends GroupBuilder<B, T, K> {
 
-    protected Builder<T, K> havingGrammar(String sqlPart, @Nullable Collection<Object> parameters, String separator) {
+    protected B havingGrammar(String sqlPart, @Nullable Collection<Object> parameters, String separator) {
         grammar.addSmartSeparator(Grammar.SQLPartType.HAVING, sqlPart, parameters, separator);
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> havingRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters) {
+    public B havingRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
             havingGrammar(sqlPart, ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters), " and ");
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> havingRaw(@Nullable String sqlPart) {
+    public B havingRaw(@Nullable String sqlPart) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
             havingGrammar(sqlPart, null, " and ");
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> havingRaw(@Nullable Collection<String> sqlParts) {
+    public B havingRaw(@Nullable Collection<String> sqlParts) {
         if (!ObjectUtils.isEmpty(sqlParts)) {
             for (String sqlPart : sqlParts) {
                 havingRaw(sqlPart);
             }
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> having(String column, String symbol, Object value) {
+    public B having(String column, String symbol, Object value) {
         ArrayList<Object> parameters = new ArrayList<>();
         String sqlPart = backQuote(column) + symbol + grammar.replaceValueAndFillParameters(value, parameters);
         havingGrammar(sqlPart, parameters, " and ");
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> havingBit(String column, Object value) {
+    public B havingBit(String column, Object value) {
         long packed = BitUtils.pack(value);
         // column & 1
         String sqlPart1 = backQuote(column) + "&" + packed;
@@ -73,7 +73,7 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingBitNot(String column, Object value) {
+    public B havingBitNot(String column, Object value) {
         long packed = BitUtils.pack(value);
         // column & 1
         String sqlPart1 = backQuote(column) + "&" + packed;
@@ -83,7 +83,7 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingBitIn(String column, Collection<?> values) {
+    public B havingBitIn(String column, Collection<?> values) {
         return andHaving(builder -> {
             for (Object value : values) {
                 builder.orHaving(builder1 -> builder1.havingBit(column, value));
@@ -93,7 +93,7 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingBitNotIn(String column, Collection<?> values) {
+    public B havingBitNotIn(String column, Collection<?> values) {
         return andHaving(builder -> {
             for (Object value : values) {
                 builder.orHaving(builder1 -> builder1.havingBitNot(column, value));
@@ -103,7 +103,7 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingBitStrictIn(String column, Collection<?> values) {
+    public B havingBitStrictIn(String column, Collection<?> values) {
         return andHaving(builder -> {
             for (Object value : values) {
                 builder.havingBit(column, value);
@@ -113,7 +113,7 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingBitStrictNotIn(String column, Collection<?> values) {
+    public B havingBitStrictNotIn(String column, Collection<?> values) {
         return andHaving(builder -> {
             for (Object value : values) {
                 builder.havingBitNot(column, value);
@@ -123,37 +123,37 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingIgnoreNull(String column, String symbol, @Nullable Object value) {
-        return ObjectUtils.isNull(value) ? this : having(column, symbol, value);
+    public B havingIgnoreNull(String column, String symbol, @Nullable Object value) {
+        return ObjectUtils.isNull(value) ? getSelf() : having(column, symbol, value);
     }
 
     @Override
-    public Builder<T, K> having(String column, @Nullable Object value) {
+    public B having(String column, @Nullable Object value) {
         return ObjectUtils.isNull(value) ? havingNull(column) : having(column, "=", value);
     }
 
     @Override
-    public Builder<T, K> havingIgnoreNull(String column, @Nullable Object value) {
-        return ObjectUtils.isNull(value) ? this : having(column, value);
+    public B havingIgnoreNull(String column, @Nullable Object value) {
+        return ObjectUtils.isNull(value) ? getSelf() : having(column, value);
     }
 
     @Override
-    public Builder<T, K> having(Object anyEntity) {
+    public B having(Object anyEntity) {
         final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity,
             EntityUseType.CONDITION);
         return having(columnValueMap);
     }
 
     @Override
-    public Builder<T, K> having(Map<String, Object> map) {
+    public B having(Map<String, Object> map) {
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             having(entry.getKey(), entry.getValue());
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> havingFind(@Nullable Map<String, Object> map) {
+    public B havingFind(@Nullable Map<String, Object> map) {
         if (!ObjectUtils.isEmpty(map)) {
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 String column = entry.getKey();
@@ -170,11 +170,11 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
                 }
             }
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> havingNotFind(@Nullable Map<String, Object> map) {
+    public B havingNotFind(@Nullable Map<String, Object> map) {
         if (!ObjectUtils.isEmpty(map)) {
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 String column = entry.getKey();
@@ -191,21 +191,21 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
                 }
             }
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> havingIgnoreNull(@Nullable Map<String, Object> map) {
+    public B havingIgnoreNull(@Nullable Map<String, Object> map) {
         if (!ObjectUtils.isNull(map)) {
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 havingIgnoreNull(entry.getKey(), entry.getValue());
             }
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> havingAnyLike(@Nullable Object value, Collection<String> columns) {
+    public B havingAnyLike(@Nullable Object value, Collection<String> columns) {
         return andHavingIgnoreEmpty(builder -> {
             for (String column : columns) {
                 builder.orHavingIgnoreEmpty(builderInner -> builderInner.havingLike(column, value));
@@ -215,12 +215,12 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingAnyLike(@Nullable Object value, String... columns) {
+    public B havingAnyLike(@Nullable Object value, String... columns) {
         return havingAnyLike(value, Arrays.asList(columns));
     }
 
     @Override
-    public Builder<T, K> havingAllLike(@Nullable Object value, Collection<String> columns) {
+    public B havingAllLike(@Nullable Object value, Collection<String> columns) {
         return andHavingIgnoreEmpty(builder -> {
             for (String column : columns) {
                 builder.andHavingIgnoreEmpty(builderInner -> builderInner.havingLike(column, value));
@@ -230,64 +230,64 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingAllLike(@Nullable Object value, String... columns) {
+    public B havingAllLike(@Nullable Object value, String... columns) {
         return havingAllLike(value, Arrays.asList(columns));
     }
 
     @Override
-    public Builder<T, K> havingLike(String column, @Nullable Object value) {
+    public B havingLike(String column, @Nullable Object value) {
         if (ObjectUtils.isEmpty(value) || ObjectUtils.isEmpty(StringUtils.replace(value, "%", ""))) {
-            return this;
+            return getSelf();
         }
         return havingIgnoreNull(column, "like", StringUtils.sqlPathLike(value));
     }
 
     @Override
-    public Builder<T, K> havingLike(@Nullable Object anyEntity) {
+    public B havingLike(@Nullable Object anyEntity) {
         final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity,
             EntityUseType.CONDITION);
         return havingLike(columnValueMap);
     }
 
     @Override
-    public Builder<T, K> havingLike(@Nullable Map<String, Object> map) {
+    public B havingLike(@Nullable Map<String, Object> map) {
         if (ObjectUtils.isEmpty(map)) {
-            return this;
+            return getSelf();
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             havingLike(entry.getKey(), entry.getValue());
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> havingNotLike(String column, @Nullable Object value) {
+    public B havingNotLike(String column, @Nullable Object value) {
         if (ObjectUtils.isEmpty(value) || ObjectUtils.isEmpty(StringUtils.replace(value, "%", ""))) {
-            return this;
+            return getSelf();
         }
         return havingIgnoreNull(column, "not like", StringUtils.sqlPathLike(value));
     }
 
     @Override
-    public Builder<T, K> havingNotLike(@Nullable Object anyEntity) {
+    public B havingNotLike(@Nullable Object anyEntity) {
         final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity,
             EntityUseType.CONDITION);
         return havingNotLike(columnValueMap);
     }
 
     @Override
-    public Builder<T, K> havingNotLike(@Nullable Map<String, Object> map) {
+    public B havingNotLike(@Nullable Map<String, Object> map) {
         if (ObjectUtils.isEmpty(map)) {
-            return this;
+            return getSelf();
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             havingNotLike(entry.getKey(), entry.getValue());
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> havingMayLike(String column, @Nullable Object value) {
+    public B havingMayLike(String column, @Nullable Object value) {
         String s = conversion.castNullable(value, String.class);
         if (!ObjectUtils.isNull(s) && (s.endsWith("%") || s.startsWith("%"))) {
             return havingLike(column, value);
@@ -297,7 +297,7 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingMayNotLike(String column, @Nullable Object value) {
+    public B havingMayNotLike(String column, @Nullable Object value) {
         String s = conversion.castNullable(value, String.class);
         if (!ObjectUtils.isNull(s) && (s.endsWith("%") || s.startsWith("%"))) {
             return havingNotLike(column, value);
@@ -307,88 +307,88 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingMayLikeIgnoreNull(String column, @Nullable Object value) {
+    public B havingMayLikeIgnoreNull(String column, @Nullable Object value) {
         if (ObjectUtils.isNull(value)) {
-            return this;
+            return getSelf();
         }
         return havingMayLike(column, value);
     }
 
     @Override
-    public Builder<T, K> havingMayNotLikeIgnoreNull(String column, @Nullable Object value) {
+    public B havingMayNotLikeIgnoreNull(String column, @Nullable Object value) {
         if (ObjectUtils.isNull(value)) {
-            return this;
+            return getSelf();
         }
         return havingMayNotLike(column, value);
     }
 
     @Override
-    public Builder<T, K> havingMayLike(@Nullable Object anyEntity) {
+    public B havingMayLike(@Nullable Object anyEntity) {
         final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity,
             EntityUseType.CONDITION);
         return havingMayLike(columnValueMap);
     }
 
     @Override
-    public Builder<T, K> havingMayNotLike(@Nullable Object anyEntity) {
+    public B havingMayNotLike(@Nullable Object anyEntity) {
         final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity,
             EntityUseType.CONDITION);
         return havingMayNotLike(columnValueMap);
     }
 
     @Override
-    public Builder<T, K> havingMayLike(@Nullable Map<String, Object> map) {
+    public B havingMayLike(@Nullable Map<String, Object> map) {
         if (ObjectUtils.isEmpty(map)) {
-            return this;
+            return getSelf();
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             havingMayLike(entry.getKey(), entry.getValue());
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> havingMayNotLike(@Nullable Map<String, Object> map) {
+    public B havingMayNotLike(@Nullable Map<String, Object> map) {
         if (ObjectUtils.isEmpty(map)) {
-            return this;
+            return getSelf();
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             havingMayNotLike(entry.getKey(), entry.getValue());
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> havingMayLikeIgnoreNull(@Nullable Map<String, Object> map) {
+    public B havingMayLikeIgnoreNull(@Nullable Map<String, Object> map) {
         if (ObjectUtils.isEmpty(map)) {
-            return this;
+            return getSelf();
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             havingMayLikeIgnoreNull(entry.getKey(), entry.getValue());
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> havingMayNotLikeIgnoreNull(@Nullable Map<String, Object> map) {
+    public B havingMayNotLikeIgnoreNull(@Nullable Map<String, Object> map) {
         if (ObjectUtils.isEmpty(map)) {
-            return this;
+            return getSelf();
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             havingMayNotLikeIgnoreNull(entry.getKey(), entry.getValue());
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> havingSubQuery(String column, String symbol, String completeSql) {
+    public B havingSubQuery(String column, String symbol, String completeSql) {
         String sqlPart = backQuote(column) + symbol + FormatUtils.bracket(completeSql);
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> havingSubQuery(String column, String symbol,
-        BuilderWrapper<T, K> closure) {
+    public B havingSubQuery(String column, String symbol,
+        BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String completeSql = FormatUtils.bracket(sqlPartInfo.getSqlString());
         String sqlPart = backQuote(column) + symbol + completeSql;
@@ -396,7 +396,7 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingIn(String column, Collection<?> valueList) {
+    public B havingIn(String column, Collection<?> valueList) {
         Collection<Object> parameters = new ArrayList<>();
         String valueStr = grammar.replaceValuesAndFillParameters(ObjectUtils.typeCast(valueList), parameters, ",");
         String sqlPart = backQuote(column) + "in" + FormatUtils.bracket(valueStr);
@@ -404,7 +404,7 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingNotIn(String column, Collection<?> valueList) {
+    public B havingNotIn(String column, Collection<?> valueList) {
         Collection<Object> parameters = new ArrayList<>();
         String valueStr = grammar.replaceValuesAndFillParameters(ObjectUtils.typeCast(valueList), parameters, ",");
         String sqlPart = backQuote(column) + "not in" + FormatUtils.bracket(valueStr);
@@ -412,89 +412,89 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingInRaw(String column, String sql) {
+    public B havingInRaw(String column, String sql) {
         String sqlPart = backQuote(column) + "in" + FormatUtils.bracket(sql);
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> havingNotInRaw(String column, String sql) {
+    public B havingNotInRaw(String column, String sql) {
         String sqlPart = backQuote(column) + "not in" + FormatUtils.bracket(sql);
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> havingInIgnoreEmpty(String column, @Nullable Collection<?> valueList) {
-        return ObjectUtils.isEmpty(valueList) ? this : havingIn(column, valueList);
+    public B havingInIgnoreEmpty(String column, @Nullable Collection<?> valueList) {
+        return ObjectUtils.isEmpty(valueList) ? getSelf() : havingIn(column, valueList);
     }
 
     @Override
-    public Builder<T, K> havingNotInIgnoreEmpty(String column, @Nullable Collection<?> valueList) {
-        return ObjectUtils.isEmpty(valueList) ? this : havingNotIn(column, valueList);
+    public B havingNotInIgnoreEmpty(String column, @Nullable Collection<?> valueList) {
+        return ObjectUtils.isEmpty(valueList) ? getSelf() : havingNotIn(column, valueList);
     }
 
     @Override
-    public Builder<T, K> havingIn(String column, Object... valueArray) {
+    public B havingIn(String column, Object... valueArray) {
         return havingIn(column, Arrays.asList(valueArray));
     }
 
     @Override
-    public Builder<T, K> havingNotIn(String column, Object... valueArray) {
+    public B havingNotIn(String column, Object... valueArray) {
         return havingNotIn(column, Arrays.asList(valueArray));
     }
 
     @Override
-    public Builder<T, K> havingInIgnoreEmpty(String column, @Nullable Object... valueArray) {
-        return ObjectUtils.isEmpty(valueArray) ? this : havingIn(column, valueArray);
+    public B havingInIgnoreEmpty(String column, @Nullable Object... valueArray) {
+        return ObjectUtils.isEmpty(valueArray) ? getSelf() : havingIn(column, valueArray);
     }
 
     @Override
-    public Builder<T, K> havingNotInIgnoreEmpty(String column, @Nullable Object... valueArray) {
-        return ObjectUtils.isEmpty(valueArray) ? this : havingNotIn(column, valueArray);
+    public B havingNotInIgnoreEmpty(String column, @Nullable Object... valueArray) {
+        return ObjectUtils.isEmpty(valueArray) ? getSelf() : havingNotIn(column, valueArray);
     }
 
     @Override
-    public Builder<T, K> havingIn(String column, BuilderWrapper<T, K> closure) {
+    public B havingIn(String column, BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sqlPart = backQuote(column) + "in" + FormatUtils.bracket(sqlPartInfo.getSqlString());
         return havingGrammar(sqlPart, sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
-    public Builder<T, K> havingNotIn(String column, BuilderWrapper<T, K> closure) {
+    public B havingNotIn(String column, BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sqlPart = backQuote(column) + "not in" + FormatUtils.bracket(sqlPartInfo.getSqlString());
         return havingGrammar(sqlPart, sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
-    public Builder<T, K> havingBetween(String column, Object min, Object max) {
+    public B havingBetween(String column, Object min, Object max) {
         Collection<Object> parameters = new ArrayList<>();
         return havingBetweenRaw(backQuote(column), grammar.replaceValueAndFillParameters(min, parameters),
             grammar.replaceValueAndFillParameters(max, parameters), parameters);
     }
 
     @Override
-    public Builder<T, K> havingBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters) {
+    public B havingBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters) {
         String sqlPart = column + " between " + min + " and " + max;
         return havingGrammar(sqlPart, ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters),
             " and ");
     }
 
     @Override
-    public Builder<T, K> havingBetweenRaw(String column, Object min, Object max) {
+    public B havingBetweenRaw(String column, Object min, Object max) {
         return havingBetweenRaw(column, min, max, null);
     }
 
     @Override
-    public Builder<T, K> havingNotBetween(String column, Object min, Object max) {
+    public B havingNotBetween(String column, Object min, Object max) {
         Collection<Object> parameters = new ArrayList<>();
         return havingNotBetweenRaw(backQuote(column), grammar.replaceValueAndFillParameters(min, parameters),
             grammar.replaceValueAndFillParameters(max, parameters), parameters);
     }
 
     @Override
-    public Builder<T, K> havingNotBetweenRaw(String column, Object min, Object max,
+    public B havingNotBetweenRaw(String column, Object min, Object max,
         @Nullable Collection<?> parameters) {
         String sqlPart = column + " not between " + min + " and " + max;
         return havingGrammar(sqlPart, ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters),
@@ -502,91 +502,91 @@ public abstract class HavingBuilder<T, K> extends GroupBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> havingNotBetweenRaw(String column, Object min, Object max) {
+    public B havingNotBetweenRaw(String column, Object min, Object max) {
         return havingNotBetweenRaw(column, min, max, null);
     }
 
     @Override
-    public Builder<T, K> havingNull(String column) {
+    public B havingNull(String column) {
         String sqlPart = backQuote(column) + "is null";
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> havingNotNull(String column) {
+    public B havingNotNull(String column) {
         String sqlPart = backQuote(column) + "is not null";
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> havingExistsRaw(String sql) {
+    public B havingExistsRaw(String sql) {
         String sqlPart = "exists " + FormatUtils.bracket(sql);
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> havingNotExistsRaw(String sql) {
+    public B havingNotExistsRaw(String sql) {
         String sqlPart = "not exists " + FormatUtils.bracket(sql);
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> havingExists(BuilderWrapper<T, K> closure) {
+    public B havingExists(BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sql = "exists " + FormatUtils.bracket(sqlPartInfo.getSqlString());
         return havingGrammar(sql, sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
-    public Builder<T, K> havingNotExists(BuilderWrapper<T, K> closure) {
+    public B havingNotExists(BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sql = "not exists " + FormatUtils.bracket(sqlPartInfo.getSqlString());
         return havingGrammar(sql, sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
-    public Builder<T, K> havingColumn(String column1, String symbol, String column2) {
+    public B havingColumn(String column1, String symbol, String column2) {
         String sqlPart = backQuote(column1) + symbol + backQuote(column2);
         return havingRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> havingColumn(String column1, String column2) {
+    public B havingColumn(String column1, String column2) {
         return havingColumn(column1, "=", column2);
     }
 
     @Override
-    public Builder<T, K> havingNot(BuilderWrapper<T, K> closure) {
+    public B havingNot(BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.HAVING);
         return havingGrammar("!" + FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " and ");
     }
     @Override
-    public Builder<T, K> andHaving(BuilderWrapper<T, K> closure) {
+    public B andHaving(BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.HAVING);
         return havingGrammar(FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
-    public Builder<T, K> orHaving(BuilderWrapper<T, K> closure) {
+    public B orHaving(BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.HAVING);
         return havingGrammar(FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " or ");
     }
 
     @Override
-    public Builder<T, K> andHavingIgnoreEmpty(BuilderWrapper<T, K> closure) {
+    public B andHavingIgnoreEmpty(BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.HAVING);
         if (!ObjectUtils.isEmpty(sqlPartInfo.getSqlString())) {
             havingGrammar(FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " and ");
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> orHavingIgnoreEmpty(BuilderWrapper<T, K> closure) {
+    public B orHavingIgnoreEmpty(BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.HAVING);
         if (!ObjectUtils.isEmpty(sqlPartInfo.getSqlString())) {
             havingGrammar(FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " or ");
         }
-        return this;
+        return getSelf();
     }
 }

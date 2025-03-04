@@ -22,49 +22,49 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
+public abstract class WhereBuilder<B extends Builder<B, T, K>, T, K> extends SelectBuilder<B, T, K> {
 
-    protected Builder<T, K> whereGrammar(String sqlPart, @Nullable Collection<Object> parameters, String separator) {
+    protected B whereGrammar(String sqlPart, @Nullable Collection<Object> parameters, String separator) {
         grammar.addSmartSeparator(Grammar.SQLPartType.WHERE, sqlPart, parameters, separator);
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> whereRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters) {
+    public B whereRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
             whereGrammar(sqlPart, ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters), " and ");
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> whereRaw(@Nullable String sqlPart) {
+    public B whereRaw(@Nullable String sqlPart) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
             whereGrammar(sqlPart, null, " and ");
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> whereRaw(@Nullable Collection<String> sqlParts) {
+    public B whereRaw(@Nullable Collection<String> sqlParts) {
         if (!ObjectUtils.isEmpty(sqlParts)) {
             for (String sqlPart : sqlParts) {
                 whereRaw(sqlPart);
             }
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> where(String column, String symbol, Object value) {
+    public B where(String column, String symbol, Object value) {
         ArrayList<Object> parameters = new ArrayList<>();
         String sqlPart = backQuote(column) + symbol + grammar.replaceValueAndFillParameters(value, parameters);
         whereGrammar(sqlPart, parameters, " and ");
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> whereBit(String column, Object value) {
+    public B whereBit(String column, Object value) {
         long packed = BitUtils.pack(value);
         // column & 1
         String sqlPart1 = backQuote(column) + "&" + packed;
@@ -74,7 +74,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereBitNot(String column, Object value) {
+    public B whereBitNot(String column, Object value) {
         long packed = BitUtils.pack(value);
         // column & 1
         String sqlPart1 = backQuote(column) + "&" + packed;
@@ -84,7 +84,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereBitIn(String column, Collection<?> values) {
+    public B whereBitIn(String column, Collection<?> values) {
         long packed = BitUtils.packs(ObjectUtils.typeCast(values));
         // column & 1
         String sqlPart1 = backQuote(column) + "&" + packed;
@@ -100,7 +100,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereBitNotIn(String column, Collection<?> values) {
+    public B whereBitNotIn(String column, Collection<?> values) {
         long packed = BitUtils.packs(ObjectUtils.typeCast(values));
         // column ^ 1
         String sqlPart1 = backQuote(column) + "^" + packed;
@@ -116,7 +116,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereBitStrictIn(String column, Collection<?> values) {
+    public B whereBitStrictIn(String column, Collection<?> values) {
         long packed = BitUtils.packs(ObjectUtils.typeCast(values));
         // column & 1
         String sqlPart1 = backQuote(column) + "&" + packed;
@@ -132,7 +132,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereBitStrictNotIn(String column, Collection<?> values) {
+    public B whereBitStrictNotIn(String column, Collection<?> values) {
         long packed = BitUtils.packs(ObjectUtils.typeCast(values));
         // column & 1
         String sqlPart1 = backQuote(column) + "&" + packed;
@@ -148,36 +148,36 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereIgnoreNull(String column, String symbol, @Nullable Object value) {
-        return ObjectUtils.isNull(value) ? this : where(column, symbol, value);
+    public B whereIgnoreNull(String column, String symbol, @Nullable Object value) {
+        return ObjectUtils.isNull(value) ? getSelf() : where(column, symbol, value);
     }
 
     @Override
-    public Builder<T, K> where(String column, @Nullable Object value) {
+    public B where(String column, @Nullable Object value) {
         return ObjectUtils.isNull(value) ? whereNull(column) : where(column, "=", value);
     }
 
     @Override
-    public Builder<T, K> whereIgnoreNull(String column, @Nullable Object value) {
-        return ObjectUtils.isNull(value) ? this : where(column, value);
+    public B whereIgnoreNull(String column, @Nullable Object value) {
+        return ObjectUtils.isNull(value) ? getSelf() : where(column, value);
     }
 
     @Override
-    public Builder<T, K> where(Object anyEntity) {
+    public B where(Object anyEntity) {
         final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity, EntityUseType.CONDITION);
         return where(columnValueMap);
     }
 
     @Override
-    public Builder<T, K> where(Map<String, Object> map) {
+    public B where(Map<String, Object> map) {
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             where(entry.getKey(), entry.getValue());
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> whereFind(@Nullable Map<String, Object> map) {
+    public B whereFind(@Nullable Map<String, Object> map) {
         if (!ObjectUtils.isEmpty(map)) {
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 String column = entry.getKey();
@@ -194,11 +194,11 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
                 }
             }
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> whereNotFind(@Nullable Map<String, Object> map) {
+    public B whereNotFind(@Nullable Map<String, Object> map) {
         if (!ObjectUtils.isEmpty(map)) {
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 String column = entry.getKey();
@@ -215,21 +215,21 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
                 }
             }
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> whereIgnoreNull(@Nullable Map<String, Object> map) {
+    public B whereIgnoreNull(@Nullable Map<String, Object> map) {
         if (!ObjectUtils.isEmpty(map)) {
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 whereIgnoreNull(entry.getKey(), entry.getValue());
             }
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> whereAnyLike(@Nullable Object value, Collection<String> columns) {
+    public B whereAnyLike(@Nullable Object value, Collection<String> columns) {
         return andWhereIgnoreEmpty(builder -> {
             for (String column : columns) {
                 builder.orWhereIgnoreEmpty(builderInner -> builderInner.whereLike(column, value));
@@ -239,12 +239,12 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereAnyLike(@Nullable Object value, String... columns) {
+    public B whereAnyLike(@Nullable Object value, String... columns) {
         return whereAnyLike(value, Arrays.asList(columns));
     }
 
     @Override
-    public Builder<T, K> whereAllLike(@Nullable Object value, Collection<String> columns) {
+    public B whereAllLike(@Nullable Object value, Collection<String> columns) {
         return andWhereIgnoreEmpty(builder -> {
             for (String column : columns) {
                 builder.andWhereIgnoreEmpty(builderInner -> builderInner.whereLike(column, value));
@@ -254,62 +254,62 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereAllLike(@Nullable Object value, String... columns) {
+    public B whereAllLike(@Nullable Object value, String... columns) {
         return whereAllLike(value, Arrays.asList(columns));
     }
 
     @Override
-    public Builder<T, K> whereLike(String column, @Nullable Object value) {
+    public B whereLike(String column, @Nullable Object value) {
         if (ObjectUtils.isEmpty(value) || ObjectUtils.isEmpty(StringUtils.replace(value, "%", ""))) {
-            return this;
+            return getSelf();
         }
         return whereIgnoreNull(column, "like", StringUtils.sqlPathLike(value));
     }
 
     @Override
-    public Builder<T, K> whereLike(@Nullable Object anyEntity) {
+    public B whereLike(@Nullable Object anyEntity) {
         final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity, EntityUseType.CONDITION);
         return whereLike(columnValueMap);
     }
 
     @Override
-    public Builder<T, K> whereLike(@Nullable Map<String, Object> map) {
+    public B whereLike(@Nullable Map<String, Object> map) {
         if (ObjectUtils.isEmpty(map)) {
-            return this;
+            return getSelf();
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             whereLike(entry.getKey(), entry.getValue());
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> whereNotLike(String column, @Nullable Object value) {
+    public B whereNotLike(String column, @Nullable Object value) {
         if (ObjectUtils.isEmpty(value) || ObjectUtils.isEmpty(StringUtils.replace(value, "%", ""))) {
-            return this;
+            return getSelf();
         }
         return whereIgnoreNull(column, "not like", StringUtils.sqlPathLike(value));
     }
 
     @Override
-    public Builder<T, K> whereNotLike(@Nullable Object anyEntity) {
+    public B whereNotLike(@Nullable Object anyEntity) {
         final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity, EntityUseType.CONDITION);
         return whereNotLike(columnValueMap);
     }
 
     @Override
-    public Builder<T, K> whereNotLike(@Nullable Map<String, Object> map) {
+    public B whereNotLike(@Nullable Map<String, Object> map) {
         if (ObjectUtils.isEmpty(map)) {
-            return this;
+            return getSelf();
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             whereNotLike(entry.getKey(), entry.getValue());
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> whereMayLike(String column, @Nullable Object value) {
+    public B whereMayLike(String column, @Nullable Object value) {
         String s = conversion.castNullable(value, String.class);
         if (!ObjectUtils.isNull(s) && (s.endsWith("%") || s.startsWith("%"))) {
             return whereLike(column, value);
@@ -319,7 +319,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereMayNotLike(String column, @Nullable Object value) {
+    public B whereMayNotLike(String column, @Nullable Object value) {
         String s = conversion.castNullable(value, String.class);
         if (!ObjectUtils.isNull(s) && (s.endsWith("%") || s.startsWith("%"))) {
             return whereNotLike(column, value);
@@ -329,86 +329,86 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereMayLikeIgnoreNull(String column, @Nullable Object value) {
+    public B whereMayLikeIgnoreNull(String column, @Nullable Object value) {
         if (ObjectUtils.isNull(value)) {
-            return this;
+            return getSelf();
         }
         return whereMayLike(column, value);
     }
 
     @Override
-    public Builder<T, K> whereMayNotLikeIgnoreNull(String column, @Nullable Object value) {
+    public B whereMayNotLikeIgnoreNull(String column, @Nullable Object value) {
         if (ObjectUtils.isNull(value)) {
-            return this;
+            return getSelf();
         }
         return whereMayNotLike(column, value);
     }
 
     @Override
-    public Builder<T, K> whereMayLike(@Nullable Object anyEntity) {
+    public B whereMayLike(@Nullable Object anyEntity) {
         final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity, EntityUseType.CONDITION);
         return whereMayLike(columnValueMap);
     }
 
     @Override
-    public Builder<T, K> whereMayNotLike(@Nullable Object anyEntity) {
+    public B whereMayNotLike(@Nullable Object anyEntity) {
         final Map<String, Object> columnValueMap = modelShadowProvider.entityToMap(anyEntity, EntityUseType.CONDITION);
         return whereMayNotLike(columnValueMap);
     }
 
     @Override
-    public Builder<T, K> whereMayLike(@Nullable Map<String, Object> map) {
+    public B whereMayLike(@Nullable Map<String, Object> map) {
         if (ObjectUtils.isEmpty(map)) {
-            return this;
+            return getSelf();
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             whereMayLike(entry.getKey(), entry.getValue());
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> whereMayNotLike(@Nullable Map<String, Object> map) {
+    public B whereMayNotLike(@Nullable Map<String, Object> map) {
         if (ObjectUtils.isEmpty(map)) {
-            return this;
+            return getSelf();
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             whereMayNotLike(entry.getKey(), entry.getValue());
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> whereMayLikeIgnoreNull(@Nullable Map<String, Object> map) {
+    public B whereMayLikeIgnoreNull(@Nullable Map<String, Object> map) {
         if (ObjectUtils.isEmpty(map)) {
-            return this;
+            return getSelf();
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             whereMayLikeIgnoreNull(entry.getKey(), entry.getValue());
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> whereMayNotLikeIgnoreNull(@Nullable Map<String, Object> map) {
+    public B whereMayNotLikeIgnoreNull(@Nullable Map<String, Object> map) {
         if (ObjectUtils.isEmpty(map)) {
-            return this;
+            return getSelf();
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             whereMayNotLikeIgnoreNull(entry.getKey(), entry.getValue());
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> whereSubQuery(String column, String symbol, String completeSql) {
+    public B whereSubQuery(String column, String symbol, String completeSql) {
         String sqlPart = backQuote(column) + symbol + FormatUtils.bracket(completeSql);
         return whereRaw(sqlPart);
     }
 
 
     @Override
-    public Builder<T, K> whereSubQuery(String column, String symbol, BuilderWrapper<T, K> closure) {
+    public B whereSubQuery(String column, String symbol, BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String completeSql = FormatUtils.bracket(sqlPartInfo.getSqlString());
         String sqlPart = backQuote(column) + symbol + completeSql;
@@ -416,7 +416,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereIn(String column, Collection<?> valueList) {
+    public B whereIn(String column, Collection<?> valueList) {
         Collection<Object> parameters = new ArrayList<>();
         String valueStr = grammar.replaceValuesAndFillParameters(ObjectUtils.typeCast(valueList), parameters, ",");
         String sqlPart = backQuote(column) + "in" + FormatUtils.bracket(valueStr);
@@ -424,7 +424,7 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereNotIn(String column, Collection<?> valueList) {
+    public B whereNotIn(String column, Collection<?> valueList) {
         Collection<Object> parameters = new ArrayList<>();
         String valueStr = grammar.replaceValuesAndFillParameters(ObjectUtils.typeCast(valueList), parameters, ",");
         String sqlPart = backQuote(column) + "not in" + FormatUtils.bracket(valueStr);
@@ -432,195 +432,195 @@ public abstract class WhereBuilder<T, K> extends SelectBuilder<T, K> {
     }
 
     @Override
-    public Builder<T, K> whereInRaw(String column, String sql) {
+    public B whereInRaw(String column, String sql) {
         String sqlPart = backQuote(column) + "in" + FormatUtils.bracket(sql);
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> whereNotInRaw(String column, String sql) {
+    public B whereNotInRaw(String column, String sql) {
         String sqlPart = backQuote(column) + "not in" + FormatUtils.bracket(sql);
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> whereInIgnoreEmpty(String column, @Nullable Collection<?> valueList) {
-        return ObjectUtils.isEmpty(valueList) ? this : whereIn(column, valueList);
+    public B whereInIgnoreEmpty(String column, @Nullable Collection<?> valueList) {
+        return ObjectUtils.isEmpty(valueList) ? getSelf() : whereIn(column, valueList);
     }
 
     @Override
-    public Builder<T, K> whereNotInIgnoreEmpty(String column, @Nullable Collection<?> valueList) {
-        return ObjectUtils.isEmpty(valueList) ? this : whereNotIn(column, valueList);
+    public B whereNotInIgnoreEmpty(String column, @Nullable Collection<?> valueList) {
+        return ObjectUtils.isEmpty(valueList) ? getSelf() : whereNotIn(column, valueList);
     }
 
     @Override
-    public Builder<T, K> whereIn(String column, Object... valueArray) {
+    public B whereIn(String column, Object... valueArray) {
         return whereIn(column, Arrays.asList(valueArray));
     }
 
     @Override
-    public Builder<T, K> whereNotIn(String column, Object... valueArray) {
+    public B whereNotIn(String column, Object... valueArray) {
         return whereNotIn(column, Arrays.asList(valueArray));
     }
 
     @Override
-    public Builder<T, K> whereInIgnoreEmpty(String column, @Nullable Object... valueArray) {
-        return ObjectUtils.isEmpty(valueArray) ? this : whereIn(column, valueArray);
+    public B whereInIgnoreEmpty(String column, @Nullable Object... valueArray) {
+        return ObjectUtils.isEmpty(valueArray) ? getSelf() : whereIn(column, valueArray);
     }
 
     @Override
-    public Builder<T, K> whereNotInIgnoreEmpty(String column, @Nullable Object... valueArray) {
-        return ObjectUtils.isEmpty(valueArray) ? this : whereNotIn(column, valueArray);
+    public B whereNotInIgnoreEmpty(String column, @Nullable Object... valueArray) {
+        return ObjectUtils.isEmpty(valueArray) ? getSelf() : whereNotIn(column, valueArray);
     }
 
     @Override
-    public Builder<T, K> whereIn(String column, BuilderWrapper<T, K> closure) {
+    public B whereIn(String column, BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sqlPart = backQuote(column) + "in" + FormatUtils.bracket(sqlPartInfo.getSqlString());
         return whereGrammar(sqlPart, sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
-    public Builder<T, K> whereNotIn(String column, BuilderWrapper<T, K> closure) {
+    public B whereNotIn(String column, BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sqlPart = backQuote(column) + "not in" + FormatUtils.bracket(sqlPartInfo.getSqlString());
         return whereGrammar(sqlPart, sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
-    public Builder<T, K> whereBetween(String column, Object min, Object max) {
+    public B whereBetween(String column, Object min, Object max) {
         Collection<Object> parameters = new ArrayList<>();
         return whereBetweenRaw(backQuote(column), grammar.replaceValueAndFillParameters(min, parameters),
                 grammar.replaceValueAndFillParameters(max, parameters), parameters);
     }
 
     @Override
-    public Builder<T, K> whereBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters) {
+    public B whereBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters) {
         String sqlPart = column + " between " + min + " and " + max;
         return whereGrammar(sqlPart, ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters),
                 " and ");
     }
 
     @Override
-    public Builder<T, K> whereBetweenRaw(String column, Object min, Object max) {
+    public B whereBetweenRaw(String column, Object min, Object max) {
         return whereBetweenRaw(column, min, max, null);
     }
 
     @Override
-    public Builder<T, K> whereNotBetween(String column, Object min, Object max) {
+    public B whereNotBetween(String column, Object min, Object max) {
         Collection<Object> parameters = new ArrayList<>();
         return whereNotBetweenRaw(backQuote(column), grammar.replaceValueAndFillParameters(min, parameters),
                 grammar.replaceValueAndFillParameters(max, parameters), parameters);
     }
 
     @Override
-    public Builder<T, K> whereNotBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters) {
+    public B whereNotBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters) {
         String sqlPart = column + " not between " + min + " and " + max;
         return whereGrammar(sqlPart, ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters),
                 " and ");
     }
 
     @Override
-    public Builder<T, K> whereNotBetweenRaw(String column, Object min, Object max) {
+    public B whereNotBetweenRaw(String column, Object min, Object max) {
         return whereNotBetweenRaw(column, min, max, null);
     }
 
     @Override
-    public Builder<T, K> whereNull(String column) {
+    public B whereNull(String column) {
         String sqlPart = backQuote(column) + "is null";
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> whereNotNull(String column) {
+    public B whereNotNull(String column) {
         String sqlPart = backQuote(column) + "is not null";
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> whereExistsRaw(String sql) {
+    public B whereExistsRaw(String sql) {
         String sqlPart = "exists " + FormatUtils.bracket(sql);
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> whereNotExistsRaw(String sql) {
+    public B whereNotExistsRaw(String sql) {
         String sqlPart = "not exists " + FormatUtils.bracket(sql);
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> whereExists(BuilderWrapper<T, K> closure) {
+    public B whereExists(BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sql = "exists " + FormatUtils.bracket(sqlPartInfo.getSqlString());
         return whereGrammar(sql, sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
-    public Builder<T, K> whereAnyExists(BuilderAnyWrapper closure) {
+    public B whereAnyExists(BuilderAnyWrapper closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sql = "exists " + FormatUtils.bracket(sqlPartInfo.getSqlString());
         return whereGrammar(sql, sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
-    public Builder<T, K> whereNotExists(BuilderWrapper<T, K> closure) {
+    public B whereNotExists(BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sql = "not exists " + FormatUtils.bracket(sqlPartInfo.getSqlString());
         return whereGrammar(sql, sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
-    public Builder<T, K> whereAnyNotExists(BuilderAnyWrapper closure) {
+    public B whereAnyNotExists(BuilderAnyWrapper closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sql = "not exists " + FormatUtils.bracket(sqlPartInfo.getSqlString());
         return whereGrammar(sql, sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
-    public Builder<T, K> whereColumn(String column1, String symbol, String column2) {
+    public B whereColumn(String column1, String symbol, String column2) {
         String sqlPart = backQuote(column1) + symbol + backQuote(column2);
         return whereRaw(sqlPart);
     }
 
     @Override
-    public Builder<T, K> whereColumn(String column1, String column2) {
+    public B whereColumn(String column1, String column2) {
         return whereColumn(column1, "=", column2);
     }
 
     @Override
-    public Builder<T, K> whereNot(BuilderWrapper<T, K> closure) {
+    public B whereNot(BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.WHERE);
         return whereGrammar("!" + FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
-    public Builder<T, K> andWhere(BuilderWrapper<T, K> closure) {
+    public B andWhere(BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.WHERE);
         return whereGrammar(FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
-    public Builder<T, K> orWhere(BuilderWrapper<T, K> closure) {
+    public B orWhere(BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.WHERE);
         return whereGrammar(FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " or ");
     }
 
     @Override
-    public Builder<T, K> andWhereIgnoreEmpty(BuilderWrapper<T, K> closure) {
+    public B andWhereIgnoreEmpty(BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.WHERE);
         if (!ObjectUtils.isEmpty(sqlPartInfo.getSqlString())) {
             whereGrammar(FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " and ");
         }
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> orWhereIgnoreEmpty(BuilderWrapper<T, K> closure) {
+    public B orWhereIgnoreEmpty(BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.WHERE);
         if (!ObjectUtils.isEmpty(sqlPartInfo.getSqlString())) {
             whereGrammar(FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " or ");
         }
-        return this;
+        return getSelf();
     }
 }

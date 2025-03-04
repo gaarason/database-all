@@ -11,7 +11,7 @@ import java.util.Arrays;
  * @param <K>
  * @author xt
  */
-public interface SelectLambda<T, K> extends Select<T, K>, Support<T, K> {
+public interface SelectLambda<B extends Builder<B, T, K>, T, K> extends Select<B, T, K>, Support<B, T, K> {
 
     /**
      * 查询字段
@@ -19,7 +19,7 @@ public interface SelectLambda<T, K> extends Select<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> select(ColumnFunctionalInterface<T, F> column) {
+    default <F> B select(ColumnFunctionalInterface<T, F> column) {
         return select(lambda2ColumnName(column));
     }
 
@@ -30,7 +30,7 @@ public interface SelectLambda<T, K> extends Select<T, K>, Support<T, K> {
      * @return 查询构造器
      */
     @SuppressWarnings("unchecked")
-    default <F> Builder<T, K> select(ColumnFunctionalInterface<T, F>... column) {
+    default <F> B select(ColumnFunctionalInterface<T, F>... column) {
         return select(lambda2ColumnName(Arrays.asList(column)));
 
     }

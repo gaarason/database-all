@@ -42,7 +42,7 @@ public interface QueryEvent<T, K> {
      * 查询数据时
      * @param builder 查询构造器
      */
-    default void eventQueryRetrieving(Builder<T, K> builder) {
+    default void eventQueryRetrieving(Builder<?, T, K> builder) {
     }
 
     /**
@@ -65,7 +65,7 @@ public interface QueryEvent<T, K> {
      * 插入数据时
      * @param builder 查询构造器.
      */
-    default void eventQueryCreating(Builder<T, K> builder) {
+    default void eventQueryCreating(Builder<?, T, K> builder) {
     }
 
     /**
@@ -99,7 +99,7 @@ public interface QueryEvent<T, K> {
      * 更新数据时
      * @param builder 查询构造器
      */
-    default void eventQueryUpdating(Builder<T, K> builder) {
+    default void eventQueryUpdating(Builder<?, T, K> builder) {
     }
 
     /**
@@ -114,7 +114,7 @@ public interface QueryEvent<T, K> {
      * 删除数据时
      * @param builder 查询构造器
      */
-    default void eventQueryDeleting(Builder<T, K> builder) {
+    default void eventQueryDeleting(Builder<?, T, K> builder) {
     }
 
     /**
@@ -129,7 +129,7 @@ public interface QueryEvent<T, K> {
      * 恢复数据时
      * @param builder 查询构造器
      */
-    default void eventQueryRestoring(Builder<T, K> builder) {
+    default void eventQueryRestoring(Builder<?, T, K> builder) {
     }
 
     /**

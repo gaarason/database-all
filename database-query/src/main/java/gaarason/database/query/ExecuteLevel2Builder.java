@@ -1,6 +1,7 @@
 package gaarason.database.query;
 
 import gaarason.database.appointment.SqlType;
+import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.query.Grammar;
@@ -17,7 +18,7 @@ import java.util.List;
  * @param <K>
  * @author xt
  */
-public abstract class ExecuteLevel2Builder<T, K> extends ExecuteLevel1Builder<T, K> {
+public abstract class ExecuteLevel2Builder<B extends Builder<B, T, K>, T, K>  extends ExecuteLevel1Builder<B, T, K> {
 
     /**
      * sql生成

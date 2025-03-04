@@ -1,5 +1,6 @@
 package gaarason.database.query;
 
+import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.exception.EntityNotFoundException;
@@ -18,7 +19,7 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public abstract class ExecuteLevel1Builder<T, K> extends BaseBuilder<T, K> {
+public abstract class ExecuteLevel1Builder<B extends Builder<B, T, K>, T, K> extends BaseBuilder<B, T, K> {
 
     /**
      * 传递有效的with信息

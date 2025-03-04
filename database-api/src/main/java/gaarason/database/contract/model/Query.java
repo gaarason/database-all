@@ -3,6 +3,7 @@ package gaarason.database.contract.model;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.contract.support.ShowType;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
@@ -21,19 +22,46 @@ public interface Query<T, K> {
      * 新查询构造器
      * @return 查询构造器
      */
-    Builder<T, K> newQuery();
+    <B extends Builder<B, T, K>> B newQuery();
+
+    /**
+     * 新查询构造器
+     * @param builderClass 查询构造器类型
+     * @return 查询构造器
+     */
+    default <B extends Builder<B, T, K>> B newQuery(ShowType<B> builderClass) {
+        return newQuery();
+    }
 
     /**
      * 包含软删除模型
      * @return 查询构造器
      */
-    Builder<T, K> withTrashed();
+    <B extends Builder<B, T, K>> B withTrashed();
+
+    /**
+     * 包含软删除模型
+     * @param builderClass 查询构造器类型
+     * @return 查询构造器
+     */
+    default <B extends Builder<B, T, K>> B withTrashed(ShowType<B> builderClass) {
+        return withTrashed();
+    }
 
     /**
      * 只获取软删除模型
      * @return 查询构造器
      */
-    Builder<T, K> onlyTrashed();
+    <B extends Builder<B, T, K>> B onlyTrashed();
+
+    /**
+     * 只获取软删除模型
+     * @param builderClass 查询构造器类型
+     * @return 查询构造器
+     */
+    default  <B extends Builder<B, T, K>> B onlyTrashed(ShowType<B> builderClass) {
+        return onlyTrashed();
+    }
 
     /**
      * 新记录对象

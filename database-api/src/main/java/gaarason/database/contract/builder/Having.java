@@ -13,7 +13,7 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public interface Having<T, K> {
+public interface Having<B extends Builder<B, T, K>, T, K> {
 
 
     /**
@@ -22,21 +22,21 @@ public interface Having<T, K> {
      * @param parameters 参数绑定列表
      * @return 查询构造器
      */
-    Builder<T, K> havingRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters);
+    B havingRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters);
 
     /**
      * 加入sql片段
      * @param sqlPart sql片段
      * @return 查询构造器
      */
-    Builder<T, K> havingRaw(@Nullable String sqlPart);
+    B havingRaw(@Nullable String sqlPart);
 
     /**
      * 加入sql片段集合
      * @param sqlParts sql片段集合
      * @return 查询构造器
      */
-    Builder<T, K> havingRaw(@Nullable Collection<String> sqlParts);
+    B havingRaw(@Nullable Collection<String> sqlParts);
 
     /**
      * 比较列与值
@@ -45,13 +45,13 @@ public interface Having<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> having(String column, String symbol, Object value);/**
+    B having(String column, String symbol, Object value);/**
      * 列包含选项值
      * @param column 列名(位存储)
      * @param value 选项值(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    Builder<T, K> havingBit(String column, Object value);
+    B havingBit(String column, Object value);
 
     /**
      * 列不包含选项值
@@ -59,7 +59,7 @@ public interface Having<T, K> {
      * @param value 选项值(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    Builder<T, K> havingBitNot(String column, Object value);
+    B havingBitNot(String column, Object value);
 
     /**
      * 列包含选项值其一
@@ -67,7 +67,7 @@ public interface Having<T, K> {
      * @param values 选项值(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    Builder<T, K> havingBitIn(String column, Collection<?> values);
+    B havingBitIn(String column, Collection<?> values);
 
     /**
      * 列不包含选项值其一
@@ -75,7 +75,7 @@ public interface Having<T, K> {
      * @param values 选项值(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    Builder<T, K> havingBitNotIn(String column, Collection<?> values);
+    B havingBitNotIn(String column, Collection<?> values);
 
     /**
      * 列完全包含所有选项值
@@ -83,7 +83,7 @@ public interface Having<T, K> {
      * @param values 选项值(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    Builder<T, K> havingBitStrictIn(String column, Collection<?> values);
+    B havingBitStrictIn(String column, Collection<?> values);
 
     /**
      * 列完全不包含所有选项值
@@ -91,7 +91,7 @@ public interface Having<T, K> {
      * @param values 选项值(eg: 0,1,2,3)
      * @return 查询构造器
      */
-    Builder<T, K> havingBitStrictNotIn(String column, Collection<?> values);
+    B havingBitStrictNotIn(String column, Collection<?> values);
 
     /**
      * 比较列与值(忽略值为null的情况)
@@ -100,7 +100,7 @@ public interface Having<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> havingIgnoreNull(String column, String symbol, @Nullable Object value);
+    B havingIgnoreNull(String column, String symbol, @Nullable Object value);
 
     /**
      * 比较列与值相等
@@ -108,7 +108,7 @@ public interface Having<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> having(String column, @Nullable Object value);
+    B having(String column, @Nullable Object value);
 
     /**
      * 比较列与值相等(忽略值为null的情况)
@@ -116,21 +116,21 @@ public interface Having<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> havingIgnoreNull(String column, @Nullable Object value);
+    B havingIgnoreNull(String column, @Nullable Object value);
 
     /**
      * 将对象的属性转化为, 列与值相等的查询条件
      * @param anyEntity 实体对象
      * @return 查询构造器
      */
-    Builder<T, K> having(Object anyEntity);
+    B having(Object anyEntity);
 
     /**
      * 列与值相等的查询条件
      * @param map 条件map
      * @return 查询构造器
      */
-    Builder<T, K> having(Map<String, Object> map);
+    B having(Map<String, Object> map);
 
     /**
      * 使用组合条件
@@ -142,7 +142,7 @@ public interface Having<T, K> {
      * @param map 条件map
      * @return 查询构造器
      */
-    Builder<T, K> havingFind(Map<String, Object> map);
+    B havingFind(Map<String, Object> map);
 
     /**
      * 使用组合条件
@@ -154,14 +154,14 @@ public interface Having<T, K> {
      * @param map 条件map
      * @return 查询构造器
      */
-    Builder<T, K> havingNotFind(Map<String, Object> map);
+    B havingNotFind(Map<String, Object> map);
 
     /**
      * 列与值相等的查询条件(忽略MAP中，值为null的情况)
      * @param map 条件map
      * @return 查询构造器
      */
-    Builder<T, K> havingIgnoreNull(@Nullable Map<String, Object> map);
+    B havingIgnoreNull(@Nullable Map<String, Object> map);
 
     /**
      * 在多个列中, 查找值, 任一满足
@@ -172,7 +172,7 @@ public interface Having<T, K> {
      * @param columns 列名
      * @return 查询构造器
      */
-    Builder<T, K> havingAnyLike(@Nullable Object value, Collection<String> columns);
+    B havingAnyLike(@Nullable Object value, Collection<String> columns);
 
     /**
      * 在多个列中, 查找值, 任一满足
@@ -183,7 +183,7 @@ public interface Having<T, K> {
      * @param columns 列名
      * @return 查询构造器
      */
-    Builder<T, K> havingAnyLike(@Nullable Object value, String... columns);
+    B havingAnyLike(@Nullable Object value, String... columns);
 
     /**
      * 在多个列中, 查找值, 全部满足
@@ -194,7 +194,7 @@ public interface Having<T, K> {
      * @param columns 列名集合
      * @return 查询构造器
      */
-    Builder<T, K> havingAllLike(@Nullable Object value, Collection<String> columns);
+    B havingAllLike(@Nullable Object value, Collection<String> columns);
 
     /**
      * 在多个列中, 查找值, 全部满足
@@ -205,7 +205,7 @@ public interface Having<T, K> {
      * @param columns 列名
      * @return 查询构造器
      */
-    Builder<T, K> havingAllLike(@Nullable Object value, String... columns);
+    B havingAllLike(@Nullable Object value, String... columns);
 
     /**
      * "列like值" 的查询条件
@@ -215,7 +215,7 @@ public interface Having<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> havingLike(String column, @Nullable Object value);
+    B havingLike(String column, @Nullable Object value);
 
     /**
      * 将对象的属性转化为, "列like值" 的查询条件
@@ -224,7 +224,7 @@ public interface Having<T, K> {
      * @param anyEntity 实体对象
      * @return 查询构造器
      */
-    Builder<T, K> havingLike(@Nullable Object anyEntity);
+    B havingLike(@Nullable Object anyEntity);
 
     /**
      * "列like值" 的查询条件
@@ -233,7 +233,7 @@ public interface Having<T, K> {
      * @param map 条件map
      * @return 查询构造器
      */
-    Builder<T, K> havingLike(@Nullable Map<String, Object> map);
+    B havingLike(@Nullable Map<String, Object> map);
 
     /**
      * "列 not like值" 的查询条件
@@ -243,7 +243,7 @@ public interface Having<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> havingNotLike(String column, @Nullable Object value);
+    B havingNotLike(String column, @Nullable Object value);
 
     /**
      * 将对象的属性转化为, "列 not like值" 的查询条件
@@ -252,7 +252,7 @@ public interface Having<T, K> {
      * @param anyEntity 实体对象
      * @return 查询构造器
      */
-    Builder<T, K> havingNotLike(@Nullable Object anyEntity);
+    B havingNotLike(@Nullable Object anyEntity);
 
     /**
      * "列 not like值" 的查询条件
@@ -261,7 +261,7 @@ public interface Having<T, K> {
      * @param map 条件map
      * @return 查询构造器
      */
-    Builder<T, K> havingNotLike(@Nullable Map<String, Object> map);
+    B havingNotLike(@Nullable Map<String, Object> map);
 
     /**
      * 选择可能的条件类型
@@ -272,7 +272,7 @@ public interface Having<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> havingMayLike(String column, @Nullable Object value);
+    B havingMayLike(String column, @Nullable Object value);
 
     /**
      * 选择可能的条件类型
@@ -283,7 +283,7 @@ public interface Having<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> havingMayNotLike(String column, @Nullable Object value);
+    B havingMayNotLike(String column, @Nullable Object value);
 
     /**
      * 选择可能的条件类型
@@ -294,7 +294,7 @@ public interface Having<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> havingMayLikeIgnoreNull(String column, @Nullable Object value);
+    B havingMayLikeIgnoreNull(String column, @Nullable Object value);
 
     /**
      * 选择可能的条件类型
@@ -305,7 +305,7 @@ public interface Having<T, K> {
      * @param value 值
      * @return 查询构造器
      */
-    Builder<T, K> havingMayNotLikeIgnoreNull(String column, @Nullable Object value);
+    B havingMayNotLikeIgnoreNull(String column, @Nullable Object value);
 
     /**
      * 选择可能的条件类型
@@ -315,7 +315,7 @@ public interface Having<T, K> {
      * @param anyEntity 实体对象
      * @return 查询构造器
      */
-    Builder<T, K> havingMayLike(@Nullable Object anyEntity);
+    B havingMayLike(@Nullable Object anyEntity);
 
     /**
      * 选择可能的条件类型
@@ -325,7 +325,7 @@ public interface Having<T, K> {
      * @param anyEntity 实体对象
      * @return 查询构造器
      */
-    Builder<T, K> havingMayNotLike(@Nullable Object anyEntity);
+    B havingMayNotLike(@Nullable Object anyEntity);
 
     /**
      * 选择可能的条件类型
@@ -335,7 +335,7 @@ public interface Having<T, K> {
      * @param map 条件map
      * @return 查询构造器
      */
-    Builder<T, K> havingMayLike(@Nullable Map<String, Object> map);
+    B havingMayLike(@Nullable Map<String, Object> map);
 
     /**
      * 选择可能的条件类型
@@ -345,7 +345,7 @@ public interface Having<T, K> {
      * @param map 条件map
      * @return 查询构造器
      */
-    Builder<T, K> havingMayNotLike(@Nullable Map<String, Object> map);
+    B havingMayNotLike(@Nullable Map<String, Object> map);
 
     /**
      * 选择可能的条件类型
@@ -355,7 +355,7 @@ public interface Having<T, K> {
      * @param map 条件map
      * @return 查询构造器
      */
-    Builder<T, K> havingMayLikeIgnoreNull(@Nullable Map<String, Object> map);
+    B havingMayLikeIgnoreNull(@Nullable Map<String, Object> map);
 
     /**
      * 选择可能的条件类型
@@ -365,7 +365,7 @@ public interface Having<T, K> {
      * @param map 条件map
      * @return 查询构造器
      */
-    Builder<T, K> havingMayNotLikeIgnoreNull(@Nullable Map<String, Object> map);
+    B havingMayNotLikeIgnoreNull(@Nullable Map<String, Object> map);
 
     /**
      * 条件子查询
@@ -374,7 +374,7 @@ public interface Having<T, K> {
      * @param completeSql 完整sql
      * @return 查询构造器
      */
-    Builder<T, K> havingSubQuery(String column, String symbol, String completeSql);
+    B havingSubQuery(String column, String symbol, String completeSql);
 
     /**
      * 条件子查询
@@ -383,7 +383,7 @@ public interface Having<T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> havingSubQuery(String column, String symbol, BuilderWrapper<T, K> closure);
+    B havingSubQuery(String column, String symbol, BuilderWrapper<B, T, K> closure);
 
 
     /**
@@ -392,7 +392,7 @@ public interface Having<T, K> {
      * @param valueList 值所在的list
      * @return 查询构造器
      */
-    Builder<T, K> havingIn(String column, Collection<?> valueList);
+    B havingIn(String column, Collection<?> valueList);
 
     /**
      * 列值在范围内(忽略值为空的情况)
@@ -400,7 +400,7 @@ public interface Having<T, K> {
      * @param valueList 值所在的list
      * @return 查询构造器
      */
-    Builder<T, K> havingInIgnoreEmpty(String column, @Nullable Collection<?> valueList);
+    B havingInIgnoreEmpty(String column, @Nullable Collection<?> valueList);
 
     /**
      * 列值在范围内
@@ -408,7 +408,7 @@ public interface Having<T, K> {
      * @param valueArray 值所在的数组
      * @return 查询构造器
      */
-    Builder<T, K> havingIn(String column, Object... valueArray);
+    B havingIn(String column, Object... valueArray);
 
     /**
      * 列值在范围内(忽略值为空的情况)
@@ -416,7 +416,7 @@ public interface Having<T, K> {
      * @param valueArray 值所在的数组
      * @return 查询构造器
      */
-    Builder<T, K> havingInIgnoreEmpty(String column, @Nullable Object... valueArray);
+    B havingInIgnoreEmpty(String column, @Nullable Object... valueArray);
 
     /**
      * 列值在范围内(子查询)
@@ -424,7 +424,7 @@ public interface Having<T, K> {
      * @param sql 完整sql eg:select id from student having age>10
      * @return 查询构造器
      */
-    Builder<T, K> havingInRaw(String column, String sql);
+    B havingInRaw(String column, String sql);
 
     /**
      * 列值在范围内(子查询)
@@ -432,7 +432,7 @@ public interface Having<T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> havingIn(String column, BuilderWrapper<T, K> closure);
+    B havingIn(String column, BuilderWrapper<B, T, K> closure);
 
     /**
      * 列值不在范围内
@@ -440,7 +440,7 @@ public interface Having<T, K> {
      * @param valueList 值所在的list
      * @return 查询构造器
      */
-    Builder<T, K> havingNotIn(String column, Collection<?> valueList);
+    B havingNotIn(String column, Collection<?> valueList);
 
     /**
      * 列值不在范围内(忽略值为空的情况)
@@ -448,7 +448,7 @@ public interface Having<T, K> {
      * @param valueList 值所在的list
      * @return 查询构造器
      */
-    Builder<T, K> havingNotInIgnoreEmpty(String column, @Nullable Collection<?> valueList);
+    B havingNotInIgnoreEmpty(String column, @Nullable Collection<?> valueList);
 
     /**
      * 列值在范围内
@@ -456,7 +456,7 @@ public interface Having<T, K> {
      * @param valueArray 值所在的数组
      * @return 查询构造器
      */
-    Builder<T, K> havingNotIn(String column, Object... valueArray);
+    B havingNotIn(String column, Object... valueArray);
 
     /**
      * 列值在范围内(忽略值为空的情况)
@@ -464,7 +464,7 @@ public interface Having<T, K> {
      * @param valueArray 值所在的数组
      * @return 查询构造器
      */
-    Builder<T, K> havingNotInIgnoreEmpty(String column, @Nullable Object... valueArray);
+    B havingNotInIgnoreEmpty(String column, @Nullable Object... valueArray);
 
     /**
      * 列值不在范围内(子查询)
@@ -472,7 +472,7 @@ public interface Having<T, K> {
      * @param sql 完整sql eg:select id from student having age>10
      * @return 查询构造器
      */
-    Builder<T, K> havingNotInRaw(String column, String sql);
+    B havingNotInRaw(String column, String sql);
 
     /**
      * 列值不在范围内(子查询)
@@ -480,7 +480,7 @@ public interface Having<T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> havingNotIn(String column, BuilderWrapper<T, K> closure);
+    B havingNotIn(String column, BuilderWrapper<B, T, K> closure);
 
     /**
      * 列值在两值之间
@@ -489,7 +489,7 @@ public interface Having<T, K> {
      * @param max 值2
      * @return 查询构造器
      */
-    Builder<T, K> havingBetween(String column, Object min, Object max);
+    B havingBetween(String column, Object min, Object max);
 
     /**
      * 列值在两值之间
@@ -499,7 +499,7 @@ public interface Having<T, K> {
      * @param parameters 参数绑定列表
      * @return 查询构造器
      */
-    Builder<T, K> havingBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters);
+    B havingBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters);
 
     /**
      * 列值在两值之间
@@ -508,7 +508,7 @@ public interface Having<T, K> {
      * @param max 值2
      * @return 查询构造器
      */
-    Builder<T, K> havingBetweenRaw(String column, Object min, Object max);
+    B havingBetweenRaw(String column, Object min, Object max);
 
     /**
      * 列值不在两值之间
@@ -517,7 +517,7 @@ public interface Having<T, K> {
      * @param max 值2
      * @return 查询构造器
      */
-    Builder<T, K> havingNotBetween(String column, Object min, Object max);
+    B havingNotBetween(String column, Object min, Object max);
 
     /**
      * 列值不在两值之间
@@ -527,7 +527,7 @@ public interface Having<T, K> {
      * @param parameters 参数绑定列表
      * @return 查询构造器
      */
-    Builder<T, K> havingNotBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters);
+    B havingNotBetweenRaw(String column, Object min, Object max, @Nullable Collection<?> parameters);
 
     /**
      * 列值不在两值之间
@@ -536,49 +536,49 @@ public interface Having<T, K> {
      * @param max 值2
      * @return 查询构造器
      */
-    Builder<T, K> havingNotBetweenRaw(String column, Object min, Object max);
+    B havingNotBetweenRaw(String column, Object min, Object max);
 
     /**
      * 列值为null
      * @param column 列名
      * @return 查询构造器
      */
-    Builder<T, K> havingNull(String column);
+    B havingNull(String column);
 
     /**
      * 列值不为null
      * @param column 列名
      * @return 查询构造器
      */
-    Builder<T, K> havingNotNull(String column);
+    B havingNotNull(String column);
 
     /**
      * exists一个sql
      * @param sql 完整sql
      * @return 查询构造器
      */
-    Builder<T, K> havingExistsRaw(String sql);
+    B havingExistsRaw(String sql);
 
     /**
      * exists一个闭包
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> havingExists(BuilderWrapper<T, K> closure);
+    B havingExists(BuilderWrapper<B, T, K> closure);
 
     /**
      * not exists一个闭包
      * @param sql 闭包
      * @return 查询构造器
      */
-    Builder<T, K> havingNotExistsRaw(String sql);
+    B havingNotExistsRaw(String sql);
 
     /**
      * not exists一个完整sql
      * @param closure 完整sql
      * @return 查询构造器
      */
-    Builder<T, K> havingNotExists(BuilderWrapper<T, K> closure);
+    B havingNotExists(BuilderWrapper<B, T, K> closure);
 
     /**
      * 比较字段与字段
@@ -587,7 +587,7 @@ public interface Having<T, K> {
      * @param column2 列2
      * @return 查询构造器
      */
-    Builder<T, K> havingColumn(String column1, String symbol, String column2);
+    B havingColumn(String column1, String symbol, String column2);
 
     /**
      * 字段与字段相等
@@ -595,40 +595,40 @@ public interface Having<T, K> {
      * @param column2 列2
      * @return 查询构造器
      */
-    Builder<T, K> havingColumn(String column1, String column2);
+    B havingColumn(String column1, String column2);
 
     /**
      * 否定
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> havingNot(BuilderWrapper<T, K> closure);
+    B havingNot(BuilderWrapper<B, T, K> closure);
 
     /**
      * 且
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> andHaving(BuilderWrapper<T, K> closure);
+    B andHaving(BuilderWrapper<B, T, K> closure);
 
     /**
      * 且, 忽略空语句
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> andHavingIgnoreEmpty(BuilderWrapper<T, K> closure);
+    B andHavingIgnoreEmpty(BuilderWrapper<B, T, K> closure);
 
     /**
      * 或
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> orHaving(BuilderWrapper<T, K> closure);
+    B orHaving(BuilderWrapper<B, T, K> closure);
 
     /**
      * 或, 忽略空语句
      * @param closure 闭包
      * @return 查询构造器
      */
-    Builder<T, K> orHavingIgnoreEmpty(BuilderWrapper<T, K> closure);
+    B orHavingIgnoreEmpty(BuilderWrapper<B, T, K> closure);
 }

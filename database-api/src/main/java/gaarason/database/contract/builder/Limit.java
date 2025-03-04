@@ -8,7 +8,7 @@ import gaarason.database.contract.eloquent.Builder;
  * @param <K>
  * @author xt
  */
-public interface Limit<T, K> {
+public interface Limit<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 查询数量限制
@@ -16,14 +16,14 @@ public interface Limit<T, K> {
      * @param take 获取数量
      * @return 查询构造器
      */
-    Builder<T, K> limit(Object offset, Object take);
+    B limit(Object offset, Object take);
 
     /**
      * 查询数量限制
      * @param take 获取数量
      * @return 查询构造器
      */
-    Builder<T, K> limit(Object take);
+    B limit(Object take);
 
 
 }

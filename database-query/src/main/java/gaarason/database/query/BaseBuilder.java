@@ -7,10 +7,7 @@ import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
-import gaarason.database.contract.function.ColumnFunctionalInterface;
-import gaarason.database.contract.function.BuilderWrapper;
-import gaarason.database.contract.function.RecordWrapper;
-import gaarason.database.contract.function.TransactionFunctionalInterface;
+import gaarason.database.contract.function.*;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.core.Container;
 import gaarason.database.exception.AbnormalParameterException;
@@ -35,7 +32,7 @@ import java.util.concurrent.CompletableFuture;
  * @param <K>
  * @author xt
  */
-public abstract class BaseBuilder<T, K> implements Builder<T, K> {
+public abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements Builder<B, T, K> {
 
     /**
      * 数据库连接
@@ -77,7 +74,7 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
     }
 
     @Override
-    public Builder<T, K> initBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
+    public B initBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
         this.gaarasonDataSource = gaarasonDataSource;
         this.container = gaarasonDataSource.getContainer();
         this.modelShadowProvider = container.getBean(ModelShadowProvider.class);
@@ -85,7 +82,7 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
         this.model = model;
         this.entityClass = model.getEntityClass();
         this.grammar = grammar;
-        return this;
+        return getSelf();
     }
 
     @Override
@@ -108,19 +105,19 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
      * @return 查询构造器
      */
     @Override
-    public Builder<T, K> getNewSelf() {
+    public B getNewSelf() {
         return model.newQuery();
     }
 
-    @Override
-    public Builder<T, K> getSelf() {
-        return this;
-    }
+//    @Override
+//    public B getSelf() {
+//        return this;
+//    }
 
     @Override
-    public Builder<T, K> clear(Grammar.SQLPartType sqlPartType) {
+    public B clear(Grammar.SQLPartType sqlPartType) {
         grammar.clear(sqlPartType);
-        return this;
+        return getSelf();
     }
 
     @Override
@@ -140,13 +137,13 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
      */
     @Override
     @SuppressWarnings("unchecked")
-    public Builder<T, K> clone() throws CloneNotSupportedRuntimeException {
+    public B clone() throws CloneNotSupportedRuntimeException {
         try {
             // 浅拷贝
-            Builder<T, K> builder = (Builder<T, K>) super.clone();
+            Builder<B, T, K> builder = (Builder<B, T, K>) super.clone();
             // 深拷贝
             builder.setGrammar(grammar.deepCopy());
-            return builder;
+            return ObjectUtils.typeCast(builder);
         } catch (CloneNotSupportedException e) {
             throw new CloneNotSupportedRuntimeException(e.getMessage(), e);
         }
@@ -158,7 +155,7 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
      * @return 关联的Model的查询构造器
      */
     @Override
-    public Builder<T, K> with(String fieldName) {
+    public B with(String fieldName) {
         return with(fieldName, BuilderWrapper.empty(), RecordWrapper.empty());
     }
 
@@ -169,7 +166,7 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
      * @return 关联的Model的查询构造器
      */
     @Override
-    public <F> Builder<T, K> with(String fieldName, BuilderWrapper<F, ?> builderClosure) {
+    public <F> B with(String fieldName, BuilderWrapper<?, F, ?> builderClosure) {
         return with(fieldName, builderClosure, RecordWrapper.empty());
     }
 
@@ -181,29 +178,29 @@ public abstract class BaseBuilder<T, K> implements Builder<T, K> {
      * @return 关联的Model的查询构造器
      */
     @Override
-    public <F> Builder<T, K> with(String fieldName, BuilderWrapper<F, ?> builderClosure,
+    public <F> B with(String fieldName, BuilderWrapper<?, F, ?> builderClosure,
         RecordWrapper recordClosure) {
-        grammar.pushRelation(fieldName, new Record.Relation(fieldName, builderClosure, recordClosure));
-        return this;
+        grammar.pushRelation(fieldName, new Record.Relation(fieldName, BuilderAnyWrapper.turn2(builderClosure), recordClosure));
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> withOperation(String fieldName, BuilderWrapper<?, ?> operationBuilder, BuilderWrapper<?, ?> customBuilder, String alisaFieldName) {
+    public B withOperation(String fieldName, BuilderAnyWrapper operationBuilder, BuilderAnyWrapper customBuilder, String alisaFieldName) {
         grammar.pushRelation(alisaFieldName, new Record.Relation(fieldName, operationBuilder, customBuilder, RecordWrapper.empty()));
-        return this;
+        return getSelf();
     }
 
     @Override
-    public Builder<T, K> withAggregate(AggregatesType op, String fieldName, String column,
-        BuilderWrapper<?, ?> customBuilder, @Nullable String alisaFieldName) {
+    public B withAggregate(AggregatesType op, String fieldName, String column,
+            BuilderAnyWrapper customBuilder, @Nullable String alisaFieldName) {
 
         // 别名
         String alisaField = alisaFieldName != null ? alisaFieldName : StringUtils.lineToHump(fieldName + "_" + op + "_" + column);
 
         // 操作查询构造器
-        BuilderWrapper<Object, Object> operationBuilder = builder -> builder.selectFunction(op.toString(), column, alisaField);
+        BuilderAnyWrapper operationBuilder = builder -> builder.selectFunction(op.toString(), column, alisaField);
 
-        return withOperation(fieldName,  operationBuilder, customBuilder, alisaField);
+        return withOperation(fieldName, operationBuilder, customBuilder, alisaField);
     }
 
 

@@ -11,7 +11,7 @@ import java.util.Arrays;
  * @param <K>
  * @author xt
  */
-public interface GroupLambda<T, K> extends Group<T, K>, Support<T, K> {
+public interface GroupLambda<B extends Builder<B, T, K>, T, K> extends Group<B, T, K>, Support<B, T, K> {
 
     /**
      * 分组
@@ -19,7 +19,7 @@ public interface GroupLambda<T, K> extends Group<T, K>, Support<T, K> {
      * @param <F> 属性类型
      * @return 查询构造器
      */
-    default <F> Builder<T, K> group(ColumnFunctionalInterface<T, F> column) {
+    default <F> B group(ColumnFunctionalInterface<T, F> column) {
         return group(lambda2ColumnName(column));
     }
 
@@ -30,7 +30,7 @@ public interface GroupLambda<T, K> extends Group<T, K>, Support<T, K> {
      * @return 查询构造器
      */
     @SuppressWarnings("unchecked")
-    default <F> Builder<T, K> group(ColumnFunctionalInterface<T, F>... column) {
+    default <F> B group(ColumnFunctionalInterface<T, F>... column) {
         return group(lambda2ColumnName(Arrays.asList(column)));
     }
 

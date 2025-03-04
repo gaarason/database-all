@@ -12,21 +12,21 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public interface Column<T, K> {
+public interface Column<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 新增字段
      * @param column 列名
      * @return 查询构造器
      */
-    Builder<T, K> column(String column);
+    B column(String column);
 
     /**
      * 新增字段
      * @param sqlPart sql片段
      * @return 查询构造器
      */
-    Builder<T, K> columnRaw(@Nullable String sqlPart);
+    B columnRaw(@Nullable String sqlPart);
 
     /**
      * 新增字段
@@ -34,20 +34,20 @@ public interface Column<T, K> {
      * @param parameters 绑定的参数
      * @return 查询构造器
      */
-    Builder<T, K> columnRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters);
+    B columnRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters);
 
     /**
      * 新增字段
      * @param column 列名数组
      * @return 查询构造器
      */
-    Builder<T, K> column(String... column);
+    B column(String... column);
 
     /**
      * 新增字段
      * @param columnList 列名列表
      * @return 查询构造器
      */
-    Builder<T, K> column(Collection<String> columnList);
+    B column(Collection<String> columnList);
 
 }

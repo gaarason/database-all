@@ -3,9 +3,9 @@ package gaarason.database.eloquent;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.FilterRecordAttributeFunctionalInterface;
-import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.core.Container;
 import gaarason.database.exception.AbnormalParameterException;
@@ -209,12 +209,12 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
     }
 
     @Override
-    public RecordListBean<T, K> with(String fieldName, BuilderWrapper<?, ?> builderClosure) {
+    public RecordListBean<T, K> with(String fieldName, BuilderAnyWrapper builderClosure) {
         return with(fieldName, builderClosure, theRecord -> theRecord);
     }
 
     @Override
-    public RecordListBean<T, K> with(String fieldName, BuilderWrapper<?, ?> builderClosure,
+    public RecordListBean<T, K> with(String fieldName, BuilderAnyWrapper builderClosure,
         RecordWrapper recordClosure) {
         String[] columnArr = fieldName.split("\\.");
         // 快捷类型

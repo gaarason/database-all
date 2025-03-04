@@ -15,7 +15,7 @@ import gaarason.database.lang.Nullable;
  * 支持
  * @author xt
  */
-public interface Support<T, K> extends LambdaStyle, Cloneable{
+public interface Support<B extends Builder<B, T, K>, T, K> extends LambdaStyle, Cloneable{
 
     /**
      * 构造函数
@@ -24,7 +24,7 @@ public interface Support<T, K> extends LambdaStyle, Cloneable{
      * @param grammar 语法
      * @return 查询构造器
      */
-    Builder<T, K> initBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar);
+    B initBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar);
 
     /**
      * sql生成器
@@ -48,20 +48,30 @@ public interface Support<T, K> extends LambdaStyle, Cloneable{
      * 得到一个全新的查询构造器
      * @return 查询构造器
      */
-    Builder<T, K> getNewSelf();
+    B getNewSelf();
 
     /**
      * 返回当前的查询构造器
      * @return 查询构造器
      */
-    Builder<T, K> getSelf();
+    B getSelf();
+
+    /**
+     * 类型显示
+     * @param builderClass 子类
+     * @return 查询构造器
+     * @param <BB> 子类类形
+     */
+    default  <BB extends Builder<BB, T, K>> BB showType(Class<BB> builderClass) {
+        return (BB) getSelf();
+    }
 
     /**
      * 清除指定的sql片段
      * @param sqlPartType SQL片段
      * @return 查询构造器
      */
-    Builder<T, K> clear(Grammar.SQLPartType sqlPartType);
+    B clear(Grammar.SQLPartType sqlPartType);
 
     /**
      * 复制当前的查询构造器
@@ -69,14 +79,14 @@ public interface Support<T, K> extends LambdaStyle, Cloneable{
      * @return 查询构造器
      * @throws CloneNotSupportedRuntimeException 克隆出错
      */
-    Builder<T, K> clone() throws CloneNotSupportedRuntimeException;
+    B clone() throws CloneNotSupportedRuntimeException;
 
     /**
      * 覆盖 查询构造器
      * @param builder 查询构造器
      * @return 查询构造器
      */
-    default Builder<T, K> setAnyBuilder(Builder<?, ?> builder) {
+    default B setAnyBuilder(Builder<?, ?, ?> builder) {
         setGrammar(builder.getGrammar().deepCopy());
         return getSelf();
     }
@@ -86,7 +96,7 @@ public interface Support<T, K> extends LambdaStyle, Cloneable{
      * @param builder 查询构造器
      * @return 查询构造器
      */
-    default Builder<T, K> setBuilder(Builder<T, K> builder) {
+    default B setBuilder(B builder) {
         return setAnyBuilder(builder);
     }
 
@@ -95,7 +105,7 @@ public interface Support<T, K> extends LambdaStyle, Cloneable{
      * @param builder 查询构造器
      * @return 查询构造器
      */
-    default Builder<T, K> mergerAnyBuilder(Builder<?, ?> builder) {
+    default B mergerAnyBuilder(Builder<?, ?, ?> builder) {
         mergerGrammar(builder.getGrammar().deepCopy());
         return getSelf();
     }
@@ -105,7 +115,7 @@ public interface Support<T, K> extends LambdaStyle, Cloneable{
      * @param builder 查询构造器
      * @return 查询构造器
      */
-    default Builder<T, K> mergerBuilder(Builder<T, K> builder) {
+    default B mergerBuilder(B builder) {
         return mergerAnyBuilder(builder);
     }
 
@@ -115,7 +125,7 @@ public interface Support<T, K> extends LambdaStyle, Cloneable{
      * @return sql
      */
     default Grammar.SQLPartInfo generateSql(BuilderWrapper<T, K> closure) {
-        Builder<T, K> subBuilder = closure.execute(getNewSelf());
+        B subBuilder = closure.execute(getNewSelf());
         return subBuilder.getGrammar().generateSql(SqlType.SELECT);
     }
 
@@ -125,7 +135,7 @@ public interface Support<T, K> extends LambdaStyle, Cloneable{
      * @return sql
      */
     default Grammar.SQLPartInfo generateSql(BuilderAnyWrapper closure) {
-        Builder<?, ?> subBuilder = closure.execute(getNewSelf());
+        Builder<?, ?, ?> subBuilder = closure.execute(getNewSelf());
         return subBuilder.getGrammar().generateSql(SqlType.SELECT);
     }
 
@@ -137,7 +147,7 @@ public interface Support<T, K> extends LambdaStyle, Cloneable{
      */
     default Grammar.SQLPartInfo generateSql(BuilderWrapper<T, K> closure,
         Grammar.SQLPartType sqlPartType) {
-        Builder<T, K> subBuilder = closure.execute(getNewSelf());
+        B subBuilder = closure.execute(getNewSelf());
         return subBuilder.getGrammar().get(sqlPartType);
     }
 
