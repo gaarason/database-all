@@ -43,7 +43,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
     public BelongsToQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
         super(modelShadowProvider, model);
-        belongsToTemplate = new BelongsToTemplate(field);
+        belongsToTemplate = initTemplate(field);
 
         defaultLocalModelForeignKeyValue = modelShadowProvider.parseAnyEntityWithCache(field.getDeclaringClass())
             .getFieldMemberByColumnName(belongsToTemplate.localModelForeignKey)
@@ -53,6 +53,10 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
             modelShadowProvider.parseAnyEntityWithCache(field.getDeclaringClass())
                 .getFieldMemberByColumnName(belongsToTemplate.localModelMorphKey)
                 .getDefaultValue() : null;
+    }
+
+    protected BelongsToTemplate initTemplate(Field field) {
+        return new BelongsToTemplate(field);
     }
 
     @Nullable
@@ -350,7 +354,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
         final public String localModelMorphValue;
 
-        BelongsToTemplate(Field field) {
+        public BelongsToTemplate(Field field) {
             BelongsTo belongsTo = field.getAnnotation(BelongsTo.class);
             parentModel = getModelInstance(field);
             localModelForeignKey = belongsTo.localModelForeignKey();
@@ -359,6 +363,16 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
             localModelMorphKey = belongsTo.localModelMorphKey();
             localModelMorphValue = belongsTo.localModelMorphValue().isEmpty() ? parentModel.getTableName() :
                 belongsTo.localModelMorphValue();
+            enableMorph = !localModelMorphKey.isEmpty();
+        }
+
+        public BelongsToTemplate(Model<?, ?> parentModel, String localModelForeignKey, String parentModelLocalKey,
+                String localModelMorphKey, String localModelMorphValue) {
+            this.parentModel = parentModel;
+            this.localModelForeignKey = localModelForeignKey;
+            this.parentModelLocalKey = parentModelLocalKey;
+            this.localModelMorphKey = localModelMorphKey;
+            this.localModelMorphValue = localModelMorphValue;
             enableMorph = !localModelMorphKey.isEmpty();
         }
     }

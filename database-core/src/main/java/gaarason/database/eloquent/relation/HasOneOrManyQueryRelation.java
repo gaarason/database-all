@@ -46,7 +46,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
     public HasOneOrManyQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
         super(modelShadowProvider, model);
-        hasOneOrManyTemplate = new HasOneOrManyTemplate(field);
+        hasOneOrManyTemplate = initTemplate(field);
 
         defaultSonModelForeignKeyValue = modelShadowProvider.get(hasOneOrManyTemplate.sonModel)
             .getEntityMember()
@@ -57,6 +57,10 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
             .getEntityMember()
             .getFieldMemberByColumnName(hasOneOrManyTemplate.sonModelMorphKey)
             .getDefaultValue() : null;
+    }
+
+    protected HasOneOrManyTemplate initTemplate(Field field) {
+        return new HasOneOrManyTemplate(field);
     }
 
     @Override
@@ -344,7 +348,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
         final public String sonModelMorphValue;
 
-        HasOneOrManyTemplate(Field field) {
+        public HasOneOrManyTemplate(Field field) {
             HasOneOrMany hasOneOrMany = field.getAnnotation(HasOneOrMany.class);
             sonModel = getModelInstance(field);
             sonModelForeignKey = hasOneOrMany.sonModelForeignKey();
@@ -353,6 +357,16 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
             sonModelMorphKey = hasOneOrMany.sonModelMorphKey();
             sonModelMorphValue = hasOneOrMany.sonModelMorphValue().isEmpty() ? localModel.getTableName() :
                 hasOneOrMany.sonModelMorphValue();
+            enableMorph = !sonModelMorphKey.isEmpty();
+        }
+
+        public HasOneOrManyTemplate(Model<?, ?> sonModel, String sonModelForeignKey, String localModelLocalKey,
+                String sonModelMorphKey, String sonModelMorphValue) {
+            this.sonModel = sonModel;
+            this.sonModelForeignKey = sonModelForeignKey;
+            this.localModelLocalKey = localModelLocalKey;
+            this.sonModelMorphKey = sonModelMorphKey;
+            this.sonModelMorphValue = sonModelMorphValue;
             enableMorph = !sonModelMorphKey.isEmpty();
         }
     }

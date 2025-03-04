@@ -45,7 +45,11 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
     public BelongsToManyQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
         super(modelShadowProvider, model);
-        belongsToManyTemplate = new BelongsToManyTemplate(field);
+        belongsToManyTemplate = initTemplate(field);
+    }
+
+    protected BelongsToManyTemplate initTemplate(Field field) {
+        return new BelongsToManyTemplate(field);
     }
 
     @Override
@@ -648,7 +652,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
         final public String morphValueForTargetModel;
 
-        BelongsToManyTemplate(Field field) {
+        public BelongsToManyTemplate(Field field) {
             BelongsToMany belongsToMany = field.getAnnotation(BelongsToMany.class);
             relationModel = getModelInstance(belongsToMany.relationModel()); // user_teacher
             foreignKeyForLocalModel = belongsToMany.foreignKeyForLocalModel(); // user_id
@@ -667,6 +671,25 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
             morphValueForTargetModel =
                     belongsToMany.morphValueForTargetModel().isEmpty() ? targetModel.getTableName() :
                     belongsToMany.morphValueForTargetModel();
+
+            enableLocalModelMorph = !morphKeyForLocalModel.isEmpty();
+            enableTargetModelMorph = !morphKeyForTargetModel.isEmpty();
+        }
+
+        public BelongsToManyTemplate(Model<?, ?> relationModel, String foreignKeyForLocalModel, String localModelLocalKey,
+                Model<?, ?> targetModel, String foreignKeyForTargetModel, String targetModelLocalKey,
+                String morphKeyForLocalModel, String morphValueForLocalModel, String morphKeyForTargetModel,
+                String morphValueForTargetModel) {
+            this.relationModel = relationModel;
+            this.foreignKeyForLocalModel = foreignKeyForLocalModel;
+            this.localModelLocalKey = localModelLocalKey;
+            this.targetModel = targetModel;
+            this.foreignKeyForTargetModel = foreignKeyForTargetModel;
+            this.targetModelLocalKey = targetModelLocalKey;
+            this.morphKeyForLocalModel = morphKeyForLocalModel;
+            this.morphValueForLocalModel = morphValueForLocalModel;
+            this.morphKeyForTargetModel = morphKeyForTargetModel;
+            this.morphValueForTargetModel = morphValueForTargetModel;
 
             enableLocalModelMorph = !morphKeyForLocalModel.isEmpty();
             enableTargetModelMorph = !morphKeyForTargetModel.isEmpty();
