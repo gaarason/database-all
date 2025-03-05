@@ -16,6 +16,7 @@ import gaarason.database.util.ObjectUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * 关联关系获取
@@ -204,11 +205,11 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
                 String filterBatchRecordCacheKey = relationSubQuery.filterBatchRecordCacheKey(record, targetRecordList);
                 // 缓存键
                 String cacheKey = entityClass + "|" + targetFieldName + "@" + filterBatchRecordCacheKey + "@" + level;
+
                 // 优先命中缓存
-                List<?> objects = cache.cacheRelationObjectList.computeIfAbsent(cacheKey, k -> {
-                    // 递归处理下级关系, 并筛选当前 record 所需要的属性
-                    return relationSubQuery.filterBatchRecord(record, targetRecordList, cache);
-                });
+                List<?> objects = getRelationObjectsInCache(cache.cacheRelationObjectList, cacheKey,
+                        () -> relationSubQuery.filterBatchRecord(record, targetRecordList, cache));
+
                 // 深度拷贝
                 objects = ObjectUtils.deepCopy(objects);
 
@@ -226,6 +227,22 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
         cache.level.decrementAndGet();
     }
 
+    /**
+     * 在内存缓存中优先查找目标值
+     * @param cacheObjects 缓存map
+     * @param cacheKey 缓存key
+     * @param closure 真实业务逻辑实现
+     * @return 批量结果对象集
+     */
+    protected static List<?> getRelationObjectsInCache(Map<String, List<?>> cacheObjects, String cacheKey, Supplier<List<?>> closure) {
+        // 不可使用 map.computeIfAbsent, 因为需要递归调用
+        List<?> result = cacheObjects.get(cacheKey);
+        if (result == null) {
+            result = closure.get();
+            cacheObjects.put(cacheKey, result);
+        }
+        return result;
+    }
 
     /**
      * 在内存缓存中优先查找目标值

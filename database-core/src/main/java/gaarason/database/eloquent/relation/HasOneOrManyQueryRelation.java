@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
-    protected final HasOneOrManyTemplate hasOneOrManyTemplate;
+    public final HasOneOrManyTemplate hasOneOrManyTemplate;
 
     /**
      * 是否多态

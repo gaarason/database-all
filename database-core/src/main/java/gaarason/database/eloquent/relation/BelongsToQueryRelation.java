@@ -22,7 +22,7 @@ import java.util.*;
  */
 public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
-    protected final BelongsToTemplate belongsToTemplate;
+    public final BelongsToTemplate belongsToTemplate;
 
     /**
      * 是否多态

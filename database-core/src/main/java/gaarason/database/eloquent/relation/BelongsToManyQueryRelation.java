@@ -26,7 +26,7 @@ import java.util.*;
  */
 public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
-    protected final BelongsToManyTemplate belongsToManyTemplate;
+    public final BelongsToManyTemplate belongsToManyTemplate;
 
     /**
      * 人造关系键

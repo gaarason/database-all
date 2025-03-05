@@ -111,5 +111,9 @@ public class Student extends BaseEntity implements Serializable {
             return new HasOneOrManyTemplate(sonModel, sonModelForeignKey, localModelLocalKey, "", "");
         }
 
+        public HasOneOrManyTemplate getTemplate() {
+            return hasOneOrManyTemplate;
+        }
+
     }
 }

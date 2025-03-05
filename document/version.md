@@ -25,9 +25,13 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 5.5.10
+
+- 修复不同`jdk`下的差异问题
+
 ### 5.5.9
 
-- 关联关系相关代码优化, 以提高多层级时`with()`的耗时
+- 关联关系相关优化, 以提高多层级时`with()`的耗时
 - 关联关系相关实现类`HasOneOrManyQueryRelation`,`BelongsToQueryRelation`,`BelongsToManyQueryRelation`初始化方式调整, 是其更易被继承
 
 ### 5.5.8
