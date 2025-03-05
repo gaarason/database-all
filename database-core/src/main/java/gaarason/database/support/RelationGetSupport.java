@@ -1,5 +1,6 @@
 package gaarason.database.support;
 
+import gaarason.database.appointment.RelationCache;
 import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
@@ -10,11 +11,12 @@ import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.core.Container;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.util.ObjectUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * 关联关系获取
@@ -64,21 +66,21 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
         return toObjectList().get(0);
     }
 
-    public T toObject(Map<String, RecordList<?, ?>> cacheRelationRecordList) {
-        return toObjectList(cacheRelationRecordList).get(0);
+    public T toObject(RelationCache cache) {
+        return toObjectList(cache).get(0);
     }
 
     public List<T> toObjectList() {
-        Map<String, RecordList<?, ?>> cacheRelationRecordList = new HashMap<>();
-        return toObjectList(cacheRelationRecordList);
+        RelationCache cache = new RelationCache();
+        return toObjectList(cache);
     }
 
     /**
      * 转化为对象列表
-     * @param cacheRecords 结果集缓存(用于优化递归算法)
-     * @return 对象列表
+     * @param cache 结果集缓存(用于优化递归算法)
+     * @return 对象列表s
      */
-    public List<T> toObjectList(Map<String, RecordList<?, ?>> cacheRecords) {
+    public List<T> toObjectList(RelationCache cache) {
         // 同级数据源
         List<Map<String, Object>> originalMetadataMapList = records.getMetadata();
         ModelShadowProvider modelShadow = getModelShadow();
@@ -90,7 +92,7 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
              * b. 关联关系属性的赋值
              * c. 关联关系操作属性的赋值
              */
-            T entity = generateEntity(theRecord, cacheRecords, originalMetadataMapList, modelShadow);
+            T entity = generateEntity(theRecord, cache, originalMetadataMapList, modelShadow);
 
             // 增加到结果中
             list.add(entity);
@@ -101,11 +103,11 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
     /**
      * 生成对象
      * @param record 查询结果集
-     * @param cacheRecords 结果集缓存(用于优化递归算法)
+     * @param cache 结果集缓存(用于优化递归算法)
      * @param metadata 同级数据源
      * @param modelShadow Model信息大全
      */
-    protected T generateEntity(Record<T, K> record, Map<String, RecordList<?, ?>> cacheRecords,
+    protected T generateEntity(Record<T, K> record, RelationCache cache,
         List<Map<String, Object>> metadata, ModelShadowProvider modelShadow) {
 
         // 模型信息
@@ -116,7 +118,7 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
         T entity = modelShadow.entityAssignment(entityMember.getEntityClass(), record);
 
         // 处理关联关系属性
-        dealRelationField(entity, record, entityMember, cacheRecords, metadata);
+        dealRelationField(entity, record, entityMember, cache, metadata);
 
         return entity;
     }
@@ -126,14 +128,17 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
      * @param entity 实体对象
      * @param record 查询结果集
      * @param entityMember 数据库实体信息
-     * @param cacheRecords 结果集缓存(用于优化递归算法)
+     * @param cache 结果集缓存(用于优化递归算法)
      * @param metadata 同级数据源
      */
     private void dealRelationField(T entity, Record<T, K> record, EntityMember<T, K> entityMember,
-        Map<String, RecordList<?, ?>> cacheRecords, List<Map<String, Object>> metadata) {
+            RelationCache cache, List<Map<String, Object>> metadata) {
         if (!attachedRelationship) {
             return;
         }
+
+        // 当前层级 +1
+        int level = cache.level.incrementAndGet();
 
         // 关联关系 补充设置
         Map<String, Record.Relation> relationMap = record.getRelationMap();
@@ -158,7 +163,7 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
             Builder<?, ?> relationBuilder = relationSubQuery.prepareRelationBuilder(metadata);
 
             // 中间表数据
-            RecordList<?, ?> relationRecords = getRelationRecordsInCache(cacheRecords, relationBuilder,
+            RecordList<?, ?> relationRecords = getRelationRecordsInCache(cache.cacheRelationRecordList, relationBuilder,
                 () -> relationSubQuery.dealBatchForRelation(relationBuilder));
 
             // 关联关系统计查询
@@ -168,13 +173,13 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
                     relationRecords, relation.operationBuilder, relation.customBuilder);
 
                 // 本级关系查询
-                RecordList<?, ?> targetRecordList = getTargetRecordsInCache(cacheRecords, targetBuilder,
+                RecordList<?, ?> targetRecordList = getTargetRecordsInCache(cache.cacheRelationRecordList, targetBuilder,
                     relation.recordWrapper,
                     () -> relationSubQuery.dealBatchForTargetByRelationOperation(targetBuilder, relationRecords));
 
                 // 递归处理下级关系, 并筛选当前 record 所需要的属性
                 Map<String, Object> map = relationSubQuery.filterBatchRecordByRelationOperation(record,
-                    targetRecordList, cacheRecords);
+                    targetRecordList, cache);
                 // 目标属性信息
                 FieldMember<?> targetFieldMember = entityMember.getFieldMemberByFieldName(targetFieldName);
                 // 目标属性赋值 - 统计属性 - 单数
@@ -191,11 +196,23 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
                     relation.operationBuilder, relation.customBuilder);
 
                 // 本级关系查询
-                RecordList<?, ?> targetRecordList = getTargetRecordsInCache(cacheRecords, targetBuilder,
-                    relation.recordWrapper, () -> relationSubQuery.dealBatchForTarget(targetBuilder, relationRecords));
+                RecordList<?, ?> targetRecordList = getTargetRecordsInCache(cache.cacheRelationRecordList, targetBuilder,
+                        relation.recordWrapper, () -> relationSubQuery.dealBatchForTarget(targetBuilder, relationRecords));
 
-                // 递归处理下级关系, 并筛选当前 record 所需要的属性
-                List<?> objects = relationSubQuery.filterBatchRecord(record, targetRecordList, cacheRecords);
+                // 当前对象类
+                Class<T> entityClass = entityMember.getEntityClass();
+                // 过滤结果集所需的必要元素组成的key
+                String filterBatchRecordCacheKey = relationSubQuery.filterBatchRecordCacheKey(record, targetRecordList);
+                // 缓存键
+                String cacheKey = entityClass + "|" + targetFieldName + "@" + filterBatchRecordCacheKey + "@" + level;
+
+                // 优先命中缓存
+                List<?> objects = getRelationObjectsInCache(cache.cacheRelationObjectList, cacheKey,
+                        () -> relationSubQuery.filterBatchRecord(record, targetRecordList, cache));
+
+                // 深度拷贝
+                objects = ObjectUtils.deepCopy(objects);
+
                 // 是否是集合
                 if (fieldRelationMember.isPlural()) {
                     // 关系属性赋值 - 复数
@@ -206,8 +223,26 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
                 }
             }
         }
+        // 当前层级 -1
+        cache.level.decrementAndGet();
     }
 
+    /**
+     * 在内存缓存中优先查找目标值
+     * @param cacheObjects 缓存map
+     * @param cacheKey 缓存key
+     * @param closure 真实业务逻辑实现
+     * @return 批量结果对象集
+     */
+    protected static List<?> getRelationObjectsInCache(Map<String, List<?>> cacheObjects, String cacheKey, Supplier<List<?>> closure) {
+        // 不可使用 map.computeIfAbsent, 因为需要递归调用
+        List<?> result = cacheObjects.get(cacheKey);
+        if (result == null) {
+            result = closure.get();
+            cacheObjects.put(cacheKey, result);
+        }
+        return result;
+    }
 
     /**
      * 在内存缓存中优先查找目标值

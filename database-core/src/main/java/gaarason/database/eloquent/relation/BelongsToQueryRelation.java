@@ -1,6 +1,7 @@
 package gaarason.database.eloquent.relation;
 
 import gaarason.database.annotation.BelongsTo;
+import gaarason.database.appointment.RelationCache;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
@@ -21,7 +22,7 @@ import java.util.*;
  */
 public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
-    protected final BelongsToTemplate belongsToTemplate;
+    public final BelongsToTemplate belongsToTemplate;
 
     /**
      * 是否多态
@@ -42,7 +43,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
     public BelongsToQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
         super(modelShadowProvider, model);
-        belongsToTemplate = new BelongsToTemplate(field);
+        belongsToTemplate = initTemplate(field);
 
         defaultLocalModelForeignKeyValue = modelShadowProvider.parseAnyEntityWithCache(field.getDeclaringClass())
             .getFieldMemberByColumnName(belongsToTemplate.localModelForeignKey)
@@ -52,6 +53,10 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
             modelShadowProvider.parseAnyEntityWithCache(field.getDeclaringClass())
                 .getFieldMemberByColumnName(belongsToTemplate.localModelMorphKey)
                 .getDefaultValue() : null;
+    }
+
+    protected BelongsToTemplate initTemplate(Field field) {
+        return new BelongsToTemplate(field);
     }
 
     @Nullable
@@ -79,8 +84,18 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
+    public String filterBatchRecordCacheKey(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList) {
+        // 父表的外键字段名
+        String column = belongsToTemplate.parentModelLocalKey;
+        // 本表的关系键值
+        Object value = theRecord.getMetadataMap().get(belongsToTemplate.localModelForeignKey);
+
+        return getClass() + "|" +column + "|" + value;
+    }
+
+    @Override
     public List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
-        Map<String, RecordList<?, ?>> cacheRelationRecordList) {
+            RelationCache cache) {
         // 父表的外键字段名
         String column = belongsToTemplate.parentModelLocalKey;
         // 本表的关系键值
@@ -88,7 +103,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
         assert value != null;
 
-        return findObjList(targetRecordList.toObjectList(cacheRelationRecordList), column, value);
+        return findObjList(targetRecordList.toObjectList(cache), column, value);
     }
 
     @Override
@@ -339,7 +354,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
         final public String localModelMorphValue;
 
-        BelongsToTemplate(Field field) {
+        public BelongsToTemplate(Field field) {
             BelongsTo belongsTo = field.getAnnotation(BelongsTo.class);
             parentModel = getModelInstance(field);
             localModelForeignKey = belongsTo.localModelForeignKey();
@@ -348,6 +363,16 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
             localModelMorphKey = belongsTo.localModelMorphKey();
             localModelMorphValue = belongsTo.localModelMorphValue().isEmpty() ? parentModel.getTableName() :
                 belongsTo.localModelMorphValue();
+            enableMorph = !localModelMorphKey.isEmpty();
+        }
+
+        public BelongsToTemplate(Model<?, ?> parentModel, String localModelForeignKey, String parentModelLocalKey,
+                String localModelMorphKey, String localModelMorphValue) {
+            this.parentModel = parentModel;
+            this.localModelForeignKey = localModelForeignKey;
+            this.parentModelLocalKey = parentModelLocalKey;
+            this.localModelMorphKey = localModelMorphKey;
+            this.localModelMorphValue = localModelMorphValue;
             enableMorph = !localModelMorphKey.isEmpty();
         }
     }

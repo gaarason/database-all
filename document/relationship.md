@@ -444,7 +444,7 @@ public @interface HasOneCustom {
 
 #### 自定义注解解析器
 
-- 实现 `RelationSubQuery` 的各个方法, 建议参考预置的解析器, 这部分的逻辑比较复杂与繁琐
+- 实现 `RelationSubQuery` 的各个方法, 建议参考`预置的解析器`, 这部分的逻辑比较复杂与繁琐
 - 提供此构造函数 `public constructor(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model)`
 ```java
 public static class HasOneQueryRelation extends BaseRelationSubQuery implements RelationSubQuery {
@@ -457,6 +457,28 @@ public static class HasOneQueryRelation extends BaseRelationSubQuery implements 
     
     
     // ... 实现 RelationSubQuery 的各个方法
+}
+```
+- 也可以直接继承`预置的解析器`
+- 当他们功能相近时,会更加方便
+```java
+public static class HasOneQueryRelation extends HasOneOrManyQueryRelation {
+
+    public HasOneQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
+        super(field, modelShadowProvider, model);
+    }
+
+    @Override
+    protected HasOneOrManyTemplate initTemplate(Field field) {
+        HasOne hasOne = field.getAnnotation(HasOne.class);
+        Model<?, ?> sonModel = getModelInstance(field);
+        String sonModelForeignKey = hasOne.sonModelForeignKey();
+        String localModelLocalKey = "".equals(hasOne.localModelLocalKey()) ? getPrimaryKeyColumnName(sonModel) :
+            hasOne.localModelLocalKey();
+        return new HasOneOrManyTemplate(sonModel, sonModelForeignKey, localModelLocalKey, "", "");
+    }
+
+    // ... 可选 覆盖父类的各个方法, 以实现自定义逻辑
 }
 ```
 

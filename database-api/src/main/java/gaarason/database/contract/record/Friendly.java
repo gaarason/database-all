@@ -1,6 +1,6 @@
 package gaarason.database.contract.record;
 
-import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.appointment.RelationCache;
 
 import java.util.Map;
 
@@ -32,10 +32,10 @@ public interface Friendly<T, K> {
 
     /**
      * 元数据转实体对象
-     * @param cacheRelationRecordList 已存在的关联关系结果集列表
+     * @param cache 已存在的关联关系结果集列表
      * @return 实体对象
      */
-    T toObject(Map<String, RecordList<?, ?>> cacheRelationRecordList);
+    T toObject(RelationCache cache);
 
     /**
      * 元数据转实体对象, 不体现关联关系

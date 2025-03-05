@@ -1,6 +1,7 @@
 package gaarason.database.eloquent.relation;
 
 import gaarason.database.annotation.HasOneOrMany;
+import gaarason.database.appointment.RelationCache;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
@@ -24,7 +25,7 @@ import java.util.Map;
  */
 public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
-    protected final HasOneOrManyTemplate hasOneOrManyTemplate;
+    public final HasOneOrManyTemplate hasOneOrManyTemplate;
 
     /**
      * 是否多态
@@ -45,7 +46,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
     public HasOneOrManyQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
         super(modelShadowProvider, model);
-        hasOneOrManyTemplate = new HasOneOrManyTemplate(field);
+        hasOneOrManyTemplate = initTemplate(field);
 
         defaultSonModelForeignKeyValue = modelShadowProvider.get(hasOneOrManyTemplate.sonModel)
             .getEntityMember()
@@ -56,6 +57,10 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
             .getEntityMember()
             .getFieldMemberByColumnName(hasOneOrManyTemplate.sonModelMorphKey)
             .getDefaultValue() : null;
+    }
+
+    protected HasOneOrManyTemplate initTemplate(Field field) {
+        return new HasOneOrManyTemplate(field);
     }
 
     @Override
@@ -122,7 +127,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
     @Override
     public Map<String, Object> filterBatchRecordByRelationOperation(Record<?, ?> theRecord,
-        RecordList<?, ?> targetRecordList, Map<String, RecordList<?, ?>> cacheRelationRecordList) {
+        RecordList<?, ?> targetRecordList, RelationCache cache) {
         // 子表的外键字段名
         String column = hasOneOrManyTemplate.sonModelForeignKey;
         // 本表的关系键值
@@ -132,8 +137,17 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
+    public String filterBatchRecordCacheKey(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList) {
+        // 子表的外键字段名
+        String column = hasOneOrManyTemplate.sonModelForeignKey;
+        // 本表的关系键值
+        Object value = theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey);
+
+        return getClass() + "|" +column + "|" + value;
+    }
+    @Override
     public List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
-        Map<String, RecordList<?, ?>> cacheRelationRecordList) {
+            RelationCache cache) {
         // 子表的外键字段名
         String column = hasOneOrManyTemplate.sonModelForeignKey;
         // 本表的关系键值
@@ -141,7 +155,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
         assert value != null;
 
-        return findObjList(targetRecordList.toObjectList(cacheRelationRecordList), column, value);
+        return findObjList(targetRecordList.toObjectList(cache), column, value);
     }
 
     @Override
@@ -334,7 +348,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
         final public String sonModelMorphValue;
 
-        HasOneOrManyTemplate(Field field) {
+        public HasOneOrManyTemplate(Field field) {
             HasOneOrMany hasOneOrMany = field.getAnnotation(HasOneOrMany.class);
             sonModel = getModelInstance(field);
             sonModelForeignKey = hasOneOrMany.sonModelForeignKey();
@@ -343,6 +357,16 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
             sonModelMorphKey = hasOneOrMany.sonModelMorphKey();
             sonModelMorphValue = hasOneOrMany.sonModelMorphValue().isEmpty() ? localModel.getTableName() :
                 hasOneOrMany.sonModelMorphValue();
+            enableMorph = !sonModelMorphKey.isEmpty();
+        }
+
+        public HasOneOrManyTemplate(Model<?, ?> sonModel, String sonModelForeignKey, String localModelLocalKey,
+                String sonModelMorphKey, String sonModelMorphValue) {
+            this.sonModel = sonModel;
+            this.sonModelForeignKey = sonModelForeignKey;
+            this.localModelLocalKey = localModelLocalKey;
+            this.sonModelMorphKey = sonModelMorphKey;
+            this.sonModelMorphValue = sonModelMorphValue;
             enableMorph = !sonModelMorphKey.isEmpty();
         }
     }

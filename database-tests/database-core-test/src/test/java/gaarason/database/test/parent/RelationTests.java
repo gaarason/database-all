@@ -12,6 +12,7 @@ import gaarason.database.test.models.relation.pojo.RelationshipStudentTeacher;
 import gaarason.database.test.models.relation.pojo.Student;
 import gaarason.database.test.models.relation.pojo.Teacher;
 import gaarason.database.test.parent.base.BaseTests;
+import gaarason.database.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -525,6 +526,25 @@ abstract public class RelationTests extends BaseTests {
 
         }
         log.info("------ data:" + student);
+    }
+
+    @Test
+    public void with性能2() {
+        List<Student> students = null;
+        for (int i = 0; i < 10; i++) {
+            log.info("------ start");
+            Paginate<Student> paginate = studentModel.newQuery()
+                    .orderBy("id", OrderBy.ASC)
+                    .with("teacher.students.relationshipStudentTeachers", builder -> builder, record -> record.with(
+                            "teacher.students.teacher.students.teacher.students",
+                            builder -> builder.whereIn("id", "3", "2"),
+                            record8 -> record8.with("teacher"))).paginate(1, 10);
+            log.info("------ end");
+            students = paginate.getItemList();
+
+        }
+        log.info("------ data:" + JsonUtils.objectToJson(students));
+
     }
 
     @Test

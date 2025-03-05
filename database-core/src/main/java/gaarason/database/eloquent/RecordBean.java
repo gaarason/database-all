@@ -1,10 +1,10 @@
 package gaarason.database.eloquent;
 
 import gaarason.database.appointment.EntityUseType;
+import gaarason.database.appointment.RelationCache;
 import gaarason.database.appointment.ValueWrapper;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
-import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.eloquent.extra.Bind;
 import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
@@ -45,7 +45,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      * 本表元数据
      * <数据库字段名 -> 字段信息>
      */
-    protected final Map<String, Object> metadataMap = new HashMap<>(16);
+    protected  Map<String, Object> metadataMap = new HashMap<>(16);
     /**
      * 数据模型
      */
@@ -117,6 +117,7 @@ public class RecordBean<T, K> implements Record<T, K> {
     public RecordBean(Record<T, K> recordBean) {
         initRecord(recordBean.getModel(), recordBean.getMetadataMap(), recordBean.getOriginalSql());
         this.entity = recordBean.getEntity();
+        this.originalPrimaryKeyValue = recordBean.getOriginalPrimaryKeyValue();
     }
 
     protected void initNewRecord(Model<T, K> model, Map<String, Object> stringObjectMap, String originalSql) {
@@ -248,10 +249,10 @@ public class RecordBean<T, K> implements Record<T, K> {
      * @return 对象
      */
     @Override
-    public T toObject(Map<String, RecordList<?, ?>> cacheRelationRecordList) {
+    public T toObject(RelationCache cache) {
         RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(
             model.getGaarasonDataSource().getContainer(), this, true);
-        return tkRelationGetSupport.toObject(cacheRelationRecordList);
+        return tkRelationGetSupport.toObject(cache);
 
     }
 
