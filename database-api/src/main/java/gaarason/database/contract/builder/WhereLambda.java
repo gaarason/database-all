@@ -1,6 +1,7 @@
 package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
+import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.lang.Nullable;
@@ -475,7 +476,7 @@ public interface WhereLambda<B extends Builder<B, T, K>, T, K> extends Where<B, 
      * @return 查询构造器
      */
     default <F> B whereHas(ColumnFunctionalInterface.ColumnCollection<T, F> relationFieldName) {
-        return whereHas(lambda2FieldName(relationFieldName), BuilderWrapper.empty());
+        return whereHas(lambda2FieldName(relationFieldName), BuilderAnyWrapper.empty());
     }
 
     /**
@@ -484,7 +485,7 @@ public interface WhereLambda<B extends Builder<B, T, K>, T, K> extends Where<B, 
      * @return 查询构造器
      */
     default <F> B whereHas(ColumnFunctionalInterface.ColumnArray<T, F> relationFieldName) {
-        return whereHas(lambda2FieldName(relationFieldName), BuilderWrapper.empty());
+        return whereHas(lambda2FieldName(relationFieldName), BuilderAnyWrapper.empty());
     }
 
     /**
@@ -493,9 +494,9 @@ public interface WhereLambda<B extends Builder<B, T, K>, T, K> extends Where<B, 
      * @param closure 闭包
      * @return 查询构造器
      */
-    default <F> B whereHas(ColumnFunctionalInterface.ColumnCollection<T, F> relationFieldName,
-        BuilderWrapper<?, F, ?> closure) {
-        return whereHas(lambda2FieldName(relationFieldName), closure);
+    default <BB extends Builder<BB, F, Object>, F> B whereHas(ColumnFunctionalInterface.ColumnCollection<T, F> relationFieldName,
+        BuilderWrapper<BB, F, Object> closure) {
+        return whereHas(lambda2FieldName(relationFieldName), BuilderAnyWrapper.turn2(closure));
     }
 
     /**
@@ -504,9 +505,9 @@ public interface WhereLambda<B extends Builder<B, T, K>, T, K> extends Where<B, 
      * @param closure 闭包
      * @return 查询构造器
      */
-    default <F> B whereHas(ColumnFunctionalInterface.ColumnArray<T, F> relationFieldName,
-        BuilderWrapper<?, F, ?> closure) {
-        return whereHas(lambda2FieldName(relationFieldName), closure);
+    default <BB extends Builder<BB, F, Object>, F> B whereHas(ColumnFunctionalInterface.ColumnArray<T, F> relationFieldName,
+        BuilderWrapper<BB, F, Object> closure) {
+        return whereHas(lambda2FieldName(relationFieldName), BuilderAnyWrapper.turn2(closure));
     }
 
     /**
@@ -515,7 +516,7 @@ public interface WhereLambda<B extends Builder<B, T, K>, T, K> extends Where<B, 
      * @return 查询构造器
      */
     default <F> B whereNotHas(ColumnFunctionalInterface.ColumnArray<T, F> relationFieldName) {
-        return whereNotHas(lambda2FieldName(relationFieldName), BuilderWrapper.empty());
+        return whereNotHas(lambda2FieldName(relationFieldName), BuilderAnyWrapper.empty());
     }
 
     /**
@@ -524,7 +525,7 @@ public interface WhereLambda<B extends Builder<B, T, K>, T, K> extends Where<B, 
      * @return 查询构造器
      */
     default <F> B whereNotHas(ColumnFunctionalInterface.ColumnCollection<T, F> relationFieldName) {
-        return whereNotHas(lambda2FieldName(relationFieldName), BuilderWrapper.empty());
+        return whereNotHas(lambda2FieldName(relationFieldName), BuilderAnyWrapper.empty());
     }
 
     /**
@@ -533,9 +534,9 @@ public interface WhereLambda<B extends Builder<B, T, K>, T, K> extends Where<B, 
      * @param closure 闭包
      * @return 查询构造器
      */
-    default <F> B whereNotHas(ColumnFunctionalInterface.ColumnArray<T, F> relationFieldName,
-        BuilderWrapper<?, F, ?> closure) {
-        return whereNotHas(lambda2FieldName(relationFieldName), closure);
+    default <BB extends Builder<BB, F, Object>, F> B whereNotHas(ColumnFunctionalInterface.ColumnArray<T, F> relationFieldName,
+        BuilderWrapper<BB, F, Object> closure) {
+        return whereNotHas(lambda2FieldName(relationFieldName), BuilderAnyWrapper.turn2(closure));
     }
 
     /**
@@ -544,8 +545,8 @@ public interface WhereLambda<B extends Builder<B, T, K>, T, K> extends Where<B, 
      * @param closure 闭包
      * @return 查询构造器
      */
-    default <F> B whereNotHas(ColumnFunctionalInterface.ColumnCollection<T, F> relationFieldName,
-        BuilderWrapper<?, F, ?> closure) {
-        return whereNotHas(lambda2FieldName(relationFieldName), closure);
+    default <BB extends Builder<BB, F, Object>, F> B whereNotHas(ColumnFunctionalInterface.ColumnCollection<T, F> relationFieldName,
+        BuilderWrapper<BB, F, Object> closure) {
+        return whereNotHas(lambda2FieldName(relationFieldName), BuilderAnyWrapper.turn2(closure));
     }
 }

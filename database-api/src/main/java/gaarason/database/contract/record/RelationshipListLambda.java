@@ -1,6 +1,7 @@
 package gaarason.database.contract.record;
 
 import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.RecordWrapper;
@@ -34,7 +35,7 @@ public interface RelationshipListLambda<T, K>
      */
     default <F> RecordList<T, K> with(ColumnFunctionalInterface<T, F> fieldName,
         BuilderWrapper<?, F, ?> builderClosure) {
-        return with(lambda2FieldName(fieldName), builderClosure);
+        return with(lambda2FieldName(fieldName), BuilderAnyWrapper.turn2(builderClosure));
     }
 
     /**
@@ -48,6 +49,6 @@ public interface RelationshipListLambda<T, K>
     default <F> RecordList<T, K> with(ColumnFunctionalInterface<T, F> fieldName,
         BuilderWrapper<?, F, ?> builderClosure,
         RecordWrapper recordClosure) {
-        return with(lambda2FieldName(fieldName), builderClosure, recordClosure);
+        return with(lambda2FieldName(fieldName), BuilderAnyWrapper.turn2(builderClosure), recordClosure);
     }
 }

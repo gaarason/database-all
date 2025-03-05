@@ -95,7 +95,7 @@ public abstract class SelectBuilder<B extends Builder<B, T, K>, T, K> extends Or
 
     // todo test
     @Override
-    public B selectFunction(String function, BuilderWrapper<T, K> closure,
+    public B selectFunction(String function, BuilderWrapper<B, T, K> closure,
         @Nullable String alias) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String completeSql = sqlPartInfo.getSqlString();
@@ -106,7 +106,7 @@ public abstract class SelectBuilder<B extends Builder<B, T, K>, T, K> extends Or
 
     // todo test
     @Override
-    public B selectFunction(String function, BuilderWrapper<T, K> closure) {
+    public B selectFunction(String function, BuilderWrapper<B, T, K> closure) {
         return selectFunction(function, closure, null);
 
     }

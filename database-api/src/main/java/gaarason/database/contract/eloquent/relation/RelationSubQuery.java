@@ -4,7 +4,7 @@ import gaarason.database.appointment.RelationCache;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.core.Container;
 import gaarason.database.exception.OperationNotSupportedException;
 import gaarason.database.lang.Nullable;
@@ -37,7 +37,7 @@ public interface RelationSubQuery {
      * @return 中间表查询构造器
      */
     @Nullable
-    default Builder<?, ?> prepareRelationBuilder(List<Map<String, Object>> metadata) {
+    default Builder<?, ?, ?> prepareRelationBuilder(List<Map<String, Object>> metadata) {
         return null;
     }
 
@@ -46,7 +46,7 @@ public interface RelationSubQuery {
      * @param relationBuilder 中间表查询构造器
      * @return 查询结果集
      */
-    RecordList<?, ?> dealBatchForRelation(@Nullable Builder<?, ?> relationBuilder);
+    RecordList<?, ?> dealBatchForRelation(@Nullable Builder<?, ?, ?> relationBuilder);
 
     /**
      * 目标表 query builder
@@ -57,8 +57,8 @@ public interface RelationSubQuery {
      * @return 目标表查询构造器
      */
     @Nullable
-    Builder<?, ?> prepareTargetBuilder(List<Map<String, Object>> metadata,
-        RecordList<?, ?> relationRecordList, BuilderWrapper<?, ?> operationBuilder, BuilderWrapper<?, ?> customBuilder);
+    Builder<?, ?, ?> prepareTargetBuilder(List<Map<String, Object>> metadata,
+        RecordList<?, ?> relationRecordList, BuilderAnyWrapper operationBuilder, BuilderAnyWrapper customBuilder);
 
     /**
      * 目标表 query builder
@@ -69,9 +69,9 @@ public interface RelationSubQuery {
      * @return 目标表查询构造器
      */
     @Nullable
-    default Builder<?, ?> prepareTargetBuilderByRelationOperation(List<Map<String, Object>> metadata,
-        RecordList<?, ?> relationRecordList, BuilderWrapper<?, ?> operationBuilder,
-        BuilderWrapper<?, ?> customBuilder) {
+    default Builder<?, ?, ?> prepareTargetBuilderByRelationOperation(List<Map<String, Object>> metadata,
+        RecordList<?, ?> relationRecordList, BuilderAnyWrapper operationBuilder,
+        BuilderAnyWrapper customBuilder) {
         throw new OperationNotSupportedException();
     }
 
@@ -81,7 +81,7 @@ public interface RelationSubQuery {
      * @param relationRecordList @BelongsToMany 中间表数据
      * @return 查询结果集
      */
-    RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?> targetBuilder,
+    RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?, ?> targetBuilder,
         RecordList<?, ?> relationRecordList);
 
     /**
@@ -90,7 +90,7 @@ public interface RelationSubQuery {
      * @param relationRecordList @BelongsToMany 中间表数据
      * @return 查询结果集
      */
-    default RecordList<?, ?> dealBatchForTargetByRelationOperation(@Nullable Builder<?, ?> targetBuilder,
+    default RecordList<?, ?> dealBatchForTargetByRelationOperation(@Nullable Builder<?, ?, ?> targetBuilder,
         RecordList<?, ?> relationRecordList) {
         throw new OperationNotSupportedException();
     }
@@ -126,7 +126,7 @@ public interface RelationSubQuery {
     List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList, RelationCache cache);
 
 
-    Builder<?, ?> prepareForWhereHas(BuilderWrapper<?, ?> customBuilder);
+    Builder<?, ?, ?> prepareForWhereHas(BuilderAnyWrapper customBuilder);
 
     /**
      * 增加关联关系

@@ -160,7 +160,7 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
             RelationSubQuery relationSubQuery = fieldRelationMember.getRelationSubQuery();
 
             // 中间表，查询构造器
-            Builder<?, ?> relationBuilder = relationSubQuery.prepareRelationBuilder(metadata);
+            Builder<?, ?, ?> relationBuilder = relationSubQuery.prepareRelationBuilder(metadata);
 
             // 中间表数据
             RecordList<?, ?> relationRecords = getRelationRecordsInCache(cache.cacheRelationRecordList, relationBuilder,
@@ -169,7 +169,7 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
             // 关联关系统计查询
             if (relationOperation) {
                 // 目标表，查询构造器
-                Builder<?, ?> targetBuilder = relationSubQuery.prepareTargetBuilderByRelationOperation(metadata,
+                Builder<?, ?, ?> targetBuilder = relationSubQuery.prepareTargetBuilderByRelationOperation(metadata,
                     relationRecords, relation.operationBuilder, relation.customBuilder);
 
                 // 本级关系查询
@@ -192,7 +192,7 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
             // 关联关系查询
             else {
                 // 目标表，查询构造器
-                Builder<?, ?> targetBuilder = relationSubQuery.prepareTargetBuilder(metadata, relationRecords,
+                Builder<?, ?, ?> targetBuilder = relationSubQuery.prepareTargetBuilder(metadata, relationRecords,
                     relation.operationBuilder, relation.customBuilder);
 
                 // 本级关系查询
@@ -252,10 +252,10 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
      * @return 批量结果集
      */
     protected static RecordList<?, ?> getRelationRecordsInCache(Map<String, RecordList<?, ?>> cacheRecords,
-        @Nullable Builder<?, ?> builder, GenerateRecordListFunctionalInterface closure) {
+        @Nullable Builder<?, ?, ?> builder, GenerateRecordListFunctionalInterface closure) {
         // 有缓存有直接返回, 没有就执行后返回
         // 因为没有更新操作, 所以直接返回原对象
-        // new Builder<?, ?>[]{null, builder} 很关键
+        // new Builder<?, ?, ?>[]{null, builder} 很关键
         return getRecordsInCache(cacheRecords, builder, closure);
     }
 
@@ -268,7 +268,7 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
      * @return 批量结果集
      */
     protected static RecordList<?, ?> getTargetRecordsInCache(Map<String, RecordList<?, ?>> cacheRecords,
-        @Nullable Builder<?, ?> builder, RecordWrapper relationshipRecordWith,
+        @Nullable Builder<?, ?, ?> builder, RecordWrapper relationshipRecordWith,
         GenerateRecordListFunctionalInterface closure) {
         // 有缓存有直接返回, 没有就执行后返回
         // 此处降低查询次数
@@ -290,7 +290,7 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
      * @return 批量结果集
      */
     protected static RecordList<?, ?> getRecordsInCache(Map<String, RecordList<?, ?>> cacheRecords,
-        @Nullable Builder<?, ?> builder, GenerateRecordListFunctionalInterface closure) {
+        @Nullable Builder<?, ?, ?> builder, GenerateRecordListFunctionalInterface closure) {
         // 缓存keyName
         String cacheKey = builder == null ? "" : builder.toSql(SqlType.SELECT, (sql, parameters) -> sql + parameters);
 

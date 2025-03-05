@@ -32,6 +32,6 @@ public interface QueryBuilderConfig {
      * @param <K> 主键类型
      * @return 查询构造器
      */
-    <B extends Builder<B, T, K>, T, K> B newBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model);
+    <T, K> Builder<?, T, K> newBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model);
 
 }

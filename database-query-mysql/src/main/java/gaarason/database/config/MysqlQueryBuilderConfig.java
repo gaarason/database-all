@@ -18,13 +18,8 @@ public class MysqlQueryBuilderConfig implements QueryBuilderConfig {
         return "mysql".equals(databaseProductName);
     }
 
-//    @Override
-    public Builder<?, ?, ?> newBuilder11(GaarasonDataSource gaarasonDataSource, Model<?, ?, ?> model) {
-        return new MySqlBuilder<>().initBuilder(gaarasonDataSource, model, new MySqlGrammar(model.getTableName()));
-    }
-
-//    @Override
-    public <B extends Builder<B, T, K>, T, K> B newBuilder(GaarasonDataSource gaarasonDataSource, Model<B, T, K> model) {
+    @Override
+    public <T, K> Builder<?, T, K> newBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model) {
         return new MySqlBuilder<T, K>().initBuilder(gaarasonDataSource, model, new MySqlGrammar(model.getTableName()));
     }
 

@@ -88,7 +88,7 @@ public interface Select<B extends Builder<B, T, K>, T, K> {
      * @param alias 字段别名
      * @return 查询构造器
      */
-    B selectFunction(String function, BuilderWrapper<T, K> closure, @Nullable String alias);
+    B selectFunction(String function, BuilderWrapper<B, T, K> closure, @Nullable String alias);
 
     /**
      * 调研数据库中的方法
@@ -96,7 +96,7 @@ public interface Select<B extends Builder<B, T, K>, T, K> {
      * @param closure 返回代码片段
      * @return 查询构造器
      */
-    B selectFunction(String function, BuilderWrapper<T, K> closure);
+    B selectFunction(String function, BuilderWrapper<B, T, K> closure);
 
     /**
      * 自定义查询字段

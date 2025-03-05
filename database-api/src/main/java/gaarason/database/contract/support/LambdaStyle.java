@@ -37,6 +37,16 @@ public interface LambdaStyle {
 
     /**
      * 通过 表达式 推断列名
+     * @param column Lambda表达式
+     * @return 列名
+     */
+    @Nullable
+    default String lambda2ColumnNameNullable(@Nullable ColumnFunctionalInterface<?, ?> column) {
+        return column == null ? null : lambda2ColumnName(column);
+    }
+
+    /**
+     * 通过 表达式 推断列名
      * @param columns Lambda表达式集合
      * @return 列名集合
      */

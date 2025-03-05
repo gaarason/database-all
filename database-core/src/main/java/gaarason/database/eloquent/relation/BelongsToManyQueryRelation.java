@@ -7,7 +7,7 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.core.Container;
 import gaarason.database.lang.Nullable;
@@ -54,7 +54,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
     @Override
     @Nullable
-    public Builder<?, ?> prepareRelationBuilder(List<Map<String, Object>> metadata) {
+    public Builder<?, ?, ?> prepareRelationBuilder(List<Map<String, Object>> metadata) {
         return belongsToManyTemplate.relationModel.newQuery()
             .select(belongsToManyTemplate.foreignKeyForLocalModel, belongsToManyTemplate.foreignKeyForTargetModel)
             .whereIn(belongsToManyTemplate.foreignKeyForLocalModel,
@@ -67,9 +67,9 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
     @Nullable
     @Override
-    public Builder<?, ?> prepareTargetBuilder(List<Map<String, Object>> metadata,
+    public Builder<?, ?, ?> prepareTargetBuilder(List<Map<String, Object>> metadata,
         RecordList<?, ?> relationRecordList,
-        BuilderWrapper<?, ?> operationBuilder, BuilderWrapper<?, ?> customBuilder) {
+        BuilderAnyWrapper operationBuilder, BuilderAnyWrapper customBuilder) {
 
         // 关系表的数据
         List<Map<String, Object>> relationMaps = relationRecordList.toMapList();
@@ -89,7 +89,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         }
 
         // 目标表查询构造器
-        Builder<?, ?> targetBuilder = customBuilder.execute(
+        Builder<?, ?, ?> targetBuilder = customBuilder.execute(
             ObjectUtils.typeCast(belongsToManyTemplate.targetModel.newQuery()));
 
 
@@ -100,9 +100,9 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
     @Override
     @Nullable
-    public Builder<?, ?> prepareTargetBuilderByRelationOperation(List<Map<String, Object>> metadata,
-        RecordList<?, ?> relationRecordList, BuilderWrapper<?, ?> operationBuilder,
-        BuilderWrapper<?, ?> customBuilder) {
+    public Builder<?, ?, ?> prepareTargetBuilderByRelationOperation(List<Map<String, Object>> metadata,
+        RecordList<?, ?> relationRecordList, BuilderAnyWrapper operationBuilder,
+        BuilderAnyWrapper customBuilder) {
 
         // 关系表的数据
         List<Map<String, Object>> relationMaps = relationRecordList.toMapList();
@@ -115,12 +115,12 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
             objects.add(relationMap.get(belongsToManyTemplate.foreignKeyForTargetModel));
         }
 
-        Builder<?, ?> newQuery = belongsToManyTemplate.targetModel.newQuery();
+        Builder<?, ?, ?> newQuery = belongsToManyTemplate.targetModel.newQuery();
 
-        Builder<?, ?> opBuilder = operationBuilder.execute(
+        Builder<?, ?, ?> opBuilder = operationBuilder.execute(
             ObjectUtils.typeCast(belongsToManyTemplate.targetModel.newQuery()));
 
-        Builder<?, ?> targetBuilder = customBuilder.execute(
+        Builder<?, ?, ?> targetBuilder = customBuilder.execute(
             ObjectUtils.typeCast(belongsToManyTemplate.targetModel.newQuery()));
 
         // 自定义统计处理
@@ -136,7 +136,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
             Object k = entry.getKey();
             List<Object> v = entry.getValue();
 
-            Builder<?, ?> subBuilder = opBuilder.clone()
+            Builder<?, ?, ?> subBuilder = opBuilder.clone()
                 .selectCustom(RELATION_KEY, k.toString())
                 .from("a", tableBuilder -> tableBuilder.setAnyBuilder(targetBuilder)
                     .whereIn(belongsToManyTemplate.targetModelLocalKey, v));
@@ -151,7 +151,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
 
     @Override
-    public RecordList<?, ?> dealBatchForRelation(@Nullable Builder<?, ?> relationBuilder) {
+    public RecordList<?, ?> dealBatchForRelation(@Nullable Builder<?, ?, ?> relationBuilder) {
         if (ObjectUtils.isEmpty(relationBuilder)) {
             return emptyRecordList();
         }
@@ -166,7 +166,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?> targetBuilder,
+    public RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?, ?> targetBuilder,
         RecordList<?, ?> relationRecordList) {
 
         // 目标表结果
@@ -199,7 +199,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public RecordList<?, ?> dealBatchForTargetByRelationOperation(@Nullable Builder<?, ?> targetBuilder,
+    public RecordList<?, ?> dealBatchForTargetByRelationOperation(@Nullable Builder<?, ?, ?> targetBuilder,
         RecordList<?, ?> relationRecordList) {
         if (targetBuilder == null) {
             return emptyRecordList();
@@ -271,7 +271,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public Builder<?, ?> prepareForWhereHas(BuilderWrapper<?, ?> customBuilder) {
+    public Builder<?, ?, ?> prepareForWhereHas(BuilderAnyWrapper customBuilder) {
         String localModelTableName = localModel.getTableName();
         String relationModelTableName = belongsToManyTemplate.relationModel.getTableName();
         String targetModelTableName = belongsToManyTemplate.targetModel.getTableName();
@@ -619,7 +619,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
      * @param targetModelLocalKeyValues 目标表的关系键集合
      * @return 查询构造器
      */
-    protected Builder<?, ?> setWhere(Object localModelLocalKeyValue,
+    protected Builder<?, ?, ?> setWhere(Object localModelLocalKeyValue,
         @Nullable Collection<Object> targetModelLocalKeyValues) {
         return belongsToManyTemplate.relationModel.newQuery()
             .where(belongsToManyTemplate.foreignKeyForLocalModel, localModelLocalKeyValue)

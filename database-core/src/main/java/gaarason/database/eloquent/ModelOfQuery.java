@@ -47,8 +47,8 @@ public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> impleme
      */
     protected <B extends Builder<B, T, K>> B theBuilder() {
         GaarasonDataSource gaarasonDataSource = getGaarasonDataSource();
-        B builder = gaarasonDataSource.getQueryBuilder().newBuilder(gaarasonDataSource, this);
-        return apply(builder);
+        Builder<?, T, K> builder = gaarasonDataSource.getQueryBuilder().newBuilder(gaarasonDataSource, this);
+        return apply(ObjectUtils.typeCast(builder));
     }
 
     @Override

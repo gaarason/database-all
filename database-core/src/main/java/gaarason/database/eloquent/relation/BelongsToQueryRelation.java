@@ -6,7 +6,7 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.core.Container;
 import gaarason.database.exception.RelationAttachException;
 import gaarason.database.lang.Nullable;
@@ -61,8 +61,8 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
     @Nullable
     @Override
-    public Builder<?, ?> prepareTargetBuilder(List<Map<String, Object>> metadata, RecordList<?, ?> relationRecordList,
-        BuilderWrapper<?, ?> operationBuilder, BuilderWrapper<?, ?> customBuilder) {
+    public Builder<?, ?, ?> prepareTargetBuilder(List<Map<String, Object>> metadata, RecordList<?, ?> relationRecordList,
+        BuilderAnyWrapper operationBuilder, BuilderAnyWrapper customBuilder) {
 
         Set<Object> objectSet = enableMorph ?
             getColumnInMapList(metadata, belongsToTemplate.localModelForeignKey,
@@ -75,7 +75,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?> targetBuilder,
+    public RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?, ?> targetBuilder,
         RecordList<?, ?> relationRecordList) {
         if (targetBuilder == null) {
             return emptyRecordList();
@@ -107,7 +107,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public Builder<?, ?> prepareForWhereHas(BuilderWrapper<?, ?> customBuilder) {
+    public Builder<?, ?, ?> prepareForWhereHas(BuilderAnyWrapper customBuilder) {
         return customBuilder.execute(ObjectUtils.typeCast(belongsToTemplate.parentModel.newQuery()))
             .when(enableMorph, builder -> builder.where(belongsToTemplate.localModelMorphKey,
                 belongsToTemplate.localModelMorphValue))

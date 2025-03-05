@@ -95,7 +95,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
     }
 
     @Override
-    public RecordList<?, ?> dealBatchForRelation(@Nullable Builder<?, ?> relationBuilder) {
+    public RecordList<?, ?> dealBatchForRelation(@Nullable Builder<?, ?, ?> relationBuilder) {
         return emptyRecordList();
     }
 
@@ -134,7 +134,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @param keys 各种key
      * @return 查询构造器
      */
-    protected static Builder<?, ?> selectFill(Builder<?, ?> queryBuilder, Class<?> getEntityClass, String... keys){
+    protected static Builder<?, ?, ?> selectFill(Builder<?, ?, ?> queryBuilder, Class<?> getEntityClass, String... keys){
         return  queryBuilder.getGrammar().isEmpty(Grammar.SQLPartType.SELECT) ? queryBuilder.select(getEntityClass) : queryBuilder.select(keys);
     }
 

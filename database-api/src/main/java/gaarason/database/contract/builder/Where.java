@@ -659,7 +659,7 @@ public interface Where<B extends Builder<B, T, K>, T, K> {
      * @return 查询构造器
      */
     default B whereHas(String relationFieldName) {
-        return whereHas(relationFieldName, BuilderWrapper.empty());
+        return whereHas(relationFieldName, BuilderAnyWrapper.empty());
     }
 
     /**
@@ -668,7 +668,7 @@ public interface Where<B extends Builder<B, T, K>, T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    B whereHas(String relationFieldName, BuilderWrapper<?, ?, ?> closure);
+    B whereHas(String relationFieldName, BuilderAnyWrapper closure);
 
     /**
      * 包含关联数据
@@ -676,7 +676,7 @@ public interface Where<B extends Builder<B, T, K>, T, K> {
      * @return 查询构造器
      */
     default B whereNotHas(String relationFieldName) {
-        return whereNotHas(relationFieldName, BuilderWrapper.empty());
+        return whereNotHas(relationFieldName, BuilderAnyWrapper.empty());
     }
 
     /**
@@ -685,5 +685,5 @@ public interface Where<B extends Builder<B, T, K>, T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    B whereNotHas(String relationFieldName, BuilderWrapper<?, ?, ?> closure);
+    B whereNotHas(String relationFieldName, BuilderAnyWrapper closure);
 }

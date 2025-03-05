@@ -7,7 +7,10 @@ import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
-import gaarason.database.contract.function.*;
+import gaarason.database.contract.function.BuilderAnyWrapper;
+import gaarason.database.contract.function.ColumnFunctionalInterface;
+import gaarason.database.contract.function.RecordWrapper;
+import gaarason.database.contract.function.TransactionFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.core.Container;
 import gaarason.database.exception.AbnormalParameterException;
@@ -156,7 +159,7 @@ public abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements B
      */
     @Override
     public B with(String fieldName) {
-        return with(fieldName, BuilderWrapper.empty(), RecordWrapper.empty());
+        return with(fieldName, BuilderAnyWrapper.empty(), RecordWrapper.empty());
     }
 
     /**
@@ -166,7 +169,7 @@ public abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements B
      * @return 关联的Model的查询构造器
      */
     @Override
-    public <F> B with(String fieldName, BuilderWrapper<?, F, ?> builderClosure) {
+    public B with(String fieldName, BuilderAnyWrapper builderClosure) {
         return with(fieldName, builderClosure, RecordWrapper.empty());
     }
 
@@ -178,9 +181,8 @@ public abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements B
      * @return 关联的Model的查询构造器
      */
     @Override
-    public <F> B with(String fieldName, BuilderWrapper<?, F, ?> builderClosure,
-        RecordWrapper recordClosure) {
-        grammar.pushRelation(fieldName, new Record.Relation(fieldName, BuilderAnyWrapper.turn2(builderClosure), recordClosure));
+    public B with(String fieldName, BuilderAnyWrapper builderClosure, RecordWrapper recordClosure) {
+        grammar.pushRelation(fieldName, new Record.Relation(fieldName, builderClosure, recordClosure));
         return getSelf();
     }
 

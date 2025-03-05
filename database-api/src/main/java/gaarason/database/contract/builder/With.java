@@ -3,7 +3,6 @@ package gaarason.database.contract.builder;
 import gaarason.database.appointment.AggregatesType;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.BuilderAnyWrapper;
-import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.lang.Nullable;
 
@@ -39,7 +38,7 @@ public interface With<B extends Builder<B, T, K>, T, K> {
      * @param builderClosure 所关联的Model的查询构造器约束
      * @return 关联的Model的查询构造器
      */
-    <F> B with(String fieldName, BuilderWrapper<?, F, ?> builderClosure);
+    B with(String fieldName, BuilderAnyWrapper builderClosure);
 
     /**
      * 渴求式关联
@@ -49,7 +48,7 @@ public interface With<B extends Builder<B, T, K>, T, K> {
      * @return 关联的Model的查询构造器
      * @see WithLambda
      */
-    default <F> B withMany(String fieldName, BuilderWrapper<?, F, ?> builderClosure) {
+    default <F> B withMany(String fieldName, BuilderAnyWrapper builderClosure) {
         return with(fieldName, builderClosure);
     }
 
@@ -60,7 +59,7 @@ public interface With<B extends Builder<B, T, K>, T, K> {
      * @param recordClosure 所关联的Model的再一级关联
      * @return 关联的Model的查询构造器
      */
-    <F> B with(String fieldName, BuilderWrapper<?, F, ?> builderClosure,
+    B with(String fieldName, BuilderAnyWrapper builderClosure,
         RecordWrapper recordClosure);
 
     /**
@@ -72,7 +71,7 @@ public interface With<B extends Builder<B, T, K>, T, K> {
      * @return 关联的Model的查询构造器
      * @see WithLambda
      */
-    default <F> B withMany(String fieldName, BuilderWrapper<?, F, ?> builderClosure,
+    default B withMany(String fieldName, BuilderAnyWrapper builderClosure,
         RecordWrapper recordClosure) {
         return with(fieldName, builderClosure, recordClosure);
     }

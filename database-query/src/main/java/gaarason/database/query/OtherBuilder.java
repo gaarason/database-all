@@ -4,6 +4,7 @@ import gaarason.database.appointment.AggregatesType;
 import gaarason.database.appointment.JoinType;
 import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.eloquent.Builder;
+import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.function.ToSqlFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
@@ -39,11 +40,11 @@ public abstract class OtherBuilder<B extends Builder<B, T, K>, T, K> extends Whe
                 selectRaw(groupInfo.getSqlString(), groupInfo.getParameters());
             }
 
-            builder = model.withTrashed().from(alias + "sub", subBuilder -> getSelf());
+            builder = (B) model.withTrashed().from(alias + "sub", subBuilder -> getSelf());
         }
         // 不存在 group, 但存在 select
         else if (!grammar.isEmpty(Grammar.SQLPartType.SELECT)) {
-            builder = model.newQuery().setBuilder(builder).clear(Grammar.SQLPartType.SELECT);
+            builder = (B) model.newQuery().setAnyBuilder(builder).clear(Grammar.SQLPartType.SELECT);
         }
 
         Map<String, Object> resMap = builder.selectFunction(op.toString(), column, alias).firstOrFail().toMap();
@@ -92,7 +93,7 @@ public abstract class OtherBuilder<B extends Builder<B, T, K>, T, K> extends Whe
     }
 
     @Override
-    public B from(String alias, BuilderWrapper<B, T, K> closure) {
+    public B from(String alias, BuilderAnyWrapper closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sqlPart = FormatUtils.bracket(sqlPartInfo.getSqlString()) + alias;
         grammar.set(Grammar.SQLPartType.FROM, sqlPart, sqlPartInfo.getParameters());
@@ -316,7 +317,7 @@ public abstract class OtherBuilder<B extends Builder<B, T, K>, T, K> extends Whe
     }
 
     @Override
-    public B whereHas(String relationFieldName, BuilderWrapper<?, ?, ?> closure) {
+    public B whereHas(String relationFieldName, BuilderAnyWrapper closure) {
         // 获取关联关系
         EntityMember<T, K> entityMember = modelShadowProvider.parseAnyEntityWithCache(entityClass);
         FieldRelationMember relationMember = entityMember.getFieldRelationMemberByFieldName(
@@ -326,7 +327,7 @@ public abstract class OtherBuilder<B extends Builder<B, T, K>, T, K> extends Whe
     }
 
     @Override
-    public B whereNotHas(String relationFieldName, BuilderWrapper<?, ?, ?> closure) {
+    public B whereNotHas(String relationFieldName, BuilderAnyWrapper closure) {
         // 获取关联关系
         EntityMember<T, K> entityMember = modelShadowProvider.parseAnyEntityWithCache(entityClass);
         FieldRelationMember relationMember = entityMember.getFieldRelationMemberByFieldName(

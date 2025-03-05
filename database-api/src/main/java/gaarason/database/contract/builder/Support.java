@@ -124,7 +124,7 @@ public interface Support<B extends Builder<B, T, K>, T, K> extends LambdaStyle, 
      * @param closure 闭包
      * @return sql
      */
-    default Grammar.SQLPartInfo generateSql(BuilderWrapper<T, K> closure) {
+    default Grammar.SQLPartInfo generateSql(BuilderWrapper<B, T, K> closure) {
         B subBuilder = closure.execute(getNewSelf());
         return subBuilder.getGrammar().generateSql(SqlType.SELECT);
     }
@@ -145,7 +145,7 @@ public interface Support<B extends Builder<B, T, K>, T, K> extends LambdaStyle, 
      * @param sqlPartType 片段类型
      * @return sql
      */
-    default Grammar.SQLPartInfo generateSql(BuilderWrapper<T, K> closure,
+    default Grammar.SQLPartInfo generateSql(BuilderWrapper<B, T, K> closure,
         Grammar.SQLPartType sqlPartType) {
         B subBuilder = closure.execute(getNewSelf());
         return subBuilder.getGrammar().get(sqlPartType);

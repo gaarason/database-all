@@ -6,7 +6,7 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.core.Container;
 import gaarason.database.lang.Nullable;
@@ -64,12 +64,12 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public Builder<?, ?> prepareTargetBuilder(List<Map<String, Object>> metadata,
-        RecordList<?, ?> relationRecordList, BuilderWrapper<?, ?> operationBuilder,
-        BuilderWrapper<?, ?> customBuilder) {
+    public Builder<?, ?, ?> prepareTargetBuilder(List<Map<String, Object>> metadata,
+        RecordList<?, ?> relationRecordList, BuilderAnyWrapper operationBuilder,
+        BuilderAnyWrapper customBuilder) {
 
         // 查询构造器包装
-        Builder<?, ?> queryBuilder = customBuilder.execute(
+        Builder<?, ?, ?> queryBuilder = customBuilder.execute(
             ObjectUtils.typeCast(hasOneOrManyTemplate.sonModel.newQuery()));
 
         setWhere(metadata, queryBuilder);
@@ -79,12 +79,12 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public Builder<?, ?> prepareTargetBuilderByRelationOperation(List<Map<String, Object>> metadata,
-        RecordList<?, ?> relationRecordList, BuilderWrapper<?, ?> operationBuilder,
-        BuilderWrapper<?, ?> customBuilder) {
+    public Builder<?, ?, ?> prepareTargetBuilderByRelationOperation(List<Map<String, Object>> metadata,
+        RecordList<?, ?> relationRecordList, BuilderAnyWrapper operationBuilder,
+        BuilderAnyWrapper customBuilder) {
 
         // 查询构造器包装
-        Builder<?, ?> queryBuilder = customBuilder.execute(
+        Builder<?, ?, ?> queryBuilder = customBuilder.execute(
             ObjectUtils.typeCast(hasOneOrManyTemplate.sonModel.newQuery()));
 
         Grammar grammar = queryBuilder.getGrammar();
@@ -96,7 +96,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
                     .select(hasOneOrManyTemplate.sonModelForeignKey);
             }
             setWhere(metadata, queryBuilder);
-            Builder<?, ?> finalQueryBuilder = queryBuilder;
+            Builder<?, ?, ?> finalQueryBuilder = queryBuilder;
             queryBuilder = hasOneOrManyTemplate.sonModel.newQuery()
                 .from(alias + "sub", subBuilder -> ObjectUtils.typeCast(finalQueryBuilder));
         }else {
@@ -111,7 +111,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?> targetBuilder,
+    public RecordList<?, ?> dealBatchForTarget(@Nullable Builder<?, ?, ?> targetBuilder,
         RecordList<?, ?> relationRecordList) {
         if (targetBuilder == null) {
             return emptyRecordList();
@@ -120,7 +120,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public RecordList<?, ?> dealBatchForTargetByRelationOperation(@Nullable Builder<?, ?> targetBuilder,
+    public RecordList<?, ?> dealBatchForTargetByRelationOperation(@Nullable Builder<?, ?, ?> targetBuilder,
         RecordList<?, ?> relationRecordList) {
         return dealBatchForTarget(targetBuilder, relationRecordList);
     }
@@ -159,7 +159,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public Builder<?, ?> prepareForWhereHas(BuilderWrapper<?, ?> customBuilder) {
+    public Builder<?, ?, ?> prepareForWhereHas(BuilderAnyWrapper customBuilder) {
         return customBuilder.execute(ObjectUtils.typeCast(hasOneOrManyTemplate.sonModel.newQuery()))
             .when(enableMorph, builder -> builder.where(hasOneOrManyTemplate.sonModelMorphKey,
                 hasOneOrManyTemplate.sonModelMorphValue))
@@ -320,11 +320,9 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
      * 查询构造器条件设置
      * @param metadata 当前recordList的元数据
      * @param queryBuilder 查询构造器
-     * @param <T> 实体类
-     * @param <K> 主键类
      * @return 查询构造器
      */
-    protected <T, K> Builder<T, K> setWhere(List<Map<String, Object>> metadata, Builder<T, K> queryBuilder) {
+    protected Builder<?, ?, ?> setWhere(List<Map<String, Object>> metadata, Builder<?, ?, ?> queryBuilder) {
         return queryBuilder.whereIn(hasOneOrManyTemplate.sonModelForeignKey,
                 getColumnInMapList(metadata, hasOneOrManyTemplate.localModelLocalKey))
             .when(enableMorph, builder -> builder.where(hasOneOrManyTemplate.sonModelMorphKey,

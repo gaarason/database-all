@@ -1,7 +1,7 @@
 package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
-import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.lang.Nullable;
 
 import java.util.Collection;
@@ -49,7 +49,7 @@ public interface From<B extends Builder<B, T, K>, T, K> {
      * @param closure 闭包
      * @return 查询构造器
      */
-    B from(String alias, BuilderWrapper<B, T, K> closure);
+    B from(String alias, BuilderAnyWrapper closure);
 
     /**
      * 临时表查询

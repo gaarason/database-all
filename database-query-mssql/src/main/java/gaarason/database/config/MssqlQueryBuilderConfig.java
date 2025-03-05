@@ -19,7 +19,7 @@ public class MssqlQueryBuilderConfig implements QueryBuilderConfig {
     }
 
     @Override
-    public <T, K> Builder<T, K> newBuilder(
+    public <T, K> Builder<?, T, K> newBuilder(
         GaarasonDataSource gaarasonDataSource, Model<T, K> model) {
         return new MsSqlBuilder<T, K>().initBuilder(gaarasonDataSource, model, new MsSqlGrammar(model.getTableName()));
     }

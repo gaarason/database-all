@@ -88,7 +88,7 @@ public class StudentEventModel extends SingleModel<StudentEventModel.Entity, Int
 
 
     @Override
-    public void eventQueryRetrieving(Builder<Entity, Integer> builder) {
+    public void eventQueryRetrieving(Builder<?, Entity, Integer> builder) {
         printCurrentMethodName();
     }
 
@@ -103,7 +103,7 @@ public class StudentEventModel extends SingleModel<StudentEventModel.Entity, Int
     }
 
     @Override
-    public void eventQueryCreating(Builder<Entity, Integer> builder) {
+    public void eventQueryCreating(Builder<?, Entity, Integer> builder) {
         printCurrentMethodName();
     }
 
@@ -126,7 +126,7 @@ public class StudentEventModel extends SingleModel<StudentEventModel.Entity, Int
     }
 
     @Override
-    public void eventQueryUpdating(Builder<Entity, Integer> builder) {
+    public void eventQueryUpdating(Builder<?, Entity, Integer> builder) {
         super.eventQueryUpdating(builder);
         printCurrentMethodName();
     }
@@ -138,7 +138,7 @@ public class StudentEventModel extends SingleModel<StudentEventModel.Entity, Int
     }
 
     @Override
-    public void eventQueryRestoring(Builder<Entity, Integer> builder) {
+    public void eventQueryRestoring(Builder<?, Entity, Integer> builder) {
         super.eventQueryRestoring(builder);
         printCurrentMethodName();
     }
@@ -150,7 +150,7 @@ public class StudentEventModel extends SingleModel<StudentEventModel.Entity, Int
     }
 
     @Override
-    public void eventQueryDeleting(Builder<Entity, Integer> builder) {
+    public void eventQueryDeleting(Builder<?, Entity, Integer> builder) {
         super.eventQueryDeleting(builder);
         printCurrentMethodName();
     }
