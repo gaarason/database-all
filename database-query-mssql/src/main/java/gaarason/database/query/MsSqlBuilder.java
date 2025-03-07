@@ -12,7 +12,7 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public class MsSqlBuilder<T, K> extends OtherBuilder<MsSqlBuilder<T, K>, T, K> {
+public final class MsSqlBuilder<T, K> extends AbstractBuilder<MsSqlBuilder<T, K>, T, K> {
 
     private static final long serialVersionUID = 1L;
 

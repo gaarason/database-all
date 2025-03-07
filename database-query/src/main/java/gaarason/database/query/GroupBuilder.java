@@ -13,7 +13,7 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public abstract class GroupBuilder<B extends Builder<B, T, K>, T, K>  extends DataBuilder<B, T, K> {
+abstract class GroupBuilder<B extends Builder<B, T, K>, T, K>  extends DataBuilder<B, T, K> {
 
     protected B groupGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
         grammar.addSmartSeparator(Grammar.SQLPartType.GROUP, sqlPart, parameters, ",");

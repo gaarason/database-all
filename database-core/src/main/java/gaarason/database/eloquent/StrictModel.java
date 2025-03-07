@@ -6,6 +6,6 @@ import gaarason.database.contract.eloquent.Model;
  * 数据模型对象
  * @author xt
  */
-public abstract class ModelBean<T, K> extends ModelOfQuery<T, K> implements Model<T, K> {
+abstract public class StrictModel<T, K> extends ModelOfQuery<T, K> implements Model<T, K> {
 
 }

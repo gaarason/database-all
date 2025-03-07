@@ -22,7 +22,7 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public abstract class WhereBuilder<B extends Builder<B, T, K>, T, K> extends SelectBuilder<B, T, K> {
+abstract class WhereBuilder<B extends Builder<B, T, K>, T, K> extends SelectBuilder<B, T, K> {
 
     protected B whereGrammar(String sqlPart, @Nullable Collection<Object> parameters, String separator) {
         grammar.addSmartSeparator(Grammar.SQLPartType.WHERE, sqlPart, parameters, separator);

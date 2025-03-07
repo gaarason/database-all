@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutorService;
  * 数据模型对象
  * @author xt
  */
-public abstract class ModelBase<T, K> implements Model<T, K> {
+abstract class ModelBase<T, K> implements Model<T, K> {
 
     /**
      * Model信息大全

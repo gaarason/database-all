@@ -17,7 +17,7 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public abstract class DataBuilder<B extends Builder<B, T, K>, T, K>  extends ExecuteLevel3Builder<B, T, K> {
+abstract class DataBuilder<B extends Builder<B, T, K>, T, K>  extends ExecuteLevel3Builder<B, T, K> {
 
     protected B dataGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
         grammar.addSmartSeparator(Grammar.SQLPartType.DATA, sqlPart, parameters, ",");

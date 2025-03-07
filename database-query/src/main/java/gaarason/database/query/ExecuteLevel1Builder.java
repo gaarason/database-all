@@ -19,7 +19,7 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public abstract class ExecuteLevel1Builder<B extends Builder<B, T, K>, T, K> extends BaseBuilder<B, T, K> {
+abstract class ExecuteLevel1Builder<B extends Builder<B, T, K>, T, K> extends BaseBuilder<B, T, K> {
 
     /**
      * 传递有效的with信息

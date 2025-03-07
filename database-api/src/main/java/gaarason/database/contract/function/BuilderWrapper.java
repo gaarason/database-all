@@ -26,6 +26,7 @@ public interface BuilderWrapper<B extends Builder<B, T, K>, T, K> extends Serial
      * @return 生成器
      */
     B execute(B builder);
+//    Builder<B, ?, ?> execute(Builder<B, ?, ?> builder);
 
     /**
      * 通用空实现

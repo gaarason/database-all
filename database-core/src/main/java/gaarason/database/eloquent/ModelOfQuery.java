@@ -30,7 +30,7 @@ import java.util.concurrent.CompletableFuture;
  * 数据模型对象
  * @author xt
  */
-public abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> implements Query<T, K> {
+abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> implements Query<T, K> {
 
     /**
      * 全局查询作用域

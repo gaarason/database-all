@@ -21,7 +21,7 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public abstract class HavingBuilder<B extends Builder<B, T, K>, T, K> extends GroupBuilder<B, T, K> {
+abstract class HavingBuilder<B extends Builder<B, T, K>, T, K> extends GroupBuilder<B, T, K> {
 
     protected B havingGrammar(String sqlPart, @Nullable Collection<Object> parameters, String separator) {
         grammar.addSmartSeparator(Grammar.SQLPartType.HAVING, sqlPart, parameters, separator);

@@ -25,7 +25,7 @@ import java.util.Map;
  * @param <K>
  * @author xt
  */
-public abstract class OtherBuilder<B extends Builder<B, T, K>, T, K> extends WhereBuilder<B, T, K> {
+public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends WhereBuilder<B, T, K> {
 
     @Override
     public <R> R aggregate(AggregatesType op, String column) {
@@ -335,4 +335,32 @@ public abstract class OtherBuilder<B extends Builder<B, T, K>, T, K> extends Whe
 
         return whereAnyNotExists(builder -> (relationMember.getRelationSubQuery().prepareForWhereHas(closure)));
     }
+
+    @Override
+    public B limit(Object offset, Object take) {
+        Collection<Object> parameters = new ArrayList<>(2);
+        String sqlPart = grammar.replaceValueAndFillParameters(offset, parameters) + "," +
+                grammar.replaceValueAndFillParameters(take, parameters);
+        grammar.set(Grammar.SQLPartType.LIMIT, sqlPart, parameters);
+        return getSelf();
+    }
+
+    @Override
+    public B limit(Object take) {
+        Collection<Object> parameters = new ArrayList<>(1);
+        String sqlPart = grammar.replaceValueAndFillParameters(take, parameters);
+        grammar.set(Grammar.SQLPartType.LIMIT, sqlPart, parameters);
+        return getSelf();
+    }
+
+    /**
+     * 给字段加上引号
+     * @param something 字段 eg: sum(order.amount) AS sum_price
+     * @return eg: sum(`order`.`amount`) AS `sum_price`
+     */
+    @Override
+    protected String backQuote(String something) {
+        return FormatUtils.backQuote(something, "`");
+    }
+
 }

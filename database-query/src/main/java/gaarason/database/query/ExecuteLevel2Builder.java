@@ -18,7 +18,7 @@ import java.util.List;
  * @param <K>
  * @author xt
  */
-public abstract class ExecuteLevel2Builder<B extends Builder<B, T, K>, T, K>  extends ExecuteLevel1Builder<B, T, K> {
+abstract class ExecuteLevel2Builder<B extends Builder<B, T, K>, T, K>  extends ExecuteLevel1Builder<B, T, K> {
 
     /**
      * sql生成

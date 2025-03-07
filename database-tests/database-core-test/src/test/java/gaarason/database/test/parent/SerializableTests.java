@@ -4,11 +4,8 @@ import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
-import gaarason.database.contract.support.ShowType;
-import gaarason.database.query.MySqlBuilder;
 import gaarason.database.test.models.relation.model.StudentModel;
 import gaarason.database.test.models.relation.pojo.Student;
-import gaarason.database.test.models.relation.pojo.Teacher;
 import gaarason.database.test.parent.base.BaseTests;
 import gaarason.database.util.ObjectUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -109,29 +106,17 @@ abstract public class SerializableTests extends BaseTests {
     }
 
     @Test
+    public void newTest() {
+        studentModel.newQuery();
+    }
+
+    @Test
     public void RecordList序列化_serializeToString() {
         Student student1 = new Student();
         student1.setAge(3);
 
-        studentModel.newQuery(new ShowType<MySqlBuilder<Student, Long>>() {})
-                .adddddd()
-                .whereIn(Student::getId, builder -> builder.adddddd().limit(1))
-                .adddddd()
-                .with(Student::getTeacher, builder -> null)
-                .with(Student::getTeacher, builder -> builder)
-                .with(Student::getTeacher, builder -> builder.select("xx").whereIn(Teacher::getAge, "id").limit(1,2));
-
-        MySqlBuilder<Student, Long> b = studentModel.newQuery(new ShowType<MySqlBuilder<Student, Long>>() {});
-        b.whereIn(Student::getId, builder -> builder.limit(1))
-                .adddddd()
-                .with(Student::getTeacher, builder -> builder.select("xx").whereIn(Teacher::getAge, "id").limit(1,2))
-                .with(Student::getTeacher, builder -> builder);
-
         RecordList<Student, Long> records = studentModel.newQuery()
                 .with("teachersBelongsToMany", builder -> builder.limit(1)).get();
-
-        RecordList<Student, Long> records1 = studentModel.newQuery()
-                .with("teachersBelongsToMany", builder -> builder).get();
 
         String serialize = records.serializeToString();
         System.out.println(serialize);
@@ -233,9 +218,9 @@ abstract public class SerializableTests extends BaseTests {
 //    }
 //
 //    // 子类
-//    public static class MysqlBuilder<T, K> extends Builder<MysqlBuilder<T, K>, T, K > {
+//    public static class MySqlBuilderV2<T, K> extends Builder<MySqlBuilderV2<T, K>, T, K > {
 //        @Override
-//        public MysqlBuilder<T, K> getSelf() {
+//        public MySqlBuilderV2<T, K> getSelf() {
 //            return this;
 //        }
 //
@@ -243,7 +228,7 @@ abstract public class SerializableTests extends BaseTests {
 //    }
 //
 //    public void ttt() {
-//        MysqlBuilder<Object, Object> objectObjectMysqlBuilder = new MysqlBuilder<>();
+//        MySqlBuilderV2<Object, Object> objectObjectMySqlBuilderV2 = new MySqlBuilderV2<>();
 //
 //
 //    }

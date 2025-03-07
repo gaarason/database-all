@@ -15,7 +15,7 @@ import java.util.Collection;
  * @param <K>
  * @author xt
  */
-public abstract class OrderBuilder<B extends Builder<B, T, K>, T, K> extends HavingBuilder<B, T, K> {
+abstract class OrderBuilder<B extends Builder<B, T, K>, T, K> extends HavingBuilder<B, T, K> {
 
     protected B orderGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
         grammar.addSmartSeparator(Grammar.SQLPartType.ORDER, sqlPart, parameters, ",");

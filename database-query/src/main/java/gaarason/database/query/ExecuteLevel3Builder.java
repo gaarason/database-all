@@ -23,7 +23,7 @@ import java.util.*;
  * @param <K>
  * @author xt
  */
-public abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends ExecuteLevel2Builder<B, T, K> {
+abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends ExecuteLevel2Builder<B, T, K> {
 
     @Override
     public Record<T, K> find(@Nullable Object id) throws SQLRuntimeException {
@@ -337,5 +337,7 @@ public abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  ex
      * @param something 字段 eg: sum(order.amount) AS sum_price
      * @return eg: sum(`order`.`amount`) AS `sum_price`
      */
-    protected abstract String backQuote(String something);
+    protected String backQuote(String something) {
+        return FormatUtils.backQuote(something, "`");
+    }
 }

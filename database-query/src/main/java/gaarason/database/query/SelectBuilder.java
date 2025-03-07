@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * @param <K>
  * @author xt
  */
-public abstract class SelectBuilder<B extends Builder<B, T, K>, T, K> extends OrderBuilder<B, T, K> {
+abstract class SelectBuilder<B extends Builder<B, T, K>, T, K> extends OrderBuilder<B, T, K> {
 
     protected B selectGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
         grammar.addSmartSeparator(Grammar.SQLPartType.SELECT, sqlPart, parameters, ",");

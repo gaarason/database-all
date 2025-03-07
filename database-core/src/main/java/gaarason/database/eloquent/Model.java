@@ -3,8 +3,8 @@ package gaarason.database.eloquent;
 /**
  * model
  * @author xt
- * @see ModelBean
+ * @see StrictModel
  */
-public abstract class Model<T, K> extends ModelBean<T, K> {
+public abstract class Model<T, K> extends StrictModel<T, K> {
 
 }

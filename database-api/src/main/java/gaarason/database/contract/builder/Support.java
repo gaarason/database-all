@@ -8,6 +8,7 @@ import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.contract.support.LambdaStyle;
+import gaarason.database.contract.support.ShowType;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.lang.Nullable;
 
@@ -62,7 +63,7 @@ public interface Support<B extends Builder<B, T, K>, T, K> extends LambdaStyle, 
      * @return 查询构造器
      * @param <BB> 子类类形
      */
-    default  <BB extends Builder<BB, T, K>> BB showType(Class<BB> builderClass) {
+    default  <BB extends Builder<BB, TT, KK>, TT, KK> BB showType(ShowType<BB> builderClass) {
         return (BB) getSelf();
     }
 

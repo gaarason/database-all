@@ -10,7 +10,7 @@ import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.support.ShowType;
 import gaarason.database.exception.ConfirmOperationException;
 import gaarason.database.exception.EntityNotFoundException;
-import gaarason.database.query.MySqlBuilder;
+import gaarason.database.test.config.MySqlBuilderV2;
 import gaarason.database.test.models.normal.StudentCombination;
 import gaarason.database.test.models.normal.StudentModel;
 import gaarason.database.test.models.normal.StudentReversal;
@@ -1498,7 +1498,9 @@ abstract public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 条件_whereIn_closure() {
-        List<StudentModel.Entity> entityList0 = studentModel.newQuery(new ShowType<MySqlBuilder<StudentModel.Entity, Integer>>() {}).whereIn(StudentModel.Entity::getId,
+        List<StudentModel.Entity> entityList0 = studentModel.newQuery(new ShowType<MySqlBuilderV2<StudentModel.Entity, Integer>>() {})
+                .自定义方法(1)
+                .whereIn(StudentModel.Entity::getId,
             builder -> builder.select(StudentModel.Entity::getId).where(StudentModel.Entity::getAge, ">=", "11")
         )
                 .andWhere(

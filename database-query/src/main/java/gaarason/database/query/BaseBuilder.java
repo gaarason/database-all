@@ -35,7 +35,7 @@ import java.util.concurrent.CompletableFuture;
  * @param <K>
  * @author xt
  */
-public abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements Builder<B, T, K> {
+abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements Builder<B, T, K> {
 
     /**
      * 数据库连接
@@ -65,12 +65,12 @@ public abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements B
     /**
      * 数据实体类
      */
-    Class<T> entityClass;
+    protected Class<T> entityClass;
 
     /**
      * sql生成器
      */
-    Grammar grammar;
+    protected Grammar grammar;
 
     public BaseBuilder() {
 
@@ -111,11 +111,6 @@ public abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements B
     public B getNewSelf() {
         return model.newQuery();
     }
-
-//    @Override
-//    public B getSelf() {
-//        return this;
-//    }
 
     @Override
     public B clear(Grammar.SQLPartType sqlPartType) {
