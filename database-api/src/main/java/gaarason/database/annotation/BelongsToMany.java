@@ -18,7 +18,7 @@ public @interface BelongsToMany {
      * `关系表`model
      * @return `关系表`
      */
-    Class<? extends Model<?, ?>> relationModel();
+    Class<? extends Model<?, ?, ?>> relationModel();
 
     /**
      * `本表`中的`关联键`

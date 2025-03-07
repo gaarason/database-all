@@ -182,7 +182,7 @@ public class Generator {
     /**
      * 用于委托执行的model
      */
-    private Model<?, ?> model;
+    private Model<?, ?, ?> model;
 
     /**
      * 使用无参构造时,需要重写 getModel 方法
@@ -299,7 +299,7 @@ public class Generator {
      * 使用无惨可重写
      * @return 数据库操作model
      */
-    public Model<?, ?> getModel() {
+    public Model<?, ?, ?> getModel() {
         return model;
     }
 
@@ -487,7 +487,7 @@ public class Generator {
     private String fillBaseModelWithinBaseEntityTemplate(BaseElement element) {
         if (Style.ENTITY.equals(style) || Style.ALL.equals(style)) {
             // 导入
-            element.type2Name(new TypeReference<gaarason.database.eloquent.Model<?, ?>>() {
+            element.type2Name(new TypeReference<gaarason.database.eloquent.Model<?, ?, ?>>() {
             });
             element.type2Name(new TypeReference<Collection<?>>() {
             });
@@ -734,7 +734,7 @@ public class Generator {
      */
     private String DBName() {
         String name = "";
-        Model<?, ?> model = getModel();
+        Model<?, ?, ?> model = getModel();
         Map<String, Object> map = model.newQuery().queryOrFail("select database()", new ArrayList<>()).toMap();
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             if (entry.getValue() != null) {

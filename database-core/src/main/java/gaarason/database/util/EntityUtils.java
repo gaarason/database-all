@@ -190,7 +190,7 @@ public final class EntityUtils {
      * @return model类
      */
     @Nullable
-    public static Class<? extends Model<?, ?>> inferModelClassOnEntity(Class<?> anyEntityClass) {
+    public static Class<? extends Model<?, ?, ?>> inferModelClassOnEntity(Class<?> anyEntityClass) {
         // 所有内部类
         for (Class<?> maybeModelClass : anyEntityClass.getDeclaredClasses()) {
             // 是否是 Model
@@ -201,7 +201,7 @@ public final class EntityUtils {
                  */
                 if (!Modifier.isAbstract(maybeModelClass.getModifiers())) {
                     try {
-                        if (anyEntityClass.equals(ObjectUtils.getGenerics(maybeModelClass, 0))) {
+                        if (anyEntityClass.equals(ObjectUtils.getGenerics(maybeModelClass, -2))) {
                             return ObjectUtils.typeCast(maybeModelClass);
                         }
                     } catch (Throwable ignore) {

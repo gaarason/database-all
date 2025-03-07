@@ -72,7 +72,7 @@ public class FieldRelationMember extends Container.SimpleKeeper implements Seria
      * @param field 字段
      * @param model 数据模型
      */
-    public FieldRelationMember(Container container, Field field, Model<?, ?> model) {
+    public FieldRelationMember(Container container, Field field, Model<?, ?, ?> model) {
         super(container);
         ModelShadowProvider modelShadowProvider = container.getBean(ModelShadowProvider.class);
         this.field = field;

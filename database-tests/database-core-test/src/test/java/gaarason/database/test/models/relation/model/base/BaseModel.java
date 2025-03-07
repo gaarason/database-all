@@ -5,6 +5,7 @@ import gaarason.database.connection.GaarasonDataSourceBuilder;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.eloquent.Model;
 import gaarason.database.exception.base.BaseException;
+import gaarason.database.test.config.MySqlBuilderV2;
 import gaarason.database.test.utils.DatabaseTypeUtil;
 import gaarason.database.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +17,8 @@ import java.util.List;
 import java.util.Properties;
 
 @Slf4j
-abstract public class BaseModel<T extends Serializable, K extends Serializable> extends Model<T, K> {
+abstract public class BaseModel<T extends Serializable, K extends Serializable>
+        extends Model<MySqlBuilderV2<T, K>, T, K> {
 
     private static final GaarasonDataSource mysql = mysqlDataSource();
 

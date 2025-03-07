@@ -37,7 +37,10 @@ public final class ObjectUtils {
 
     /**
      * 获取指定类的父类中的第index个泛型的类
+     * eg : 设 class A extends B<DD, FF> ，则  DD = getGenerics(A， 0)
      * eg : 设 class A extends B<DD, FF> ，则  FF = getGenerics(A， 1)
+     * eg : 设 class A extends B<DD, FF> ，则  FF = getGenerics(A，-1)
+     * eg : 设 class A extends B<DD, FF> ，则  DD = getGenerics(A，-2)
      * @param clazz 指定类
      * @param index 第几个（从零开始）
      * @param <A> 泛型的类
@@ -51,7 +54,11 @@ public final class ObjectUtils {
         if (null == parameterizedType) {
             throw new TypeNotSupportedException(clazz);
         }
-        return (Class<A>) parameterizedType.getActualTypeArguments()[index];
+        Type[] types = parameterizedType.getActualTypeArguments();
+        if (index < 0) {
+            index = types.length + index;
+        }
+        return (Class<A>) types[index];
     }
 
     /**

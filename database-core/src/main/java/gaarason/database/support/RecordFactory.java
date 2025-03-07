@@ -40,7 +40,7 @@ public final class RecordFactory {
      * @throws SQLException 数据库异常
      * @throws EntityNotFoundException 数据为空
      */
-    public static <T, K> Record<T, K> newRecord(Model<T, K> model,
+    public static <T, K> Record<T, K> newRecord(Model<?, T, K> model,
         ResultSet resultSet, String sql) throws SQLException, EntityNotFoundException {
         if (!resultSet.next()) {
             throw new EntityNotFoundException(sql);
@@ -61,7 +61,7 @@ public final class RecordFactory {
      * @return 批量结果集(全新)
      * @throws SQLException 数据库异常
      */
-    public static <T, K> RecordList<T, K> newRecordList(Model<T, K> model,
+    public static <T, K> RecordList<T, K> newRecordList(Model<?, T, K> model,
         ResultSet resultSet, String sql) throws SQLException {
 
         RecordList<T, K> recordList = new RecordListBean<>(sql, model.getGaarasonDataSource().getContainer());
@@ -151,7 +151,7 @@ public final class RecordFactory {
      * @throws SQLException 数据库异常
      */
     public static <T, K> HashMap<String, Object> JDBCResultToMap(
-        Model<T, K> model, ResultSetMetaData resultSetMetaData, ResultSet resultSet) throws SQLException {
+        Model<?, T, K> model, ResultSetMetaData resultSetMetaData, ResultSet resultSet) throws SQLException {
         HashMap<String, Object> map = new HashMap<>();
         return (HashMap<String, Object>) JDBCResultToMap(model, map, resultSetMetaData, resultSet);
 
@@ -167,7 +167,7 @@ public final class RecordFactory {
      * @throws SQLException 数据库异常
      */
     private static <T, K> Map<String, Object> JDBCResultToMap(
-        Model<T, K> model, Map<String, Object> map, ResultSetMetaData resultSetMetaData, ResultSet resultSet)
+        Model<?, T, K> model, Map<String, Object> map, ResultSetMetaData resultSetMetaData, ResultSet resultSet)
         throws SQLException {
 
         // 字段信息

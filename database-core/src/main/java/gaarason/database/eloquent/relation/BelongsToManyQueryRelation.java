@@ -43,7 +43,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
      */
     protected boolean enableTargetModelMorph;
 
-    public BelongsToManyQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
+    public BelongsToManyQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?, ?> model) {
         super(modelShadowProvider, model);
         belongsToManyTemplate = initTemplate(field);
     }
@@ -632,13 +632,13 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
 
     public class BelongsToManyTemplate {
 
-        final public Model<?, ?> relationModel; // user_teacher
+        final public Model<?, ?, ?> relationModel; // user_teacher
 
         final public String foreignKeyForLocalModel;// user_id
 
         final public String localModelLocalKey; // user.id
 
-        final public Model<?, ?> targetModel; // teacher
+        final public Model<?, ?, ?> targetModel; // teacher
 
         final public String foreignKeyForTargetModel; // teacher_id
 
@@ -676,8 +676,8 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
             enableTargetModelMorph = !morphKeyForTargetModel.isEmpty();
         }
 
-        public BelongsToManyTemplate(Model<?, ?> relationModel, String foreignKeyForLocalModel, String localModelLocalKey,
-                Model<?, ?> targetModel, String foreignKeyForTargetModel, String targetModelLocalKey,
+        public BelongsToManyTemplate(Model<?, ?, ?> relationModel, String foreignKeyForLocalModel, String localModelLocalKey,
+                Model<?, ?, ?> targetModel, String foreignKeyForTargetModel, String targetModelLocalKey,
                 String morphKeyForLocalModel, String morphValueForLocalModel, String morphKeyForTargetModel,
                 String morphValueForTargetModel) {
             this.relationModel = relationModel;

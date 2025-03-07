@@ -35,7 +35,7 @@ public interface Record<T, K> extends Friendly<T, K>, OperationLambda<T, K>,
      * 数据模型
      * @return 数据模型
      */
-    Model<T, K> getModel();
+    Model<?, T, K> getModel();
 
     /**
      * 原Sql

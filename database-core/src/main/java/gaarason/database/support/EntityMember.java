@@ -327,7 +327,7 @@ public class EntityMember<T, K> extends Container.SimpleKeeper implements Serial
                 field.setAccessible(true);
 
                 // 支持子类查找
-                Model<?, ?> model = container.getBean(ModelShadowProvider.class)
+                Model<?, ?, ?> model = container.getBean(ModelShadowProvider.class)
                     .getByEntityClass(entityClass)
                     .getModel();
 

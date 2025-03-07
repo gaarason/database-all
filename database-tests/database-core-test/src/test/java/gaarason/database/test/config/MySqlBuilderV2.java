@@ -2,6 +2,7 @@ package gaarason.database.test.config;
 
 import gaarason.database.query.AbstractBuilder;
 import gaarason.database.query.MySqlBuilder;
+
 /**
  * 自定义查询构造器
  * @see MySqlBuilder

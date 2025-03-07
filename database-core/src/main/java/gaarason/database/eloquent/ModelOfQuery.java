@@ -30,14 +30,14 @@ import java.util.concurrent.CompletableFuture;
  * 数据模型对象
  * @author xt
  */
-abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> implements Query<T, K> {
+abstract class ModelOfQuery<B extends Builder<B, T, K>, T, K> extends ModelOfSoftDelete<B, T, K> implements Query<B, T, K> {
 
     /**
      * 全局查询作用域
      * @param builder 查询构造器
      * @return 查询构造器
      */
-    protected <B extends Builder<B, T, K>> B apply(B builder) {
+    protected B apply(B builder) {
         return builder;
     }
 
@@ -45,14 +45,14 @@ abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> implements Que
      * 原始查询构造器
      * @return 原始查询构造器
      */
-    protected <B extends Builder<B, T, K>> B theBuilder() {
+    protected B theBuilder() {
         GaarasonDataSource gaarasonDataSource = getGaarasonDataSource();
         Builder<?, T, K> builder = gaarasonDataSource.getQueryBuilder().newBuilder(gaarasonDataSource, this);
         return apply(ObjectUtils.typeCast(builder));
     }
 
     @Override
-    public <B extends Builder<B, T, K>> B newQuery() {
+    public B newQuery() {
         B builder = theBuilder();
         if (softDeleting()) {
             scopeSoftDelete(builder);
@@ -61,14 +61,14 @@ abstract class ModelOfQuery<T, K> extends ModelOfSoftDelete<T, K> implements Que
     }
 
     @Override
-    public <B extends Builder<B, T, K>> B withTrashed() {
+    public B withTrashed() {
         B builder = theBuilder();
         scopeSoftDeleteWithTrashed(builder);
         return builder;
     }
 
     @Override
-    public <B extends Builder<B, T, K>> B onlyTrashed() {
+    public B onlyTrashed() {
         B builder = theBuilder();
         scopeSoftDeleteOnlyTrashed(builder);
         return builder;

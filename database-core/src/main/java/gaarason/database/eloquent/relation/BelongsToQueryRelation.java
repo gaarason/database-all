@@ -41,7 +41,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     @Nullable
     protected final Object defaultLocalModelMorphValue;
 
-    public BelongsToQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
+    public BelongsToQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?, ?> model) {
         super(modelShadowProvider, model);
         belongsToTemplate = initTemplate(field);
 
@@ -344,7 +344,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
     public class BelongsToTemplate {
 
-        final public Model<?, ?> parentModel;
+        final public Model<?, ?, ?> parentModel;
 
         final public String localModelForeignKey;
 
@@ -366,7 +366,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
             enableMorph = !localModelMorphKey.isEmpty();
         }
 
-        public BelongsToTemplate(Model<?, ?> parentModel, String localModelForeignKey, String parentModelLocalKey,
+        public BelongsToTemplate(Model<?, ?, ?> parentModel, String localModelForeignKey, String parentModelLocalKey,
                 String localModelMorphKey, String localModelMorphValue) {
             this.parentModel = parentModel;
             this.localModelForeignKey = localModelForeignKey;

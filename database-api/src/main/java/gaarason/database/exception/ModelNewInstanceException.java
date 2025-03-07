@@ -19,7 +19,7 @@ public class ModelNewInstanceException extends BaseException {
         super(message, e);
     }
 
-    public ModelNewInstanceException(Class<? extends Model<?, ?>> modelClass, List<Throwable> throwableList) {
+    public ModelNewInstanceException(Class<? extends Model<?, ?, ?>> modelClass, List<Throwable> throwableList) {
         super("Error instantiating object[" + modelClass + "] with message : "
             + throwableList.get(throwableList.size() - 1).getMessage(), throwableList.get(throwableList.size() - 1));
     }

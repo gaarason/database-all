@@ -1,6 +1,7 @@
 package gaarason.database.eloquent;
 
 import gaarason.database.contract.connection.GaarasonDataSource;
+import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
@@ -12,7 +13,7 @@ import java.util.concurrent.ExecutorService;
  * 数据模型对象
  * @author xt
  */
-abstract class ModelBase<T, K> implements Model<T, K> {
+abstract class ModelBase<B extends Builder<B, T, K>, T, K> implements Model<B, T, K> {
 
     /**
      * Model信息大全
@@ -32,7 +33,7 @@ abstract class ModelBase<T, K> implements Model<T, K> {
 
 
     @Override
-    public Model<T, K> getSelf() {
+    public Model<B, T, K> getSelf() {
         return this;
     }
 

@@ -23,7 +23,7 @@ public class DefaultReflectionScan implements ReflectionScan {
     }
 
     @Override
-    public Set<Class<? extends Model<?, ?>>> scanModels() {
+    public Set<Class<? extends Model<?, ?, ?>>> scanModels() {
         return ObjectUtils.typeCast(reflections.getSubTypesOf(Model.class));
     }
 

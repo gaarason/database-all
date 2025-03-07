@@ -17,7 +17,7 @@ public class ModelMember<T, K> extends Container.SimpleKeeper
     /**
      * model 类型
      */
-    private final Class<? extends Model<T, K>> modelClass;
+    private final Class<? extends Model<?, T, K>> modelClass;
 
     /**
      * entity 类型
@@ -37,13 +37,13 @@ public class ModelMember<T, K> extends Container.SimpleKeeper
     /**
      * model对象
      */
-    private final Model<T, K> model;
+    private final Model<?, T, K> model;
 
-    public ModelMember(Container container, Class<? extends Model<T, K>> modelClass) {
+    public ModelMember(Container container, Class<? extends Model<?, T, K>> modelClass) {
         super(container);
         this.modelClass = modelClass;
-        this.entityClass = ObjectUtils.getGenerics(modelClass, 0);
-        this.primaryKeyClass = ObjectUtils.getGenerics(modelClass, 1);
+        this.entityClass = ObjectUtils.getGenerics(modelClass, -2);
+        this.primaryKeyClass = ObjectUtils.getGenerics(modelClass, -1);
         this.entityMember = new EntityMember<>(container, entityClass);
 
         typeCheck();
@@ -69,7 +69,7 @@ public class ModelMember<T, K> extends Container.SimpleKeeper
 
     // ---------------------------- simple getter ---------------------------- //
 
-    public Class<? extends Model<T, K>> getModelClass() {
+    public Class<? extends Model<?, T, K>> getModelClass() {
         return modelClass;
     }
 
@@ -85,7 +85,7 @@ public class ModelMember<T, K> extends Container.SimpleKeeper
         return primaryKeyClass;
     }
 
-    public Model<T, K> getModel() {
+    public Model<?, T, K> getModel() {
         return model;
     }
 }

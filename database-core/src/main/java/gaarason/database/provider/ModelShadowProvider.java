@@ -46,7 +46,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param modelClass model类型
      * @return 是否成功
      */
-    public boolean loadModel(Class<? extends Model<?, ?>> modelClass) {
+    public boolean loadModel(Class<? extends Model<?, ?, ?>> modelClass) {
         return loadModels(Collections.singleton(modelClass)) > 0;
     }
 
@@ -56,12 +56,12 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param modelClasses model类型的集合
      * @return 数量
      */
-    public int loadModels(Collection<Class<? extends Model<?, ?>>> modelClasses) {
+    public int loadModels(Collection<Class<? extends Model<?, ?, ?>>> modelClasses) {
         synchronized (persistence) {
             int i = 0;
             // 所有 Model 的子类 (含抽象类等)进行初始化分析
             // 初始化模型的基本信息, 并构建索引
-            for (Class<? extends Model<?, ?>> modelClass : modelClasses) {
+            for (Class<? extends Model<?, ?, ?>> modelClass : modelClasses) {
                 ModelMember<Object, Object> modelMember;
                 // 接口跳过/抽象类跳过
                 if (modelClass.isInterface() || Modifier.isAbstract(modelClass.getModifiers())) {
@@ -87,7 +87,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param modelClasses model类型的集合
      * @return 数量
      */
-    public int refreshModels(Collection<Class<? extends Model<?, ?>>> modelClasses) {
+    public int refreshModels(Collection<Class<? extends Model<?, ?, ?>>> modelClasses) {
         return loadModels(modelClasses);
     }
 
@@ -96,10 +96,10 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param modelClasses model类型的集合
      * @return 数量
      */
-    public int unloadModels(Collection<Class<? extends Model<?, ?>>> modelClasses) {
+    public int unloadModels(Collection<Class<? extends Model<?, ?, ?>>> modelClasses) {
         synchronized (persistence) {
             int i = 0;
-            for (Class<? extends Model<?, ?>> modelClass : modelClasses) {
+            for (Class<? extends Model<?, ?, ?>> modelClass : modelClasses) {
                 ModelMember<?, ?> modelMember = persistence.modelIndexMap.remove(modelClass);
                 if (!ObjectUtils.isEmpty(modelMember)) {
                     i++;
@@ -118,7 +118,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param <K> 主键类型
      * @return 格式化后的Model信息
      */
-    public <T, K> ModelMember<T, K> get(Model<T, K> model) {
+    public <T, K> ModelMember<T, K> get(Model<?, T, K> model) {
         return getByModelClass(ObjectUtils.typeCast(model.getClass()));
     }
 
@@ -129,7 +129,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param <K> 主键类型
      * @return 格式化后的Model信息
      */
-    public <T, K> ModelMember<T, K> getByModelClass(Class<? extends Model<T, K>> modelClass) {
+    public <T, K> ModelMember<T, K> getByModelClass(Class<? extends Model<?, T, K>> modelClass) {
         ModelMember<?, ?> result;
         result = persistence.modelProxyIndexMap.get(modelClass);
         if (null == result) {
@@ -170,7 +170,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
              *     public static class Model implements Model<SomeEntity, K> {}
              * }
              */
-            Class<? extends Model<?, ?>> modelClass = EntityUtils.inferModelClassOnEntity(clazz);
+            Class<? extends Model<?, ?, ?>> modelClass = EntityUtils.inferModelClassOnEntity(clazz);
             // 似乎找到了
             if (modelClass != null && loadModel(modelClass)) {
                 result = persistence.entityIndexMap.get(clazz);
@@ -400,7 +400,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
         /**
          * Model Class做为索引
          */
-        private final Map<Class<? extends Model<?, ?>>, ModelMember<?, ?>> modelIndexMap = new ConcurrentHashMap<>();
+        private final Map<Class<? extends Model<?, ?, ?>>, ModelMember<?, ?>> modelIndexMap = new ConcurrentHashMap<>();
 
         /**
          * Model proxy Class做为索引

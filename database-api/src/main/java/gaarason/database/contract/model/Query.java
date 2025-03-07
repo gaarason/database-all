@@ -16,20 +16,20 @@ import java.util.Collection;
  * @param <K> 主键类型
  * @author xt
  */
-public interface Query<T, K> {
+public interface Query<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 新查询构造器
      * @return 查询构造器
      */
-    <B extends Builder<B, T, K>> B newQuery();
+    B newQuery();
 
     /**
      * 新查询构造器
      * @param builderClass 查询构造器类型
      * @return 查询构造器
      */
-    default <B extends Builder<B, T, K>> B newQuery(ShowType<B> builderClass) {
+    default B newQuery(ShowType<B> builderClass) {
         return newQuery();
     }
 
@@ -37,14 +37,14 @@ public interface Query<T, K> {
      * 包含软删除模型
      * @return 查询构造器
      */
-    <B extends Builder<B, T, K>> B withTrashed();
+    B withTrashed();
 
     /**
      * 包含软删除模型
      * @param builderClass 查询构造器类型
      * @return 查询构造器
      */
-    default <B extends Builder<B, T, K>> B withTrashed(ShowType<B> builderClass) {
+    default B withTrashed(ShowType<B> builderClass) {
         return withTrashed();
     }
 
@@ -52,14 +52,14 @@ public interface Query<T, K> {
      * 只获取软删除模型
      * @return 查询构造器
      */
-    <B extends Builder<B, T, K>> B onlyTrashed();
+    B onlyTrashed();
 
     /**
      * 只获取软删除模型
      * @param builderClass 查询构造器类型
      * @return 查询构造器
      */
-    default  <B extends Builder<B, T, K>> B onlyTrashed(ShowType<B> builderClass) {
+    default B onlyTrashed(ShowType<B> builderClass) {
         return onlyTrashed();
     }
 

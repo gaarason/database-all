@@ -44,7 +44,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     @Nullable
     protected final Object defaultSonModelMorphValue;
 
-    public HasOneOrManyQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
+    public HasOneOrManyQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?, ?> model) {
         super(modelShadowProvider, model);
         hasOneOrManyTemplate = initTemplate(field);
 
@@ -336,7 +336,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
     public class HasOneOrManyTemplate {
 
-        final public Model<?, ?> sonModel;
+        final public Model<?, ?, ?> sonModel;
 
         final public String sonModelForeignKey;
 
@@ -358,7 +358,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
             enableMorph = !sonModelMorphKey.isEmpty();
         }
 
-        public HasOneOrManyTemplate(Model<?, ?> sonModel, String sonModelForeignKey, String localModelLocalKey,
+        public HasOneOrManyTemplate(Model<?, ?, ?> sonModel, String sonModelForeignKey, String localModelLocalKey,
                 String sonModelMorphKey, String sonModelMorphValue) {
             this.sonModel = sonModel;
             this.sonModelForeignKey = sonModelForeignKey;

@@ -45,7 +45,7 @@ abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements Builder<
     /**
      * 数据模型
      */
-    protected Model<T, K> model;
+    protected Model<B, T, K> model;
 
     /**
      * 容器
@@ -77,7 +77,7 @@ abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements Builder<
     }
 
     @Override
-    public B initBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar) {
+    public B initBuilder(GaarasonDataSource gaarasonDataSource, Model<B, T, K> model, Grammar grammar) {
         this.gaarasonDataSource = gaarasonDataSource;
         this.container = gaarasonDataSource.getContainer();
         this.modelShadowProvider = container.getBean(ModelShadowProvider.class);
@@ -325,7 +325,7 @@ abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements Builder<
 
         Container container = GodProvider.get(identification);
         Class<?> modelClass = ClassUtils.forName(modelName);
-        Model<?, ?> model = container.getBean(ModelShadowProvider.class)
+        Model<?, ?, ?> model = container.getBean(ModelShadowProvider.class)
             .getByModelClass(ObjectUtils.typeCast(modelClass))
             .getModel();
         GaarasonDataSource gaarasonDataSource = model.getGaarasonDataSource();

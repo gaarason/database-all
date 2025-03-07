@@ -49,7 +49,7 @@ public class RecordBean<T, K> implements Record<T, K> {
     /**
      * 数据模型
      */
-    protected Model<T, K> model;
+    protected Model<?, T, K> model;
     /**
      * Model信息大全
      */
@@ -98,7 +98,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      * @param model 数据模型
      * @param stringObjectMap 元数据
      */
-    public RecordBean(Model<T, K> model, Map<String, Object> stringObjectMap, String originalSql) {
+    public RecordBean(Model<?, T, K> model, Map<String, Object> stringObjectMap, String originalSql) {
         initNewRecord(model, stringObjectMap, originalSql);
     }
 
@@ -106,7 +106,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      * 凭空生成
      * @param model 数据模型
      */
-    public RecordBean(Model<T, K> model) {
+    public RecordBean(Model<?, T, K> model) {
         initNewRecord(model, Collections.emptyMap(), "");
     }
 
@@ -120,14 +120,14 @@ public class RecordBean<T, K> implements Record<T, K> {
         this.originalPrimaryKeyValue = recordBean.getOriginalPrimaryKeyValue();
     }
 
-    protected void initNewRecord(Model<T, K> model, Map<String, Object> stringObjectMap, String originalSql) {
+    protected void initNewRecord(Model<?, T, K> model, Map<String, Object> stringObjectMap, String originalSql) {
         initRecord(model, stringObjectMap, originalSql);
         this.entity = toObjectWithoutRelationship();
         // 通知
         model.eventRecordRetrieved(this);
     }
 
-    protected void initRecord(Model<T, K> model, Map<String, Object> stringObjectMap, String originalSql) {
+    protected void initRecord(Model<?, T, K> model, Map<String, Object> stringObjectMap, String originalSql) {
         this.entityClass = model.getEntityClass();
         this.model = model;
         this.modelShadow = model.getGaarasonDataSource().getContainer().getBean(ModelShadowProvider.class);
@@ -169,7 +169,7 @@ public class RecordBean<T, K> implements Record<T, K> {
     }
 
     @Override
-    public Model<T, K> getModel() {
+    public Model<?, T, K> getModel() {
         return model;
     }
 
@@ -645,7 +645,7 @@ public class RecordBean<T, K> implements Record<T, K> {
 
         Container container = GodProvider.get(identification);
         Class<?> modelClass = ClassUtils.forName(modelName);
-        Model<?, ?> model = container.getBean(ModelShadowProvider.class)
+        Model<?, ?, ?> model = container.getBean(ModelShadowProvider.class)
             .getByModelClass(ObjectUtils.typeCast(modelClass))
             .getModel();
 

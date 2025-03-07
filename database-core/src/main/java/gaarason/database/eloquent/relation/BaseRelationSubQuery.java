@@ -31,7 +31,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
     /**
      * 当前模型
      */
-    protected final Model<?, ?> localModel;
+    protected final Model<?, ?, ?> localModel;
 
     /**
      * 空的结果集
@@ -39,7 +39,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
     @Nullable
     protected RecordList<?, ?> emptyRecordList = null;
 
-    protected BaseRelationSubQuery(ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
+    protected BaseRelationSubQuery(ModelShadowProvider modelShadowProvider, Model<?, ?, ?> model) {
         this.modelShadowProvider = modelShadowProvider;
         this.localModel = model;
     }
@@ -107,7 +107,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @return 集合
      */
     protected Collection<Object> compatibleCollection(Collection<Object> mayBeInstanceOfAbstractList,
-        Model<?, ?> model) {
+        Model<?, ?, ?> model) {
         final Class<?> javaType = model.getPrimaryKeyClass();
         HashSet<Object> tempHashSet = new HashSet<>();
         for (Object old : mayBeInstanceOfAbstractList) {
@@ -143,7 +143,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @param field 属性信息
      * @return Model实例
      */
-    protected Model<?, ?> getModelInstance(Field field) {
+    protected Model<?, ?, ?> getModelInstance(Field field) {
         Class<?> clazz = EntityUtils.getRealClass(field);
         return modelShadowProvider.getByEntityClass(clazz).getModel();
     }
@@ -153,7 +153,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @param model Model实例
      * @return 主键列名
      */
-    protected String getPrimaryKeyColumnName(Model<?, ?> model) {
+    protected String getPrimaryKeyColumnName(Model<?, ?, ?> model) {
         return modelShadowProvider.get(model)
             .getEntityMember()
             .getPrimaryKeyMemberOrFail()
@@ -166,7 +166,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @param modelClass Model类
      * @return Model实例
      */
-    protected Model<?, ?> getModelInstance(Class<? extends Model<?, ?>> modelClass) {
+    protected Model<?, ?, ?> getModelInstance(Class<? extends Model<?, ?, ?>> modelClass) {
         return modelShadowProvider.getByModelClass(ObjectUtils.typeCast(modelClass)).getModel();
     }
 

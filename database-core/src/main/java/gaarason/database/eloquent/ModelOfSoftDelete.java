@@ -7,7 +7,7 @@ import gaarason.database.contract.model.SoftDelete;
  * 数据模型对象
  * @author xt
  */
-abstract class ModelOfSoftDelete<T, K> extends ModelBase<T, K> implements SoftDelete<T, K> {
+abstract class ModelOfSoftDelete<B extends Builder<B, T, K>, T, K> extends ModelBase<B, T, K> implements SoftDelete<T, K> {
 
     private static final String DEFAULT_SOFT_DELETED_COLUMN_NAME = "is_deleted";
 

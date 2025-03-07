@@ -55,8 +55,8 @@ public class ModelInstanceProvider extends Container.SimpleKeeper {
      * @return 模型对象
      * @throws ModelNewInstanceException 模型实例化失败
      */
-    public <T, K> Model<T, K> getModel(
-        Class<? extends Model<T, K>> modelClass) throws ModelNewInstanceException {
+    public <T, K> Model<?, T, K> getModel(
+        Class<? extends Model<?, T, K>> modelClass) throws ModelNewInstanceException {
         synchronized (this) {
             executed = true;
             List<Throwable> throwableList = new ArrayList<>();

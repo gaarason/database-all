@@ -9,6 +9,7 @@ import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.eloquent.Model;
+import gaarason.database.test.config.MySqlBuilderV2;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
@@ -56,7 +57,7 @@ public class MysqlQuickStartTests {
     /**
      * 定义model
      */
-    public static class TestModel extends Model<TestModel.Inner, Integer> {
+    public static class TestModel extends Model<MySqlBuilderV2<TestModel.Inner, Integer>, TestModel.Inner, Integer> {
 
         private final static GaarasonDataSource gaarasonDataSourceWrapper;
 

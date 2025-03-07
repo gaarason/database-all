@@ -15,7 +15,7 @@ public interface ReflectionScan {
      * 扫描所有model
      * @return model的集合
      */
-    Set<Class<? extends Model<?, ?>>> scanModels();
+    Set<Class<? extends Model<?, ?, ?>>> scanModels();
 
     /**
      * 扫描所有自动配置类

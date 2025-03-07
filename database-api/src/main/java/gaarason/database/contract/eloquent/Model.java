@@ -9,14 +9,14 @@ import gaarason.database.exception.PrimaryKeyNotFoundException;
  * 数据模型
  * @author xt
  */
-public interface Model<T, K>
-    extends Query<T, K>, NativeQuery<T, K>, RecordEvent<T, K>, QueryEvent<T, K>, SoftDelete<T, K> {
+public interface Model<B extends Builder<B, T, K>, T, K>
+    extends Query<B, T, K>, NativeQuery<T, K>, RecordEvent<T, K>, QueryEvent<T, K>, SoftDelete<T, K> {
 
     /**
      * 返回当前的模型
      * @return 模型
      */
-    Model<T, K> getSelf();
+    Model<B, T, K> getSelf();
 
     /**
      * Gaarason数据源

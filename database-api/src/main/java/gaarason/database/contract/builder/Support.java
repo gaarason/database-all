@@ -25,7 +25,7 @@ public interface Support<B extends Builder<B, T, K>, T, K> extends LambdaStyle, 
      * @param grammar 语法
      * @return 查询构造器
      */
-    B initBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model, Grammar grammar);
+    B initBuilder(GaarasonDataSource gaarasonDataSource, Model<B, T, K> model, Grammar grammar);
 
     /**
      * sql生成器

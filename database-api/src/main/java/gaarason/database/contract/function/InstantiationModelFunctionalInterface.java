@@ -16,6 +16,6 @@ public interface InstantiationModelFunctionalInterface<T, K> {
      * @param modelClass 模型类
      * @return 模型对象
      */
-    Model<T, K> execute(Class<? extends Model<T, K>> modelClass);
+    Model<?, T, K> execute(Class<? extends Model<?, T, K>> modelClass);
 
 }

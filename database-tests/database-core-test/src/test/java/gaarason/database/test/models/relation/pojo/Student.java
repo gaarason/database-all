@@ -97,14 +97,14 @@ public class Student extends BaseEntity implements Serializable {
      */
     public static class HasOneQueryRelation extends HasOneOrManyQueryRelation {
 
-        public HasOneQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
+        public HasOneQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?, ?> model) {
             super(field, modelShadowProvider, model);
         }
 
         @Override
         protected HasOneOrManyTemplate initTemplate(Field field) {
             HasOne hasOne = field.getAnnotation(HasOne.class);
-            Model<?, ?> sonModel = getModelInstance(field);
+            Model<?, ?, ?> sonModel = getModelInstance(field);
             String sonModelForeignKey = hasOne.sonModelForeignKey();
             String localModelLocalKey = "".equals(hasOne.localModelLocalKey()) ? getPrimaryKeyColumnName(sonModel) :
                 hasOne.localModelLocalKey();
