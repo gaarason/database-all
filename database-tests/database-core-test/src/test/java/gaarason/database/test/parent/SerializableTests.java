@@ -107,7 +107,7 @@ abstract public class SerializableTests extends BaseTests {
 
     @Test
     public void newTest() {
-        studentModel.newQuery();
+        studentModel.newQuery().with(Student::getTeacher, builder -> builder).get().toObjectList();
     }
 
     @Test

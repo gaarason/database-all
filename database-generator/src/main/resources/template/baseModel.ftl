@@ -2,8 +2,9 @@ package ${namespace};
     
 import ${base_entity_namespace}.${base_entity_name};
 import gaarason.database.contract.connection.GaarasonDataSource;
-import gaarason.database.lang.NonNull;
 import gaarason.database.eloquent.Model;
+import gaarason.database.lang.NonNull;
+import gaarason.database.query.MySqlBuilder;
 import lombok.extern.slf4j.Slf4j;
 ${imports}
     
@@ -12,7 +13,7 @@ import java.io.Serializable;
 import java.util.Collection;
     
 @Slf4j
-public abstract class ${base_model_name}<T extends ${base_entity_name}, K extends Serializable> extends Model<T, K> {
+public abstract class ${base_model_name}<T extends ${base_entity_name}, K extends Serializable> extends Model<MySqlBuilder<T, K>, T, K> {
 
     ${spring_lazy}
     @Resource
