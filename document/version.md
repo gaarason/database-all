@@ -32,6 +32,7 @@ Eloquent ORM for Java
 - `gaarason.database.query.Builder<T, K>` 升级为 `gaarason.database.query.BuilderBuilder<B extends Builder<B, T, K>, T, K>`
 - 查询构造器`builder`中, 增加`showType(new ShowType<MysqlBuilder<Entity, Long>>)`方法, 用于在个别场景下, 手动指定查询构造器的类型
 
+- 版本升级指引, 在业务代码的`model`基类中, 增加对应的泛型声明即可, eg : `public abstract static class BaseModel<T extends BaseEntity, K> extends Model<MySqlBuilder<T, K>, T, K> { ... }`
 
 ### 5.5.10
 
