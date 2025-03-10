@@ -3,6 +3,7 @@ package gaarason.database.eloquent;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.logging.Log;
 import gaarason.database.logging.LogFactory;
+import gaarason.database.query.MySqlBuilder;
 import gaarason.database.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -16,7 +17,7 @@ import java.util.Collection;
  * @author xt
  */
 @Component
-public class GeneralModel extends Model<GeneralModel.Table, Serializable> {
+public class GeneralModel extends Model<MySqlBuilder<GeneralModel.Table, Serializable>, GeneralModel.Table, Serializable> {
 
     private static final Log log = LogFactory.getLog(GeneralModel.class);
 

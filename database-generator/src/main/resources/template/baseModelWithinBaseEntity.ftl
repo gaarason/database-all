@@ -1,4 +1,4 @@
-    public abstract static class ${base_model_name}<T extends ${base_entity_name}, K> extends Model<T, K> {
+    public abstract static class ${base_model_name}<T extends ${base_entity_name}, K> extends Model<MySqlBuilder<T, K>, T, K> {
 
         ${spring_lazy}
         @Resource

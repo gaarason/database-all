@@ -5,6 +5,7 @@ import gaarason.database.contract.eloquent.Record;
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.generator.GeneralGenerator;
 import gaarason.database.generator.Generator;
+import gaarason.database.query.MySqlBuilder;
 import gaarason.database.spring.boot.starter.test.data.entity.Student;
 import gaarason.database.spring.boot.starter.test.data.entity.Teacher;
 import gaarason.database.spring.boot.starter.test.data.entity.TestEntity;
@@ -47,7 +48,7 @@ public class DruidApplicationTests {
     TeacherQuery<Teacher, Integer> teacherQuery;
 
     @Resource
-    Model<Student, Long> studentModel;
+    Model<MySqlBuilder<Student, Long>, Student, Long> studentModel;
 
     @Test
     public void 生成代码() {

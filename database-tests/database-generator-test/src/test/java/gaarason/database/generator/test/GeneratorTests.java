@@ -9,6 +9,7 @@ import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.eloquent.Model;
 import gaarason.database.generator.Generator;
 import gaarason.database.generator.appointment.Style;
+import gaarason.database.query.MySqlBuilder;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -115,7 +116,7 @@ public class GeneratorTests {
         return GaarasonDataSourceBuilder.build(dataSources);
     }
 
-    public static class ToolModel extends Model<ToolModel.Inner, Serializable> {
+    public static class ToolModel extends Model<MySqlBuilder<ToolModel.Inner, Serializable>, ToolModel.Inner, Serializable> {
 
         public static GaarasonDataSource gaarasonDataSource;
 
@@ -131,14 +132,14 @@ public class GeneratorTests {
 
     public static class AutoGenerator extends Generator {
 
-        private final Model<?, ?> toolModel;
+        private final Model<?, ?, ?> toolModel;
 
-        public AutoGenerator(Model<?, ?> model) {
+        public AutoGenerator(Model<?, ?, ?> model) {
             toolModel = model;
         }
 
         @Override
-        public Model<?, ?> getModel() {
+        public Model<?, ?, ?> getModel() {
             return toolModel;
         }
 
