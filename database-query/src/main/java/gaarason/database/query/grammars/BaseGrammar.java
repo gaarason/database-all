@@ -272,7 +272,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
             case FROM:
                 return Collections.singletonList(new SQLPartInfo(table));
             case SELECT:
-                return  Collections.singletonList(new SQLPartInfo("*"));
+                return Collections.singletonList(new SQLPartInfo("*"));
             case VALUE:
                 return Collections.singletonList( new SQLPartInfo("()"));
         }

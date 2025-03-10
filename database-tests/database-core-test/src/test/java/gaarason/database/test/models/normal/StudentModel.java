@@ -35,7 +35,7 @@ public class StudentModel extends SingleModel<StudentModel.Entity, Integer> {
         @Column(name = "created_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
         private Date createdAt;
 
-        @Column(name = "updated_at", insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
+        @Column(name = "updated_at", selectable = false, insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
         private Date updatedAt;
     }
 }

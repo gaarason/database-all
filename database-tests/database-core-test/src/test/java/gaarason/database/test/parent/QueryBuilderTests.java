@@ -525,6 +525,12 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
+    public void 查询_select() {
+        StudentModel.Entity s = studentModel.newQuery().where("id", "1").firstOrFail().toObject();
+
+    }
+
+    @Test
     public void 查询_多条记录_非分块() throws InterruptedException {
         Runtime r = Runtime.getRuntime();
         r.gc();
@@ -1501,7 +1507,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         List<StudentModel.Entity> entityList0 = studentModel.newQuery(new ShowType<MySqlBuilderV2<StudentModel.Entity, Integer>>() {})
                 .自定义方法(1)
                 .whereIn(StudentModel.Entity::getId,
-            builder -> builder.select(StudentModel.Entity::getId).where(StudentModel.Entity::getAge, ">=", "11")
+            builder -> builder.showType(new ShowType<MySqlBuilderV2<StudentModel.Entity, Integer>>() {}).select(StudentModel.Entity::getId).where(StudentModel.Entity::getAge, ">=", "11")
         )
                 .andWhere(
             builder -> builder.whereNotIn(StudentModel.Entity::getSex,

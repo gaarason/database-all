@@ -156,7 +156,7 @@ public class GeneratorTests {
     return new ProxyDataSource(dataSources);
   }
 
-  public static class ToolModel extends Model<ToolModel.Inner, Object> {
+  public static class ToolModel extends Model<MysqlBuilder, ToolModel.Inner, Object> {
     private final ProxyDataSource gaarasonDataSourceWrapper;
 
     public ToolModel(ProxyDataSource dataSource) {

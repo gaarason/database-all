@@ -58,6 +58,7 @@ abstract public class AnnotationTests extends BaseTests {
         Integer id = annotationTestModel.newQuery().from(entity).insertGetId(entity);
 
         AnnotationTestModel.EnumEntity resultEntity = annotationTestModel.newQuery()
+                .select(entity)
                 .from(entity)
                 .findOrFail(id)
                 .toObject(AnnotationTestModel.EnumEntity.class);
@@ -76,6 +77,7 @@ abstract public class AnnotationTests extends BaseTests {
         Integer id = annotationTestModel.newQuery().from(entity).insertGetId(entity);
 
         AnnotationTestModel.Enum2Entity resultEntity = annotationTestModel.newQuery()
+                .select(entity)
                 .from(entity)
                 .findOrFail(id)
                 .toObject(AnnotationTestModel.Enum2Entity.class);
@@ -91,6 +93,7 @@ abstract public class AnnotationTests extends BaseTests {
         Integer id = annotationTestModel.newQuery().from(entity).insertGetId(entity);
 
         AnnotationTestModel.Enum3Entity resultEntity = annotationTestModel.newQuery()
+                .select(entity)
                 .from(entity)
                 .findOrFail(id)
                 .toObject(AnnotationTestModel.Enum3Entity.class);
@@ -145,6 +148,7 @@ abstract public class AnnotationTests extends BaseTests {
 
         Integer id = annotationTestModel.newQuery().from(bitEntity).insertGetId(bitEntity);
         AnnotationTestModel.BitEntity entity = annotationTestModel.newQuery()
+                .select(bitEntity)
                 .from(bitEntity)
                 .where("id", id)
                 .firstOrFail()

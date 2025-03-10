@@ -5,6 +5,8 @@ import gaarason.database.appointment.Paginate;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.contract.support.ShowType;
+import gaarason.database.test.config.MySqlBuilderV2;
 import gaarason.database.test.models.relation.model.RelationshipStudentTeacherModel;
 import gaarason.database.test.models.relation.model.StudentModel;
 import gaarason.database.test.models.relation.model.TeacherModel;
@@ -209,8 +211,8 @@ abstract public class RelationTests extends BaseTests {
     public void 指定select() {
         List<Student> objectList = studentModel.newQuery()
                 .where("id", 1)
-                .with("relationshipStudentTeachers", builder -> builder.select("note"))
-                .with(Student::getTeachersBelongsToMany, builder -> builder.select("name"))
+                .with("relationshipStudentTeachers", builder -> builder.showType(new ShowType<MySqlBuilderV2<Teacher, Long>>() {}).select("note"))
+                .withMany(Student::getTeachersBelongsToMany, builder -> builder.select("name"))
                 .with(Student::getTeacher, builder -> builder.select("age"))
                 .get()
                 .toObjectList();

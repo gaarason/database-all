@@ -68,7 +68,7 @@ abstract class SelectBuilder<B extends Builder<B, T, K>, T, K> extends OrderBuil
         String columnString = entityMember.getSelectColumnString(
                 gaarasonDataSource.getQueryBuilder().getValueSymbol(),
                 () -> columnList.stream().map(this::backQuote).collect(
-                        Collectors.joining(", ")));
+                        Collectors.joining(",")));
 
         return selectRaw(columnString);
     }

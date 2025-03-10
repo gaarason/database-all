@@ -25,6 +25,14 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 6.0.0
+
+- 更新查询构造器 builder`与`model`的泛型定义, 使之可以进行完全的自定义行为, 便于拓展
+- `gaarason.database.eloquent.Model<T, K>` 升级为 `gaarason.database.eloquent.Model<B extends Builder<B, T, K>, T, K>`
+- `gaarason.database.query.Builder<T, K>` 升级为 `gaarason.database.query.BuilderBuilder<B extends Builder<B, T, K>, T, K>`
+- 查询构造器`builder`中, 增加`showType(new ShowType<MysqlBuilder<Entity, Long>>)`方法, 用于在个别场景下, 手动指定查询构造器的类型
+
+
 ### 5.5.10
 
 - 修复不同`jdk`下的差异问题

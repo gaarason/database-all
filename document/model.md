@@ -53,7 +53,7 @@ import javax.annotation.Resource;
  * @param <T> 实体类
  * @param <K> 实体类中的主键java类型, 不存在主键时, 可使用 Object
  */
-abstract public class BaseModel<T, K> extends Model<T, K> {
+abstract public class BaseModel<T, K> extends Model<MysqlBuilder<T, K>, T, K> {
 
     @Resource
     private GaarasonDataSource gaarasonDataSource;

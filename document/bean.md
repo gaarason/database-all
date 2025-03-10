@@ -14,8 +14,8 @@ Eloquent ORM for Java
     * [非spring boot](#非spring)
     * [拓展配置](#拓展配置)
         * [包扫描](#包扫描)
+        * [自定义查询构造器](#自定义查询构造器Query方法)
         * [新增支持的数据库](#新增支持的数据库)
-        * [自定义查询构造器Query方法](#自定义查询构造器Query方法)
 * [数据映射 Mapping](/document/mapping.md)
 * [数据模型 Model](/document/model.md)
 * [查询结果集 Record](/document/record.md)
@@ -245,7 +245,7 @@ database.slave1.useGlobalDataSourceStat=${useGlobalDataSourceStat}
 
 ```java
 @Repository
-public class StudentModel extends Model<Student, Integer> {
+public class StudentModel extends Model<MysqlBuilder, Student, Integer> {
 
     /**
      * 依赖注入
@@ -429,7 +429,7 @@ public class LoggingFilter implements Filter {
 
 ```java
 @Repository
-public class StudentModel extends Model<Student, Integer> {
+public class StudentModel extends Model<MysqlBuilder, Student, Integer> {
     
     @Resource
     private GaarasonDataSource gaarasonDataSource;
@@ -453,7 +453,7 @@ public class StudentModel extends Model<Student, Integer> {
 /**
  * 定义model
  */
-public class TestModel extends Model<TestModel.Inner, Integer> {
+public class TestModel extends Model<MysqlBuilder, TestModel.Inner, Integer> {
 
     protected final static GaarasonDataSource gaarasonDataSource;
 
@@ -534,7 +534,7 @@ public class TestModel extends Model<TestModel.Inner, Integer> {
 ## 拓展配置
 
 - 目前的主要是在做了mysql的适配,
-- 而各个数据库的功能的本质和逻辑比较类似, 但是api差异确比较大
+- 而各个数据库的功能的本质和逻辑比较类似, 但是部分api仍然存在差异
 
 ### 包扫描
 
@@ -549,94 +549,38 @@ public class TestModel extends Model<TestModel.Inner, Integer> {
 - Jvm 启动时指定`-Dgaarason.database.scan.packages=you.package1,you.package2`
 - SpringBoot 下使用 `@GaarasonDatabaseScan("you.package1,you.package2")`
 
-### 新增支持的数据库
 
-- 参考 `database-query-mysql`模块
+### 自定义查询构造器
 
-1. 实现 `Grammar` 接口
-
-```java
-public class H2Grammar implements Grammar {
-    // 实现接口中的全部方法
-}
-```
-
-2. 实现 `Builder` 接口
-
-```java
-public class H2Builder<T extends Serializable, K extends Serializable> implements Builder<T, K> {
-    // 实现接口中的全部方法
-}
-```
-
-3. 实现 `QueryBuilderConfig` 接口, 从而完成注册
-
-```java
-public class H2QueryBuilderConfig implements QueryBuilderConfig {
-
-    @Override
-    public String getValueSymbol() {
-        return "'";
-    }
-
-    @Override
-    public boolean support(String databaseProductName) {
-        return "h2".equals(databaseProductName);
-    }
-
-    @Override
-    public <T extends Serializable, K extends Serializable> Builder<T, K> newBuilder(GaarasonDataSource gaarasonDataSource, Model<T, K> model) {
-        return new H2Builder<>(gaarasonDataSource, model, newGrammar(model.getEntityClass()));
-    }
-
-    @Override
-    public <T extends Serializable> Grammar newGrammar(Class<T> entityClass) {
-        return new H2Grammar(ModelShadowProvider.getByEntityClass(entityClass).getTableName());
-    }
-}
-```
-
-4. 实现`GaarasonAutoconfiguration`接口, 程序会自动通过包扫描, 完成加载, 任何的数据库操作的产生, 都会触发有且仅有的一次扫描.
-
-```java
-
-public class H2Autoconfiguration implements GaarasonAutoconfiguration {
-    @Override
-    public void init() {
-        // 执行注册 H2QueryBuilderConfig
-        ContainerProvider.register(QueryBuilderConfig.class,
-            new InstanceCreatorFunctionalInterface<QueryBuilderConfig>() {
-                @Override
-                public QueryBuilderConfig execute(Class<QueryBuilderConfig> clazz) throws Throwable {
-                    return new H2QueryBuilderConfig();
-                }
-
-                @Override
-                public Integer getOrder() {
-                    return InstanceCreatorFunctionalInterface.super.getOrder() - 1;
-                }
-            });
-        // ....
-    }
-}
-```
-
-### 自定义查询构造器Query方法
 
 - 对于`model`中使用`newQuery()`返回的`Builder`对象,进行修改.
-- 举例修改 `MySqlBuilder` 中的 `limit(int)` 方法.
+- 举例 修改默认的`limit(int)` 方法. 并添加自定义方法`add(Object)`
 
-1. 实现 `Builder` 接口, 因为是修改, 所以通过继承当前的 `MySqlBuilder` 后按需更改;
+1. 实现 `Builder` 接口, 建议直接继承 `AbstractBuilder`, 并正确赋值泛型;
 
 ```java
-public class MySqlBuilderV2 extends MySqlBuilder {
+public class MySqlBuilderV2 extends AbstractBuilder<MySqlBuilderV2<T, K>, T, K> {
+    
+    // 必须实现
+    @Override
+    public MySqlBuilderV2<T, K> getSelf() {
+        return this;
+    }
+   
     // 对任意方法进行修改
     @Override
-    public Builder<T, K> limit(int take) {
-        // 进行修改
-        String sqlPart = String.valueOf(take);
-        grammar.pushLimit(sqlPart);
-        return this;
+    public MySqlBuilderV2<T , K> limit(Object take) {
+        Collection<Object> parameters = new ArrayList<>(1);
+        String sqlPart = grammar.replaceValueAndFillParameters(take, parameters);
+        grammar.set(Grammar.SQLPartType.LIMIT, sqlPart, parameters);
+        return getSelf();
+    }
+    
+    // 添加任意方法
+    public MySqlBuilderV2<T, K> add(Object something) {
+        //....
+
+        return getSelf();
     }
 }
 
@@ -648,9 +592,8 @@ public class MySqlBuilderV2 extends MySqlBuilder {
 public class MysqlQueryBuilderConfigV2 extends MysqlQueryBuilderConfig {
 
     @Override
-    public <T extends Serializable, K extends Serializable> Builder<T, K> newBuilder(
-        GaarasonDataSource gaarasonDataSource, Model<T, K> model) {
-        return new MySqlBuilderV2<>(gaarasonDataSource, model, newGrammar(model.getEntityClass()));
+    public <T, K> Builder<?, T, K> newBuilder(GaarasonDataSource gaarasonDataSource, Model<?, T, K> model) {
+        return new MySqlBuilderV2<T, K>().initBuilder(gaarasonDataSource, ObjectUtils.typeCast(model), new MySqlGrammar(model.getTableName()));
     }
 }
 
@@ -662,22 +605,40 @@ public class MysqlQueryBuilderConfigV2 extends MysqlQueryBuilderConfig {
 
 public class MysqlV2Autoconfiguration implements GaarasonAutoconfiguration {
     @Override
-    public void init() {
+    public void init(Container container) {
         // 执行注册 MysqlQueryBuilderConfigV2
-        ContainerProvider.register(QueryBuilderConfig.class,
-            new InstanceCreatorFunctionalInterface<QueryBuilderConfig>() {
-                @Override
-                public QueryBuilderConfig execute(Class<QueryBuilderConfig> clazz) throws Throwable {
-                    return new MysqlQueryBuilderConfigV2();
-                }
+        container.register(QueryBuilderConfig.class,
+                new InstanceCreatorFunctionalInterface<QueryBuilderConfig>() {
+                    @Override
+                    public QueryBuilderConfig execute(Class<QueryBuilderConfig> clazz) throws Throwable {
+                        return new MysqlQueryBuilderConfigV2();
+                    }
 
-                // 更高的优先级, 很关键
-                @Override
-                public Integer getOrder() {
-                    return InstanceCreatorFunctionalInterface.super.getOrder() - 1;
-                }
-            });
+                    // 更高的优先级, 很关键
+                    @Override
+                    public Integer getOrder() {
+                        return InstanceCreatorFunctionalInterface.super.getOrder() - 1;
+                    }
+                });
         // ....
     }
 }
 ```
+
+4. 业务`model`声明新的 `builder`
+- 需要将业务上的`model`基类的泛型, 更改为新的`builder`类
+```java
+public abstract static class BaseModel<T extends BaseEntity, K> extends Model<MySqlBuilderV2<T, K>, T, K> {
+    
+    // ....
+   
+}
+```
+5. 业务使用  
+- 如同原生方法一样直接调用即可
+```java
+testModel.newQuery().add("ss").get()
+```
+
+### 新增支持的数据库
+同上

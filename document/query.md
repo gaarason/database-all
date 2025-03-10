@@ -70,6 +70,7 @@ Eloquent ORM for Java
         * [随机抽样](#随机抽样)
         * [构造器序列化](#构造器序列化)
         * [构造器传递](#构造器传递)
+        * [类型指定](#类型指定)
 * [关联关系 Relationship](/document/relationship.md)
 * [生成代码 Generate](/document/generate.md)
 * [GraalVM](/document/graalvm.md)
@@ -1338,4 +1339,11 @@ studentModel.newQuery().limit(5).setBuilder(builder).get().toObjectList();
 // 合并 mergerBuilder
 // select * from student where sex=1 limit 5
 studentModel.newQuery().limit(5).mergerBuilder(builder).get().toObjectList();
+```
+
+#### 类型指定
+在是用`with(string)`等方法时, 可以指定到查询构造器, 以便编译器在编码时给出代码提示
+```java
+studentModel.newQuery().with("teacher", builder -> builder.showType(
+                new ShowType<MySqlBuilderV2<Teacher, Long>>() {}).paginate(1, 15);
 ```
