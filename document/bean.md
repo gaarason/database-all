@@ -637,8 +637,32 @@ public abstract static class BaseModel<T extends BaseEntity, K> extends Model<My
 5. 业务使用  
 - 如同原生方法一样直接调用即可
 ```java
-testModel.newQuery().add("ss").get()
+testModel.newQuery().add("ss").get();
 ```
 
 ### 新增支持的数据库
-同上
+可以支持任意的 ( java 的 jdbc 支持的 )  数据库类型   
+大致方式同上, 稍有区别的是  
+在实现 `QueryBuilderConfig` 接口时, 多实现几个方法
+- 根据实际情况, 重写 Builder 查询构造器
+- 根据实际情况, 重写 Grammar 语法
+
+```java
+public class MysqlQueryBuilderConfigV2 extends MysqlQueryBuilderConfig {
+
+    // 根据数据库名称, 启用当前配置
+    @Override
+    public boolean support(String databaseProductName) {
+        return "mysql".equals(databaseProductName);
+    }
+
+    // 其他 QueryBuilderConfig 接口方法, 按需实现
+    // 根据实际情况, 重写 Builder 查询构造器
+    // 根据实际情况, 重写 Grammar 语法
+    @Override
+    public <T, K> Builder<?, T, K> newBuilder(GaarasonDataSource gaarasonDataSource, Model<?, T, K> model) {
+        return new MySqlBuilderV2<T, K>().initBuilder(gaarasonDataSource, ObjectUtils.typeCast(model), new MySqlGrammar(model.getTableName()));
+    }
+}
+
+```
