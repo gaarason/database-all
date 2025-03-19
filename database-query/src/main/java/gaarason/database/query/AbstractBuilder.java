@@ -83,7 +83,7 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
 
     @Override
     public B from(String table) {
-        return fromRaw(FormatUtils.column(table));
+        return fromRaw(backQuote(table));
     }
 
     @Override
@@ -351,16 +351,6 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
         String sqlPart = grammar.replaceValueAndFillParameters(take, parameters);
         grammar.set(Grammar.SQLPartType.LIMIT, sqlPart, parameters);
         return getSelf();
-    }
-
-    /**
-     * 给字段加上引号
-     * @param something 字段 eg: sum(order.amount) AS sum_price
-     * @return eg: sum(`order`.`amount`) AS `sum_price`
-     */
-    @Override
-    protected String backQuote(String something) {
-        return FormatUtils.backQuote(something, "`");
     }
 
 }

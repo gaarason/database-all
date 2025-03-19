@@ -25,6 +25,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 6.0.1
+
+- 修复 查询构造器`builder`中, `from(String)`方法, 没有使用父类的`backQuote(String)`的问题;
+
 ### 6.0.0
 
 - 更新查询构造器 builder`与`model`的泛型定义, 使之可以进行完全的自定义行为, 便于拓展

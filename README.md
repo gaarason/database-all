@@ -7,6 +7,7 @@
 [![](https://img.shields.io/badge/JDK-11-green.svg)]()
 [![](https://img.shields.io/badge/JDK-17-green.svg)]()
 [![](https://img.shields.io/badge/JDK-21-green.svg)]()
+[![](https://img.shields.io/badge/JDK-23-green.svg)]()
 
 [![](https://img.shields.io/badge/SpringBoot-v2.x-blue.svg)]()
 [![](https://img.shields.io/badge/SpringBoot-v3.x-blue.svg)]()
@@ -20,13 +21,15 @@ Eloquent ORM for Java
 - Eloquent ORM 提供一个美观、简单的与数据库打交道的 ActiveRecord
   实现，每个数据表都对应一个与该表数据结构对应的实体（Entity），以及的进行交互的模型（Model），通过模型类，你可以对数据表进行查询、插入、更新、删除等操作，并将结果反映到实体实例化的 java 对象中。
 - 对于关联关系 Eloquent ORM 提供了富有表现力的声明方式，与简洁的使用方法，并专注在内部进行查询与内存优化，在复杂的关系中有仍然有着良好的体验。
-- 支持原生Java8,Java11,Java17,Java21应用, 支持SpringBoot 2x 以及 3x ,兼容于其他常见的 ORM 框架, 以及常见的数据源 (DataSource)。
+- 支持完全自定义的查询构造器与SQL语法。
+- 支持原生Java8,Java11,Java17,Java21,Java23 应用, 支持SpringBoot 2x 以及 3x ,兼容于其他常见的 ORM 框架, 以及常见的数据源 (DataSource), 以及所有 JDBC 支持的数据库。
 ***
 - It makes connecting to the database and adding, deleting, modifying and querying the database very simple, whether you want to use native SQL, query builder, or Eloquent ORM.
 - Eloquent ORM provides a beautiful and simple ActiveRecord for working with databases
   Implementation, each data table corresponds to an entity (Entity) corresponding to the data structure of the table, and a model (Model) for interaction. Through the model class, you can query, insert, update, delete and other operations on the data table. , and reflect the results into the java object instantiated by the entity.
 - For relationships, Eloquent ORM provides expressive declaration methods and concise usage methods. It focuses on internal query and memory optimization, and still has a good experience in complex relationships.
-- Supports native Java8, Java11, Java17 , Java21 applications, supports SpringBoot 2x and 3x, and is compatible with other common ORM frameworks and common data sources (DataSource).
+- Support fully customizable query builder and SQL
+- Supports native Java8, Java11, Java17 , Java21 applications, supports SpringBoot 2x and 3x, and is compatible with other common ORM frameworks and common data sources (DataSource), and all databases supported by JDBC.
 
 ## 目录
 
