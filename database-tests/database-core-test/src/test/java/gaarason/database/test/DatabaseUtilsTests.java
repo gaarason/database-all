@@ -11,6 +11,7 @@ import gaarason.database.test.models.relation.pojo.Student;
 import gaarason.database.test.models.relation.pojo.Teacher;
 import gaarason.database.test.utils.MultiThreadUtil;
 import gaarason.database.util.*;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -184,6 +185,22 @@ public class DatabaseUtilsTests {
         e.add(0);
         System.out.println(e);
 
+    }
+
+    @Test
+    public void lambdaUtilsTest() {
+
+        @Data
+        class T {
+            List<String> cList;
+        }
+        LambdaInfo<T> lambdaInfo = LambdaUtils.parse(T::getCList);
+        String fieldName = lambdaInfo.getFieldName();
+        String columnName = lambdaInfo.getColumnName();
+        Class<T> entityCLass = lambdaInfo.getEntityCLass();
+        Assert.assertEquals("cList", fieldName);
+        Assert.assertEquals("c_list", columnName);
+        Assert.assertEquals(T.class, entityCLass);
     }
 
     @Test

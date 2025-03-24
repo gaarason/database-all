@@ -59,10 +59,8 @@ public final class LambdaUtils {
             } else if (propertyName.startsWith("get") || propertyName.startsWith("set")) {
                 propertyName = propertyName.substring(3);
             }
-            if (propertyName.length() == 1 ||
-                (propertyName.length() > 1 && !Character.isUpperCase(propertyName.charAt(1)))) {
-                propertyName = propertyName.substring(0, 1).toLowerCase(Locale.ENGLISH) + propertyName.substring(1);
-            }
+
+            propertyName = propertyName.substring(0, 1).toLowerCase(Locale.ENGLISH) + propertyName.substring(1);
 
             String columnName = EntityUtils.columnName(
                 EntityUtils.getDeclaredFieldContainParent(instantiatedMethodTypeClass, propertyName));
