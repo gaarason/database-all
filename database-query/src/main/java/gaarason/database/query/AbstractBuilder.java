@@ -4,6 +4,7 @@ import gaarason.database.appointment.AggregatesType;
 import gaarason.database.appointment.JoinType;
 import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.eloquent.Builder;
+import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.function.ToSqlFunctionalInterface;
@@ -321,7 +322,7 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
         // 获取关联关系
         EntityMember<T, K> entityMember = modelShadowProvider.parseAnyEntityWithCache(entityClass);
         FieldRelationMember relationMember = entityMember.getFieldRelationMemberByFieldName(
-            relationFieldName);
+                relationFieldName);
 
         return whereAnyExists(builder -> (relationMember.getRelationSubQuery().prepareForWhereHas(closure)));
     }
@@ -331,9 +332,31 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
         // 获取关联关系
         EntityMember<T, K> entityMember = modelShadowProvider.parseAnyEntityWithCache(entityClass);
         FieldRelationMember relationMember = entityMember.getFieldRelationMemberByFieldName(
-            relationFieldName);
+                relationFieldName);
 
         return whereAnyNotExists(builder -> (relationMember.getRelationSubQuery().prepareForWhereHas(closure)));
+    }
+
+    @Override
+    public B whereHasIn(String relationFieldName, BuilderAnyWrapper closure) {
+        // 获取关联关系
+        EntityMember<T, K> entityMember = modelShadowProvider.parseAnyEntityWithCache(entityClass);
+        FieldRelationMember relationMember = entityMember.getFieldRelationMemberByFieldName(
+                relationFieldName);
+        RelationSubQuery relationSubQuery = relationMember.getRelationSubQuery();
+        return whereIn(relationSubQuery.localKeyForWhereHasIn(),
+                builder -> ObjectUtils.typeCast(relationSubQuery.prepareForWhereHasIn(closure)));
+    }
+
+    @Override
+    public B whereNotHasIn(String relationFieldName, BuilderAnyWrapper closure) {
+        // 获取关联关系
+        EntityMember<T, K> entityMember = modelShadowProvider.parseAnyEntityWithCache(entityClass);
+        FieldRelationMember relationMember = entityMember.getFieldRelationMemberByFieldName(
+                relationFieldName);
+        RelationSubQuery relationSubQuery = relationMember.getRelationSubQuery();
+        return whereNotIn(relationSubQuery.localKeyForWhereHasIn(),
+                builder -> ObjectUtils.typeCast(relationSubQuery.prepareForWhereHasIn(closure)));
     }
 
     @Override

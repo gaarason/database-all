@@ -475,6 +475,15 @@ public interface WhereLambda<B extends Builder<B, T, K>, T, K> extends Where<B, 
      * @param relationFieldName 关系字段
      * @return 查询构造器
      */
+    default <F> B whereHasSingle(ColumnFunctionalInterface<T, F> relationFieldName) {
+        return whereHas(lambda2FieldName(relationFieldName), BuilderAnyWrapper.empty());
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @return 查询构造器
+     */
     default <F> B whereHas(ColumnFunctionalInterface.ColumnCollection<T, F> relationFieldName) {
         return whereHas(lambda2FieldName(relationFieldName), BuilderAnyWrapper.empty());
     }
@@ -494,8 +503,19 @@ public interface WhereLambda<B extends Builder<B, T, K>, T, K> extends Where<B, 
      * @param closure 闭包
      * @return 查询构造器
      */
+    default <BB extends Builder<BB, F, Object>, F> B whereHasSingle(ColumnFunctionalInterface<T, F> relationFieldName,
+            BuilderWrapper<BB, F, Object> closure) {
+        return whereHas(lambda2FieldName(relationFieldName), BuilderAnyWrapper.turn2(closure));
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @param closure 闭包
+     * @return 查询构造器
+     */
     default <BB extends Builder<BB, F, Object>, F> B whereHas(ColumnFunctionalInterface.ColumnCollection<T, F> relationFieldName,
-        BuilderWrapper<BB, F, Object> closure) {
+            BuilderWrapper<BB, F, Object> closure) {
         return whereHas(lambda2FieldName(relationFieldName), BuilderAnyWrapper.turn2(closure));
     }
 
@@ -508,6 +528,15 @@ public interface WhereLambda<B extends Builder<B, T, K>, T, K> extends Where<B, 
     default <BB extends Builder<BB, F, Object>, F> B whereHas(ColumnFunctionalInterface.ColumnArray<T, F> relationFieldName,
         BuilderWrapper<BB, F, Object> closure) {
         return whereHas(lambda2FieldName(relationFieldName), BuilderAnyWrapper.turn2(closure));
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @return 查询构造器
+     */
+    default <F> B whereNotHasSingle(ColumnFunctionalInterface<T, F> relationFieldName) {
+        return whereNotHas(lambda2FieldName(relationFieldName), BuilderAnyWrapper.empty());
     }
 
     /**
@@ -534,8 +563,19 @@ public interface WhereLambda<B extends Builder<B, T, K>, T, K> extends Where<B, 
      * @param closure 闭包
      * @return 查询构造器
      */
+    default <BB extends Builder<BB, F, Object>, F> B whereNotHasSingle(ColumnFunctionalInterface<T, F> relationFieldName,
+            BuilderWrapper<BB, F, Object> closure) {
+        return whereNotHas(lambda2FieldName(relationFieldName), BuilderAnyWrapper.turn2(closure));
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @param closure 闭包
+     * @return 查询构造器
+     */
     default <BB extends Builder<BB, F, Object>, F> B whereNotHas(ColumnFunctionalInterface.ColumnArray<T, F> relationFieldName,
-        BuilderWrapper<BB, F, Object> closure) {
+            BuilderWrapper<BB, F, Object> closure) {
         return whereNotHas(lambda2FieldName(relationFieldName), BuilderAnyWrapper.turn2(closure));
     }
 
@@ -548,5 +588,125 @@ public interface WhereLambda<B extends Builder<B, T, K>, T, K> extends Where<B, 
     default <BB extends Builder<BB, F, Object>, F> B whereNotHas(ColumnFunctionalInterface.ColumnCollection<T, F> relationFieldName,
         BuilderWrapper<BB, F, Object> closure) {
         return whereNotHas(lambda2FieldName(relationFieldName), BuilderAnyWrapper.turn2(closure));
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @return 查询构造器
+     */
+    default <F> B whereHasInSingle(ColumnFunctionalInterface<T, F> relationFieldName) {
+        return whereHasIn(lambda2FieldName(relationFieldName), BuilderAnyWrapper.empty());
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @return 查询构造器
+     */
+    default <F> B whereHasIn(ColumnFunctionalInterface.ColumnCollection<T, F> relationFieldName) {
+        return whereHasIn(lambda2FieldName(relationFieldName), BuilderAnyWrapper.empty());
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @return 查询构造器
+     */
+    default <F> B whereHasIn(ColumnFunctionalInterface.ColumnArray<T, F> relationFieldName) {
+        return whereHasIn(lambda2FieldName(relationFieldName), BuilderAnyWrapper.empty());
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    default <BB extends Builder<BB, F, Object>, F> B whereHasInSingle(ColumnFunctionalInterface<T, F> relationFieldName,
+            BuilderWrapper<BB, F, Object> closure) {
+        return whereHasIn(lambda2FieldName(relationFieldName), BuilderAnyWrapper.turn2(closure));
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    default <BB extends Builder<BB, F, Object>, F> B whereHasIn(ColumnFunctionalInterface.ColumnCollection<T, F> relationFieldName,
+            BuilderWrapper<BB, F, Object> closure) {
+        return whereHasIn(lambda2FieldName(relationFieldName), BuilderAnyWrapper.turn2(closure));
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    default <BB extends Builder<BB, F, Object>, F> B whereHasIn(ColumnFunctionalInterface.ColumnArray<T, F> relationFieldName,
+            BuilderWrapper<BB, F, Object> closure) {
+        return whereHasIn(lambda2FieldName(relationFieldName), BuilderAnyWrapper.turn2(closure));
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @return 查询构造器
+     */
+    default <F> B whereNotHasInSingle(ColumnFunctionalInterface<T, F> relationFieldName) {
+        return whereNotHasIn(lambda2FieldName(relationFieldName), BuilderAnyWrapper.empty());
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @return 查询构造器
+     */
+    default <F> B whereNotHasIn(ColumnFunctionalInterface.ColumnArray<T, F> relationFieldName) {
+        return whereNotHasIn(lambda2FieldName(relationFieldName), BuilderAnyWrapper.empty());
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @return 查询构造器
+     */
+    default <F> B whereNotHasIn(ColumnFunctionalInterface.ColumnCollection<T, F> relationFieldName) {
+        return whereNotHasIn(lambda2FieldName(relationFieldName), BuilderAnyWrapper.empty());
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    default <BB extends Builder<BB, F, Object>, F> B whereNotHasInSingle(ColumnFunctionalInterface<T, F> relationFieldName,
+            BuilderWrapper<BB, F, Object> closure) {
+        return whereNotHasIn(lambda2FieldName(relationFieldName), BuilderAnyWrapper.turn2(closure));
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    default <BB extends Builder<BB, F, Object>, F> B whereNotHasIn(ColumnFunctionalInterface.ColumnArray<T, F> relationFieldName,
+            BuilderWrapper<BB, F, Object> closure) {
+        return whereNotHasIn(lambda2FieldName(relationFieldName), BuilderAnyWrapper.turn2(closure));
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    default <BB extends Builder<BB, F, Object>, F> B whereNotHasIn(ColumnFunctionalInterface.ColumnCollection<T, F> relationFieldName,
+            BuilderWrapper<BB, F, Object> closure) {
+        return whereNotHasIn(lambda2FieldName(relationFieldName), BuilderAnyWrapper.turn2(closure));
     }
 }

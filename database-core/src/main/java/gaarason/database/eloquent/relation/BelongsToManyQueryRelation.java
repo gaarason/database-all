@@ -118,7 +118,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         Builder<?, ?, ?> newQuery = belongsToManyTemplate.targetModel.newQuery();
 
         Builder<?, ?, ?> opBuilder = operationBuilder.execute(
-            ObjectUtils.typeCast(belongsToManyTemplate.targetModel.newQuery()));
+            ObjectUtils.typeCast(belongsToManyTemplate.targetModel.newQuery().clear(Grammar.SQLPartType.WHERE)));
 
         Builder<?, ?, ?> targetBuilder = customBuilder.execute(
             ObjectUtils.typeCast(belongsToManyTemplate.targetModel.newQuery()));
@@ -292,6 +292,37 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
             .when(enableLocalModelMorph,
                 builder -> builder.where(relationModelTableName + "." + belongsToManyTemplate.morphKeyForLocalModel,
                     belongsToManyTemplate.morphValueForLocalModel));
+    }
+
+    @Override
+    public String localKeyForWhereHasIn() {
+        return belongsToManyTemplate.localModelLocalKey;
+    }
+
+    @Override
+    public Builder<?, ?, ?> prepareForWhereHasIn(BuilderAnyWrapper customBuilder) {
+        // 中间表 表名
+        String relationTableName = belongsToManyTemplate.relationModel.getTableName();
+        // 目标表 表名
+        String targetTableName = belongsToManyTemplate.targetModel.getTableName();
+        // eg : SELECT *
+        // FROM student
+        // WHERE id IN (
+        //    SELECT rst.student_id
+        //    FROM relationship_student_teacher rst
+        //    INNER JOIN teacher t ON rst.teacher_id = t.id
+        // )
+        return customBuilder.execute(ObjectUtils.typeCast(belongsToManyTemplate.relationModel.newQuery()))
+                .select(relationTableName + "." + belongsToManyTemplate.foreignKeyForLocalModel)
+                .join(JoinType.INNER, targetTableName, builder -> builder.whereColumn(
+                                relationTableName + "." + belongsToManyTemplate.foreignKeyForTargetModel,
+                                targetTableName + "." + belongsToManyTemplate.targetModelLocalKey)
+                        .when(enableTargetModelMorph, morphBuilder -> morphBuilder.where(
+                                relationTableName + "." + belongsToManyTemplate.morphKeyForTargetModel,
+                                belongsToManyTemplate.morphValueForTargetModel)))
+                .when(enableLocalModelMorph,
+                        builder -> builder.where(relationTableName + "." + belongsToManyTemplate.morphKeyForLocalModel,
+                                belongsToManyTemplate.morphValueForLocalModel));
     }
 
     @Override

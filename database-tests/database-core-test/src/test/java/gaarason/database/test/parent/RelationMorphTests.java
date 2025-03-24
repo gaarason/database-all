@@ -330,4 +330,128 @@ abstract public class RelationMorphTests extends BaseTests {
         Assert.assertEquals(8, post2.getImagesWithMorph().get(2).getId().intValue());
     }
 
+    @Test
+    public void 多态_whereHas_HasOneOrMany() {
+        List<Post> posts = postModel.newQuery().whereHas(Post::getComments).get().toObjectList();
+        System.out.println(posts);
+        Assert.assertEquals(1, posts.size());
+        Assert.assertEquals(3, posts.get(0).getId().intValue());
+    }
+
+    @Test
+    public void 多态_whereNotHas_HasOneOrMany() {
+        List<Post> posts = postModel.newQuery().orderBy("id").whereNotHas(Post::getComments).get().toObjectList();
+        System.out.println(posts);
+        Assert.assertEquals(2, posts.size());
+        Assert.assertEquals(1, posts.get(0).getId().intValue());
+        Assert.assertEquals(2, posts.get(1).getId().intValue());
+    }
+
+    @Test
+    public void 多态_whereHasIn_HasOneOrMany() {
+        List<Post> posts = postModel.newQuery().whereHasIn(Post::getComments).get().toObjectList();
+        System.out.println(posts);
+        Assert.assertEquals(1, posts.size());
+        Assert.assertEquals(3, posts.get(0).getId().intValue());
+    }
+
+    @Test
+    public void 多态_whereNotHasIn_HasOneOrMany() {
+        List<Post> posts = postModel.newQuery().orderBy("id").whereNotHasIn(Post::getComments).get().toObjectList();
+        System.out.println(posts);
+        Assert.assertEquals(2, posts.size());
+        Assert.assertEquals(1, posts.get(0).getId().intValue());
+        Assert.assertEquals(2, posts.get(1).getId().intValue());
+    }
+
+    @Test
+    public void 多态_whereHas_BelongsTo() {
+        // select * from comment where exists (select * from post where `p_type`="post" and `comment`.`p_id`=`post`.`id`)
+        List<Comment> comments = commentModel.newQuery().whereHasSingle(Comment::getPost).get().toObjectList();
+        System.out.println(comments);
+        Assert.assertEquals(1, comments.size());
+        Assert.assertEquals(1, comments.get(0).getId().intValue());
+    }
+
+    @Test
+    public void 多态_whereNotHas_BelongsTo() {
+        // select * from comment where not exists (select * from post where `p_type`="post" and `comment`.`p_id`=`post`.`id`) order by `id` asc
+        List<Comment> comments = commentModel.newQuery().orderBy(Comment::getId).whereNotHasSingle(Comment::getPost).get().toObjectList();
+        System.out.println(comments);
+        Assert.assertEquals(2, comments.size());
+        Assert.assertEquals(2, comments.get(0).getId().intValue());
+        Assert.assertEquals(3, comments.get(1).getId().intValue());
+    }
+
+    @Test
+    public void 多态_whereHasIn_BelongsTo() {
+        // select * from comment where `p_id`in(select `id` from post where `p_type`="post")
+        List<Comment> comments = commentModel.newQuery().whereHasInSingle(Comment::getPost).get().toObjectList();
+        System.out.println(comments);
+        Assert.assertEquals(1, comments.size());
+        Assert.assertEquals(1, comments.get(0).getId().intValue());
+    }
+
+    @Test
+    public void 多态_whereNotHasIn_BelongsTo() {
+        // select * from comment where `p_id`not in(select `id` from post where `p_type`="post") order by `id` asc
+        List<Comment> comments = commentModel.newQuery().orderBy(Comment::getId).whereNotHasInSingle(Comment::getPost).get().toObjectList();
+        System.out.println(comments);
+        Assert.assertEquals(2, comments.size());
+        Assert.assertEquals(2, comments.get(0).getId().intValue());
+        Assert.assertEquals(3, comments.get(1).getId().intValue());
+    }
+
+    @Test
+    public void 多态_whereHas_BelongsToMany() {
+        // select * from comment where exists (select * from image
+        // inner join super_relation on (`super_relation`.`relation_two_value`=`image`.`id` and `super_relation`.`relation_two_type`="image")
+        // where `super_relation`.`relation_one_value`=`comment`.`id` and `super_relation`.`relation_one_type`="comment")
+        List<Comment> comments = commentModel.newQuery().whereHasSingle(Comment::getImages).get().toObjectList();
+        System.out.println(comments);
+        Assert.assertEquals(1, comments.size());
+        Assert.assertEquals(1, comments.get(0).getId().intValue());
+    }
+
+    @Test
+    public void 多态_whereNotHas_BelongsToMany() {
+        // select * from comment where not exists (select * from image
+        // inner join super_relation on (`super_relation`.`relation_two_value`=`image`.`id` and `super_relation`.`relation_two_type`="image")
+        // where `super_relation`.`relation_one_value`=`comment`.`id` and `super_relation`.`relation_one_type`="comment") order by `id` asc
+        List<Comment> comments = commentModel.newQuery().orderBy(Comment::getId).whereNotHasSingle(Comment::getImages).get().toObjectList();
+        System.out.println(comments);
+        Assert.assertEquals(2, comments.size());
+        Assert.assertEquals(2, comments.get(0).getId().intValue());
+        Assert.assertEquals(3, comments.get(1).getId().intValue());
+    }
+
+    @Test
+    public void 多态_whereHasIn_BelongsToMany() {
+        // select * from comment where `id`in
+        // (
+        // select `super_relation`.`relation_one_value` from super_relation
+        // inner join image on (`super_relation`.`relation_two_value`=`image`.`id` and `super_relation`.`relation_two_type`="image")
+        // where `super_relation`.`relation_one_type`="comment"
+        // )
+        List<Comment> comments = commentModel.newQuery().whereHasInSingle(Comment::getImages).get().toObjectList();
+        System.out.println(comments);
+        Assert.assertEquals(1, comments.size());
+        Assert.assertEquals(1, comments.get(0).getId().intValue());
+    }
+
+    @Test
+    public void 多态_whereNotHasIn_BelongsToMany() {
+        // select * from comment where `id`not in
+        // (
+        // select `super_relation`.`relation_one_value` from super_relation
+        // inner join image on (`super_relation`.`relation_two_value`=`image`.`id` and `super_relation`.`relation_two_type`="image")
+        // where `super_relation`.`relation_one_type`="comment"
+        // )
+        // order by `id` asc
+        List<Comment> comments = commentModel.newQuery().orderBy(Comment::getId).whereNotHasInSingle(Comment::getImages).get().toObjectList();
+        System.out.println(comments);
+        Assert.assertEquals(2, comments.size());
+        Assert.assertEquals(2, comments.get(0).getId().intValue());
+        Assert.assertEquals(3, comments.get(1).getId().intValue());
+    }
 }

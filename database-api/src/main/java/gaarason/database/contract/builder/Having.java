@@ -1,6 +1,7 @@
 package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
+import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.lang.Nullable;
 
@@ -566,6 +567,14 @@ public interface Having<B extends Builder<B, T, K>, T, K> {
      */
     B havingExists(BuilderWrapper<B, T, K> closure);
 
+
+    /**
+     * exists一个闭包
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    B havingAnyExists(BuilderAnyWrapper closure);
+
     /**
      * not exists一个闭包
      * @param sql 闭包
@@ -579,6 +588,13 @@ public interface Having<B extends Builder<B, T, K>, T, K> {
      * @return 查询构造器
      */
     B havingNotExists(BuilderWrapper<B, T, K> closure);
+
+    /**
+     * not exists一个完整sql
+     * @param closure 完整sql
+     * @return 查询构造器
+     */
+    B havingAnyNotExists(BuilderAnyWrapper closure);
 
     /**
      * 比较字段与字段

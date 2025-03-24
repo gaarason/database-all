@@ -25,6 +25,12 @@ public interface Query<B extends Builder<B, T, K>, T, K> {
     B newQuery();
 
     /**
+     * 新查询构造器, 但是不执行作用域
+     * @return 查询构造器
+     */
+    B newQueryWithoutApply();
+
+    /**
      * 新查询构造器
      * @param builderClass 查询构造器类型
      * @return 查询构造器

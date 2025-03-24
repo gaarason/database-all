@@ -686,4 +686,38 @@ public interface Where<B extends Builder<B, T, K>, T, K> {
      * @return 查询构造器
      */
     B whereNotHas(String relationFieldName, BuilderAnyWrapper closure);
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @return 查询构造器
+     */
+    default B whereHasIn(String relationFieldName) {
+        return whereHasIn(relationFieldName, BuilderAnyWrapper.empty());
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    B whereHasIn(String relationFieldName, BuilderAnyWrapper closure);
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @return 查询构造器
+     */
+    default B whereNotHasIn(String relationFieldName) {
+        return whereNotHasIn(relationFieldName, BuilderAnyWrapper.empty());
+    }
+
+    /**
+     * 包含关联数据
+     * @param relationFieldName 关系字段
+     * @param closure 闭包
+     * @return 查询构造器
+     */
+    B whereNotHasIn(String relationFieldName, BuilderAnyWrapper closure);
 }

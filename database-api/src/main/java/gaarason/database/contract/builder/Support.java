@@ -52,6 +52,12 @@ public interface Support<B extends Builder<B, T, K>, T, K> extends LambdaStyle, 
     B getNewSelf();
 
     /**
+     * 得到一个全新的查询构造器
+     * @return 查询构造器
+     */
+    B getNewSelfWithoutApply();
+
+    /**
      * 返回当前的查询构造器
      * @return 查询构造器
      */
@@ -126,7 +132,7 @@ public interface Support<B extends Builder<B, T, K>, T, K> extends LambdaStyle, 
      * @return sql
      */
     default Grammar.SQLPartInfo generateSql(BuilderWrapper<B, T, K> closure) {
-        B subBuilder = closure.execute(getNewSelf());
+        B subBuilder = closure.execute(getNewSelfWithoutApply());
         return subBuilder.getGrammar().generateSql(SqlType.SELECT);
     }
 
@@ -136,7 +142,7 @@ public interface Support<B extends Builder<B, T, K>, T, K> extends LambdaStyle, 
      * @return sql
      */
     default Grammar.SQLPartInfo generateSql(BuilderAnyWrapper closure) {
-        Builder<?, ?, ?> subBuilder = closure.execute(getNewSelf());
+        Builder<?, ?, ?> subBuilder = closure.execute(getNewSelfWithoutApply());
         return subBuilder.getGrammar().generateSql(SqlType.SELECT);
     }
 
@@ -148,7 +154,7 @@ public interface Support<B extends Builder<B, T, K>, T, K> extends LambdaStyle, 
      */
     default Grammar.SQLPartInfo generateSql(BuilderWrapper<B, T, K> closure,
         Grammar.SQLPartType sqlPartType) {
-        B subBuilder = closure.execute(getNewSelf());
+        B subBuilder = closure.execute(getNewSelfWithoutApply());
         return subBuilder.getGrammar().get(sqlPartType);
     }
 

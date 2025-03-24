@@ -103,13 +103,14 @@ abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements Builder<
         this.grammar.merger(grammar);
     }
 
-    /**
-     * 得到一个全新的查询构造器
-     * @return 查询构造器
-     */
     @Override
     public B getNewSelf() {
         return model.newQuery();
+    }
+
+    @Override
+    public B getNewSelfWithoutApply() {
+        return model.newQueryWithoutApply();
     }
 
     @Override

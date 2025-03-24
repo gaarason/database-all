@@ -43,6 +43,7 @@ Eloquent ORM for Java
             * [withSum](#withSum)
     * [关联反向筛选](#关联反向筛选)
         * [whereHas/whereNotHas](#whereHas)
+        * [whereHasIn/whereNotHasIn](#whereHasIn)
     * [更新关系](#更新关系)
         * [附加关系](#附加关系)
         * [解除关系](#解除关系)
@@ -744,10 +745,13 @@ teachers.get(0).getStudentsMaxAge()
 - 使用从表关系筛选主表结果
 - 检索模型记录时, 你可能希望根据关系的存在限制结果. 例如, 假设要检索至少有一条评论的所有博客文章.
 ### whereHas
+使用 `where exists` 实现的 `whereHas`语句   
+**当`主要查询表`的数据量(条件约束后), 小于, `从表`的数据量(条件约束后)时, 推荐使用.**
 
 - whereHas/whereNotHas(relationFieldName)
 ```java
 // 查询所有有学生的老师
+// select * from teacher where exists (select * from student where `teacher`.`id`=`student`.`teacher_id`)
 List<Teacher> teacherList = teacherModel.newQuery()
     .whereHas(Teacher::getStudentArray)
     .get()
@@ -757,6 +761,7 @@ List<Teacher> teacherList = teacherModel.newQuery()
 - whereHas/whereNotHas(relationFieldName, 自定义查询)
 ```java
 // 查询所有的老师, 这些老师的学生们都不大于16岁
+// select * from teacher where not exists (select * from student where `age`>"16" and `teacher`.`id`=`student`.`teacher_id`) order by `id` asc
 List<Teacher> teacherList = teacherModel.newQuery()
     .whereNotHas(Teacher::getStudentArray, builder -> builder.where(Student::getAge, ">", "16"))
     .orderBy(Teacher::getId)
@@ -764,8 +769,41 @@ List<Teacher> teacherList = teacherModel.newQuery()
     .toObjectList();
 
 // 查询所有学生, 这些学生的有男老师
+// select * from student where exists (select * from teacher where `sex`="1" and `teacher`.`id`=`student`.`teacher_id`) order by `id` asc
 List<Student> students = studentModel.newQuery()
     .whereHas("teacher", builder -> builder.where("sex", 1))
+    .orderBy(Student::getId)
+    .get()
+    .toObjectList();
+```
+### whereHasIn
+使用 `where in` 实现的 `whereHas`语句   
+**当`主要查询表`的数据量(条件约束后), 大于, `从表`的数据量(条件约束后)时, 推荐使用.**  
+
+- whereHasIn/whereNotHasIn(relationFieldName)
+```java
+// 查询所有有学生的老师
+// select * from teacher where id in (select teacher_id from student)
+List<Teacher> teacherList = teacherModel.newQuery()
+    .whereHasIn(Teacher::getStudentArray)
+    .get()
+    .toObjectList();
+```
+
+- whereHasIn/whereNotHasIn(relationFieldName, 自定义查询)
+```java
+// 查询所有的老师, 这些老师的学生们都不大于16岁
+// select * from teacher where id in (select teacher_id from student  where`age`>"16") order by `id` asc
+List<Teacher> teacherList = teacherModel.newQuery()
+    .whereNotHasIn(Teacher::getStudentArray, builder -> builder.where(Student::getAge, ">", "16"))
+    .orderBy(Teacher::getId)
+    .get()
+    .toObjectList();
+
+// 查询所有学生, 这些学生的有男老师
+// select * from student where teacher_id in (select id from teacher where`sex`="1") order by `id` asc
+List<Student> students = studentModel.newQuery()
+    .whereHasIn("teacher", builder -> builder.where("sex", 1))
     .orderBy(Student::getId)
     .get()
     .toObjectList();

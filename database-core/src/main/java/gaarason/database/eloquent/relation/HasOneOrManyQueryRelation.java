@@ -97,9 +97,9 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
             }
             setWhere(metadata, queryBuilder);
             Builder<?, ?, ?> finalQueryBuilder = queryBuilder;
-            queryBuilder = hasOneOrManyTemplate.sonModel.newQuery()
+            queryBuilder = hasOneOrManyTemplate.sonModel.newQuery().clear(Grammar.SQLPartType.WHERE)
                 .from(alias + "sub", subBuilder -> ObjectUtils.typeCast(finalQueryBuilder));
-        }else {
+        } else {
             setWhere(metadata, queryBuilder);
         }
 
@@ -165,6 +165,20 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
                 hasOneOrManyTemplate.sonModelMorphValue))
             .whereColumn(localModel.getTableName() +"."+hasOneOrManyTemplate.localModelLocalKey,
                 hasOneOrManyTemplate.sonModel.getTableName()+"."+hasOneOrManyTemplate.sonModelForeignKey);
+    }
+
+    @Override
+    public String localKeyForWhereHasIn() {
+        return hasOneOrManyTemplate.localModelLocalKey;
+    }
+
+    @Override
+    public Builder<?, ?, ?> prepareForWhereHasIn(BuilderAnyWrapper customBuilder) {
+        // `id`in(select `p_id` from `comment` where `p_type`="post")
+        return customBuilder.execute(ObjectUtils.typeCast(hasOneOrManyTemplate.sonModel.newQuery()))
+            .when(enableMorph, builder -> builder.where(hasOneOrManyTemplate.sonModelMorphKey,
+                hasOneOrManyTemplate.sonModelMorphValue))
+            .select(hasOneOrManyTemplate.sonModelForeignKey);
     }
 
     @Override

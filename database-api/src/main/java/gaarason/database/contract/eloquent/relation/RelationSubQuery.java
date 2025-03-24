@@ -125,8 +125,27 @@ public interface RelationSubQuery {
      */
     List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList, RelationCache cache);
 
-
+    /**
+     * 实现 whereHas
+     * @param customBuilder 查询构造器包装
+     * @return 查询构造器
+     */
     Builder<?, ?, ?> prepareForWhereHas(BuilderAnyWrapper customBuilder);
+
+    /**
+     * whereHasIn的本地键
+     * @return whereHasIn的本地键
+     * @see #prepareForWhereHasIn(BuilderAnyWrapper)
+     */
+    String localKeyForWhereHasIn();
+
+    /**
+     * 实现 whereHasIn
+     * @param customBuilder 查询构造器包装
+     * @return 查询构造器
+     * @see #localKeyForWhereHasIn()
+     */
+    Builder<?, ?, ?> prepareForWhereHasIn(BuilderAnyWrapper customBuilder);
 
     /**
      * 增加关联关系

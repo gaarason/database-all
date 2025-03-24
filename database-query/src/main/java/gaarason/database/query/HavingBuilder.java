@@ -2,6 +2,7 @@ package gaarason.database.query;
 
 import gaarason.database.appointment.EntityUseType;
 import gaarason.database.contract.eloquent.Builder;
+import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
@@ -538,7 +539,21 @@ abstract class HavingBuilder<B extends Builder<B, T, K>, T, K> extends GroupBuil
     }
 
     @Override
+    public B havingAnyExists(BuilderAnyWrapper closure) {
+        Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
+        String sql = "exists " + FormatUtils.bracket(sqlPartInfo.getSqlString());
+        return havingGrammar(sql, sqlPartInfo.getParameters(), " and ");
+    }
+
+    @Override
     public B havingNotExists(BuilderWrapper<B, T, K> closure) {
+        Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
+        String sql = "not exists " + FormatUtils.bracket(sqlPartInfo.getSqlString());
+        return havingGrammar(sql, sqlPartInfo.getParameters(), " and ");
+    }
+
+    @Override
+    public B havingAnyNotExists(BuilderAnyWrapper closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String sql = "not exists " + FormatUtils.bracket(sqlPartInfo.getSqlString());
         return havingGrammar(sql, sqlPartInfo.getParameters(), " and ");

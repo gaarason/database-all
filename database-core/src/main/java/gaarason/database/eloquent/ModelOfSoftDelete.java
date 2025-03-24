@@ -9,11 +9,11 @@ import gaarason.database.contract.model.SoftDelete;
  */
 abstract class ModelOfSoftDelete<B extends Builder<B, T, K>, T, K> extends ModelBase<B, T, K> implements SoftDelete<T, K> {
 
-    private static final String DEFAULT_SOFT_DELETED_COLUMN_NAME = "is_deleted";
+    protected static final String DEFAULT_SOFT_DELETED_COLUMN_NAME = "is_deleted";
 
-    private static final String DEFAULT_SOFT_DELETED_VALUE_YSE = "1";
+    protected static final String DEFAULT_SOFT_DELETED_VALUE_YSE = "1";
 
-    private static final String DEFAULT_SOFT_DELETED_VALUE_NO = "0";
+    protected static final String DEFAULT_SOFT_DELETED_VALUE_NO = "0";
 
     @Override
     public int delete(Builder<?, T, K> builder) {

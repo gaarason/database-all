@@ -46,14 +46,31 @@ abstract class ModelOfQuery<B extends Builder<B, T, K>, T, K> extends ModelOfSof
      * @return 原始查询构造器
      */
     protected B theBuilder() {
+        return apply(theBuilderWithoutApply());
+    }
+
+    /**
+     * 原始查询构造器
+     * @return 原始查询构造器
+     */
+    protected B theBuilderWithoutApply() {
         GaarasonDataSource gaarasonDataSource = getGaarasonDataSource();
         Builder<?, T, K> builder = gaarasonDataSource.getQueryBuilder().newBuilder(gaarasonDataSource, this);
-        return apply(ObjectUtils.typeCast(builder));
+        return ObjectUtils.typeCast(builder);
     }
 
     @Override
     public B newQuery() {
         B builder = theBuilder();
+        if (softDeleting()) {
+            scopeSoftDelete(builder);
+        }
+        return builder;
+    }
+
+    @Override
+    public B newQueryWithoutApply() {
+        B builder = theBuilderWithoutApply();
         if (softDeleting()) {
             scopeSoftDelete(builder);
         }
