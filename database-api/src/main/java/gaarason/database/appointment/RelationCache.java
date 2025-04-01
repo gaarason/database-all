@@ -25,6 +25,12 @@ public class RelationCache {
     public final Map<String, List<?>> cacheRelationObjectList = new HashMap<>();
 
     /**
+     * 对象缓存
+     * 用于优化 对象拷贝转化耗时
+     */
+    public final Map<String, List<?>> cacheDeepCopyObjectList = new HashMap<>();
+
+    /**
      * 当前执行层级
      * 以确保 cacheRelationObjectList 命中的准确性
      */

@@ -68,6 +68,12 @@ public class FieldRelationMember extends Container.SimpleKeeper implements Seria
     private final RelationSubQuery relationSubQuery;
 
     /**
+     * 关联关系对应的实体的entityMember
+     */
+    @Nullable
+    private EntityMember<?, ?> entityMember;
+
+    /**
      * @param container 容器
      * @param field 字段
      * @param model 数据模型
@@ -166,6 +172,23 @@ public class FieldRelationMember extends Container.SimpleKeeper implements Seria
         } catch (IllegalAccessException e) {
             throw new IllegalAccessRuntimeException(e);
         }
+    }
+
+    /**
+     * 获取关联关系对应的 entityMember
+     * @return entityMember
+     */
+    public EntityMember<?, ?> getEntityMember() {
+        EntityMember<?, ?> localEntityMember = entityMember;
+        if(localEntityMember == null) {
+            synchronized (this) {
+                localEntityMember = entityMember;
+                if(localEntityMember == null) {
+                    localEntityMember = entityMember = container.getBean(ModelShadowProvider.class).parseAnyEntityWithCache(javaRealType);
+                }
+            }
+        }
+        return localEntityMember;
     }
 
     // ---------------------------- simple getter ---------------------------- //

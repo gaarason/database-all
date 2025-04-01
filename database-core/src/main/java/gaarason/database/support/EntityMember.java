@@ -224,6 +224,52 @@ public class EntityMember<T, K> extends Container.SimpleKeeper implements Serial
         return entity;
     }
 
+    @Nullable
+    public List<Object> deepCopyS(@Nullable List<?> entities) {
+        if (entities == null) {
+            return null;
+        }
+        List<Object> list = new ArrayList<>(entities.size());
+        for (Object entity : entities) {
+            list.add(deepCopy(entity));
+        }
+        return list;
+    }
+
+    @Nullable
+    public Object deepCopy(@Nullable Object entity) {
+        if (entity == null) {
+            return null;
+        }
+
+        // 全新实体
+        Object newEntity = newInstance();
+        // 基本属性
+        for (FieldMember<?> fieldMember : javaFieldMap.values()) {
+            Object value = fieldMember.fieldGet(entity);
+            if(value == null) {
+                continue;
+            }
+            fieldMember.fieldSet(newEntity, value);
+        }
+
+        // 关联关系属性
+        for (FieldRelationMember fieldRelationMember : relationFieldMap.values()) {
+            Object value = fieldRelationMember.fieldGet(entity);
+            if (value == null) {
+                continue;
+            }
+            // 关联的实体的 entityMember
+            EntityMember<?, ?> relationEntityMember = fieldRelationMember.getEntityMember();
+            if (fieldRelationMember.isPlural()) {
+                fieldRelationMember.fieldSet(newEntity,  relationEntityMember.deepCopyS(ObjectUtils.typeCastNullable(value)));
+            } else {
+                fieldRelationMember.fieldSet(newEntity,  relationEntityMember.deepCopy(value));
+            }
+        }
+        return newEntity;
+    }
+
     /**
      * 延迟获取关联关系
      * @return 关联关系map

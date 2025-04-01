@@ -62,7 +62,6 @@ public final class ClassUtils {
                     throw new ObjectNewInstanceException(k, e);
                 }
             });
-            constructor.setAccessible(true);
             return ObjectUtils.typeCast(constructor.newInstance());
         } catch (Throwable e) {
             throw new ObjectNewInstanceException(clazz, e);

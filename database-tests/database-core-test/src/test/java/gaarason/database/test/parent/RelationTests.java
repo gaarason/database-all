@@ -550,6 +550,28 @@ abstract public class RelationTests extends BaseTests {
     }
 
     @Test
+    public void with性能3() {
+        List<Student> students = new ArrayList<>();
+        for (int i = 0; i < 999; i++) {
+            Student student = new Student();
+            student.setName("机器人" + i);
+            student.setSex(1);
+            student.setAge(19);
+            student.setTeacherId(1L);
+            students.add(student);
+        }
+        studentModel.newQuery().insert(students);
+        long start = System.currentTimeMillis();
+        log.info("------ start");
+
+        // 1000个学生, 他们各有1个老师, 每个老师.又各有1000个学生, 又各有1个老师
+        // 1000 + 1000 + (1000 * 1000) +  (1000 * 1000)
+        List<Student> res = studentModel.newQuery().with("teacher.students.teacher").get().toObjectList();
+        log.info("------ end : {}", System.currentTimeMillis() - start);
+//        System.out.println(res);
+    }
+
+    @Test
     public void 一对一关系_一对多关系_无线级关系_builder筛选2_快捷方式2() {
         log.info("start");
         Student student3 =

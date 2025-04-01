@@ -148,7 +148,8 @@ public class FieldMember<F> extends Container.SimpleKeeper implements Serializab
      * @return 填充的值
      */
     @Nullable
-    public F fill(Object entity, Field field, @Nullable F originalValue, EntityUseType type) {
+    public F fill(Object entity, Field field, @Nullable Object originalValue, EntityUseType type) {
+        F nullableValue = ObjectUtils.typeCastNullable(originalValue);
         switch (type) {
             case INSERT:
                 if (originalValue == null) {
@@ -156,13 +157,13 @@ public class FieldMember<F> extends Container.SimpleKeeper implements Serializab
                      * 非 @Primary 修饰的字段, idGenerator.nextId() 的值一定等于 null
                      * 因此, 以下逻辑没有影响
                      */
-                    originalValue = ObjectUtils.typeCastNullable(idGenerator.nextId());
+                    nullableValue = ObjectUtils.typeCastNullable(idGenerator.nextId());
                 }
-                return fieldFill.inserting(entity, field, originalValue);
+                return fieldFill.inserting(entity, field, nullableValue);
             case UPDATE:
-                return fieldFill.updating(entity, field, originalValue);
+                return fieldFill.updating(entity, field, nullableValue);
             default:
-                return fieldFill.condition(entity, field, originalValue);
+                return fieldFill.condition(entity, field, nullableValue);
         }
     }
 
@@ -209,10 +210,9 @@ public class FieldMember<F> extends Container.SimpleKeeper implements Serializab
      * @throws IllegalAccessRuntimeException 反射取值异常
      */
     @Nullable
-    public F fieldGet(Object obj) {
+    public Object fieldGet(Object obj) {
         try {
-            Object value = field.get(obj);
-            return ObjectUtils.typeCastNullable(value);
+            return field.get(obj);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessRuntimeException(e);
         }
@@ -230,7 +230,7 @@ public class FieldMember<F> extends Container.SimpleKeeper implements Serializab
      */
     public ValueWrapper<F> fieldFillGet(Object entity, EntityUseType type, boolean backFill) {
         // 普通获取
-        F value = fieldGet(entity);
+        Object value = fieldGet(entity);
         // 填充
         F valueAfterFill = fill(entity, field, value, type);
         // 判断是否有效

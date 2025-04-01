@@ -25,9 +25,13 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 6.1.1
+
+- 将`toObject()`/`toObjectList`中的对象更改为引用对象, 以提高性能
+
 ### 6.1.0
 
-- 查询构造器`builder`中, 增加`whereHasIn`/`whereHasInSingle`/`whereHasSingle`等相关方法, 其中`*Single`相关方法仅为了java泛型, 实际功能没有差别  
+- 查询构造器`builder`中, 增加`whereHasIn`/`whereHasInSingle`/`whereHasSingle`等相关方法, 其中`*Single`相关方法仅为了java泛型, 实际功能没有差别
 - 修复在全局作用域`apply`中定义子查询, 会出现死循环的问题;
 
 ### 6.0.1

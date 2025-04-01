@@ -67,8 +67,9 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
     protected static Set<Object> getColumnInMapList(List<Map<String, Object>> metadata, String column) {
         Set<Object> result = new HashSet<>();
         for (Map<String, Object> stringColumnMap : metadata) {
-            if (stringColumnMap.containsKey(column)) {
-                result.add(stringColumnMap.get(column));
+            Object value = stringColumnMap.get(column);
+            if (value != null) {
+                result.add(value);
             }
         }
         return result;

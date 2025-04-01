@@ -11,7 +11,6 @@ import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.core.Container;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
-import gaarason.database.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -209,9 +208,6 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
                 // 优先命中缓存
                 List<?> objects = getRelationObjectsInCache(cache.cacheRelationObjectList, cacheKey,
                         () -> relationSubQuery.filterBatchRecord(record, targetRecordList, cache));
-
-                // 深度拷贝
-                objects = ObjectUtils.deepCopy(objects);
 
                 // 是否是集合
                 if (fieldRelationMember.isPlural()) {
