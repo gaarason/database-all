@@ -4,6 +4,7 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.test.config.MySqlBuilderV2;
 import gaarason.database.test.models.relation.model.base.BaseModel;
 import gaarason.database.test.models.relation.pojo.Student;
+import gaarason.database.test.models.relation.pojo.Teacher;
 
 public class StudentModel extends BaseModel<Student, Long> {
 
@@ -12,8 +13,11 @@ public class StudentModel extends BaseModel<Student, Long> {
     protected MySqlBuilderV2<Student, Long> apply(MySqlBuilderV2<Student, Long> builder) {
 //        return builder.whereHas("teacher", subBuilder -> subBuilder.whereRaw("1"));
 //        return builder.whereRaw("1");
+        Builder<?, ? super Teacher, ?> teacherBuilder = getModelShadow().getByEntityClass(Teacher.class)
+                .getModel().newQueryWithoutApply();
         return builder.andWhere(
-                builder1 -> builder1.whereIn("student.id", builder2 -> builder2.select("teacher.id").from("teacher"))
+                builder1 -> builder1.whereIn("id",
+                                builder2 -> teacherBuilder.select("id"))
                         .orWhere(builder3 -> builder3.whereRaw("1")));
     }
 

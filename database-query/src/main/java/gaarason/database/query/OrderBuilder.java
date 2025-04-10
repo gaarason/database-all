@@ -30,7 +30,7 @@ abstract class OrderBuilder<B extends Builder<B, T, K>, T, K> extends HavingBuil
     @Override
     public B orderBy(@Nullable String column, OrderBy type) {
         if (null != column) {
-            String sqlPart = backQuote(column) + " " + type.getOperation();
+            String sqlPart = columnAlias(column) + " " + type.getOperation();
             return orderByRaw(sqlPart);
         }
         return getSelf();
@@ -51,7 +51,7 @@ abstract class OrderBuilder<B extends Builder<B, T, K>, T, K> extends HavingBuil
 
     @Override
     public B firstOrderBy(BuilderWrapper<B, T, K> closure) {
-        Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.ORDER);
+        Grammar.SQLPartInfo sqlPartInfo = generateSqlPart(closure, Grammar.SQLPartType.ORDER);
         return orderFirstGrammar(sqlPartInfo.getSqlString(), sqlPartInfo.getParameters());
     }
 }

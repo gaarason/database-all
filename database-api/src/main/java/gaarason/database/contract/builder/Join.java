@@ -33,34 +33,33 @@ public interface Join<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 连接查询
-     * @param table 连接的表名
-     * @param column1 字段1
-     * @param symbol 关系
-     * @param column2 字段2
+     * @param joinTable 连接的表的表名(带表别名) eg : table as t
+     * @param localColumn 本表的字段(不带别名) eg : r_id
+     * @param symbol 关系 eg : =
+     * @param joinTableColumn 连接的表的字段(带表别名) eg : t.for_r_id
      * @return 查询构造器
      */
-    B join(String table, String column1, String symbol, String column2);
+    B join(String joinTable, String localColumn, String symbol, String joinTableColumn);
 
     /**
      * 连接查询
      * @param joinType 连接类型
-     * @param table 连接的表名
-     * @param column1 字段1
-     * @param symbol 关系
-     * @param column2 字段2
+     * @param joinTable 连接的表的表名(带表别名) eg : table as t
+     * @param localColumn 本表的字段(不带别名) eg : r_id
+     * @param symbol 关系 eg : =
+     * @param joinTableColumn 连接的表的字段(带表别名) eg : t.for_r_id
      * @return 查询构造器
      */
-    B join(JoinType joinType, String table, String column1, String symbol,
-        String column2);
+    B join(JoinType joinType, String joinTable, String localColumn, String symbol, String joinTableColumn);
 
     /**
      * 连接查询
      * @param joinType 连接类型
-     * @param table 连接的表名
+     * @param joinTable 连接的表名
      * @param joinConditions 连接条件
      * @return 查询构造器
      */
-    B join(JoinType joinType, String table, BuilderWrapper<B, T, K> joinConditions);
+    B join(JoinType joinType, String joinTable, BuilderWrapper<B, T, K> joinConditions);
 
     /**
      * 连接查询(含子查询)

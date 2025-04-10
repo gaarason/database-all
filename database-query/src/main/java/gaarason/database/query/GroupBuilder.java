@@ -30,7 +30,7 @@ abstract class GroupBuilder<B extends Builder<B, T, K>, T, K>  extends DataBuild
 
     @Override
     public B group(String column) {
-        String sqlPart = backQuote(column);
+        String sqlPart = columnAlias(column);
         return groupRaw(sqlPart);
     }
 

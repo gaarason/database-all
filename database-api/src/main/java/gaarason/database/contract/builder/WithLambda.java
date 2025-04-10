@@ -127,8 +127,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
      * @return 查询构造器
      */
     default <F, FK> B withOperation(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
-        BuilderAnyWrapper operationBuilder, BuilderWrapper<?, F, FK> builderClosure, ColumnFunctionalInterface.ColumnCollection<T, F> alisaFieldName) {
-        return withOperation(lambda2FieldName(fieldName), operationBuilder, BuilderAnyWrapper.turn2(builderClosure), lambda2FieldName(alisaFieldName));
+        BuilderAnyWrapper operationBuilder, BuilderWrapper<?, F, FK> builderClosure, ColumnFunctionalInterface.ColumnCollection<T, F> aliasFieldName) {
+        return withOperation(lambda2FieldName(fieldName), operationBuilder, BuilderAnyWrapper.turn2(builderClosure), lambda2FieldName(aliasFieldName));
     }
 
     /**
@@ -140,8 +140,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
      * @return 查询构造器
      */
     default <F, FK> B withOperation(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
-        BuilderAnyWrapper operationBuilder, BuilderWrapper<?, F, FK> builderClosure, ColumnFunctionalInterface.ColumnArray<T, F> alisaFieldName) {
-        return withOperation(lambda2FieldName(fieldName), operationBuilder, BuilderAnyWrapper.turn2(builderClosure), lambda2FieldName(alisaFieldName));
+        BuilderAnyWrapper operationBuilder, BuilderWrapper<?, F, FK> builderClosure, ColumnFunctionalInterface.ColumnArray<T, F> aliasFieldName) {
+        return withOperation(lambda2FieldName(fieldName), operationBuilder, BuilderAnyWrapper.turn2(builderClosure), lambda2FieldName(aliasFieldName));
     }
 
     /**
@@ -150,7 +150,7 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
      * @param fieldName 关联关系属性名
      * @param column 列名
      * @param builderClosure 自定义查询构造器
-     * @param alisaFieldName 别名
+     * @param aliasFieldName 别名
      * @param <F> 关联关系属性所对应的实体类型
      * @param <FK> 联关系属性所对应的数据表的主键类型
      * @return 查询构造器
@@ -159,24 +159,24 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
         ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
         @Nullable BuilderWrapper<?, F, FK> builderClosure,
-        @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
+        @Nullable ColumnFunctionalInterface<T, ?> aliasFieldName) {
 
         BuilderAnyWrapper customBuilder = builderClosure == null ? BuilderAnyWrapper.empty() : BuilderAnyWrapper.turn2(builderClosure);
 
         return withAggregate(op, lambda2FieldName(fieldName), lambda2ColumnName(column), customBuilder,
-            lambda2FieldNameNullable(alisaFieldName));
+            lambda2FieldNameNullable(aliasFieldName));
     }
 
     default <F, FK> B withAggregate(AggregatesType op,
         ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
         @Nullable BuilderWrapper<?, F, FK> builderClosure,
-        @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
+        @Nullable ColumnFunctionalInterface<T, ?> aliasFieldName) {
 
         BuilderAnyWrapper customBuilder = builderClosure == null ? BuilderAnyWrapper.empty() : BuilderAnyWrapper.turn2(builderClosure);
 
         return withAggregate(op, lambda2FieldName(fieldName), lambda2ColumnName(column), customBuilder,
-            lambda2FieldNameNullable(alisaFieldName));
+            lambda2FieldNameNullable(aliasFieldName));
     }
 
     // ------------ withCount ColumnCollection ------------ //
@@ -184,9 +184,9 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
     default <BB extends Builder<BB, F, FK>, F, FK> B withCount(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
         BuilderWrapper<BB, F, FK> builderClosure,
-        @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
+        @Nullable ColumnFunctionalInterface<T, ?> aliasFieldName) {
         return withAggregate(AggregatesType.count, lambda2FieldName(fieldName), lambda2ColumnName(column),
-                BuilderAnyWrapper.turn2(builderClosure), lambda2FieldNameNullable(alisaFieldName));
+                BuilderAnyWrapper.turn2(builderClosure), lambda2FieldNameNullable(aliasFieldName));
     }
 
     default <F, FK> B withCount(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName) {
@@ -199,8 +199,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
     }
 
     default <F, FK> B withCount(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
-        ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withCount(lambda2FieldName(fieldName), lambda2ColumnName(column), lambda2FieldName(alisaFieldName));
+        ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> aliasFieldName) {
+        return withCount(lambda2FieldName(fieldName), lambda2ColumnName(column), lambda2FieldName(aliasFieldName));
     }
 
     // ------------ withCount ColumnArray ------------ //
@@ -208,9 +208,9 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
     default <BB extends Builder<BB, F, FK>, F, FK> B withCount(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
         BuilderWrapper<BB, F, FK> builderClosure,
-        @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
+        @Nullable ColumnFunctionalInterface<T, ?> aliasFieldName) {
         return withAggregate(AggregatesType.count, lambda2FieldName(fieldName), lambda2ColumnName(column),
-                BuilderAnyWrapper.turn2(builderClosure), lambda2FieldNameNullable(alisaFieldName));
+                BuilderAnyWrapper.turn2(builderClosure), lambda2FieldNameNullable(aliasFieldName));
     }
 
     default <F, FK> B withCount(ColumnFunctionalInterface.ColumnArray<T, F> fieldName) {
@@ -223,8 +223,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
     }
 
     default <F, FK> B withCount(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
-        ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withCount(lambda2FieldName(fieldName), lambda2ColumnName(column), lambda2FieldName(alisaFieldName));
+        ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> aliasFieldName) {
+        return withCount(lambda2FieldName(fieldName), lambda2ColumnName(column), lambda2FieldName(aliasFieldName));
     }
 
     // ------------ withMax ColumnCollection ------------ //
@@ -232,8 +232,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
     default <BB extends Builder<BB, F, FK>, F, FK> B withMax(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
         @Nullable BuilderWrapper<BB, F, FK> builderClosure,
-        @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withAggregate(AggregatesType.max, fieldName, column, builderClosure, alisaFieldName);
+        @Nullable ColumnFunctionalInterface<T, ?> aliasFieldName) {
+        return withAggregate(AggregatesType.max, fieldName, column, builderClosure, aliasFieldName);
     }
 
     default <F, FK> B withMax(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
@@ -242,8 +242,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
     }
 
     default <F, FK> B withMax(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
-        ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withMax(fieldName, column, null, alisaFieldName);
+        ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> aliasFieldName) {
+        return withMax(fieldName, column, null, aliasFieldName);
     }
 
     // ------------ withMax ColumnArray ------------ //
@@ -251,8 +251,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
     default <BB extends Builder<BB, F, FK>, F, FK> B withMax(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
         @Nullable BuilderWrapper<BB, F, FK> builderClosure,
-        @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withAggregate(AggregatesType.max, fieldName, column, builderClosure, alisaFieldName);
+        @Nullable ColumnFunctionalInterface<T, ?> aliasFieldName) {
+        return withAggregate(AggregatesType.max, fieldName, column, builderClosure, aliasFieldName);
     }
 
     default <F, FK> B withMax(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
@@ -261,8 +261,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
     }
 
     default <F, FK> B withMax(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
-        ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withMax(fieldName, column, null, alisaFieldName);
+        ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> aliasFieldName) {
+        return withMax(fieldName, column, null, aliasFieldName);
     }
 
     // ------------ withMin ColumnCollection ------------ //
@@ -270,8 +270,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
     default <BB extends Builder<BB, F, FK>, F, FK> B withMin(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
         @Nullable BuilderWrapper<BB, F, FK> builderClosure,
-        @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withAggregate(AggregatesType.min, fieldName, column, builderClosure, alisaFieldName);
+        @Nullable ColumnFunctionalInterface<T, ?> aliasFieldName) {
+        return withAggregate(AggregatesType.min, fieldName, column, builderClosure, aliasFieldName);
     }
 
     default <F, FK> B withMin(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
@@ -280,8 +280,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
     }
 
     default <F, FK> B withMin(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
-        ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withMin(fieldName, column, null, alisaFieldName);
+        ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> aliasFieldName) {
+        return withMin(fieldName, column, null, aliasFieldName);
     }
 
     // ------------ withMin ColumnArray ------------ //
@@ -289,8 +289,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
     default <BB extends Builder<BB, F, FK>, F, FK> B withMin(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
         @Nullable BuilderWrapper<BB, F, FK> builderClosure,
-        @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withAggregate(AggregatesType.min, fieldName, column, builderClosure, alisaFieldName);
+        @Nullable ColumnFunctionalInterface<T, ?> aliasFieldName) {
+        return withAggregate(AggregatesType.min, fieldName, column, builderClosure, aliasFieldName);
     }
 
     default <F, FK> B withMin(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
@@ -299,8 +299,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
     }
 
     default <F, FK> B withMin(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
-        ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withMin(fieldName, column, null, alisaFieldName);
+        ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> aliasFieldName) {
+        return withMin(fieldName, column, null, aliasFieldName);
     }
 
     // ------------ withAvg ColumnCollection ------------ //
@@ -308,8 +308,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
     default <BB extends Builder<BB, F, FK>, F, FK> B withAvg(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
         @Nullable BuilderWrapper<BB, F, FK> builderClosure,
-        @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withAggregate(AggregatesType.avg, fieldName, column, builderClosure, alisaFieldName);
+        @Nullable ColumnFunctionalInterface<T, ?> aliasFieldName) {
+        return withAggregate(AggregatesType.avg, fieldName, column, builderClosure, aliasFieldName);
     }
 
     default <F, FK> B withAvg(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
@@ -318,8 +318,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
     }
 
     default <F, FK> B withAvg(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
-        ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withAvg(fieldName, column, null, alisaFieldName);
+        ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> aliasFieldName) {
+        return withAvg(fieldName, column, null, aliasFieldName);
     }
 
     // ------------ withAvg ColumnArray ------------ //
@@ -327,8 +327,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
     default <BB extends Builder<BB, F, FK>, F, FK> B withAvg(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
         @Nullable BuilderWrapper<BB, F, FK> builderClosure,
-        @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withAggregate(AggregatesType.avg, fieldName, column, builderClosure, alisaFieldName);
+        @Nullable ColumnFunctionalInterface<T, ?> aliasFieldName) {
+        return withAggregate(AggregatesType.avg, fieldName, column, builderClosure, aliasFieldName);
     }
 
     default <F, FK> B withAvg(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
@@ -337,8 +337,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
     }
 
     default <F, FK> B withAvg(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
-        ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withAvg(fieldName, column, null, alisaFieldName);
+        ColumnFunctionalInterface<F, FK> column, ColumnFunctionalInterface<T, ?> aliasFieldName) {
+        return withAvg(fieldName, column, null, aliasFieldName);
     }
 
     // ------------ withSum ColumnCollection ------------ //
@@ -346,8 +346,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
     default <BB extends Builder<BB, F, FK>, F, FK> B withSum(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
         @Nullable BuilderWrapper<BB, F, FK> builderClosure,
-        @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withAggregate(AggregatesType.sum, fieldName, column, builderClosure, alisaFieldName);
+        @Nullable ColumnFunctionalInterface<T, ?> aliasFieldName) {
+        return withAggregate(AggregatesType.sum, fieldName, column, builderClosure, aliasFieldName);
     }
 
     default <F, FK> B withSum(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
@@ -356,8 +356,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
     }
 
     default <F, FK> B withSum(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
-        ColumnFunctionalInterface<F, FK> column, @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withSum(fieldName, column, null, alisaFieldName);
+        ColumnFunctionalInterface<F, FK> column, @Nullable ColumnFunctionalInterface<T, ?> aliasFieldName) {
+        return withSum(fieldName, column, null, aliasFieldName);
     }
 
     // ------------ withSum ColumnArray ------------ //
@@ -365,8 +365,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
     default <BB extends Builder<BB, F, FK>, F, FK> B withSum(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
         ColumnFunctionalInterface<F, FK> column,
         @Nullable BuilderWrapper<BB, F, FK> builderClosure,
-        @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withAggregate(AggregatesType.sum, fieldName, column, builderClosure, alisaFieldName);
+        @Nullable ColumnFunctionalInterface<T, ?> aliasFieldName) {
+        return withAggregate(AggregatesType.sum, fieldName, column, builderClosure, aliasFieldName);
     }
 
     default <F, FK> B withSum(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
@@ -375,8 +375,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
     }
 
     default <F, FK> B withSum(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
-        ColumnFunctionalInterface<F, FK> column, @Nullable ColumnFunctionalInterface<T, ?> alisaFieldName) {
-        return withSum(fieldName, column, null, alisaFieldName);
+        ColumnFunctionalInterface<F, FK> column, @Nullable ColumnFunctionalInterface<T, ?> aliasFieldName) {
+        return withSum(fieldName, column, null, aliasFieldName);
     }
 
 }

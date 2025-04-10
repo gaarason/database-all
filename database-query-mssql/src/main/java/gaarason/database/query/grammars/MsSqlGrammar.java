@@ -9,7 +9,7 @@ public class MsSqlGrammar extends BaseGrammar {
     private static final long serialVersionUID = 1L;
 
     public MsSqlGrammar(String tableName) {
-        super(tableName);
+        super(tableName, "\"");
     }
 
     /**

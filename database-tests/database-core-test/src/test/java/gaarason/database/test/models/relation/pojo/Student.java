@@ -56,6 +56,9 @@ public class Student extends BaseEntity implements Serializable {
     @BelongsTo(localModelForeignKey = "teacher_id", parentModelLocalKey = "id")
     private Teacher teacher;
 
+    @BelongsTo(localModelForeignKey = "teacher_id", parentModelLocalKey = "id")
+    private Student self;
+
     @HasOneOrMany(sonModelForeignKey = "student_id")
     private List<RelationshipStudentTeacher> relationshipStudentTeachers;
 

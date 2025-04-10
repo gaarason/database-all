@@ -1834,6 +1834,27 @@ abstract public class RelationTests extends BaseTests {
     }
 
     @Test
+    public void whereHas_belongsTo_self() {
+        // select * from student where exists (select * from student as s2 where `s2`.`teacher_id`=`student`.`id`)
+        // select * from student where exists (select * from `student` as `BelongsToQueryRelation1` where (`is_deleted`="0" and `student`.`id`in(select `teacher`.`id` from `teacher` where `is_deleted`="0") or (`is_deleted`="0" and 1)) and `is_deleted`="0" and `student`.`teacher_id`=`BelongsToQueryRelation1`.`id`)
+        List<Student> studentList = studentModel.newQuery().whereHas("self").get().toObjectList();
+        System.out.println(studentList);
+        Assert.assertEquals(9, studentList.size());
+
+        // select * from student where exists (select * from teacher where `sex`="1" and `student`.`teacher_id`=`teacher`.`id`) order by `id` asc
+        List<Student> students = studentModel.newQuery()
+                .whereHas("teacher", builder -> builder.where("sex", 1))
+                .orderBy(Student::getId)
+                .get()
+                .toObjectList();
+        System.out.println(students);
+
+        Assert.assertEquals(2, students.size());
+        Assert.assertEquals(7, students.get(0).getId().intValue());
+        Assert.assertEquals(8, students.get(1).getId().intValue());
+    }
+
+    @Test
     public void whereHasIn_belongsTo() {
         // select * from student where `teacher_id`in(select `id` from teacher)
         List<Student> studentList = studentModel.newQuery().whereHasIn("teacher").get().toObjectList();

@@ -35,7 +35,7 @@ abstract class DataBuilder<B extends Builder<B, T, K>, T, K>  extends ExecuteLev
     @Override
     public B data(String column, @Nullable Object value) {
         ArrayList<Object> parameters = new ArrayList<>();
-        String sqlPart = backQuote(column) + '=' + grammar.replaceValueAndFillParameters(value, parameters);
+        String sqlPart = columnAlias(column) + '=' + grammar.replaceValueAndFillParameters(value, parameters);
         return dataGrammar(sqlPart, parameters);
     }
 
@@ -71,7 +71,7 @@ abstract class DataBuilder<B extends Builder<B, T, K>, T, K>  extends ExecuteLev
     @Override
     public B dataIncrement(String column, Object steps) {
         ArrayList<Object> parameters = new ArrayList<>();
-        String sqlPart = backQuote(column) + '=' + backQuote(column) + '+' +
+        String sqlPart = columnAlias(column) + '=' + columnAlias(column) + '+' +
             grammar.replaceValueAndFillParameters(steps, parameters);
         return dataGrammar(sqlPart, parameters);
     }
@@ -79,7 +79,7 @@ abstract class DataBuilder<B extends Builder<B, T, K>, T, K>  extends ExecuteLev
     @Override
     public B dataDecrement(String column, Object steps) {
         ArrayList<Object> parameters = new ArrayList<>();
-        String sqlPart = backQuote(column) + '=' + backQuote(column) + '-' +
+        String sqlPart = columnAlias(column) + '=' + columnAlias(column) + '-' +
             grammar.replaceValueAndFillParameters(steps, parameters);
         return dataGrammar(sqlPart, parameters);
     }
@@ -94,7 +94,7 @@ abstract class DataBuilder<B extends Builder<B, T, K>, T, K>  extends ExecuteLev
     public B dataBitIncrement(String column, Collection<Object> values) {
         long packed = BitUtils.packs(values);
         ArrayList<Object> parameters = new ArrayList<>();
-        String sqlPart = backQuote(column) + '=' + backQuote(column) + '|' +
+        String sqlPart = columnAlias(column) + '=' + columnAlias(column) + '|' +
                 grammar.replaceValueAndFillParameters(packed, parameters);
         return dataGrammar(sqlPart, parameters);
     }
@@ -103,7 +103,7 @@ abstract class DataBuilder<B extends Builder<B, T, K>, T, K>  extends ExecuteLev
     public  B dataBitDecrement(String column, Collection<Object> values) {
         long packed = BitUtils.packs(values);
         ArrayList<Object> parameters = new ArrayList<>();
-        String sqlPart = backQuote(column) + '=' + backQuote(column) + "& ~" +
+        String sqlPart = columnAlias(column) + '=' + columnAlias(column) + "& ~" +
                 grammar.replaceValueAndFillParameters(packed, parameters);
         return dataGrammar(sqlPart, parameters);
     }

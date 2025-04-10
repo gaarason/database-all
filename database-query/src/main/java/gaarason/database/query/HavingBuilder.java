@@ -7,7 +7,6 @@ import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
 import gaarason.database.util.BitUtils;
-import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
 
@@ -58,7 +57,7 @@ abstract class HavingBuilder<B extends Builder<B, T, K>, T, K> extends GroupBuil
     @Override
     public B having(String column, String symbol, Object value) {
         ArrayList<Object> parameters = new ArrayList<>();
-        String sqlPart = backQuote(column) + symbol + grammar.replaceValueAndFillParameters(value, parameters);
+        String sqlPart = columnAlias(column) + symbol + grammar.replaceValueAndFillParameters(value, parameters);
         havingGrammar(sqlPart, parameters, " and ");
         return getSelf();
     }
@@ -67,9 +66,9 @@ abstract class HavingBuilder<B extends Builder<B, T, K>, T, K> extends GroupBuil
     public B havingBit(String column, Object value) {
         long packed = BitUtils.pack(value);
         // column & 1
-        String sqlPart1 = backQuote(column) + "&" + packed;
+        String sqlPart1 = columnAlias(column) + "&" + packed;
         // ( column & 1 ) > 0
-        String sqlPart2 = FormatUtils.bracket(sqlPart1) + ">0";
+        String sqlPart2 = supportBracket(sqlPart1) + ">0";
         return havingRaw(sqlPart2);
     }
 
@@ -77,9 +76,9 @@ abstract class HavingBuilder<B extends Builder<B, T, K>, T, K> extends GroupBuil
     public B havingBitNot(String column, Object value) {
         long packed = BitUtils.pack(value);
         // column & 1
-        String sqlPart1 = backQuote(column) + "&" + packed;
+        String sqlPart1 = columnAlias(column) + "&" + packed;
         // ( column & 1 ) > 0
-        String sqlPart2 = FormatUtils.bracket(sqlPart1) + "=0";
+        String sqlPart2 = supportBracket(sqlPart1) + "=0";
         return havingRaw(sqlPart2);
     }
 
@@ -383,7 +382,7 @@ abstract class HavingBuilder<B extends Builder<B, T, K>, T, K> extends GroupBuil
 
     @Override
     public B havingSubQuery(String column, String symbol, String completeSql) {
-        String sqlPart = backQuote(column) + symbol + FormatUtils.bracket(completeSql);
+        String sqlPart = columnAlias(column) + symbol + supportBracket(completeSql);
         return havingRaw(sqlPart);
     }
 
@@ -391,8 +390,8 @@ abstract class HavingBuilder<B extends Builder<B, T, K>, T, K> extends GroupBuil
     public B havingSubQuery(String column, String symbol,
         BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
-        String completeSql = FormatUtils.bracket(sqlPartInfo.getSqlString());
-        String sqlPart = backQuote(column) + symbol + completeSql;
+        String completeSql = supportBracket(sqlPartInfo.getSqlString());
+        String sqlPart = columnAlias(column) + symbol + completeSql;
         return havingGrammar(sqlPart, sqlPartInfo.getParameters(), " and ");
     }
 
@@ -400,7 +399,7 @@ abstract class HavingBuilder<B extends Builder<B, T, K>, T, K> extends GroupBuil
     public B havingIn(String column, Collection<?> valueList) {
         Collection<Object> parameters = new ArrayList<>();
         String valueStr = grammar.replaceValuesAndFillParameters(ObjectUtils.typeCast(valueList), parameters, ",");
-        String sqlPart = backQuote(column) + "in" + FormatUtils.bracket(valueStr);
+        String sqlPart = columnAlias(column) + "in" + supportBracket(valueStr);
         return havingGrammar(sqlPart, parameters, " and ");
     }
 
@@ -408,19 +407,19 @@ abstract class HavingBuilder<B extends Builder<B, T, K>, T, K> extends GroupBuil
     public B havingNotIn(String column, Collection<?> valueList) {
         Collection<Object> parameters = new ArrayList<>();
         String valueStr = grammar.replaceValuesAndFillParameters(ObjectUtils.typeCast(valueList), parameters, ",");
-        String sqlPart = backQuote(column) + "not in" + FormatUtils.bracket(valueStr);
+        String sqlPart = columnAlias(column) + "not in" + supportBracket(valueStr);
         return havingGrammar(sqlPart, parameters, " and ");
     }
 
     @Override
     public B havingInRaw(String column, String sql) {
-        String sqlPart = backQuote(column) + "in" + FormatUtils.bracket(sql);
+        String sqlPart = columnAlias(column) + "in" + supportBracket(sql);
         return havingRaw(sqlPart);
     }
 
     @Override
     public B havingNotInRaw(String column, String sql) {
-        String sqlPart = backQuote(column) + "not in" + FormatUtils.bracket(sql);
+        String sqlPart = columnAlias(column) + "not in" + supportBracket(sql);
         return havingRaw(sqlPart);
     }
 
@@ -457,21 +456,21 @@ abstract class HavingBuilder<B extends Builder<B, T, K>, T, K> extends GroupBuil
     @Override
     public B havingIn(String column, BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
-        String sqlPart = backQuote(column) + "in" + FormatUtils.bracket(sqlPartInfo.getSqlString());
+        String sqlPart = columnAlias(column) + "in" + supportBracket(sqlPartInfo.getSqlString());
         return havingGrammar(sqlPart, sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
     public B havingNotIn(String column, BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
-        String sqlPart = backQuote(column) + "not in" + FormatUtils.bracket(sqlPartInfo.getSqlString());
+        String sqlPart = columnAlias(column) + "not in" + supportBracket(sqlPartInfo.getSqlString());
         return havingGrammar(sqlPart, sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
     public B havingBetween(String column, Object min, Object max) {
         Collection<Object> parameters = new ArrayList<>();
-        return havingBetweenRaw(backQuote(column), grammar.replaceValueAndFillParameters(min, parameters),
+        return havingBetweenRaw(columnAlias(column), grammar.replaceValueAndFillParameters(min, parameters),
             grammar.replaceValueAndFillParameters(max, parameters), parameters);
     }
 
@@ -490,7 +489,7 @@ abstract class HavingBuilder<B extends Builder<B, T, K>, T, K> extends GroupBuil
     @Override
     public B havingNotBetween(String column, Object min, Object max) {
         Collection<Object> parameters = new ArrayList<>();
-        return havingNotBetweenRaw(backQuote(column), grammar.replaceValueAndFillParameters(min, parameters),
+        return havingNotBetweenRaw(columnAlias(column), grammar.replaceValueAndFillParameters(min, parameters),
             grammar.replaceValueAndFillParameters(max, parameters), parameters);
     }
 
@@ -509,59 +508,59 @@ abstract class HavingBuilder<B extends Builder<B, T, K>, T, K> extends GroupBuil
 
     @Override
     public B havingNull(String column) {
-        String sqlPart = backQuote(column) + "is null";
+        String sqlPart = columnAlias(column) + "is null";
         return havingRaw(sqlPart);
     }
 
     @Override
     public B havingNotNull(String column) {
-        String sqlPart = backQuote(column) + "is not null";
+        String sqlPart = columnAlias(column) + "is not null";
         return havingRaw(sqlPart);
     }
 
     @Override
     public B havingExistsRaw(String sql) {
-        String sqlPart = "exists " + FormatUtils.bracket(sql);
+        String sqlPart = "exists " + supportBracket(sql);
         return havingRaw(sqlPart);
     }
 
     @Override
     public B havingNotExistsRaw(String sql) {
-        String sqlPart = "not exists " + FormatUtils.bracket(sql);
+        String sqlPart = "not exists " + supportBracket(sql);
         return havingRaw(sqlPart);
     }
 
     @Override
     public B havingExists(BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
-        String sql = "exists " + FormatUtils.bracket(sqlPartInfo.getSqlString());
+        String sql = "exists " + supportBracket(sqlPartInfo.getSqlString());
         return havingGrammar(sql, sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
     public B havingAnyExists(BuilderAnyWrapper closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
-        String sql = "exists " + FormatUtils.bracket(sqlPartInfo.getSqlString());
+        String sql = "exists " + supportBracket(sqlPartInfo.getSqlString());
         return havingGrammar(sql, sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
     public B havingNotExists(BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
-        String sql = "not exists " + FormatUtils.bracket(sqlPartInfo.getSqlString());
+        String sql = "not exists " + supportBracket(sqlPartInfo.getSqlString());
         return havingGrammar(sql, sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
     public B havingAnyNotExists(BuilderAnyWrapper closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
-        String sql = "not exists " + FormatUtils.bracket(sqlPartInfo.getSqlString());
+        String sql = "not exists " + supportBracket(sqlPartInfo.getSqlString());
         return havingGrammar(sql, sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
     public B havingColumn(String column1, String symbol, String column2) {
-        String sqlPart = backQuote(column1) + symbol + backQuote(column2);
+        String sqlPart = columnAlias(column1) + symbol + columnAlias(column2);
         return havingRaw(sqlPart);
     }
 
@@ -572,35 +571,35 @@ abstract class HavingBuilder<B extends Builder<B, T, K>, T, K> extends GroupBuil
 
     @Override
     public B havingNot(BuilderWrapper<B, T, K> closure) {
-        Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.HAVING);
-        return havingGrammar("!" + FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " and ");
+        Grammar.SQLPartInfo sqlPartInfo = generateSqlPart(closure, Grammar.SQLPartType.HAVING);
+        return havingGrammar("!" + supportBracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " and ");
     }
     @Override
     public B andHaving(BuilderWrapper<B, T, K> closure) {
-        Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.HAVING);
-        return havingGrammar(FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " and ");
+        Grammar.SQLPartInfo sqlPartInfo = generateSqlPart(closure, Grammar.SQLPartType.HAVING);
+        return havingGrammar(supportBracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " and ");
     }
 
     @Override
     public B orHaving(BuilderWrapper<B, T, K> closure) {
-        Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.HAVING);
-        return havingGrammar(FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " or ");
+        Grammar.SQLPartInfo sqlPartInfo = generateSqlPart(closure, Grammar.SQLPartType.HAVING);
+        return havingGrammar(supportBracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " or ");
     }
 
     @Override
     public B andHavingIgnoreEmpty(BuilderWrapper<B, T, K> closure) {
-        Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.HAVING);
+        Grammar.SQLPartInfo sqlPartInfo = generateSqlPart(closure, Grammar.SQLPartType.HAVING);
         if (!ObjectUtils.isEmpty(sqlPartInfo.getSqlString())) {
-            havingGrammar(FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " and ");
+            havingGrammar(supportBracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " and ");
         }
         return getSelf();
     }
 
     @Override
     public B orHavingIgnoreEmpty(BuilderWrapper<B, T, K> closure) {
-        Grammar.SQLPartInfo sqlPartInfo = generateSql(closure, Grammar.SQLPartType.HAVING);
+        Grammar.SQLPartInfo sqlPartInfo = generateSqlPart(closure, Grammar.SQLPartType.HAVING);
         if (!ObjectUtils.isEmpty(sqlPartInfo.getSqlString())) {
-            havingGrammar(FormatUtils.bracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " or ");
+            havingGrammar(supportBracket(sqlPartInfo.getSqlString()), sqlPartInfo.getParameters(), " or ");
         }
         return getSelf();
     }

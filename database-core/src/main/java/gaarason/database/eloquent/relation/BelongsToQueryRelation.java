@@ -107,12 +107,14 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public Builder<?, ?, ?> prepareForWhereHas(BuilderAnyWrapper customBuilder) {
-        return customBuilder.execute(ObjectUtils.typeCast(belongsToTemplate.parentModel.newQuery()))
-            .when(enableMorph, builder -> builder.where(belongsToTemplate.localModelMorphKey,
-                belongsToTemplate.localModelMorphValue))
-            .whereColumn(localModel.getTableName() + "." + belongsToTemplate.localModelForeignKey,
-                belongsToTemplate.parentModel.getTableName() + "." + belongsToTemplate.parentModelLocalKey);
+    public Builder<?, ?, ?> prepareForWhereHas(Builder<?, ?, ?> builder, BuilderAnyWrapper customBuilder) {
+        Builder<?, ?, ?> parentBuilder = customBuilder.execute(
+                ObjectUtils.typeCast(belongsToTemplate.parentModel.newQuery()));
+        return parentBuilder
+                .when(enableMorph, builder33 -> builder33.whereRaw(builder.columnAlias(belongsToTemplate.localModelMorphKey) + "=\"" +
+                        belongsToTemplate.localModelMorphValue + "\""))
+                .whereRaw(builder.columnAlias(belongsToTemplate.localModelForeignKey) + "=" +
+                        parentBuilder.columnAlias(belongsToTemplate.parentModelLocalKey));
     }
 
     @Override
@@ -121,10 +123,11 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public Builder<?, ?, ?> prepareForWhereHasIn(BuilderAnyWrapper customBuilder) {
+    public Builder<?, ?, ?> prepareForWhereHasIn(Builder<?, ?, ?> builder, BuilderAnyWrapper customBuilder) {
         return customBuilder.execute(ObjectUtils.typeCast(belongsToTemplate.parentModel.newQuery()))
-            .when(enableMorph, builder -> builder.where(belongsToTemplate.localModelMorphKey,
-                belongsToTemplate.localModelMorphValue))
+            .when(enableMorph, builder33 -> builder33
+                    .whereRaw(builder.columnAlias(belongsToTemplate.localModelMorphKey) + "=" +
+                            builder.supportValue(belongsToTemplate.localModelMorphValue)))
             .select(belongsToTemplate.parentModelLocalKey);
     }
 

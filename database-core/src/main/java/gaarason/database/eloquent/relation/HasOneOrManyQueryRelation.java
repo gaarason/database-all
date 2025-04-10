@@ -159,12 +159,14 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public Builder<?, ?, ?> prepareForWhereHas(BuilderAnyWrapper customBuilder) {
-        return customBuilder.execute(ObjectUtils.typeCast(hasOneOrManyTemplate.sonModel.newQuery()))
-            .when(enableMorph, builder -> builder.where(hasOneOrManyTemplate.sonModelMorphKey,
-                hasOneOrManyTemplate.sonModelMorphValue))
-            .whereColumn(localModel.getTableName() +"."+hasOneOrManyTemplate.localModelLocalKey,
-                hasOneOrManyTemplate.sonModel.getTableName()+"."+hasOneOrManyTemplate.sonModelForeignKey);
+    public Builder<?, ?, ?> prepareForWhereHas(Builder<?, ?, ?> builder, BuilderAnyWrapper customBuilder) {
+        Builder<?, ?, ?> sonBuilder = customBuilder.execute(
+                ObjectUtils.typeCast(hasOneOrManyTemplate.sonModel.newQuery()));
+        return sonBuilder
+                .when(enableMorph, builder33 -> builder33.where(hasOneOrManyTemplate.sonModelMorphKey,
+                        hasOneOrManyTemplate.sonModelMorphValue))
+                .whereRaw(builder.columnAlias(hasOneOrManyTemplate.localModelLocalKey) + "=" +
+                        sonBuilder.columnAlias(hasOneOrManyTemplate.sonModelForeignKey));
     }
 
     @Override
@@ -173,10 +175,10 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public Builder<?, ?, ?> prepareForWhereHasIn(BuilderAnyWrapper customBuilder) {
+    public Builder<?, ?, ?> prepareForWhereHasIn(Builder<?, ?, ?> builder, BuilderAnyWrapper customBuilder) {
         // `id`in(select `p_id` from `comment` where `p_type`="post")
         return customBuilder.execute(ObjectUtils.typeCast(hasOneOrManyTemplate.sonModel.newQuery()))
-            .when(enableMorph, builder -> builder.where(hasOneOrManyTemplate.sonModelMorphKey,
+            .when(enableMorph, builder33 -> builder33.where(hasOneOrManyTemplate.sonModelMorphKey,
                 hasOneOrManyTemplate.sonModelMorphValue))
             .select(hasOneOrManyTemplate.sonModelForeignKey);
     }

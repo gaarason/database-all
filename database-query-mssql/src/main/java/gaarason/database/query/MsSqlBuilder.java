@@ -41,7 +41,7 @@ public final class MsSqlBuilder<T, K> extends AbstractBuilder<MsSqlBuilder<T, K>
      * @return eg: sum(`order`.`amount`) AS `sum_price`
      */
     @Override
-    protected String backQuote(String something) {
+    public String supportBackQuote(String something) {
         return FormatUtils.backQuote(something, "\"");
     }
 }

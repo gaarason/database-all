@@ -46,7 +46,6 @@ public class SuperRelation extends BaseEntity {
     /** auto generator end **/
 
     public static class Model extends BaseEntity.BaseModel<SuperRelation, Long> {
-
     }
 
 }

@@ -25,6 +25,28 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 6.2.0
+
+- 查询构造器`builder`, 现在会对`select`类型语句使用表别名进行语句拼接, 即, 对`select`/`where`等所有非`**Raw`的方法的参数均拼接上当前表的别名 
+- 查询构造器`builder`中, 增加`alias`/`setAlias`/`tableAlias`/`columnAlias`等别名辅助方法
+- 查询构造器`builder`中, 增加`supportQuotes`/`supportBracket`/`supportValue`/`supportSpaces`/`supportBackQuote`等符号辅助方法
+- 查询构造器`builder`中, 更改`join`等方法的实现
+
+因此, 之前业务上的`手动别名调用场景`例如`newQuery().select("t.id").from("table as t").where("t.id")`现在需要替换为`newQuery().selectRaw("t.id").fromRaw("table as t").whereRaw("t.id")`   
+`join`相关调用如果使用的别名, 也需要对应的调整
+```java
+studentModel.newQuery().select("o.*")
+   .from("student as o")
+   .join(JoinType.RIGHT, "student as s", builder -> builder.whereColumn("o.id", "=", "s.id").where("s.id", "!=", "3").whereNotIn("s.id", "4", "5"))
+   .orderBy("o.id").get();
+```
+需要更改为
+```java
+studentModel.newQuery().select("*")
+   .join(JoinType.RIGHT, "student as s", builder -> builder.whereRaw(builder.columnAlias("id") + "=s.id").whereRaw("s.id!=3").whereRaw("s.id not in (4,5)"))
+   .orderBy("id").get();
+```
+
 ### 6.1.1
 
 - 将`toObject()`/`toObjectList`中的对象更改为引用对象, 以提高性能

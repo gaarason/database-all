@@ -1734,7 +1734,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         System.out.println("总数据量 : " + studentModel.newQuery().count("id"));
 
         long l1 = System.currentTimeMillis();
-        studentModel.newQuery().where("sex", "1").orderBy("RAND()").limit(5).get().toObjectList();
+        studentModel.newQuery().where("sex", "1").orderByRaw("RAND()").limit(5).get().toObjectList();
         System.out.println("RAND()耗时 : " + (System.currentTimeMillis() - l1));
         long l2 = System.currentTimeMillis();
         studentModel.newQuery()
@@ -2074,9 +2074,11 @@ abstract public class QueryBuilderTests extends BaseTests {
     @Test
     public void join() {
         // select `student`.*,`t`.`age` as `age2` from `student` inner join `student` as `t` on (`student`.`id`=`t`.`age`)
-        RecordList<StudentModel.Entity, Integer> student_as_t = studentModel.newQuery()
-            .select("student.*", "t.age as age2")
-            .join("student as t", "student.id", "=", "t.age")
+        MySqlBuilderV2<StudentModel.Entity, Integer> builderV2 = studentModel.newQuery();
+        RecordList<StudentModel.Entity, Integer> student_as_t = builderV2
+            .select("*")
+            .selectRaw("t.age as age2")
+            .join("student as t", "id", "=", "t.age")
             .get();
         List<Map<String, Object>> maps = student_as_t.toMapList();
         Assert.assertEquals(maps.size(), 1);
@@ -2088,9 +2090,10 @@ abstract public class QueryBuilderTests extends BaseTests {
     public void join_manyJoin() {
         // select `student`.*,`t`.`age` as `age2` from `student` inner join `student` as `t` on (`student`.`id`=`t`.`age`)
         RecordList<StudentModel.Entity, Integer> student_as_t = studentModel.newQuery()
-            .select("student.*", "t1.age as age1", "t2.age as age2")
-            .join("student as t1", "student.id", "=", "t1.age")
-            .join("student as t2", "student.id", "=", "t2.age")
+            .select("*")
+            .selectRaw( "t1.age as age1,t2.age as age2")
+            .join("student as t1", "id", "=", "t1.age")
+            .join("student as t2", "id", "=", "t2.age")
             .get();
         List<Map<String, Object>> maps = student_as_t.toMapList();
         Assert.assertEquals(maps.size(), 1);
@@ -2101,9 +2104,9 @@ abstract public class QueryBuilderTests extends BaseTests {
     @Test
     public void join_left() {
         // select `o`.* from `student` as `o` left join `student` as `s` on (`o`.`id`=`s`.`id`) order by `id` asc
-        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().select("o.*")
-            .from("student as o")
-            .join(JoinType.LEFT, "student as s", builder -> builder.whereColumn("o.id", "=", "s.id"))
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().select("*")
+            .from("student")
+            .join(JoinType.LEFT, "student as s", builder -> builder.whereRaw(builder.columnAlias("id") + "=s.id"))
             .orderBy("id").get();
         List<Map<String, Object>> maps = records.toMapList();
         Assert.assertEquals(maps.size(), 10);
@@ -2112,11 +2115,10 @@ abstract public class QueryBuilderTests extends BaseTests {
     @Test
     public void join_where() {
         // select `o`.* from `student` as `o` right join student as s on (`o`.`id`=`s`.`id` and `s`.`id`!="3" and `s`.`id`not in("4","5")) order by o.`id` asc
-        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().select("o.*")
-            .from("student as o")
-            .join(JoinType.RIGHT, "student as s", builder -> builder.whereColumn("o.id", "=", "s.id")
-                .where("s.id", "!=", "3").whereNotIn("s.id", "4", "5"))
-            .orderBy("o.id").get();
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().select("*")
+            .join(JoinType.RIGHT, "student as s", builder -> builder.whereRaw(builder.columnAlias("id") + "=s.id")
+                .whereRaw("s.id!=3").whereRaw("s.id not in (4,5)"))
+            .orderBy("id").get();
         List<Map<String, Object>> maps = records.toMapList();
         Assert.assertEquals(maps.size(), 10);
         Assert.assertNull(maps.get(0).get("id"));
@@ -2137,10 +2139,10 @@ abstract public class QueryBuilderTests extends BaseTests {
         // 找出age最大的男生女生的信息
         // select `student`.* from `student` inner join (select `sex`,max(age) as 'max_age' from `student` group by `sex`)t on (`student`.`sex`=`t`.`sex` and `student`.`age`=`t`.`max_age`);
         RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
-            .select("student.*")
+            .select("*")
             .join(JoinType.INNER,
-                builder -> builder.select("sex").selectFunction("max", "age", "max_age").group("sex"),
-                "t", builder -> builder.whereColumn("student.sex", "t.sex").whereColumn("student.age", "t.max_age"))
+                builder -> builder.select("sex").selectFunction("max", builder.columnAlias("age"), "max_age").group("sex"),
+                "t", builder -> builder.whereRaw(builder.columnAlias("sex") + "=t.sex").whereRaw(builder.columnAlias("age") + "=t.max_age"))
             .orderBy("id")
             .get();
         List<StudentModel.Entity> entities = records.toObjectList();

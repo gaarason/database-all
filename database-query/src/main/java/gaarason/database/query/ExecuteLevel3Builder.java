@@ -36,6 +36,7 @@ abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends E
     }
 
     @Override
+    @Nullable
     public Record<T, K> first() throws SQLRuntimeException {
         try {
             return firstOrFail();
@@ -320,24 +321,21 @@ abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends E
         valueList(valueListList);
     }
 
-    /**
-     * 返回数据库方法的拼接字符
-     * @param functionName 方法名
-     * @param parameter 参数字符串
-     * @param alias 别名
-     * @return 拼接后的字符
-     */
-    protected static String function(String functionName, String parameter, @Nullable String alias) {
-        return functionName + FormatUtils.bracket(parameter) +
-            (alias == null ? "" : " as " + FormatUtils.quotes(alias));
+    @Override
+    public String supportBackQuote(String something) {
+        return FormatUtils.backQuote(something, getGrammar().symbol());
     }
 
-    /**
-     * 给字段加上引号
-     * @param something 字段 eg: sum(order.amount) AS sum_price
-     * @return eg: sum(`order`.`amount`) AS `sum_price`
-     */
-    protected String backQuote(String something) {
-        return FormatUtils.backQuote(something, "`");
+    @Override
+    public String tableAlias(String table) {
+        table = table + " as " + alias();
+        return supportBackQuote(table);
     }
+
+    @Override
+    public String columnAlias(String column) {
+        column = alias() + "." + column;
+        return supportBackQuote(column);
+    }
+
 }

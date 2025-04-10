@@ -4,6 +4,7 @@ import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.function.RecordWrapper;
+import gaarason.database.contract.query.Alias;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.InvalidSqlTypeException;
@@ -33,27 +34,62 @@ public abstract class BaseGrammar implements Grammar, Serializable {
      * @see RecordWrapper
      * @see BuilderWrapper
      */
-    protected final Map<String, Object[]> withMap;
+    protected final Map<String, Object[]> withMap = new HashMap<>();
 
     /**
      * 关联关系
      */
-    protected final Map<String, Record.Relation> relationMap;
+    protected final Map<String, Record.Relation> relationMap = new HashMap<>();
 
-    /**
-     * 表名
-     */
-    protected final String table;
     /**
      * SQL片段信息MAP
      */
-    protected final Map<SQLPartType, List<SQLPartInfo>> SQLPartMap;
+    protected final Map<SQLPartType, List<SQLPartInfo>> SQLPartMap = new HashMap<>();
 
-    protected BaseGrammar(String tableName) {
-        table = tableName;
-        withMap = new HashMap<>();
-        SQLPartMap = new HashMap<>();
-        relationMap = new HashMap<>();
+    /**
+     * 符号, 用于避免关键字冲突
+     */
+    protected final String symbol;
+
+    /**
+     * 别名
+     */
+    protected Alias alias;
+
+    /**
+     * 历史别名
+     */
+    protected List<Alias> historyAliasList = new ArrayList<>();
+
+    /**
+     * 是否使用别名
+     */
+    protected boolean useAlisa = false;
+
+    protected BaseGrammar(String tableName, String symbol) {
+        this.alias = new Alias(tableName, tableName + "_" + hashCode());
+        this.symbol = symbol;
+    }
+
+    @Override
+    public String symbol() {
+        return symbol;
+    }
+
+    @Override
+    public void useAlias(boolean isUse) {
+        useAlisa = isUse;
+    }
+
+    @Override
+    public void alias(Alias alias) {
+        this.historyAliasList.add(this.alias);
+        this.alias = alias;
+    }
+
+    @Override
+    public Alias alias() {
+        return alias;
     }
 
     @Override
@@ -73,28 +109,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
     @Override
     public void addSmartSeparator(SQLPartType sqlPartType, String sqlPartString,
-        @Nullable Collection<Object> parameters) {
-        if (isEmpty(sqlPartType)) {
-            add(sqlPartType, sqlPartString, parameters);
-        } else {
-            add(sqlPartType, ',' + sqlPartString, parameters);
-        }
-    }
-
-    @Override
-    public void addFirstSmartSeparator(SQLPartType sqlPartType, String sqlPartString,
-        @Nullable Collection<Object> parameters) {
-        if (isEmpty(sqlPartType)) {
-            addFirst(sqlPartType, sqlPartString, parameters);
-        } else {
-            addFirst(sqlPartType, sqlPartString + ',', parameters);
-        }
-    }
-
-    @Override
-    public void addSmartSeparator(SQLPartType sqlPartType, String sqlPartString,
-        @Nullable Collection<Object> parameters,
-        String separator) {
+        @Nullable Collection<Object> parameters, String separator) {
         if (isEmpty(sqlPartType)) {
             add(sqlPartType, sqlPartString, parameters);
         } else {
@@ -104,8 +119,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
     @Override
     public void addFirstSmartSeparator(SQLPartType sqlPartType, String sqlPartString,
-        @Nullable Collection<Object> parameters,
-        String separator) {
+        @Nullable Collection<Object> parameters, String separator) {
         if (isEmpty(sqlPartType)) {
             addFirst(sqlPartType, sqlPartString, parameters);
         } else {
@@ -113,12 +127,17 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         }
     }
 
-    @Override
-    public void add(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters) {
+    /**
+     * 加入sql片段(片段尾部)
+     * @param sqlPartType SQL片段类型
+     * @param sqlPartString SQL片段
+     * @param parameters 绑定参数集合
+     */
+    protected void add(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters) {
         // init list
         List<SQLPartInfo> sqlParts = SQLPartMap.computeIfAbsent(sqlPartType, k -> new LinkedList<>());
         // construct
-        SQLPartInfo sqlPart = new SQLPartInfo(sqlPartString, parameters);
+        SQLPartInfo sqlPart = simpleInstanceSQLPartInfo(sqlPartString, parameters);
         // add
         sqlParts.add(sqlPart);
     }
@@ -128,12 +147,17 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         SQLPartMap.remove(sqlPartType);
     }
 
-    @Override
-    public void addFirst(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters) {
+    /**
+     * 加入sql片段(片段首部)
+     * @param sqlPartType SQL片段类型
+     * @param sqlPartString SQL片段
+     * @param parameters 绑定参数集合
+     */
+    protected void addFirst(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters) {
         // init list
         List<SQLPartInfo> sqlParts = SQLPartMap.computeIfAbsent(sqlPartType, k -> new LinkedList<>());
         // construct
-        SQLPartInfo sqlPart = new SQLPartInfo(sqlPartString, parameters);
+        SQLPartInfo sqlPart = simpleInstanceSQLPartInfo(sqlPartString, parameters);
         // add
         sqlParts.add(0, sqlPart);
     }
@@ -141,7 +165,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     @Override
     public void set(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters) {
         // construct
-        SQLPartInfo sqlPart = new SQLPartInfo(sqlPartString, parameters);
+        SQLPartInfo sqlPart = simpleInstanceSQLPartInfo(sqlPartString, parameters);
         // put
         LinkedList<SQLPartInfo> objects = new LinkedList<>();
         objects.add(sqlPart);
@@ -167,17 +191,17 @@ public abstract class BaseGrammar implements Grammar, Serializable {
                 allParameters.addAll(parameters);
             }
         }
-        return new SQLPartInfo(sqlBuilder.toString(), allParameters);
+        // 保留 别名占位符
+        return instanceSQLPartInfoWithAliasPlaceHolder(sqlBuilder.toString(), allParameters);
     }
 
-    @Override
-    public void concatenate(SqlType sqlType, SQLPartType sqlPartType, StringBuilder sqlBuilder,
+    protected void concatenate(SqlType sqlType, SQLPartType sqlPartType, StringBuilder sqlBuilder,
         Collection<Object> allParameters) {
         List<SQLPartInfo> sqlParts = SQLPartMap.get(sqlPartType);
         if (ObjectUtils.isEmpty(sqlParts)) {
             // 使用默认值
             sqlParts = getDefault(sqlPartType);
-            if(ObjectUtils.isEmpty(sqlParts)) {
+            if (ObjectUtils.isEmpty(sqlParts)) {
                 return;
             }
         }
@@ -207,7 +231,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
     }
 
-    void choreography(SqlType sqlType, StringBuilder sqlBuilder, Collection<Object> allParameters,
+    protected void choreography(SqlType sqlType, StringBuilder sqlBuilder, Collection<Object> allParameters,
         SQLPartType... sqlPartTypes) {
         for (SQLPartType sqlPartType : sqlPartTypes) {
             concatenate(sqlType, sqlPartType, sqlBuilder, allParameters);
@@ -221,31 +245,36 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
         switch (sqlType) {
             case REPLACE:
+                useAlisa = false;
                 sqlBuilder.append("replace into ");
                 choreography(sqlType, sqlBuilder, allParameters, SQLPartType.TABLE, SQLPartType.COLUMN,
                     SQLPartType.VALUE);
-                return new SQLPartInfo(sqlBuilder.toString(), allParameters);
+                return instanceSQLPartInfo(sqlBuilder.toString(), allParameters);
             case INSERT:
+                useAlisa = false;
                 sqlBuilder.append("insert into ");
                 choreography(sqlType, sqlBuilder, allParameters, SQLPartType.TABLE, SQLPartType.COLUMN,
                     SQLPartType.VALUE);
-                return new SQLPartInfo(sqlBuilder.toString(), allParameters);
-
+                return instanceSQLPartInfo(sqlBuilder.toString(), allParameters);
             case UPDATE:
+                useAlisa = false;
                 sqlBuilder.append("update ");
                 choreography(sqlType, sqlBuilder, allParameters, SQLPartType.TABLE, SQLPartType.FORCE_INDEX,
                     SQLPartType.IGNORE_INDEX, SQLPartType.DATA);
                 break;
-            case SELECT:
-                choreography(sqlType, sqlBuilder, allParameters, SQLPartType.SELECT, SQLPartType.FROM,
-                    SQLPartType.FORCE_INDEX, SQLPartType.IGNORE_INDEX);
-                break;
             case DELETE:
-                sqlBuilder.append("delete");
-                choreography(sqlType, sqlBuilder, allParameters, SQLPartType.FROM, SQLPartType.FORCE_INDEX,
+                useAlisa = false;
+                sqlBuilder.append("delete from ");
+                choreography(sqlType, sqlBuilder, allParameters, SQLPartType.TABLE, SQLPartType.FORCE_INDEX,
                     SQLPartType.IGNORE_INDEX);
                 break;
+            case SELECT:
+                useAlisa = true;
+                choreography(sqlType, sqlBuilder, allParameters, SQLPartType.SELECT, SQLPartType.FROM,
+                        SQLPartType.FORCE_INDEX, SQLPartType.IGNORE_INDEX);
+                break;
             case SUB_QUERY:
+                useAlisa = true;
                 break;
             default:
                 throw new InvalidSqlTypeException();
@@ -259,7 +288,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
             choreography(sqlType, sqlBuilder, allParameters, SQLPartType.UNION);
         }
 
-        return new SQLPartInfo(sqlBuilder.toString(), allParameters);
+        return instanceSQLPartInfo(sqlBuilder.toString(), allParameters);
     }
 
     /**
@@ -269,12 +298,15 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     protected List<SQLPartInfo> getDefault(SQLPartType type) {
         switch (type) {
             case TABLE:
+                // `table_name`
+                return Collections.singletonList(simpleInstanceSQLPartInfo(symbol + alias.getTable() + symbol, null));
             case FROM:
-                return Collections.singletonList(new SQLPartInfo(table));
+                // `table_name` as `alias`
+                return Collections.singletonList(simpleInstanceSQLPartInfo(symbol + alias.getTable() + symbol + " as " + symbol + alias + symbol, null));
             case SELECT:
-                return Collections.singletonList(new SQLPartInfo("*"));
+                return Collections.singletonList(simpleInstanceSQLPartInfo("*", null));
             case VALUE:
-                return Collections.singletonList( new SQLPartInfo("()"));
+                return Collections.singletonList( simpleInstanceSQLPartInfo("()", null));
         }
         return null;
     }
@@ -302,5 +334,55 @@ public abstract class BaseGrammar implements Grammar, Serializable {
             SQLPartInfo partInfo = grammar.get(type);
             add(type, partInfo.getSqlString(), partInfo.getParameters());
         }
+    }
+
+    /**
+     * 获取 SQLPartInfo 对象
+     * 并根据 useAlise 解析别名占位符 (替换掉所有占位符)
+     * @param sqlString sql片段
+     * @param parameters 绑定参数
+     * @return SQL片段信息
+     */
+    protected SQLPartInfo instanceSQLPartInfo(String sqlString, @Nullable Collection<Object> parameters) {
+        String sql;
+        if (useAlisa) {
+            // 历史处理
+            for (Alias historyAlias : historyAliasList) {
+                sqlString = sqlString.replace(historyAlias.getAliasPlaceHolder(), alias.getAlias());
+            }
+            sql = sqlString.replace(alias.getAliasPlaceHolder(), alias.getAlias());
+        } else {
+            // 历史处理
+            for (Alias historyAlias : historyAliasList) {
+                sqlString = sqlString.replace(symbol + historyAlias.getAliasPlaceHolder() + symbol + ".", "");
+            }
+            sql = sqlString.replace(symbol + alias.getAliasPlaceHolder() + symbol + ".", "");
+        }
+        return simpleInstanceSQLPartInfo(sql, parameters);
+    }
+
+    /**
+     * 获取 SQLPartInfo 对象
+     * 并统一别名占位符 (保留唯一一个别名占位符)
+     * @param sqlString sql片段
+     * @param parameters 绑定参数
+     * @return SQL片段信息
+     */
+    protected SQLPartInfo instanceSQLPartInfoWithAliasPlaceHolder(String sqlString, @Nullable Collection<Object> parameters) {
+        // 历史处理
+        for (Alias historyAlias : historyAliasList) {
+            sqlString = sqlString.replace(historyAlias.getAliasPlaceHolder(), alias.getAliasPlaceHolder());
+        }
+        return simpleInstanceSQLPartInfo(sqlString, parameters);
+    }
+
+    /**
+     * 实例化对象
+     * @param sqlString sql片段
+     * @param parameters 绑定参数
+     * @return SQL片段信息
+     */
+    protected SQLPartInfo simpleInstanceSQLPartInfo(String sqlString, @Nullable Collection<Object> parameters) {
+        return new SQLPartInfo(sqlString, parameters);
     }
 }

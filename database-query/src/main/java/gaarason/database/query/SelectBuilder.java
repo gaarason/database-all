@@ -5,7 +5,6 @@ import gaarason.database.contract.function.BuilderWrapper;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
 import gaarason.database.support.EntityMember;
-import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 
 import java.util.Collection;
@@ -27,7 +26,7 @@ abstract class SelectBuilder<B extends Builder<B, T, K>, T, K> extends OrderBuil
 
     @Override
     public B select(String column) {
-        String sqlPart = backQuote(column);
+        String sqlPart = columnAlias(column);
         return selectRaw(sqlPart);
     }
 
@@ -64,11 +63,9 @@ abstract class SelectBuilder<B extends Builder<B, T, K>, T, K> extends OrderBuil
     public B select(Class<?> anyEntityClass) {
         EntityMember<?, Object> entityMember = modelShadowProvider.parseAnyEntityWithCache(anyEntityClass);
         List<String> columnList = entityMember.getSelectColumnList();
-        // 缓存存取
-        String columnString = entityMember.getSelectColumnString(
-                gaarasonDataSource.getQueryBuilder().getValueSymbol(),
-                () -> columnList.stream().map(this::backQuote).collect(
-                        Collectors.joining(",")));
+
+        String columnString = columnList.stream().map(this::columnAlias).collect(
+                        Collectors.joining(","));
 
         return selectRaw(columnString);
     }
@@ -84,7 +81,7 @@ abstract class SelectBuilder<B extends Builder<B, T, K>, T, K> extends OrderBuil
     @Override
     public B selectFunction(String function, String parameter, @Nullable String alias) {
         String sqlPart =
-            function + FormatUtils.bracket(parameter) + (alias == null ? "" : " as " + FormatUtils.quotes(alias));
+            function + supportBracket(parameter) + (alias == null ? "" : " as " + supportQuotes(alias));
         return selectRaw(sqlPart);
     }
 
@@ -100,7 +97,7 @@ abstract class SelectBuilder<B extends Builder<B, T, K>, T, K> extends OrderBuil
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
         String completeSql = sqlPartInfo.getSqlString();
         String sqlPart =
-            function + FormatUtils.bracket(completeSql) + (alias == null ? "" : " as " + FormatUtils.quotes(alias));
+            function + supportBracket(completeSql) + (alias == null ? "" : " as " + supportQuotes(alias));
         return selectGrammar(sqlPart, sqlPartInfo.getParameters());
     }
 
@@ -113,6 +110,6 @@ abstract class SelectBuilder<B extends Builder<B, T, K>, T, K> extends OrderBuil
 
     @Override
     public B selectCustom(String columnName, String value) {
-        return selectRaw(value + " as " + backQuote(columnName));
+        return selectRaw(value + " as " + supportBackQuote(columnName));
     }
 }

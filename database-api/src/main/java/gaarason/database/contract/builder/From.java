@@ -16,6 +16,23 @@ public interface From<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 更改查询的表名
+     * 用于非查询语句
+     * @param sqlPart sql片段
+     * @return 查询构造器
+     */
+    B tableRaw(@Nullable String sqlPart);
+
+    /**
+     * 更改查询的表名
+     * 用于非查询语句
+     * @param table 表名
+     * @return 查询构造器
+     */
+    B table(String table);
+
+    /**
+     * 更改查询的表名
+     * 仅查询语句, 非查询语句请使用 table()
      * @param sqlPart sql片段
      * @return 查询构造器
      */
@@ -23,6 +40,7 @@ public interface From<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 更改查询的表名
+     * 仅查询语句, 非查询语句请使用 table()
      * @param sqlPart sql片段
      * @param parameters 绑定的参数
      * @return 查询构造器
@@ -45,6 +63,7 @@ public interface From<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 临时表查询
+     * 仅查询语句, 非查询语句请使用 table()
      * @param alias 临时表别名
      * @param closure 闭包
      * @return 查询构造器
@@ -53,6 +72,7 @@ public interface From<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 临时表查询
+     * 仅查询语句, 非查询语句请使用 table()
      * @param alias 临时表别名
      * @param sql 完整查询语句
      * @return 查询构造器

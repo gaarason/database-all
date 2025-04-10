@@ -127,25 +127,27 @@ public interface RelationSubQuery {
 
     /**
      * 实现 whereHas
+     * @param builder 当前查询构造器
      * @param customBuilder 查询构造器包装
      * @return 查询构造器
      */
-    Builder<?, ?, ?> prepareForWhereHas(BuilderAnyWrapper customBuilder);
+    Builder<?, ?, ?> prepareForWhereHas(Builder<?, ?, ?> builder, BuilderAnyWrapper customBuilder);
 
     /**
      * whereHasIn的本地键
      * @return whereHasIn的本地键
-     * @see #prepareForWhereHasIn(BuilderAnyWrapper)
+     * @see #prepareForWhereHasIn(Builder, BuilderAnyWrapper)
      */
     String localKeyForWhereHasIn();
 
     /**
      * 实现 whereHasIn
+     * @param builder 当前查询构造器
      * @param customBuilder 查询构造器包装
      * @return 查询构造器
      * @see #localKeyForWhereHasIn()
      */
-    Builder<?, ?, ?> prepareForWhereHasIn(BuilderAnyWrapper customBuilder);
+    Builder<?, ?, ?> prepareForWhereHasIn(Builder<?, ?, ?> builder, BuilderAnyWrapper customBuilder);
 
     /**
      * 增加关联关系

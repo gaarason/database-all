@@ -16,6 +16,30 @@ import java.util.Map;
 public interface Grammar {
 
     /**
+     * 引号
+     * @return 反引号 or 引号, 一般根据数据库锁支持的来
+     */
+    String symbol();
+
+    /**
+     * 是否使用别名
+     * @param isUse 使用别名
+     */
+    void useAlias(boolean isUse);
+
+    /**
+     * 同步别名
+     * @param alias 别名
+     */
+    void alias(Alias alias);
+
+    /**
+     * 获取别名
+     * @return 当前别名
+     */
+    Alias alias();
+
+    /**
      * 返回替换参数后的字符, 并填充到"绑定参数集合"
      * @param value 参数 eg: 1
      * @param parameters 绑定参数集合, 引用地址
@@ -36,22 +60,6 @@ public interface Grammar {
      * @param sqlPartType SQL片段类型
      * @param sqlPartString SQL片段
      * @param parameters 绑定参数集合
-     */
-    void addSmartSeparator(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters);
-
-    /**
-     * 加入sql片段(片段首部), 自动处理首个的情况
-     * @param sqlPartType SQL片段类型
-     * @param sqlPartString SQL片段
-     * @param parameters 绑定参数集合
-     */
-    void addFirstSmartSeparator(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters);
-
-    /**
-     * 加入sql片段(片段尾部), 自动处理首个的情况
-     * @param sqlPartType SQL片段类型
-     * @param sqlPartString SQL片段
-     * @param parameters 绑定参数集合
      * @param separator 分割符号
      */
     void addSmartSeparator(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters,
@@ -66,22 +74,6 @@ public interface Grammar {
      */
     void addFirstSmartSeparator(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters,
         String separator);
-
-    /**
-     * 加入sql片段(片段尾部)
-     * @param sqlPartType SQL片段类型
-     * @param sqlPartString SQL片段
-     * @param parameters 绑定参数集合
-     */
-    void add(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters);
-
-    /**
-     * 加入sql片段(片段首部)
-     * @param sqlPartType SQL片段类型
-     * @param sqlPartString SQL片段
-     * @param parameters 绑定参数集合
-     */
-    void addFirst(SQLPartType sqlPartType, String sqlPartString, @Nullable Collection<Object> parameters);
 
     /**
      * 清空指定sql片段类型
@@ -109,16 +101,6 @@ public interface Grammar {
      * @return SQL片段信息
      */
     SQLPartInfo get(SQLPartType sqlPartType);
-
-    /**
-     * 连接sql片段
-     * @param sqlType SQL类型
-     * @param sqlPartType SQL片段类型
-     * @param sqlBuilder SQL 语句构造器
-     * @param allParameters 绑定参数 收集集合
-     */
-    void concatenate(SqlType sqlType, SQLPartType sqlPartType, StringBuilder sqlBuilder,
-        Collection<Object> allParameters);
 
     /**
      * 按照类型生成sql

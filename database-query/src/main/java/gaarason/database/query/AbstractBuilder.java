@@ -12,7 +12,6 @@ import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
 import gaarason.database.support.EntityMember;
 import gaarason.database.support.FieldRelationMember;
-import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
 
@@ -54,21 +53,43 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
 
     @Override
     public B forceIndex(String indexName) {
-        grammar.addSmartSeparator(Grammar.SQLPartType.FORCE_INDEX, FormatUtils.column(indexName), null);
+        grammar.addSmartSeparator(Grammar.SQLPartType.FORCE_INDEX, supportBackQuote(indexName), null, ",");
         return getSelf();
     }
 
     @Override
     public B ignoreIndex(String indexName) {
-        grammar.addSmartSeparator(Grammar.SQLPartType.IGNORE_INDEX, FormatUtils.column(indexName), null);
+        grammar.addSmartSeparator(Grammar.SQLPartType.IGNORE_INDEX, supportBackQuote(indexName), null, ",");
         return getSelf();
+    }
+
+    protected B tableGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
+        grammar.set(Grammar.SQLPartType.TABLE, sqlPart, parameters);
+        return getSelf();
+    }
+
+    protected B fromGrammar(String sqlPart, @Nullable Collection<Object> parameters, @Nullable String alise) {
+        grammar.set(Grammar.SQLPartType.FROM, sqlPart, parameters);
+        return setAlias(alise);
+    }
+
+    @Override
+    public B tableRaw(@Nullable String sqlPart) {
+        if (!ObjectUtils.isEmpty(sqlPart)) {
+            tableGrammar(sqlPart, null);
+        }
+        return getSelf();
+    }
+
+    @Override
+    public B table(String table) {
+        return tableRaw(supportBackQuote(table));
     }
 
     @Override
     public B fromRaw(@Nullable String sqlPart) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
-            grammar.set(Grammar.SQLPartType.FROM, sqlPart, null);
-            grammar.set(Grammar.SQLPartType.TABLE, sqlPart, null);
+            return fromGrammar(sqlPart, null, null);
         }
         return getSelf();
     }
@@ -76,15 +97,15 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
     @Override
     public B fromRaw(@Nullable String sqlPart, Collection<?> parameters) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
-            grammar.set(Grammar.SQLPartType.FROM, sqlPart, ObjectUtils.typeCast(parameters));
-            grammar.set(Grammar.SQLPartType.TABLE, sqlPart, ObjectUtils.typeCast(parameters));
+            return fromGrammar(sqlPart, ObjectUtils.typeCast(parameters), null);
         }
         return getSelf();
     }
 
     @Override
     public B from(String table) {
-        return fromRaw(backQuote(table));
+        table(table);
+        return fromRaw(tableAlias(table));
     }
 
     @Override
@@ -96,15 +117,13 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
     @Override
     public B from(String alias, BuilderAnyWrapper closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
-        String sqlPart = FormatUtils.bracket(sqlPartInfo.getSqlString()) + alias;
-        grammar.set(Grammar.SQLPartType.FROM, sqlPart, sqlPartInfo.getParameters());
-        grammar.set(Grammar.SQLPartType.TABLE, sqlPart, sqlPartInfo.getParameters());
-        return getSelf();
+        String sqlPart = supportBracket(sqlPartInfo.getSqlString()) + alias;
+        return fromGrammar(sqlPart, sqlPartInfo.getParameters(), alias);
     }
 
     @Override
     public B from(String alias, String sql) {
-        return fromRaw(FormatUtils.bracket(sql) + alias);
+        return fromGrammar(supportBracket(sql) + alias, null, alias);
     }
 
     @Override
@@ -123,12 +142,12 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
     @Override
     public B value(@Nullable Collection<?> values) {
         if (ObjectUtils.isEmpty(values)) {
-            grammar.addSmartSeparator(Grammar.SQLPartType.VALUE, "()", null);
+            grammar.addSmartSeparator(Grammar.SQLPartType.VALUE, "()", null, ",");
             return getSelf();
         }
         Collection<Object> parameters = new ArrayList<>();
-        String sqlPart = FormatUtils.bracket(grammar.replaceValuesAndFillParameters(values, parameters, ","));
-        grammar.addSmartSeparator(Grammar.SQLPartType.VALUE, sqlPart, parameters);
+        String sqlPart = supportBracket(grammar.replaceValuesAndFillParameters(values, parameters, ","));
+        grammar.addSmartSeparator(Grammar.SQLPartType.VALUE, sqlPart, parameters, ",");
         return getSelf();
     }
 
@@ -155,16 +174,16 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
     @Override
     public B union(BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
-        grammar.add(Grammar.SQLPartType.UNION, "union" + FormatUtils.bracket(sqlPartInfo.getSqlString()),
-            sqlPartInfo.getParameters());
+        grammar.addSmartSeparator(Grammar.SQLPartType.UNION, "union" + supportBracket(sqlPartInfo.getSqlString()),
+            sqlPartInfo.getParameters(), " ");
         return getSelf();
     }
 
     @Override
     public B unionAll(BuilderWrapper<B, T, K> closure) {
         Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
-        grammar.add(Grammar.SQLPartType.UNION, "union all" + FormatUtils.bracket(sqlPartInfo.getSqlString()),
-            sqlPartInfo.getParameters());
+        grammar.addSmartSeparator(Grammar.SQLPartType.UNION, "union all" + supportBracket(sqlPartInfo.getSqlString()),
+            sqlPartInfo.getParameters(), " ");
         return getSelf();
     }
 
@@ -194,59 +213,52 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
 
     @Override
     public B joinRaw(@Nullable String sqlPart) {
-        if (!ObjectUtils.isEmpty(sqlPart)) {
-            grammar.add(Grammar.SQLPartType.JOIN, sqlPart, null);
-        }
-        return getSelf();
+        return joinRaw(sqlPart, null);
     }
 
     @Override
     public B joinRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters) {
         if (!ObjectUtils.isEmpty(sqlPart)) {
-            grammar.add(Grammar.SQLPartType.JOIN, sqlPart,
-                ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters));
+            grammar.addSmartSeparator(Grammar.SQLPartType.JOIN, sqlPart,
+                ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters), " ");
         }
         return getSelf();
     }
 
     @Override
-    public B join(String table, String column1, String symbol, String column2) {
-        return join(JoinType.INNER, table, builder -> builder.whereColumn(column1, symbol, column2));
+    public B join(String joinTable, String localColumn, String symbol, String joinTableColumn) {
+        return join(JoinType.INNER, joinTable, localColumn, symbol, joinTableColumn);
     }
 
     @Override
-    public B join(JoinType joinType, String table, String column1, String symbol, String column2) {
-        return join(joinType, table, builder -> builder.whereColumn(column1, symbol, column2));
+    public B join(JoinType joinType, String joinTable, String localColumn, String symbol, String joinTableColumn) {
+        return join(joinType, joinTable, builder -> builder.whereRaw(builder.columnAlias(localColumn) + symbol + joinTableColumn));
     }
 
     @Override
     public B join(JoinType joinType, BuilderWrapper<B, T, K> tempTable, String alias,
         BuilderWrapper<B, T, K> joinConditions) {
         Grammar.SQLPartInfo tableInfo = generateSql(tempTable);
-        String table = FormatUtils.bracket(tableInfo.getSqlString()) + alias;
+        String table = supportBracket(tableInfo.getSqlString()) + alias;
 
-        Grammar.SQLPartInfo conditions = generateSql(joinConditions, Grammar.SQLPartType.WHERE);
-        String sqlPart = FormatUtils.spaces(joinType.getOperation()) + "join " + table + FormatUtils.spaces("on") +
-            FormatUtils.bracket(conditions.getSqlString());
+        Grammar.SQLPartInfo conditions = generateSqlPart(joinConditions, Grammar.SQLPartType.WHERE);
+        String sqlPart = supportSpaces(joinType.getOperation()) + "join " + table + supportSpaces("on") +
+            supportBracket(conditions.getSqlString());
 
         Collection<Object> parameters = tableInfo.getParameters();
         assert parameters != null;
         assert conditions.getParameters() != null;
         parameters.addAll(conditions.getParameters());
 
-        grammar.add(Grammar.SQLPartType.JOIN, sqlPart, parameters);
-
-        return getSelf();
+        return joinRaw(sqlPart, parameters);
     }
 
     @Override
-    public B join(JoinType joinType, String table,
-        BuilderWrapper<B, T, K> joinConditions) {
-        Grammar.SQLPartInfo conditions = generateSql(joinConditions, Grammar.SQLPartType.WHERE);
-        String sqlPart = FormatUtils.spaces(joinType.getOperation()) + "join " + table + FormatUtils.spaces("on") +
-            FormatUtils.bracket(conditions.getSqlString());
-        grammar.add(Grammar.SQLPartType.JOIN, sqlPart, conditions.getParameters());
-        return getSelf();
+    public B join(JoinType joinType, String joinTable, BuilderWrapper<B, T, K> joinConditions) {
+        Grammar.SQLPartInfo conditions = generateSqlPart(joinConditions, Grammar.SQLPartType.WHERE);
+        String sqlPart = supportSpaces(joinType.getOperation()) + "join " + joinTable + supportSpaces("on") +
+            supportBracket(conditions.getSqlString());
+        return joinRaw(sqlPart, conditions.getParameters());
     }
 
     @Override
@@ -275,7 +287,12 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
     @Override
     public B when(boolean condition, BuilderWrapper<B, T, K> closureIfTrue,
         BuilderWrapper<B, T, K> closureIfFalse) {
-        return condition ? closureIfTrue.execute(getSelf()) : closureIfFalse.execute(getSelf());
+        if (condition) {
+            closureIfTrue.execute(getSelf());
+        } else {
+            closureIfFalse.execute(getSelf());
+        }
+        return getSelf();
     }
 
 
@@ -286,7 +303,7 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
 
     @Override
     public B column(String column) {
-        String sqlPart = backQuote(column);
+        String sqlPart = columnAlias(column);
         return columnRaw(sqlPart);
     }
 
@@ -324,7 +341,7 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
         FieldRelationMember relationMember = entityMember.getFieldRelationMemberByFieldName(
                 relationFieldName);
 
-        return whereAnyExists(builder -> (relationMember.getRelationSubQuery().prepareForWhereHas(closure)));
+        return whereAnyExists(builder -> (relationMember.getRelationSubQuery().prepareForWhereHas(builder, closure)));
     }
 
     @Override
@@ -334,7 +351,7 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
         FieldRelationMember relationMember = entityMember.getFieldRelationMemberByFieldName(
                 relationFieldName);
 
-        return whereAnyNotExists(builder -> (relationMember.getRelationSubQuery().prepareForWhereHas(closure)));
+        return whereAnyNotExists(builder -> (relationMember.getRelationSubQuery().prepareForWhereHas(builder, closure)));
     }
 
     @Override
@@ -345,7 +362,7 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
                 relationFieldName);
         RelationSubQuery relationSubQuery = relationMember.getRelationSubQuery();
         return whereIn(relationSubQuery.localKeyForWhereHasIn(),
-                builder -> ObjectUtils.typeCast(relationSubQuery.prepareForWhereHasIn(closure)));
+                builder -> ObjectUtils.typeCast(relationSubQuery.prepareForWhereHasIn(builder, closure)));
     }
 
     @Override
@@ -356,7 +373,7 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
                 relationFieldName);
         RelationSubQuery relationSubQuery = relationMember.getRelationSubQuery();
         return whereNotIn(relationSubQuery.localKeyForWhereHasIn(),
-                builder -> ObjectUtils.typeCast(relationSubQuery.prepareForWhereHasIn(closure)));
+                builder -> ObjectUtils.typeCast(relationSubQuery.prepareForWhereHasIn(builder, closure)));
     }
 
     @Override

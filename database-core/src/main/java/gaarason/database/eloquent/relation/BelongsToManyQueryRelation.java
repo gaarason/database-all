@@ -1,7 +1,6 @@
 package gaarason.database.eloquent.relation;
 
 import gaarason.database.annotation.BelongsToMany;
-import gaarason.database.appointment.JoinType;
 import gaarason.database.appointment.RelationCache;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
@@ -271,27 +270,26 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public Builder<?, ?, ?> prepareForWhereHas(BuilderAnyWrapper customBuilder) {
-        String localModelTableName = localModel.getTableName();
+    public Builder<?, ?, ?> prepareForWhereHas(Builder<?, ?, ?> builder, BuilderAnyWrapper customBuilder) {
         String relationModelTableName = belongsToManyTemplate.relationModel.getTableName();
-        String targetModelTableName = belongsToManyTemplate.targetModel.getTableName();
         // 完成SQL 大致是:  SELECT * FROM student WHERE id in (7,8,9,10) and not EXISTS
-        // (select * from teacher INNER JOIN relationship_student_teacher on  `relationship_student_teacher`.teacher_id = `teacher`.id  where `relationship_student_teacher`.student_id = `student`.id );
+        // (select * from teacher INNER JOIN relationship_student_teacher on `relationship_student_teacher`.teacher_id = `teacher`.id
+        // where `relationship_student_teacher`.student_id = `student`.id );
 
-        // 此处的SQL 大致是: select * from teacher INNER JOIN relationship_student_teacher on  `relationship_student_teacher`.teacher_id = `teacher`.id
+        // 此处的SQL 大致是: select * from teacher INNER JOIN relationship_student_teacher on `relationship_student_teacher`.teacher_id = `teacher`.id
         // where `relationship_student_teacher`.student_id = `student`.id
+        Builder<?, ?, ?> realtionBuilder = belongsToManyTemplate.relationModel.newQuery();
         return customBuilder.execute(ObjectUtils.typeCast(belongsToManyTemplate.targetModel.newQuery()))
-            .join(JoinType.INNER, relationModelTableName, builder -> builder.whereColumn(
-                    relationModelTableName + "." + belongsToManyTemplate.foreignKeyForTargetModel,
-                    targetModelTableName + "." + belongsToManyTemplate.targetModelLocalKey)
-                .when(enableTargetModelMorph, morphBuilder -> morphBuilder.where(
-                    relationModelTableName + "." + belongsToManyTemplate.morphKeyForTargetModel,
-                    belongsToManyTemplate.morphValueForTargetModel)))
-            .whereColumn(relationModelTableName + "." + belongsToManyTemplate.foreignKeyForLocalModel,
-                localModelTableName + "." + belongsToManyTemplate.localModelLocalKey)
-            .when(enableLocalModelMorph,
-                builder -> builder.where(relationModelTableName + "." + belongsToManyTemplate.morphKeyForLocalModel,
-                    belongsToManyTemplate.morphValueForLocalModel));
+                .join(realtionBuilder.tableAlias(relationModelTableName), belongsToManyTemplate.targetModelLocalKey, "=", realtionBuilder.columnAlias(belongsToManyTemplate.foreignKeyForTargetModel))
+                .whereRaw(realtionBuilder.columnAlias(belongsToManyTemplate.foreignKeyForLocalModel) + "=" +
+                        builder.columnAlias(belongsToManyTemplate.localModelLocalKey))
+                .andWhereIgnoreEmpty(builder1 -> realtionBuilder)
+                .when(enableTargetModelMorph, morphBuilder -> morphBuilder.whereRaw(
+                        realtionBuilder.columnAlias(belongsToManyTemplate.morphKeyForTargetModel) + "=" +
+                                morphBuilder.supportValue(belongsToManyTemplate.morphValueForTargetModel)))
+                .when(enableLocalModelMorph,
+                        builder33 -> builder33.whereRaw(realtionBuilder.columnAlias(belongsToManyTemplate.morphKeyForLocalModel) + "=" +
+                                builder33.supportValue(belongsToManyTemplate.morphValueForLocalModel)));
     }
 
     @Override
@@ -300,7 +298,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public Builder<?, ?, ?> prepareForWhereHasIn(BuilderAnyWrapper customBuilder) {
+    public Builder<?, ?, ?> prepareForWhereHasIn(Builder<?, ?, ?> builder, BuilderAnyWrapper customBuilder) {
         // 中间表 表名
         String relationTableName = belongsToManyTemplate.relationModel.getTableName();
         // 目标表 表名
@@ -312,17 +310,17 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         //    FROM relationship_student_teacher rst
         //    INNER JOIN teacher t ON rst.teacher_id = t.id
         // )
-        return customBuilder.execute(ObjectUtils.typeCast(belongsToManyTemplate.relationModel.newQuery()))
-                .select(relationTableName + "." + belongsToManyTemplate.foreignKeyForLocalModel)
-                .join(JoinType.INNER, targetTableName, builder -> builder.whereColumn(
-                                relationTableName + "." + belongsToManyTemplate.foreignKeyForTargetModel,
-                                targetTableName + "." + belongsToManyTemplate.targetModelLocalKey)
-                        .when(enableTargetModelMorph, morphBuilder -> morphBuilder.where(
-                                relationTableName + "." + belongsToManyTemplate.morphKeyForTargetModel,
-                                belongsToManyTemplate.morphValueForTargetModel)))
+        Builder<?, ?, ?> realtionBuilder = belongsToManyTemplate.relationModel.newQuery();
+        return customBuilder.execute(ObjectUtils.typeCast(belongsToManyTemplate.targetModel.newQuery()))
+                .selectRaw(realtionBuilder.columnAlias( belongsToManyTemplate.foreignKeyForLocalModel))
+                .join(realtionBuilder.tableAlias(relationTableName), belongsToManyTemplate.targetModelLocalKey, "=", realtionBuilder.columnAlias(belongsToManyTemplate.foreignKeyForTargetModel))
+                .andWhereIgnoreEmpty(builder1 -> realtionBuilder)
+                .when(enableTargetModelMorph, morphBuilder -> morphBuilder.whereRaw(
+                        realtionBuilder.columnAlias(belongsToManyTemplate.morphKeyForTargetModel) + "=" +
+                                morphBuilder.supportValue(belongsToManyTemplate.morphValueForTargetModel)))
                 .when(enableLocalModelMorph,
-                        builder -> builder.where(relationTableName + "." + belongsToManyTemplate.morphKeyForLocalModel,
-                                belongsToManyTemplate.morphValueForLocalModel));
+                        builder33 -> builder33.whereRaw(realtionBuilder.columnAlias( belongsToManyTemplate.morphKeyForLocalModel) + "=" +
+                                builder33.supportValue(belongsToManyTemplate.morphValueForLocalModel)));
     }
 
     @Override

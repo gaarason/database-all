@@ -6,6 +6,7 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.BuilderWrapper;
+import gaarason.database.contract.query.Alias;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.contract.support.LambdaStyle;
 import gaarason.database.contract.support.ShowType;
@@ -69,9 +70,83 @@ public interface Support<B extends Builder<B, T, K>, T, K> extends LambdaStyle, 
      * @return 查询构造器
      * @param <BB> 子类类形
      */
-    default  <BB extends Builder<BB, TT, KK>, TT, KK> BB showType(ShowType<BB> builderClass) {
+    default <BB extends Builder<BB, TT, KK>, TT, KK> BB showType(ShowType<BB> builderClass) {
         return (BB) getSelf();
     }
+
+    default Alias alias() {
+        return getGrammar().alias();
+    }
+
+    default B setAlias(Alias alias) {
+        getGrammar().alias(alias);
+        return getSelf();
+    }
+
+    default B setAlias(@Nullable String alias) {
+        if (alias != null) {
+            getGrammar().alias().setAlias(alias);
+        }
+        return getSelf();
+    }
+
+    /**
+     * 给something加上单引号
+     * @param something 别名 eg: alice
+     * @return eg: 'alice'
+     */
+    default String supportQuotes(String something) {
+        return '\'' + something.trim() + '\'';
+    }
+
+    /**
+     * 给something加上括号
+     * @param something 字段 eg:1765595948
+     * @return eg:(1765595948)
+     */
+    default String supportBracket(String something) {
+        return "(" + something + ")";
+    }
+
+    /**
+     * 给something加上分割符
+     * 对mysql来说, 是双引号
+     * @param something 字段 eg:1765595948
+     * @return eg:(1765595948)
+     */
+    default String supportValue(String something) {
+        return "\"" + something + "\"";
+    }
+
+    /**
+     * 给something两端空格
+     * @param something 字段 eg:abd
+     * @return eg: abd
+     */
+    default String supportSpaces(String something) {
+        return ' ' + something.trim() + ' ';
+    }
+
+    /**
+     * 给字段加上引号
+     * @param something 字段 eg: sum(order.amount) AS sum_price
+     * @return eg: sum(`order`.`amount`) AS `sum_price`
+     */
+    String supportBackQuote(String something);
+
+    /**
+     * 给表名进行别名化
+     * @param table 表名 eg: table
+     * @return eg: `table` as `table_12376541`
+     */
+    String tableAlias(String table);
+
+    /**
+     * 给列名增肌别名
+     * @param column 列名 eg: name
+     * @return eg: `table_12376541`.`name`
+     */
+    String columnAlias(String column);
 
     /**
      * 清除指定的sql片段
@@ -132,7 +207,7 @@ public interface Support<B extends Builder<B, T, K>, T, K> extends LambdaStyle, 
      * @return sql
      */
     default Grammar.SQLPartInfo generateSql(BuilderWrapper<B, T, K> closure) {
-        B subBuilder = closure.execute(getNewSelfWithoutApply());
+        Builder<?, ?, ?> subBuilder = closure.execute(getNewSelfWithoutApply().setAlias(getSelf().alias()));
         return subBuilder.getGrammar().generateSql(SqlType.SELECT);
     }
 
@@ -142,7 +217,7 @@ public interface Support<B extends Builder<B, T, K>, T, K> extends LambdaStyle, 
      * @return sql
      */
     default Grammar.SQLPartInfo generateSql(BuilderAnyWrapper closure) {
-        Builder<?, ?, ?> subBuilder = closure.execute(getNewSelfWithoutApply());
+        Builder<?, ?, ?> subBuilder = closure.execute(getNewSelfWithoutApply().setAlias(getSelf().alias()));
         return subBuilder.getGrammar().generateSql(SqlType.SELECT);
     }
 
@@ -152,9 +227,9 @@ public interface Support<B extends Builder<B, T, K>, T, K> extends LambdaStyle, 
      * @param sqlPartType 片段类型
      * @return sql
      */
-    default Grammar.SQLPartInfo generateSql(BuilderWrapper<B, T, K> closure,
-        Grammar.SQLPartType sqlPartType) {
-        B subBuilder = closure.execute(getNewSelfWithoutApply());
+    default Grammar.SQLPartInfo generateSqlPart(BuilderWrapper<B, T, K> closure, Grammar.SQLPartType sqlPartType) {
+        // 别名传递
+        Builder<?, ?, ?> subBuilder = closure.execute(getNewSelfWithoutApply().setAlias(getSelf().alias()));
         return subBuilder.getGrammar().get(sqlPartType);
     }
 
