@@ -322,7 +322,7 @@ public class StudentModel extends BaseModel<Student, Long> {
      * @return 删除的行数
      */
     protected int softDelete(Builder<Student, Long> builder) {
-        return builder.data("is_deleted", "1").update();
+        return builder.relationResultData("is_deleted", "1").update();
     }
 
     /**
@@ -331,7 +331,7 @@ public class StudentModel extends BaseModel<Student, Long> {
      * @return 恢复的行数
      */
     protected int softDeleteRestore(Builder<Student, Long> builder) {
-        return builder.data("is_deleted", "0").update();
+        return builder.relationResultData("is_deleted", "0").update();
     }
 }
 ```

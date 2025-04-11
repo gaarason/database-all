@@ -1,6 +1,5 @@
 package gaarason.database.eloquent;
 
-import gaarason.database.appointment.RelationCache;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
@@ -123,12 +122,6 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
     public List<T> toObjectListWithoutRelationship() {
         RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(container, this, false);
         return tkRelationGetSupport.toObjectList();
-    }
-
-    @Override
-    public List<T> toObjectList(RelationCache cache) {
-        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(container, this, true);
-        return tkRelationGetSupport.toObjectList(cache);
     }
 
     @Override

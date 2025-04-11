@@ -398,7 +398,7 @@ public class Generator {
         element.setClassName(baseEntityName);
 
         element.type2Name(Serializable.class);
-        element.type2Name("lombok.Data");
+        element.type2Name("lombok.relationResultData");
         element.type2Name("lombok.experimental.Accessors");
         element.type2Name(MySqlBuilder.class);
 
@@ -425,7 +425,7 @@ public class Generator {
         };
         element.setNamespace(entityNamespace);
         element.setClassName(entityName);
-        element.type2Name("lombok.Data");
+        element.type2Name("lombok.relationResultData");
         element.type2Name("lombok.EqualsAndHashCode");
         element.type2Name("lombok.experimental.Accessors");
         element.type2Name("lombok.ToString");
@@ -461,7 +461,7 @@ public class Generator {
         };
         element.setNamespace(entityNamespace);
         element.setClassName(entityName);
-        element.type2Name("lombok.Data");
+        element.type2Name("lombok.relationResultData");
         element.type2Name("lombok.EqualsAndHashCode");
         element.type2Name(Table.class);
 

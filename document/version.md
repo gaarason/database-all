@@ -27,6 +27,7 @@ Eloquent ORM for Java
 
 ### 6.2.0
 
+- 重写`with`相关实现, 以提高性能
 - 查询构造器`builder`, 现在会对`select`类型语句使用表别名进行语句拼接, 即, 对`select`/`where`等所有非`**Raw`的方法的参数均拼接上当前表的别名 
 - 查询构造器`builder`中, 增加`alias`/`setAlias`/`tableAlias`/`columnAlias`等别名辅助方法
 - 查询构造器`builder`中, 增加`supportQuotes`/`supportBracket`/`supportValue`/`supportSpaces`/`supportBackQuote`等符号辅助方法
@@ -441,8 +442,8 @@ Builder<T, K> havingNotIn(String column,Object...valueArray);
 Builder<T, K> havingBetween(String column,Object min,Object max);
 Builder<T, K> havingNotBetween(String column,Object min,Object max);
 
-Builder<T, K> data(String column,Object value);
-Builder<T, K> data(Map<String, Object> map);
+Builder<T, K> relationResultData(String column,Object value);
+Builder<T, K> relationResultData(Map<String, Object> map);
 ```
 
 ### 2.4.0

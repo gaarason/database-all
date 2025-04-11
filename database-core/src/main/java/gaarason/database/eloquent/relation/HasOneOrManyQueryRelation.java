@@ -1,7 +1,6 @@
 package gaarason.database.eloquent.relation;
 
 import gaarason.database.annotation.HasOneOrMany;
-import gaarason.database.appointment.RelationCache;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
@@ -74,7 +73,6 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
         setWhere(metadata, queryBuilder);
 
-//        return queryBuilder.select(hasOneOrManyTemplate.sonModel.getEntityClass());
         return selectFill(queryBuilder, hasOneOrManyTemplate.sonModel.getEntityClass(), hasOneOrManyTemplate.sonModelForeignKey);
     }
 
@@ -127,7 +125,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
     @Override
     public Map<String, Object> filterBatchRecordByRelationOperation(Record<?, ?> theRecord,
-        RecordList<?, ?> targetRecordList, RelationCache cache) {
+        RecordList<?, ?> targetRecordList) {
         // 子表的外键字段名
         String column = hasOneOrManyTemplate.sonModelForeignKey;
         // 本表的关系键值
@@ -137,17 +135,8 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
     }
 
     @Override
-    public String filterBatchRecordCacheKey(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList) {
-        // 子表的外键字段名
-        String column = hasOneOrManyTemplate.sonModelForeignKey;
-        // 本表的关系键值
-        Object value = theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey);
-
-        return getClass() + "|" +column + "|" + value;
-    }
-    @Override
     public List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList,
-            RelationCache cache) {
+            List<?> targetObjectList) {
         // 子表的外键字段名
         String column = hasOneOrManyTemplate.sonModelForeignKey;
         // 本表的关系键值
@@ -155,7 +144,7 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
 
         assert value != null;
 
-        return findObjList(targetRecordList.toObjectList(cache), column, value);
+        return findObjList(targetObjectList, column, value);
     }
 
     @Override

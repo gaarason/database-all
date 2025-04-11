@@ -1,7 +1,6 @@
 package gaarason.database.eloquent;
 
 import gaarason.database.appointment.EntityUseType;
-import gaarason.database.appointment.RelationCache;
 import gaarason.database.appointment.ValueWrapper;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
@@ -241,18 +240,6 @@ public class RecordBean<T, K> implements Record<T, K> {
         RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(
             model.getGaarasonDataSource().getContainer(), this, true);
         return tkRelationGetSupport.toObject();
-
-    }
-
-    /**
-     * 转化为对象
-     * @return 对象
-     */
-    @Override
-    public T toObject(RelationCache cache) {
-        RelationGetSupport<T, K> tkRelationGetSupport = new RelationGetSupport<>(
-            model.getGaarasonDataSource().getContainer(), this, true);
-        return tkRelationGetSupport.toObject(cache);
 
     }
 

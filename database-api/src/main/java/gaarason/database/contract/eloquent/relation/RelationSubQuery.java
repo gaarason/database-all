@@ -1,6 +1,5 @@
 package gaarason.database.contract.eloquent.relation;
 
-import gaarason.database.appointment.RelationCache;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
@@ -100,30 +99,20 @@ public interface RelationSubQuery {
      * 针对关联关系操作
      * @param theRecord 当前record
      * @param targetRecordList 目标的recordList
-     * @param cache 结果缓存
      * @return 关联查询操作的结果
      */
     default Map<String, Object> filterBatchRecordByRelationOperation(Record<?, ?> theRecord,
-        RecordList<?, ?> targetRecordList, RelationCache cache) {
+        RecordList<?, ?> targetRecordList) {
         throw new OperationNotSupportedException();
     }
-
-    /**
-     * 过滤结果的唯一标记
-     * @param theRecord 当前record
-     * @param targetRecordList 目标的recordList
-     * @return 唯一标记
-     */
-    String filterBatchRecordCacheKey(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList);
 
     /**
      * 筛选批量关联查询结果对象
      * @param theRecord 当前record
      * @param targetRecordList 目标的recordList
-     * @param cache 结果缓存
      * @return 筛选后的查询结果集
      */
-    List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList, RelationCache cache);
+    List<Object> filterBatchRecord(Record<?, ?> theRecord, RecordList<?, ?> targetRecordList, List<?> targetObjectList);
 
     /**
      * 实现 whereHas

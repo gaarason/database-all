@@ -26,10 +26,10 @@ Eloquent ORM for Java
 ***
 - It makes connecting to the database and adding, deleting, modifying and querying the database very simple, whether you want to use native SQL, query builder, or Eloquent ORM.
 - Eloquent ORM provides a beautiful and simple ActiveRecord for working with databases
-  Implementation, each data table corresponds to an entity (Entity) corresponding to the data structure of the table, and a model (Model) for interaction. Through the model class, you can query, insert, update, delete and other operations on the data table. , and reflect the results into the java object instantiated by the entity.
+  Implementation, each relationResultData table corresponds to an entity (Entity) corresponding to the relationResultData structure of the table, and a model (Model) for interaction. Through the model class, you can query, insert, update, delete and other operations on the relationResultData table. , and reflect the results into the java object instantiated by the entity.
 - For relationships, Eloquent ORM provides expressive declaration methods and concise usage methods. It focuses on internal query and memory optimization, and still has a good experience in complex relationships.
 - Support fully customizable query constructors, SQL syntax, type conversion, and association relationships
-- Supports native Java8, Java11, Java17 , Java21 applications, supports SpringBoot 2x and 3x, and is compatible with other common ORM frameworks and common data sources (DataSource), and all databases supported by JDBC.
+- Supports native Java8, Java11, Java17 , Java21 applications, supports SpringBoot 2x and 3x, and is compatible with other common ORM frameworks and common relationResultData sources (DataSource), and all databases supported by JDBC.
 
 ## 目录
 
@@ -43,9 +43,9 @@ Eloquent ORM for Java
 * [GraalVM](/document/graalvm.md)
 * [版本信息 Version](/document/version.md)
 
-- 以如下的方式在程序中查询数据 Query data in the program in the following way
+- 以如下的方式在程序中查询数据 Query relationResultData in the program in the following way
 - 查询 Select : model.newQuery().select().where().get().toObject();
-- 更新 Update : model.newQuery().data().where().update();
+- 更新 Update : model.newQuery().relationResultData().where().update();
 - 删除 Delete : model.newQuery().where().delete();
 - 插入 Insert : model.newQuery().column().value().insert();
 
@@ -155,7 +155,7 @@ public void simpleQuery() {
 - 在 [查询结果集 Record](/document/record.md) 中可以快速的将结果转化为的 java 实体（Entity）对象， 以及其他数据结构以及处理操作
 - 通过在实体（Entity）中应用各种的声明式注解进行 [数据映射 Mapping](/document/mapping.md)， 便可以方便的在模型（Model）中应用诸如 [关联关系 Relationship](/document/relationship.md)、ORM以及各种自定义操作
 ***
-- With the help of [生成代码 Generate](/document/generate.md), each data table is automatically defined with an entity (Entity) corresponding to the data structure of the table, and a model (Model) for interaction.
-- In the model, through the [查询构造器 Query Builder](/document/query.md) you can query, insert, update, delete and other operations on the data table, and reflect the results to the [查询结果集 Record](/document/record.md) in
-- In [查询结果集 Record](/document/record.md), the results can be quickly converted into java entity objects, as well as other data structures and processing operations.
+- With the help of [生成代码 Generate](/document/generate.md), each relationResultData table is automatically defined with an entity (Entity) corresponding to the relationResultData structure of the table, and a model (Model) for interaction.
+- In the model, through the [查询构造器 Query Builder](/document/query.md) you can query, insert, update, delete and other operations on the relationResultData table, and reflect the results to the [查询结果集 Record](/document/record.md) in
+- In [查询结果集 Record](/document/record.md), the results can be quickly converted into java entity objects, as well as other relationResultData structures and processing operations.
 - By applying various declarative annotations to [数据映射 Mapping](/document/mapping.md) in the Entity, you can easily apply [关联关系 Relationship](/document/relationship.md), ORM and various custom operations

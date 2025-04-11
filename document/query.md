@@ -56,7 +56,7 @@ Eloquent ORM for Java
     * [limit](#limit)
     * [from](#from)
     * [index](#index)
-    * [data](#data)
+    * [relationResultData](#relationResultData)
     * [union](#union)
     * [事务](#事务)
         * [手动事物](#手动事物)
@@ -334,21 +334,21 @@ int insert = studentModel.newQuery().insertMapStyle(entityList);
 当一个更新语句没有`where`时,将会抛出`ConfirmOperationException`
 
 ```java
-int num = studentModel.newQuery().data("name", "xxcc").where("id", "3").update();
+int num = studentModel.newQuery().relationResultData("name", "xxcc").where("id", "3").update();
 
-int num = studentModel.newQuery().data("name", "vvv").where("id", ">", "3").update();
+int num = studentModel.newQuery().relationResultData("name", "vvv").where("id", ">", "3").update();
 
 // 抛出`ConfirmOperationException`
-studentModel.newQuery().data("name", "xxcc").update();
+studentModel.newQuery().relationResultData("name", "xxcc").update();
 
-studentModel.newQuery().data("name", "xxcc").whereRaw(1).update();
+studentModel.newQuery().relationResultData("name", "xxcc").whereRaw(1).update();
 
 // 使用map
 Map<String, Object> map = new HashMap<>();
 map.put("name", "gggg");
 map.put("age", "7");
 
-int update = studentModel.newQuery().data(map).where("id", "3").update();
+int update = studentModel.newQuery().relationResultData(map).where("id", "3").update();
 
 int update = studentModel.newQuery().where("id", "3").updateMapStyle(map);
 
@@ -1019,40 +1019,43 @@ RecordList<Student, Long>> records = studentModel.newQuery()
 ```java
 // select `student`.*,`t`.`age` as `age2` from `student` inner join `student` as `t` on (`student`.`id`=`t`.`age`)
 RecordList<StudentModel.Entity, Integer> student_as_t = studentModel.newQuery()
-    .select("student.*", "t.age as age2")
-    .join("student as t", "student.id", "=", "t.age")
+    .select("*").selectRaw("t.age as age2")
+    .join("student as t", "id", "=", "t.age")
     .get();
     List<Map<String, Object>> maps = student_as_t.toMapList();
 
 // select `student`.*,`t`.`age` as `age2` from `student` inner join `student` as `t` on (`student`.`id`=`t`.`age`)
 RecordList<StudentModel.Entity, Integer> student_as_t = studentModel.newQuery()
-    .select("student.*", "t1.age as age1", "t2.age as age2")
-    .join("student as t1", "student.id", "=", "t1.age")
-    .join("student as t2", "student.id", "=", "t2.age")
+    .select("*")
+    .selectRaw( "t1.age as age1,t2.age as age2")
+    .join("student as t1", "id", "=", "t1.age")
+    .join("student as t2", "id", "=", "t2.age")
     .get();
 List<Map<String, Object>> maps = student_as_t.toMapList();
 
 // select `o`.* from `student` as `o` left join `student` as `s` on (`o`.`id`=`s`.`id`) order by `id` asc
-RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().select("o.*")
-    .from("student as o")
-    .join(JoinType.LEFT, "student as s", builder -> builder.whereColumn("o.id", "=", "s.id"))
+RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().select("*")
+    .from("student")
+    .join(JoinType.LEFT, "student as s", builder -> builder.whereRaw(builder.columnAlias("id") + "=s.id"))
     .orderBy("id").get();
 List<Map<String, Object>> maps = records.toMapList();
 
 // select `o`.* from `student` as `o` right join student as s on (`o`.`id`=`s`.`id` and `s`.`id`!="3" and `s`.`id`not in("4","5")) order by o.`id` asc
-RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().select("o.*")
-    .from("student as o")
-    .join(JoinType.RIGHT, "student as s", builder -> builder.whereColumn("o.id", "=", "s.id")
-    .where("s.id", "!=", "3").whereNotIn("s.id", "4","5"))
-    .orderBy("o.id").get();
+RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().select("*")
+    .join(JoinType.RIGHT, "student as s", builder -> builder.whereRaw(builder.columnAlias("id") + "=s.id")
+            .whereRaw("s.id!=3").whereRaw("s.id not in (4,5)"))
+    .orderBy("id").get();
 List<Map<String, Object>> maps = records.toMapList();
 
 // 找出age最大的男生/女生的信息(有同年龄的就都找出来)
 // select `student`.* from `student` inner join (select `sex`,max(age) as 'max_age' from `student` group by `sex`)t on (`student`.`sex`=`t`.`sex` and `student`.`age`=`t`.`max_age`);
-RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().select("student.*")
-    .join(JoinType.INNER, builder -> builder.select("sex").selectFunction("max", "age", "max_age").group("sex"), "t", 
-        builder -> builder.whereColumn("student.sex", "t.sex").whereColumn("student.age", "t.max_age"))
-    .orderBy("id").get();
+RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
+    .select("*")
+    .join(JoinType.INNER,
+            builder -> builder.select("sex").selectFunction("max", builder.columnAlias("age"), "max_age").group("sex"),
+            "t", builder -> builder.whereRaw(builder.columnAlias("sex") + "=t.sex").whereRaw(builder.columnAlias("age") + "=t.max_age"))
+    .orderBy("id")
+    .get();
 List<StudentModel.Entity> entities = records.toObjectList();
 ```
 
@@ -1108,9 +1111,9 @@ RecordList<StudentModel.Entity, Integer> records2 = studentModel.newQuery().wher
 RecordList<StudentModel.Entity, Integer> records3 = studentModel.newQuery().whereRaw("1").forceIndex("PRI").ignoreIndex("PRI").get();
 ```
 
-## data
+## relationResultData
 
-### data
+### relationResultData
 
 ```java
 Map<String, String> map = new HashMap<>();
@@ -1118,10 +1121,10 @@ map.put("name", "gggg");
 map.put("age", "7");
 
 // update `student` set`name`="gggg",`age`="7" where `id`="3"
-int num = studentModel.newQuery().data(map).where("id", "3").update();
+int num = studentModel.newQuery().relationResultData(map).where("id", "3").update();
 
 // update `student` set`name`="小明",`age`="7" where `id`="3"
-int num = studentModel.newQuery().data("name","小明").data("age","7").where("id", "3").update();
+int num = studentModel.newQuery().relationResultData("name","小明").relationResultData("age","7").where("id", "3").update();
 
 
 Map<String, String> mapHasNull = new HashMap<>();
@@ -1129,10 +1132,10 @@ mapHasNull.put("name", "gggg");
 mapHasNull.put("age", null);
 
 // update `student` set`name`="gggg",`age`= null where `id`="3"
-int num = studentModel.newQuery().data(mapHasNull).where("id", "3").update();
+int num = studentModel.newQuery().relationResultData(mapHasNull).where("id", "3").update();
 
 // update `student` set`name`="小明",`age`=null where `id`="3"
-int num = studentModel.newQuery().data("name","小明").data("age",null).where("id", "3").update();
+int num = studentModel.newQuery().relationResultData("name","小明").relationResultData("age",null).where("id", "3").update();
 ```
 
 ### dataIgnoreNull
@@ -1148,7 +1151,7 @@ map.put("age", null);
 int num = studentModel.newQuery().dataIgnoreNull(map).where("id", "3").update();
 
 // update `student` set`age`="7" where `id`="3"
-int num = studentModel.newQuery().dataIgnoreNull("name",null).data("age","7").where("id", "3").update();
+int num = studentModel.newQuery().dataIgnoreNull("name",null).relationResultData("age","7").where("id", "3").update();
 ```
 
 ### dateBit
@@ -1190,7 +1193,7 @@ studentModel.newQuery().begin();
 
 // do something
 // 请手动捕获异常, 以确保 rollBack()/commit() 的正确执行, 以释放连接
-studentModel.newQuery().where("id", "1").data("name", "dddddd").update();
+studentModel.newQuery().where("id", "1").relationResultData("name", "dddddd").update();
 StudentSingleModel.Entity entity = studentModel.newQuery().where("id", "1").firstOrFail().toObject();
 
 // 回滚
@@ -1212,7 +1215,7 @@ studentModel.newQuery().commit();
 // 开启事物
 studentModel.newQuery().transaction(() -> {
     // do something
-    studentModel.newQuery().where("id", "1").data("name", "dddddd").update();
+    studentModel.newQuery().where("id", "1").relationResultData("name", "dddddd").update();
     StudentSingleModel.Entity entity = studentModel.newQuery().where("id", "1").firstOrFail().toObject();
 }, 3);
 ```
@@ -1223,7 +1226,7 @@ studentModel.newQuery().transaction(() -> {
 // 开启事物
 boolean success = studentModel.newQuery().transaction(() -> {
     // do something
-    studentModel.newQuery().where("id", "1").data("name", "dddddd").update();
+    studentModel.newQuery().where("id", "1").relationResultData("name", "dddddd").update();
     StudentSingleModel.Entity entity = studentModel.newQuery().where("id", "1").firstOrFail().toObject();
     
     return true;
