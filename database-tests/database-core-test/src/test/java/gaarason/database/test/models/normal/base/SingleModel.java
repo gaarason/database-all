@@ -116,4 +116,9 @@ public class SingleModel<T, K> extends Model<MySqlBuilderV2<T, K>, T, K> {
     public boolean eventRecordCreating(Record<T, K> record) {
         return true;
     }
+//
+//    @Override
+//    public String getTableName() {
+//        return "test_master_0." +  super.getTableName();
+//    }
 }

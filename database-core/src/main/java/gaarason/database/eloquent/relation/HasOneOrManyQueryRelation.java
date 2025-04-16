@@ -142,8 +142,6 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
         // 本表的关系键值
         Object value = theRecord.getMetadataMap().get(hasOneOrManyTemplate.localModelLocalKey);
 
-        assert value != null;
-
         return findObjList(targetObjectList, column, value);
     }
 

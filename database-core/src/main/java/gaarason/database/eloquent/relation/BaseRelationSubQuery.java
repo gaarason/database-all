@@ -178,9 +178,9 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
      * @param fieldTargetValue 对象的属性的目标值
      * @return 对象列表
      */
-    protected List<Object> findObjList(List<?> relationshipObjectList, String columnName, Object fieldTargetValue) {
+    protected List<Object> findObjList(List<?> relationshipObjectList, String columnName, @Nullable Object fieldTargetValue) {
         List<Object> objectList = new ArrayList<>();
-        if (ObjectUtils.isEmpty(relationshipObjectList)) {
+        if (ObjectUtils.isEmpty(relationshipObjectList) || fieldTargetValue == null) {
             // 不建议使用 Collections.emptyList()
             return objectList;
         }

@@ -90,8 +90,6 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
         // 本表的关系键值
         Object value = theRecord.getMetadataMap().get(belongsToTemplate.localModelForeignKey);
 
-        assert value != null;
-
         return findObjList(targetObjectList, column, value);
     }
 

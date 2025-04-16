@@ -44,8 +44,8 @@ Eloquent ORM for Java
 * [版本信息 Version](/document/version.md)
 
 - 以如下的方式在程序中查询数据 Query relationResultData in the program in the following way
-- 查询 Select : model.newQuery().select().where().get().toObject();
-- 更新 Update : model.newQuery().relationResultData().where().update();
+- 查询 Select : model.newQuery().select().where().get();
+- 更新 Update : model.newQuery().data().where().update();
 - 删除 Delete : model.newQuery().where().delete();
 - 插入 Insert : model.newQuery().column().value().insert();
 
