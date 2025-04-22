@@ -28,6 +28,10 @@ Eloquent ORM for Java
             * [findByPrimaryKeyOrNew](#findByPrimaryKeyOrNew)
             * [updateOrCreate](#updateOrCreate)
             * [updateByPrimaryKeyOrCreate](#updateByPrimaryKeyOrCreate)
+        * [检查属性变化](#检查属性变化)
+            * [isDirty与isClean](#isDirty与isClean)
+            * [wasChanged](#wasChanged)
+            * [getOriginal](#getOriginal)
         * [集合操作](#集合操作)
             * [avg](#avg)
             * [sum](#sum)
@@ -350,6 +354,114 @@ Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.updateByPrim
 
 ```
 
+### 检查属性变化
+
+- 提供了 `isDirty`、`isClean` 和 `wasChanged` 方法来检查模型的内部状态, 并确定自模型最初检索以来其属性的变化.     
+- 提供了 `getOriginal` 来获取初次检索得到的对象.
+
+#### isDirty与isClean
+
+- `isDirty`是否存在未提交的属性
+- `isClean`为`isDirty`的反义
+
+```java
+Teacher teacher = new Teacher();
+teacher.setName("新老师");
+teacher.setAge(44);
+teacher.setSex(2);
+Record<Teacher, Long> record = teacherModel.create(teacher);
+
+Teacher teacher1 = record.getEntity();
+
+Assert.assertFalse(record.isDirty());
+Assert.assertFalse(record.isDirty(Teacher::getAge));
+Assert.assertFalse(record.isDirty(Teacher::getName));
+Assert.assertFalse(record.isDirty(Teacher::getAge, Teacher::getName));
+
+teacher1.setName("新老师的新名字");
+
+Assert.assertTrue(record.isDirty());
+Assert.assertFalse(record.isDirty(Teacher::getAge));
+Assert.assertTrue(record.isDirty(Teacher::getName));
+Assert.assertTrue(record.isDirty(Teacher::getAge, Teacher::getName));
+
+Assert.assertFalse(record.isClean());
+Assert.assertTrue(record.isClean(Teacher::getAge));
+Assert.assertFalse(record.isClean(Teacher::getName));
+Assert.assertFalse(record.isClean(Teacher::getAge, Teacher::getName));
+
+record.save();
+
+Assert.assertFalse(record.isDirty());
+Assert.assertTrue(record.isClean());
+```
+#### wasChanged
+
+- 是否存在已提交的更改, 比较的对象是 `最近次提交后的对象状态` 与 `首次查询的对象状态`
+- `首次查询的对象状态` 等价于 `getOriginal()`
+
+```java
+ Teacher teacher = new Teacher();
+        teacher.setName("新老师");
+        teacher.setAge(44);
+        teacher.setSex(2);
+Record<Teacher, Long> record = teacherModel.create(teacher);
+
+Teacher teacher1 = record.getEntity();
+
+Assert.assertFalse(record.wasChanged());
+Assert.assertFalse(record.wasChanged(Teacher::getAge));
+Assert.assertFalse(record.wasChanged(Teacher::getName));
+Assert.assertFalse(record.wasChanged(Teacher::getAge, Teacher::getName));
+
+// 仅设置, 未提交
+teacher1.setName("新老师的新名字");
+
+Assert.assertFalse(record.wasChanged());
+Assert.assertFalse(record.wasChanged(Teacher::getAge));
+Assert.assertFalse(record.wasChanged(Teacher::getName));
+Assert.assertFalse(record.wasChanged(Teacher::getAge, Teacher::getName));
+
+// 提交到数据库
+record.save();
+
+Assert.assertTrue(record.wasChanged());
+Assert.assertFalse(record.wasChanged(Teacher::getAge));
+Assert.assertTrue(record.wasChanged(Teacher::getName));
+Assert.assertTrue(record.wasChanged(Teacher::getAge, Teacher::getName));
+```
+
+#### getOriginal
+
+- 始终返回`首次查询的对象状态`, 不管从检索起模型是否发生了任何变化, 除非调用`refresh`
+
+```java
+ // 查询 sql
+Record<Teacher, Long> teacherRecord = teacherModel.findOrFail(1);
+Teacher teacher = teacherRecord.getEntity();
+
+Assert.assertEquals("张淑明", teacher.getName());
+Assert.assertEquals(22, teacher.getAge().intValue());
+
+// 仅设置, 未提交
+teacher.setName("小明");
+
+Assert.assertEquals("小明", teacher.getName());
+// 原始值
+Assert.assertEquals("张淑明", teacherRecord.getOriginal(Teacher::getName));
+
+// 提交到数据库 (更新 sql)
+teacherRecord.save();
+// 原始值
+Assert.assertEquals("张淑明", teacherRecord.getOriginal(Teacher::getName));
+// 当前实际值
+Assert.assertEquals("小明", teacherRecord.toObject().getName());
+
+// 数据库重新获取 (查询 sql)
+teacherRecord.refresh();
+// 原始值, 将变化为最近次获取的值
+Assert.assertEquals("小明", teacherRecord.getOriginal(Teacher::getName));
+```
 ### 集合操作
 
 - 为处理结果集数据提供了方便的封装

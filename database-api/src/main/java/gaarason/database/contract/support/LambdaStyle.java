@@ -53,4 +53,13 @@ public interface LambdaStyle {
     default Collection<String> lambda2ColumnName(Collection<ColumnFunctionalInterface<?, ?>> columns) {
         return columns.stream().map(this::lambda2ColumnName).collect(Collectors.toList());
     }
+
+    /**
+     * 通过 表达式 推断属性名
+     * @param columns Lambda表达式集合
+     * @return 属性集合
+     */
+    default Collection<String> lambda2FieldName(Collection<ColumnFunctionalInterface<?, ?>> columns) {
+        return columns.stream().map(this::lambda2FieldName).collect(Collectors.toList());
+    }
 }

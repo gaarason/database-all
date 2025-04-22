@@ -4,6 +4,7 @@ import gaarason.database.contract.eloquent.Record;
 import gaarason.database.exception.EntityAttributeInvalidException;
 import gaarason.database.lang.Nullable;
 
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -57,6 +58,14 @@ public interface Operation<T, K> {
 
     /**
      * 刷新(重新从数据库查询获取)
+     * 现有的模型实例不会受到影响
+     * retrieved
+     * @return 执行成功
+     */
+    Record<T, K> fresh();
+
+    /**
+     * 刷新(重新从数据库查询获取)
      * retrieved
      * @return 执行成功
      */
@@ -71,46 +80,85 @@ public interface Operation<T, K> {
     Record<T, K> refresh(Map<String, Object> metadataMap);
 
     /**
-     * 是否有任何属性发生改变
+     * 是否有任何属性发生改变, 且未提交到数据库
      * @return bool
      */
     boolean isDirty();
 
     /**
-     * 获取所有变更属性组成的map
+     * 获取所有变更属性(未提交到数据库)组成的map
      * 不会包含关联关系检测
      * @return map<列名, 值>
      */
     Map<String, Object> getDirtyMap();
 
     /**
-     * 指定属性是否有发生改变
-     * @param fieldName 实体属性名
+     * 指定属性是否有发生改变, 且未提交到数据库
+     * @param fieldNames 实体属性名
      * @return bool
      */
-    boolean isDirty(String fieldName);
+    boolean isDirty(String... fieldNames);
 
     /**
-     * 是否没有任何属性发生改变
+     * 指定属性是否有发生改变, 且未提交到数据库
+     * @param fieldNames 实体属性名
+     * @return bool
+     */
+    boolean isDirty(Collection<String> fieldNames);
+
+    /**
+     * 是否没有任何属性发生改变(全部已提交到数据库)
      * @return bool
      */
     boolean isClean();
 
     /**
-     * 指定属性是否没有发生改变
-     * @param fieldName 实体属性名
+     * 指定属性是否没有发生改变(全部已提交到数据库)
+     * @param fieldNames 实体属性名
      * @return bool
      */
-    boolean isClean(String fieldName);
+    boolean isClean(String... fieldNames);
 
     /**
-     * 返回一个包含模型原生属性的实体
+     * 指定属性是否没有发生改变(全部已提交到数据库)
+     * @param fieldNames 实体属性名
+     * @return bool
+     */
+    boolean isClean(Collection<String> fieldNames);
+
+    /**
+     * 初始以来, 是否存在已提交到数据库的变化
+     * 比较 getOriginal 与 当前已提交数据
+     * @return bool
+     */
+    boolean wasChanged();
+
+    /**
+     * 初始以来, 指定的数据是否存在已提交到数据库的变化
+     * 比较 getOriginal(field) 与 当前属性的已提交数据
+     * @param fieldNames 实体属性名
+     * @return bool
+     */
+    boolean wasChanged(String... fieldNames);
+
+    /**
+     * 初始以来, 指定的数据是否存在已提交到数据库的变化
+     * 比较 getOriginal(field) 与 当前属性的已提交数据
+     * @param fieldNames 实体属性名
+     * @return bool
+     */
+    boolean wasChanged(Collection<String> fieldNames);
+
+    /**
+     * 返回一个包含模型初始化属性的实体
+     * 不管从检索起模型是否发生了任何变化, 它都不变, 除非调用手动刷新
      * @return 实体对象
      */
     T getOriginal();
 
     /**
-     * 返回模型原生属性的值
+     * 返回模型始化属性属性的值
+     * 不管从检索起模型是否发生了任何变化, 它都不变, 除非调用手动刷新
      * @param fieldName 实体属性名
      * @return 实体对象
      * @throws EntityAttributeInvalidException 无效的属性(实体声明中没有的属性)

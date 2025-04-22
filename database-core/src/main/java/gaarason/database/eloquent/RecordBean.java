@@ -27,10 +27,7 @@ import gaarason.database.util.StringUtils;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 结果集对象
@@ -45,6 +42,14 @@ public class RecordBean<T, K> implements Record<T, K> {
      * <数据库字段名 -> 字段信息>
      */
     protected  Map<String, Object> metadataMap = new HashMap<>(16);
+
+    /**
+     * 历史元数据
+     * 不管从检索起模型是否发生了任何变化, 它都不变, 除非调用 xx 方法, 主动刷新
+     * <数据库字段名 -> 字段信息>
+     */
+    protected  Map<String, Object> originalMetadataMap = new HashMap<>(16);
+
     /**
      * 数据模型
      */
@@ -144,6 +149,10 @@ public class RecordBean<T, K> implements Record<T, K> {
         if (metadataMap != stringObjectMap) {
             metadataMap.clear();
             metadataMap.putAll(stringObjectMap);
+        }
+        if (originalMetadataMap != stringObjectMap) {
+            originalMetadataMap.clear();
+            originalMetadataMap.putAll(stringObjectMap);
         }
     }
 
@@ -415,6 +424,18 @@ public class RecordBean<T, K> implements Record<T, K> {
         return success;
     }
 
+    @Override
+    public Record<T, K> fresh() {
+        // 主键未知
+        if (originalPrimaryKeyValue == null) {
+            throw new PrimaryKeyNotFoundException();
+        }
+
+        return model.withTrashed()
+                .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
+                .firstOrFail();
+    }
+
     /**
      * 刷新(重新从数据库获取)
      * retrieved
@@ -426,10 +447,8 @@ public class RecordBean<T, K> implements Record<T, K> {
         if (originalPrimaryKeyValue == null) {
             throw new PrimaryKeyNotFoundException();
         }
-        Map<String, Object> theMetadataMap = model.withTrashed()
-            .where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString())
-            .firstOrFail()
-            .getMetadataMap();
+
+        Map<String, Object> theMetadataMap = fresh().getMetadataMap();
 
         // 刷新自身属性
         return refresh(theMetadataMap);
@@ -477,12 +496,22 @@ public class RecordBean<T, K> implements Record<T, K> {
     }
 
     @Override
-    public boolean isDirty(String fieldName) {
-        FieldMember<?> fieldMember = modelShadow.parseAnyEntityWithCache(entityClass)
-            .getFieldMemberByFieldName(fieldName);
+    public boolean isDirty(String... fieldNames) {
+        EntityMember<T, K> entityMember = modelShadow.parseAnyEntityWithCache(entityClass);
         // 获取所有变更属性组成的map
         final Map<String, Object> dirtyMap = getDirtyMap();
-        return dirtyMap.containsKey(fieldMember.getColumnName());
+        for (String fieldName : fieldNames) {
+            String columnName = entityMember.getFieldMemberByFieldName(fieldName).getColumnName();
+            if(dirtyMap.containsKey(columnName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isDirty(Collection<String> fieldNames) {
+        return isDirty(fieldNames.toArray(new String[0]));
     }
 
     @Override
@@ -491,13 +520,52 @@ public class RecordBean<T, K> implements Record<T, K> {
     }
 
     @Override
-    public boolean isClean(String fieldName) {
-        return !isDirty(fieldName);
+    public boolean isClean(String... fieldNames) {
+        return !isDirty(fieldNames);
+    }
+
+    @Override
+    public boolean isClean(Collection<String> fieldNames) {
+        return !isDirty(fieldNames);
+    }
+
+    @Override
+    public boolean wasChanged() {
+        EntityMember<T, K> entityMember = modelShadow.parseAnyEntityWithCache(entityClass);
+        Map<String, FieldMember<?>> columnFieldMap = entityMember.getColumnFieldMap();
+        for (Map.Entry<String, FieldMember<?>> entry : columnFieldMap.entrySet()) {
+            Object originalValue = originalMetadataMap.get(entry.getKey());
+            Object value = metadataMap.get(entry.getKey());
+            if(!ObjectUtils.nullSafeEquals(originalValue, value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean wasChanged(String... fieldNames) {
+        EntityMember<T, K> entityMember = modelShadow.parseAnyEntityWithCache(entityClass);
+        for (String fieldName : fieldNames) {
+            String columnName = entityMember.getFieldMemberByFieldName(fieldName).getColumnName();
+            Object originalValue = originalMetadataMap.get(columnName);
+            Object value = metadataMap.get(columnName);
+            if(!ObjectUtils.nullSafeEquals(originalValue, value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean wasChanged(Collection<String> fieldNames) {
+        return wasChanged(fieldNames.toArray(new String[0]));
     }
 
     @Override
     public T getOriginal() {
-        return toObjectWithoutRelationship();
+        EntityMember<T, Object> entityMember = modelShadow.parseAnyEntityWithCache(entityClass);
+        return entityMember.toEntity(originalMetadataMap);
     }
 
     @Override
@@ -507,7 +575,7 @@ public class RecordBean<T, K> implements Record<T, K> {
             .getFieldMemberByFieldName(fieldName);
 
         // 从元数据中获取字段值
-        return metadataMap.get(fieldMember.getColumnName());
+        return originalMetadataMap.get(fieldMember.getColumnName());
     }
 
     /**
@@ -532,6 +600,8 @@ public class RecordBean<T, K> implements Record<T, K> {
             entityMap.put(model.getPrimaryKeyColumnName(), primaryKeyValue);
             // 更新自身
             selfUpdate(entityMap);
+            // 新增的场景下, 对 originalMetadataMap 进行更新
+            originalMetadataMap.putAll(entityMap);
             // 通知
             model.eventRecordCreated(this);
         }
@@ -599,6 +669,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      * @param entityMap 新的实体所对应的MAP
      */
     protected void selfUpdateMetadataMap(Map<String, Object> entityMap) {
+        metadataMap.clear();
         metadataMap.putAll(entityMap);
         hasBind = true;
     }
@@ -618,6 +689,7 @@ public class RecordBean<T, K> implements Record<T, K> {
         out.writeUTF(identification);
         out.writeUTF(model.getClass().getName());
         out.writeObject(metadataMap);
+        out.writeObject(originalMetadataMap);
         out.writeUTF(originalSql);
         out.writeObject(relationMap);
     }
@@ -627,6 +699,7 @@ public class RecordBean<T, K> implements Record<T, K> {
         String identification = in.readUTF();
         String modelName = in.readUTF();
         Object map = in.readObject();
+        Object originalMap = in.readObject();
         String sql = in.readUTF();
         relationMap = ObjectUtils.typeCast(in.readObject());
 
@@ -637,5 +710,6 @@ public class RecordBean<T, K> implements Record<T, K> {
             .getModel();
 
         initNewRecord(ObjectUtils.typeCast(model), ObjectUtils.typeCast(map), sql);
+        originalMetadataMap.putAll(ObjectUtils.typeCast(originalMap));
     }
 }
