@@ -6,6 +6,7 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.ChunkFunctionalInterface;
+import gaarason.database.contract.query.Grammar;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.InsertNotSuccessException;
@@ -338,4 +339,14 @@ abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends E
         return supportBackQuote(column);
     }
 
+    @Override
+    public B lastRaw(String sqlPart) {
+        return lastRaw(sqlPart, null);
+    }
+
+    @Override
+    public B lastRaw(String sqlPart, @Nullable Collection<Object> parameters) {
+        grammar.addSmartSeparator(Grammar.SQLPartType.LAST, sqlPart, parameters, " ");
+        return getSelf();
+    }
 }

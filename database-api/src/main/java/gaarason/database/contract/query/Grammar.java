@@ -142,7 +142,8 @@ public interface Grammar {
     enum SQLPartType implements Serializable {
         SELECT("select "), COLUMN(""), DATA(" set "), VALUE(" values "), FROM(" from "), TABLE(""),
         FORCE_INDEX(" force index "), IGNORE_INDEX(" ignore index "), ORDER(" order by "), LIMIT(" limit "),
-        GROUP(" group by "), JOIN(""), WHERE(" where "), HAVING(" having "), LOCK(""), UNION("");
+        GROUP(" group by "), JOIN(""), WHERE(" where "), HAVING(" having "), LOCK(""), UNION(""),
+        LAST(" ");
 
         private static final long serialVersionUID = 1L;
 

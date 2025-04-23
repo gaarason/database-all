@@ -9,7 +9,9 @@ import gaarason.database.exception.ConfirmOperationException;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -35,7 +37,7 @@ abstract class ExecuteLevel2Builder<B extends Builder<B, T, K>, T, K>  extends E
      * @throws SQLRuntimeException 数据库异常
      */
     int updateSql(SqlType sqlType) throws SQLRuntimeException {
-        if (sqlType != SqlType.INSERT && grammar.isEmpty(Grammar.SQLPartType.WHERE)) {
+        if ((sqlType != SqlType.INSERT && sqlType != SqlType.REPLACE) && grammar.isEmpty(Grammar.SQLPartType.WHERE)) {
             throw new ConfirmOperationException(
                 "You made a risky operation without where conditions, use where(1) for sure");
         }
@@ -47,12 +49,49 @@ abstract class ExecuteLevel2Builder<B extends Builder<B, T, K>, T, K>  extends E
     }
 
     @Override
+    public int replace() throws SQLRuntimeException {
+        // 暂无事件
+        return updateSql(SqlType.REPLACE);
+    }
+
+    @Override
     public int insert() throws SQLRuntimeException {
         // 事件
         model.eventQueryCreating(this);
         int rows = updateSql(SqlType.INSERT);
         model.eventQueryCreated(rows);
         return rows;
+    }
+
+    @Override
+    public int upsert(String... columns) throws SQLRuntimeException {
+        return upsert(Arrays.asList(columns));
+    }
+
+    @Override
+    public int upsert(Collection<String> columns) throws SQLRuntimeException {
+        // 暂无事件
+        // sql 语句拼接
+        StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append("ON DUPLICATE KEY UPDATE ");
+        Iterator<String> iterator = columns.iterator();
+        while (iterator.hasNext()) {
+            // 列名
+            String column = iterator.next();
+            // `列名`
+            String backQuoteColumn = supportBackQuote(column);
+            // `列名`=VALUES(`列名`)
+            sqlBuilder.append(backQuoteColumn)
+                    .append("=VALUES")
+                    .append(supportBracket(backQuoteColumn));
+            if (iterator.hasNext()) {
+                sqlBuilder.append(", ");
+            }
+        }
+        // 加入 末端
+        lastRaw(sqlBuilder.toString());
+        // 执行
+        return updateSql(SqlType.INSERT);
     }
 
     @Override

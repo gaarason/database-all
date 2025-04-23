@@ -248,13 +248,13 @@ public abstract class BaseGrammar implements Grammar, Serializable {
                 useAlisa = false;
                 sqlBuilder.append("replace into ");
                 choreography(sqlType, sqlBuilder, allParameters, SQLPartType.TABLE, SQLPartType.COLUMN,
-                    SQLPartType.VALUE);
+                    SQLPartType.VALUE, SQLPartType.LAST);
                 return instanceSQLPartInfo(sqlBuilder.toString(), allParameters);
             case INSERT:
                 useAlisa = false;
                 sqlBuilder.append("insert into ");
                 choreography(sqlType, sqlBuilder, allParameters, SQLPartType.TABLE, SQLPartType.COLUMN,
-                    SQLPartType.VALUE);
+                    SQLPartType.VALUE, SQLPartType.LAST);
                 return instanceSQLPartInfo(sqlBuilder.toString(), allParameters);
             case UPDATE:
                 useAlisa = false;
@@ -287,6 +287,8 @@ public abstract class BaseGrammar implements Grammar, Serializable {
             FormatUtils.bracket(sqlBuilder);
             choreography(sqlType, sqlBuilder, allParameters, SQLPartType.UNION);
         }
+
+        choreography(sqlType, sqlBuilder, allParameters, SQLPartType.LAST);
 
         return instanceSQLPartInfo(sqlBuilder.toString(), allParameters);
     }

@@ -354,6 +354,39 @@ int update = studentModel.newQuery().where("id", "3").updateMapStyle(map);
 
 ```
 
+## 插入or更新
+
+单个原子操作中更新或创建记录
+
+#### replace  upsert
+
+- `replace` 对于`mysql`而言为 :  **无冲突则插入, 有冲突就先删除再插入 (其余列使用默认值)**
+- `upsert` 对于`mysql`而言为 : **无冲突则插入, 有冲突就更新指定列 (其余列不变)**
+
+```java
+// 一次一行
+// replace into `student`(`id`,`name`) values ("3","xxcc")
+studentModel.newQuery().column("id", "name").value(Arrays.asList(3, "xxcc")).replace();
+
+// 一次多行
+// replace into `student`(`id`,`name`) values ("19","xxcc1"),("199","xxcc2")
+studentModel.newQuery().column("id", "name")
+.valueList(Arrays.asList(Arrays.asList(19, "xxcc1"), Arrays.asList(199, "xxcc2")))
+.replace();
+
+// 一次一行
+// insert into `student`(`id`,`name`) values ("3","xxcc") ON DUPLICATE KEY UPDATE `name`=VALUES(`name`)
+studentModel.newQuery().column("id", "name").value(Arrays.asList(3, "xxcc")).upsert(StudentModel.Entity::getName);
+
+// 一次多行
+// insert into `student`(`id`,`name`) values ("19","xxcc1"),("199","xxcc2") ON DUPLICATE KEY UPDATE `name`=VALUES(`name`)
+istudentModel.newQuery().column("id", "name")
+.valueList(Arrays.asList(Arrays.asList(19, "xxcc1"), Arrays.asList(199, "xxcc2")))
+.upsert("name");
+
+```
+
+
 ## 删除
 
 当前model如果非软删除, 则`默认删除`与`强力删除`效果一致  
@@ -370,7 +403,7 @@ int num = studentModel.newQuery().where("id", "3").delete();
 // 抛出`ConfirmOperationException`
 studentModel.newQuery().delete();
 
-studentModel.newQuery().whereRaw(1).update();
+studentModel.newQuery().whereRaw(1).delete();
 ```
 
 ### 强力删除
@@ -1349,4 +1382,14 @@ studentModel.newQuery().limit(5).mergerBuilder(builder).get().toObjectList();
 ```java
 studentModel.newQuery().with("teacher", builder -> builder.showType(
                 new ShowType<MySqlBuilderV2<Teacher, Long>>() {}).paginate(1, 15);
+```
+
+#### lastRaw
+- 在`查询构造器`生成的sql的尾部, 拼接不经过任何处理的原生sql片段 (支持sql参数绑定)
+```java
+// select * from `student` as `student_290579508` order by `student_290579508`.`id` desc limit 2 ,3
+studentModel.newQuery().orderBy("id", OrderBy.DESC).lastRaw("limit 2 ,3").get().toObjectList();
+
+// select * from `student` as `student_1101048445` order by `student_1101048445`.`id` desc limit "8","3"
+studentModel.newQuery().orderBy("id", OrderBy.DESC).lastRaw("limit  ? , ? ", Arrays.asList(8, 3)).get().toObjectList();
 ```

@@ -25,6 +25,11 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 6.4.0
+
+- 在`Builder`中, 新增`upsert`/`replcae`用于在单个原子操作中更新或创建(单条or多条)记录
+- 在`Builder`中, 新增`lastRaw`用于 在`查询构造器`生成的sql的尾部, 拼接不经过任何处理的原生sql片段 (支持sql参数绑定)
+
 ### 6.3.0
 
 - 在`Record`中, 新增`wasChanged`用于判断模型是否存在`自初次检索以来`的`提交到数据库`的变更

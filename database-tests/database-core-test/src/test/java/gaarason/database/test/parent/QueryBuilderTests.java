@@ -282,6 +282,75 @@ abstract public class QueryBuilderTests extends BaseTests {
         }
     }
 
+
+    @Test
+    public void 更新or新增_replace() {
+        // 主键重复, 实为先删除在更新
+        int row1 = studentModel.newQuery().column("id", "name").value(Arrays.asList(3, "xxcc")).replace();
+        Assert.assertEquals(2, row1);
+
+        StudentModel.Entity entity = studentModel.newQuery().where("id", "3").firstOrFail().toObject();
+        Assert.assertEquals(3, entity.getId().intValue());
+        Assert.assertEquals("xxcc", entity.getName());
+
+        // 主键不重复, 实为插入
+        int row2 = studentModel.newQuery().column("id", "name").value(Arrays.asList(199, "xxcc")).replace();
+        Assert.assertEquals(1, row2);
+
+        StudentModel.Entity entity2 = studentModel.newQuery().where("id", "199").firstOrFail().toObject();
+        Assert.assertEquals(199, entity2.getId().intValue());
+        Assert.assertEquals("xxcc", entity2.getName());
+
+        // 一次多行
+        int row3 = studentModel.newQuery().column("id", "name")
+                .valueList(Arrays.asList(Arrays.asList(19, "xxcc1"), Arrays.asList(199, "xxcc2")))
+                .replace();
+        Assert.assertEquals(3, row3);
+
+        StudentModel.Entity entity3 = studentModel.newQuery().where("id", "199").firstOrFail().toObject();
+        Assert.assertEquals(199, entity3.getId().intValue());
+        Assert.assertEquals("xxcc2", entity3.getName());
+
+        StudentModel.Entity entity4 = studentModel.newQuery().where("id", "19").firstOrFail().toObject();
+        Assert.assertEquals(19, entity4.getId().intValue());
+        Assert.assertEquals("xxcc1", entity4.getName());
+    }
+
+    @Test
+    public void 更新or新增_upsert() {
+        // 主键重复, 实为更新
+        int row1 = studentModel.newQuery().column("id", "name").value(Arrays.asList(3, "xxcc")).upsert(StudentModel.Entity::getName);
+        Assert.assertEquals(2, row1);
+
+        StudentModel.Entity entity = studentModel.newQuery().where("id", "3").firstOrFail().toObject();
+        Assert.assertEquals(3, entity.getId().intValue());
+        Assert.assertEquals("xxcc", entity.getName());
+
+
+        // 主键不重复, 实为插入
+        int row2 = studentModel.newQuery().column("id", "name").value(Arrays.asList(199, "xxcc")).upsert("name");
+        Assert.assertEquals(1, row2);
+
+        StudentModel.Entity entity2 = studentModel.newQuery().where("id", "199").firstOrFail().toObject();
+        Assert.assertEquals(199, entity2.getId().intValue());
+        Assert.assertEquals("xxcc", entity2.getName());
+
+        // 一次多行
+        int row3 = studentModel.newQuery().column("id", "name")
+                .valueList(Arrays.asList(Arrays.asList(19, "xxcc1"), Arrays.asList(199, "xxcc2")))
+                .upsert("name");
+        Assert.assertEquals(3, row3);
+
+        StudentModel.Entity entity3 = studentModel.newQuery().where("id", "199").firstOrFail().toObject();
+        Assert.assertEquals(199, entity3.getId().intValue());
+        Assert.assertEquals("xxcc2", entity3.getName());
+
+        StudentModel.Entity entity4 = studentModel.newQuery().where("id", "19").firstOrFail().toObject();
+        Assert.assertEquals(19, entity4.getId().intValue());
+        Assert.assertEquals("xxcc1", entity4.getName());
+
+    }
+
     @Test
     public void 更新_普通更新_dataIgnoreNull() {
         int update = studentModel.newQuery()
@@ -2200,12 +2269,25 @@ abstract public class QueryBuilderTests extends BaseTests {
     @Test
     public void 偏移量() {
         List<StudentModel.Entity> entityList1 =
-            studentModel.newQuery().orderBy("id", OrderBy.DESC).limit(2, 3).get().toObjectList();
+                studentModel.newQuery().orderBy("id", OrderBy.DESC).limit(2, 3).get().toObjectList();
         Assert.assertNotNull(entityList1);
         Assert.assertEquals(entityList1.size(), 3);
 
         List<StudentModel.Entity> entityList2 =
-            studentModel.newQuery().orderBy("id", OrderBy.DESC).limit(8, 3).get().toObjectList();
+                studentModel.newQuery().orderBy("id", OrderBy.DESC).limit(8, 3).get().toObjectList();
+        Assert.assertNotNull(entityList2);
+        Assert.assertEquals(entityList2.size(), 2);
+    }
+
+    @Test
+    public void lastRaw() {
+        List<StudentModel.Entity> entityList1 =
+                studentModel.newQuery().orderBy("id", OrderBy.DESC).lastRaw("limit 2 ,3").get().toObjectList();
+        Assert.assertNotNull(entityList1);
+        Assert.assertEquals(entityList1.size(), 3);
+
+        List<StudentModel.Entity> entityList2 =
+                studentModel.newQuery().orderBy("id", OrderBy.DESC).lastRaw("limit  ? , ? ", Arrays.asList(8, 3)).get().toObjectList();
         Assert.assertNotNull(entityList2);
         Assert.assertEquals(entityList2.size(), 2);
     }

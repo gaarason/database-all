@@ -9,6 +9,7 @@ import gaarason.database.exception.InsertNotSuccessException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -80,11 +81,36 @@ public interface Execute<B extends Builder<B, T, K>, T, K> {
         throws SQLRuntimeException;
 
     /**
+     * 单个原子操作中创建记录 or 删除冲突行后再创建记录
+     * @return 受影响的行数
+     * @throws SQLRuntimeException 数据库异常
+     */
+    int replace() throws SQLRuntimeException;
+
+    /**
      * 插入数据
      * @return 受影响的行数
      * @throws SQLRuntimeException 数据库异常
      */
     int insert() throws SQLRuntimeException;
+
+    /**
+     * 单个原子操作中更新或创建记录
+     * eg : newQuery().column(...).value(...).upsert(...);
+     * @param columns 当数据索引冲突后, 更新的列名
+     * @return 受影响的行数 (对于mysql而言, 单条新增是1, 单条有变化更新是2, 单条无变化更新是2)
+     * @throws SQLRuntimeException 数据库异常
+     */
+    int upsert(String... columns) throws SQLRuntimeException;
+
+    /**
+     * 单个原子操作中更新或创建记录
+     * eg : newQuery().column(...).value(...).upsert(...);
+     * @param columns 当数据索引冲突后, 更新的列名
+     * @return 受影响的行数 (对于mysql而言, 单条新增是1, 单条有变化更新是2, 单条无变化更新是2)
+     * @throws SQLRuntimeException 数据库异常
+     */
+    int upsert(Collection<String> columns) throws SQLRuntimeException;
 
     /**
      * 插入数据
