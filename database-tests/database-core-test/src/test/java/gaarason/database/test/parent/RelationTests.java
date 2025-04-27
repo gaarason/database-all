@@ -560,7 +560,7 @@ abstract public class RelationTests extends BaseTests {
             student.setTeacherId(1L);
             students.add(student);
         }
-        studentModel.newQuery().insert(students);
+        studentModel.newQuery().values(students).insert();
         long start = System.currentTimeMillis();
         log.info("------ start");
 

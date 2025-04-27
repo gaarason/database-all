@@ -96,8 +96,8 @@ abstract public class QueryBuilderTests extends BaseTests {
         entity.setTeacherId(0);
         entity.setCreatedAt(new Date(1312312312));
         entity.setUpdatedAt(new Date(1312312312));
-        int insert = studentModel.newQuery().insert(entity);
-        Assert.assertEquals(insert, 1);
+        int insert = studentModel.newQuery().value(entity).insert();
+        Assert.assertEquals(1, insert);
 
         StudentModel.Entity entityFirst = studentModel.newQuery().where("id", "99").firstOrFail().toObject();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -121,8 +121,8 @@ abstract public class QueryBuilderTests extends BaseTests {
         map.put("teacher_id", 0);
         map.put("created_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
         map.put("updated_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
-        int insert = studentModel.newQuery().insertMapStyle(map);
-        Assert.assertEquals(insert, 1);
+        int insert = studentModel.newQuery().value(map).insert();
+        Assert.assertEquals(1, insert);
 
         StudentModel.Entity entityFirst = studentModel.newQuery().where("id", "99").firstOrFail().toObject();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -146,8 +146,8 @@ abstract public class QueryBuilderTests extends BaseTests {
         entity.setTeacherId(0);
         entity.setCreatedAt(new Date(1312312312));
         entity.setUpdatedAt(new Date(1312312312));
-        Object insert = studentModel.newQuery().insertGetId(entity);
-        Assert.assertEquals(insert, 20);
+        Object insert = studentModel.newQuery().value(entity).insertGetId();
+        Assert.assertEquals(20, insert);
         // 不再回填
         Assert.assertNull(entity.getId());
 
@@ -172,8 +172,8 @@ abstract public class QueryBuilderTests extends BaseTests {
         map.put("teacher_id", 0);
         map.put("created_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
         map.put("updated_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
-        Object insert = studentModel.newQuery().insertGetIdMapStyle(map);
-        Assert.assertEquals(insert, 20);
+        Object insert = studentModel.newQuery().value(map).insertGetId();
+        Assert.assertEquals(20, insert);
 
         StudentModel.Entity entityFirst = studentModel.newQuery().where("id", "20").firstOrFail().toObject();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -202,14 +202,14 @@ abstract public class QueryBuilderTests extends BaseTests {
             entity.setUpdatedAt(new Date());
             entityList.add(entity);
         }
-        int insert = studentModel.newQuery().insert(entityList);
-        Assert.assertEquals(insert, 9901);
+        int insert = studentModel.newQuery().values(entityList).insert();
+        Assert.assertEquals(9901, insert);
 
         RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
             .whereBetween("id", "300", "350")
             .orderBy("id", OrderBy.DESC)
             .get();
-        Assert.assertEquals(records.size(), 51);
+        Assert.assertEquals(51, records.size());
     }
 
     @Test
@@ -225,14 +225,14 @@ abstract public class QueryBuilderTests extends BaseTests {
             map.put("updated_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date()));
             entityList.add(map);
         }
-        int insert = studentModel.newQuery().insertMapStyle(entityList);
-        Assert.assertEquals(insert, 9901);
+        int insert = studentModel.newQuery().values(entityList).insert();
+        Assert.assertEquals(9901, insert);
 
         RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()
             .whereBetween("id", "300", "350")
             .orderBy("id", OrderBy.DESC)
             .get();
-        Assert.assertEquals(records.size(), 51);
+        Assert.assertEquals(51, records.size());
     }
 
     @Test
@@ -251,7 +251,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         }
 
 
-        List<Integer> integers = studentModel.newQuery().column(columnNameList).valueList(valuesList).insertGetIds();
+        List<Integer> integers = studentModel.newQuery().column(columnNameList).values(valuesList).insertGetIds();
         Assert.assertEquals(integers.size(), valuesList.size());
 
         List<StudentModel.Entity> entityList = studentModel.newQuery()
@@ -303,7 +303,7 @@ abstract public class QueryBuilderTests extends BaseTests {
 
         // 一次多行
         int row3 = studentModel.newQuery().column("id", "name")
-                .valueList(Arrays.asList(Arrays.asList(19, "xxcc1"), Arrays.asList(199, "xxcc2")))
+                .values(Arrays.asList(Arrays.asList(19, "xxcc1"), Arrays.asList(199, "xxcc2")))
                 .replace();
         Assert.assertEquals(3, row3);
 
@@ -337,7 +337,7 @@ abstract public class QueryBuilderTests extends BaseTests {
 
         // 一次多行
         int row3 = studentModel.newQuery().column("id", "name")
-                .valueList(Arrays.asList(Arrays.asList(19, "xxcc1"), Arrays.asList(199, "xxcc2")))
+                .values(Arrays.asList(Arrays.asList(19, "xxcc1"), Arrays.asList(199, "xxcc2")))
                 .upsert("name");
         Assert.assertEquals(3, row3);
 
@@ -445,11 +445,11 @@ abstract public class QueryBuilderTests extends BaseTests {
         map.put("name", "gggg");
         map.put("age", "7");
 
-        int update = studentReversalModel.newQuery().where("id", "3").updateMapStyle(map);
-        Assert.assertEquals(update, 1);
+        int update = studentReversalModel.newQuery().data(map).where("id", "3").update();
+        Assert.assertEquals(1, update);
         StudentReversal student = studentReversalModel.newQuery().where("id", "3").firstOrFail().toObject();
-        Assert.assertEquals(student.getId().intValue(), 3);
-        Assert.assertEquals(student.getName(), "gggg");
+        Assert.assertEquals(3, student.getId().intValue());
+        Assert.assertEquals("gggg", student.getName());
         Assert.assertEquals(student.getAge(), Byte.valueOf("7"));
 
         Assert.assertThrows(ConfirmOperationException.class, () -> {
@@ -462,11 +462,11 @@ abstract public class QueryBuilderTests extends BaseTests {
         Map<String, Object> map = new HashMap<>();
         map.put("name", "gggg");
         map.put("age", "7");
-        int update = studentCombination.newQuery().where("id", "3").updateMapStyle(map);
-        Assert.assertEquals(update, 1);
+        int update = studentCombination.newQuery().data(map).where("id", "3").update();
+        Assert.assertEquals(1, update);
         StudentCombination student = studentCombination.newQuery().where("id", "3").firstOrFail().toObject();
-        Assert.assertEquals(student.getId().intValue(), 3);
-        Assert.assertEquals(student.getName(), "gggg");
+        Assert.assertEquals(3, student.getId().intValue());
+        Assert.assertEquals("gggg", student.getName());
         Assert.assertEquals(student.getAge(), Byte.valueOf("7"));
 
         Assert.assertThrows(ConfirmOperationException.class, () -> {
@@ -479,16 +479,16 @@ abstract public class QueryBuilderTests extends BaseTests {
         StudentModel.Entity entity1 = new StudentModel.Entity();
         entity1.setAge(Byte.valueOf("7"));
         entity1.setName("ggg");
-        int update = studentModel.newQuery().where("id", "3").update(entity1);
-        Assert.assertEquals(update, 1);
+        int update = studentModel.newQuery().data(entity1).where("id", "3").update();
+        Assert.assertEquals(1, update);
         StudentModel.Entity entity = studentModel.newQuery().where("id", "3").firstOrFail().toObject();
-        Assert.assertEquals(entity.getId().intValue(), 3);
-        Assert.assertEquals(entity.getName(), "ggg");
+        Assert.assertEquals(3, entity.getId().intValue());
+        Assert.assertEquals("ggg", entity.getName());
         Assert.assertEquals(entity.getAge(), Byte.valueOf("7"));
         Assert.assertEquals(entity.getSex(), Byte.valueOf("1"));
 
         Assert.assertThrows(ConfirmOperationException.class, () -> {
-            studentModel.newQuery().update(entity1);
+            studentModel.newQuery().data(entity1).update();
         });
     }
 

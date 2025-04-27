@@ -89,7 +89,7 @@ abstract public class IncrementTypeTests extends BaseTests {
         entity.setCreatedAt(new Date(1312312312));
         entity.setUpdatedAt(new Date(1312312312));
         System.out.println("原对象 " + entity);
-        Long newId = peopleModel.newQuery().insertGetIdOrFail(entity);
+        Long newId = peopleModel.newQuery().value(entity).insertGetIdOrFail();
         Assert.assertEquals(20L, newId.longValue());
         System.out.println("新对象 " + entity);
 
@@ -107,7 +107,7 @@ abstract public class IncrementTypeTests extends BaseTests {
         map.put("created_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
         map.put("updated_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
 
-        Long newId = peopleModel.newQuery().insertGetIdOrFailMapStyle(map);
+        Long newId = peopleModel.newQuery().value(map).insertGetIdOrFail();
         Assert.assertEquals(20L, newId.longValue());
 
         Record<PeopleModel.Entity, Long> entityLongRecord = peopleModel.find(20L);
@@ -148,7 +148,7 @@ abstract public class IncrementTypeTests extends BaseTests {
         entity.setCreatedAt(new Date(1312312312));
         entity.setUpdatedAt(new Date(1312312312));
         System.out.println("原对象 " + entity);
-        Long newId = peopleModel.newQuery().insertGetIdOrFail(entity);
+        Long newId = peopleModel.newQuery().value(entity).insertGetIdOrFail();
         Assert.assertEquals(20L, newId.longValue());
         System.out.println("新对象 " + entity);
 
@@ -169,8 +169,8 @@ abstract public class IncrementTypeTests extends BaseTests {
             entity.setUpdatedAt(new Date(1312312312));
             entityList.add(entity);
         }
-        int insert = peopleModel.newQuery().insert(entityList);
-        List<Long> longs = peopleModel.newQuery().insertGetIds(entityList);
+        int insert = peopleModel.newQuery().values(entityList).insert();
+        List<Long> longs = peopleModel.newQuery().values(entityList).insertGetIds();
         Assert.assertEquals(9901, insert);
         Assert.assertEquals(9901, longs.size());
         System.out.println(longs);
@@ -189,8 +189,8 @@ abstract public class IncrementTypeTests extends BaseTests {
             map.put("updated_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
             entityList.add(map);
         }
-        int insert = peopleModel.newQuery().insertMapStyle(entityList);
-        List<Long> longs = peopleModel.newQuery().insertGetIdsMapStyle(entityList);
+        int insert = peopleModel.newQuery().values(entityList).insert();
+        List<Long> longs = peopleModel.newQuery().values(entityList).insertGetIds();
         Assert.assertEquals(9901, insert);
         Assert.assertEquals(9901, longs.size());
         System.out.println(longs);
@@ -206,7 +206,7 @@ abstract public class IncrementTypeTests extends BaseTests {
         entity.setCreatedAt(new Date(1312312312));
         entity.setUpdatedAt(new Date(1312312312));
 
-        Long id = peopleModel.newQuery().insertGetId(entity);
+        Long id = peopleModel.newQuery().value(entity).insertGetId();
         System.out.println(entity);
         Assert.assertTrue(id - 170936861320019968L > 0);
         // 不再回填
@@ -231,7 +231,7 @@ abstract public class IncrementTypeTests extends BaseTests {
             entity.setUpdatedAt(new Date(1312312312));
             objects.add(entity);
         }
-        List<Long> ids = peopleModel.newQuery().insertGetIds(objects);
+        List<Long> ids = peopleModel.newQuery().values(objects).insertGetIds();
         System.out.println(objects);
         Assert.assertEquals(10, ids.size());
         Assert.assertEquals(10, ids.stream().distinct().count());

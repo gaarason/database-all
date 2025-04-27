@@ -591,7 +591,7 @@ public class RecordBean<T, K> implements Record<T, K> {
         // entity 2 map
         Map<String, Object> entityMap = modelShadow.entityToMap(entity, EntityUseType.INSERT);
         // 执行并, 返回主键
-        K primaryKeyValue = model.newQuery().insertGetIdMapStyle(entityMap);
+        K primaryKeyValue = model.newQuery().value(entityMap).insertGetId();
 
         boolean success = primaryKeyValue != null;
         // 成功插入后,刷新自身属性

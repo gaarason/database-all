@@ -55,7 +55,7 @@ abstract public class AnnotationTests extends BaseTests {
         AnnotationTestModel.EnumEntity entity = new AnnotationTestModel.EnumEntity();
         entity.setSex(AnnotationTestModel.Sex.WOMAN);
         entity.setName(name);
-        Integer id = annotationTestModel.newQuery().from(entity).insertGetId(entity);
+        Integer id = annotationTestModel.newQuery().from(entity).value(entity).insertGetId();
 
         AnnotationTestModel.EnumEntity resultEntity = annotationTestModel.newQuery()
                 .select(entity)
@@ -74,7 +74,7 @@ abstract public class AnnotationTests extends BaseTests {
         AnnotationTestModel.Enum2Entity entity = new AnnotationTestModel.Enum2Entity();
         entity.setSex(AnnotationTestModel.Sex.MAN);
         entity.setName(name);
-        Integer id = annotationTestModel.newQuery().from(entity).insertGetId(entity);
+        Integer id = annotationTestModel.newQuery().from(entity).value(entity).insertGetId();
 
         AnnotationTestModel.Enum2Entity resultEntity = annotationTestModel.newQuery()
                 .select(entity)
@@ -90,7 +90,7 @@ abstract public class AnnotationTests extends BaseTests {
     public void 枚举值序列化_String() {
         AnnotationTestModel.Enum3Entity entity = new AnnotationTestModel.Enum3Entity();
         entity.setName(AnnotationTestModel.Name.CIAO_LI);
-        Integer id = annotationTestModel.newQuery().from(entity).insertGetId(entity);
+        Integer id = annotationTestModel.newQuery().from(entity).value(entity).insertGetId();
 
         AnnotationTestModel.Enum3Entity resultEntity = annotationTestModel.newQuery()
                 .select(entity)
@@ -146,7 +146,7 @@ abstract public class AnnotationTests extends BaseTests {
         bitEntity.getHobby().add(2L);
         bitEntity.getHobby().add(4L);
 
-        Integer id = annotationTestModel.newQuery().from(bitEntity).insertGetId(bitEntity);
+        Integer id = annotationTestModel.newQuery().from(bitEntity).value(bitEntity).insertGetId();
         AnnotationTestModel.BitEntity entity = annotationTestModel.newQuery()
                 .select(bitEntity)
                 .from(bitEntity)

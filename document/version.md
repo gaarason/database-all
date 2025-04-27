@@ -27,8 +27,12 @@ Eloquent ORM for Java
 
 ### 6.4.0
 
-- 在`Builder`中, 新增`upsert`/`replcae`用于在单个原子操作中更新或创建(单条or多条)记录
-- 在`Builder`中, 新增`lastRaw`用于 在`查询构造器`生成的sql的尾部, 拼接不经过任何处理的原生sql片段 (支持sql参数绑定)
+- 在`Builder`中, 新增`upsert`/`replcae`用于在单个原子操作中更新或创建(单条or多条)记录, 它们均触发`插入`事件
+- 在`Builder`中, 新增`lastRaw`用于在`查询构造器`生成的sql的尾部, 拼接不经过任何处理的原生sql片段 (支持sql参数绑定)
+- 在`Builder`中, 新增`value(anyEntity)`/`values(entitiesOrMapsOrLists)`用于使用实体,快速构造插入类语句
+- 在`Builder`中, 移除`valueList(list)`, 相关用法可以使用`values(entitiesOrMapsOrLists)`平替
+- 在`Builder`中, 移除`update(entity)`/`updateMapStyle(map)`, 相关用法可以使用`data(entity).update()`/`data(map).update()`平替
+- 在`Builder`中, 移除`insert(entity)`/`insertMapStyle(map)`/`insert(entityList)`/`insertMapStyle(mapList)`/`insertGetId(entity)`/`insertGetIdMapStyle(map)`/`insertGetIdOrFail(entity)`/`insertGetIdOrFailMapStyle(map)`/`insertGetIds(entityList)`/`insertGetIdsMapStyle(mapList)`, 相关用法可以使用`value(entity)`/`value(map)`/`value(list)`/`values(entitiesOrMapsOrLists)`与`insert()`/`insertGetId()`/`insertGetIdOrFail()`/`insertGetIds()`组合平替
 
 ### 6.3.0
 

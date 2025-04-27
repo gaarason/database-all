@@ -8,8 +8,8 @@ import gaarason.database.contract.query.Grammar;
 import gaarason.database.exception.ConfirmOperationException;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
+import gaarason.database.lang.Nullable;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -50,8 +50,11 @@ abstract class ExecuteLevel2Builder<B extends Builder<B, T, K>, T, K>  extends E
 
     @Override
     public int replace() throws SQLRuntimeException {
-        // 暂无事件
-        return updateSql(SqlType.REPLACE);
+        // 事件
+        model.eventQueryCreating(this);
+        int rows = updateSql(SqlType.REPLACE);
+        model.eventQueryCreated(rows);
+        return rows;
     }
 
     @Override
@@ -61,11 +64,6 @@ abstract class ExecuteLevel2Builder<B extends Builder<B, T, K>, T, K>  extends E
         int rows = updateSql(SqlType.INSERT);
         model.eventQueryCreated(rows);
         return rows;
-    }
-
-    @Override
-    public int upsert(String... columns) throws SQLRuntimeException {
-        return upsert(Arrays.asList(columns));
     }
 
     @Override
@@ -90,8 +88,13 @@ abstract class ExecuteLevel2Builder<B extends Builder<B, T, K>, T, K>  extends E
         }
         // 加入 末端
         lastRaw(sqlBuilder.toString());
+
+        // 事件
+        model.eventQueryCreating(this);
         // 执行
-        return updateSql(SqlType.INSERT);
+        int rows = updateSql(SqlType.INSERT);
+        model.eventQueryCreated(rows);
+        return rows;
     }
 
     @Override
@@ -131,6 +134,7 @@ abstract class ExecuteLevel2Builder<B extends Builder<B, T, K>, T, K>  extends E
     }
 
     @Override
+    @Nullable
     public K insertGetId() throws SQLRuntimeException {
         // 事件
         model.eventQueryCreating(this);

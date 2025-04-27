@@ -27,6 +27,7 @@ import java.util.*;
 abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends ExecuteLevel2Builder<B, T, K> {
 
     @Override
+    @Nullable
     public Record<T, K> find(@Nullable Object id) throws SQLRuntimeException {
         return where(model.getPrimaryKeyColumnName(), id).first();
     }
@@ -47,60 +48,8 @@ abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends E
     }
 
     @Override
-    public int insert(@Nullable Object anyEntity) throws SQLRuntimeException {
-        Map<String, Object> simpleMap = modelShadowProvider.entityToMap(anyEntity, EntityUseType.INSERT);
-        return insertMapStyle(simpleMap);
-    }
-
-    @Override
-    public int insertMapStyle(Map<String, Object> entityMap) throws SQLRuntimeException {
-        // 获取map所有有效sql字段
-        Set<String> columnNameSet = new LinkedHashSet<>(entityMap.keySet());
-        // 获取map所有有效字段的值
-        List<Object> valueList = MapUtils.mapValueToList(entityMap);
-        // 字段加入grammar
-        column(columnNameSet);
-        // 字段的值加入grammar
-        value(valueList);
-        // 执行
-        return insert();
-    }
-
-    @Override
-    public int insert(List<?> entityList) throws SQLRuntimeException {
-        // entityList处理
-        beforeBatchInsert(entityList);
-        // 执行
-        return insert();
-    }
-
-    @Override
-    public int insertMapStyle(List<Map<String, Object>> entityMapList) throws SQLRuntimeException {
-        // entityList处理
-        beforeBatchInsertMapStyle(entityMapList);
-        // 执行
-        return insert();
-    }
-
-    @Override
-    public K insertGetId(Object anyEntity) throws SQLRuntimeException {
-        Map<String, Object> simpleMap = modelShadowProvider.entityToMap(anyEntity, EntityUseType.INSERT);
-        // 返回主键
-        return insertGetIdMapStyle(simpleMap);
-    }
-
-    @Override
-    public K insertGetIdMapStyle(Map<String, Object> entityMap) throws SQLRuntimeException {
-        // 获取map所有有效sql字段
-        Set<String> columnNameSet = new LinkedHashSet<>(entityMap.keySet());
-        // 获取map所有有效字段的值
-        List<Object> valueList = MapUtils.mapValueToList(entityMap);
-        // 字段加入grammar
-        column(columnNameSet);
-        // 字段的值加入grammar
-        value(valueList);
-        // 执行, 并获取主键id，返回主键
-        return insertGetId();
+    public int upsert(String... columns) throws SQLRuntimeException {
+        return upsert(Arrays.asList(columns));
     }
 
     @Override
@@ -111,58 +60,6 @@ abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends E
         }
         return id;
     }
-
-    @Override
-    public K insertGetIdOrFail(Object anyEntity) throws SQLRuntimeException, InsertNotSuccessException {
-        K id = insertGetId(anyEntity);
-        if (id == null) {
-            throw new InsertNotSuccessException();
-        }
-        return id;
-    }
-
-    @Override
-    public K insertGetIdOrFailMapStyle(Map<String, Object> entityMap)
-        throws SQLRuntimeException, InsertNotSuccessException {
-        K id = insertGetIdMapStyle(entityMap);
-        if (id == null) {
-            throw new InsertNotSuccessException();
-        }
-        return id;
-    }
-
-    @Override
-    public List<K> insertGetIds(List<?> anyEntityList) throws SQLRuntimeException {
-        // entityList处理
-        beforeBatchInsert(anyEntityList);
-        return insertGetIds();
-    }
-
-    @Override
-    public List<K> insertGetIdsMapStyle(List<Map<String, Object>> entityMapList) throws SQLRuntimeException {
-        // entityList处理
-        beforeBatchInsertMapStyle(entityMapList);
-        return insertGetIds();
-    }
-
-    @Override
-    public int update(Object anyEntity) throws SQLRuntimeException {
-        // 获取entity所有有效字段对其值得映射
-        Map<String, Object> stringStringMap = modelShadowProvider.entityToMap(anyEntity,
-            EntityUseType.UPDATE);
-
-        data(stringStringMap);
-        // 执行
-        return update();
-    }
-
-    @Override
-    public int updateMapStyle(Map<String, Object> entityMap) throws SQLRuntimeException {
-        data(entityMap);
-        // 执行
-        return update();
-    }
-
 
     @Nullable
     @Override
@@ -290,36 +187,40 @@ abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends E
 
     /**
      * 批量插入数据, entityList处理
-     * @param entityList 数据实体对象列表
+     * @param entityCollection 数据实体对象列表
      */
-    protected void beforeBatchInsert(List<?> entityList) {
+    protected B beforeBatchInsertEntityStyle(Collection<?> entityCollection) {
         List<Map<String, Object>> mapList = new LinkedList<>();
-        for (Object entity : entityList) {
+        for (Object entity : entityCollection) {
             mapList.add(modelShadowProvider.entityToMap(entity, EntityUseType.INSERT));
         }
         // 转入mapList处理
-        beforeBatchInsertMapStyle(mapList);
+        return beforeBatchInsertMapStyle(mapList);
     }
 
     /**
      * 批量插入数据, entityMapList处理
-     * @param entityMapList 数据实体map列表
+     * @param entityMapCollection 数据实体map列表
      */
-    protected void beforeBatchInsertMapStyle(List<Map<String, Object>> entityMapList) {
-        if (ObjectUtils.isEmpty(entityMapList)) {
-            return;
+    protected B beforeBatchInsertMapStyle(Collection<Map<String, Object>> entityMapCollection) {
+        if (ObjectUtils.isEmpty(entityMapCollection)) {
+            return getSelf();
         }
         // 获取entity所有有效字段
-        Set<String> columnNameSet = new LinkedHashSet<>(entityMapList.get(0).keySet());
+        Set<String> columnNameSet = entityMapCollection.stream()
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new)
+                .keySet();
+        // 值
         List<List<Object>> valueListList = new ArrayList<>();
-        for (Map<String, Object> map : entityMapList) {
+        for (Map<String, Object> map : entityMapCollection) {
             List<Object> valueList = MapUtils.mapValueToList(map);
             valueListList.add(valueList);
         }
         // 字段加入grammar
         column(columnNameSet);
         // 字段的值加入grammar
-        valueList(valueListList);
+        return values(valueListList);
     }
 
     @Override

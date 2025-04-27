@@ -11,7 +11,6 @@ import gaarason.database.lang.Nullable;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 执行
@@ -88,13 +87,6 @@ public interface Execute<B extends Builder<B, T, K>, T, K> {
     int replace() throws SQLRuntimeException;
 
     /**
-     * 插入数据
-     * @return 受影响的行数
-     * @throws SQLRuntimeException 数据库异常
-     */
-    int insert() throws SQLRuntimeException;
-
-    /**
      * 单个原子操作中更新或创建记录
      * eg : newQuery().column(...).value(...).upsert(...);
      * @param columns 当数据索引冲突后, 更新的列名
@@ -114,35 +106,10 @@ public interface Execute<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 插入数据
-     * @param anyEntity 任意数据实体对象
      * @return 受影响的行数
      * @throws SQLRuntimeException 数据库异常
      */
-    int insert(@Nullable Object anyEntity) throws SQLRuntimeException;
-
-    /**
-     * 插入数据
-     * @param entityMap 数据实体map
-     * @return 受影响的行数
-     * @throws SQLRuntimeException 数据库异常
-     */
-    int insertMapStyle(Map<String, Object> entityMap) throws SQLRuntimeException;
-
-    /**
-     * 批量插入数据
-     * @param entityList 数据实体对象列表
-     * @return 受影响的行数
-     * @throws SQLRuntimeException 数据库异常
-     */
-    int insert(List<?> entityList) throws SQLRuntimeException;
-
-    /**
-     * 批量插入数据
-     * @param entityMapList 数据实体map列表
-     * @return 受影响的行数
-     * @throws SQLRuntimeException 数据库异常
-     */
-    int insertMapStyle(List<Map<String, Object>> entityMapList) throws SQLRuntimeException;
+    int insert() throws SQLRuntimeException;
 
     /**
      * 插入数据
@@ -154,47 +121,11 @@ public interface Execute<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 插入数据
-     * @param anyEntity 任意数据实体对象
-     * @return 数据库自增id|null
-     * @throws SQLRuntimeException 数据库异常
-     */
-    @Nullable
-    K insertGetId(Object anyEntity) throws SQLRuntimeException;
-
-    /**
-     * 插入数据
-     * @param entityMap 数据实体map
-     * @return 数据库自增id|null
-     * @throws SQLRuntimeException 数据库异常
-     */
-    @Nullable
-    K insertGetIdMapStyle(Map<String, Object> entityMap) throws SQLRuntimeException;
-
-    /**
-     * 插入数据
      * @return 数据库自增id
      * @throws SQLRuntimeException 数据库异常
      * @throws InsertNotSuccessException 新增失败
      */
     K insertGetIdOrFail() throws SQLRuntimeException, InsertNotSuccessException;
-
-    /**
-     * 插入数据(会将数据库自增id更新到entity)
-     * @param anyEntity 任意数据实体对象
-     * @return 数据库自增id
-     * @throws SQLRuntimeException 数据库异常
-     * @throws InsertNotSuccessException 新增失败
-     */
-    K insertGetIdOrFail(Object anyEntity) throws SQLRuntimeException, InsertNotSuccessException;
-
-    /**
-     * 插入数据
-     * @param entityMap 数据实体map
-     * @return 数据库自增id
-     * @throws SQLRuntimeException 数据库异常
-     * @throws InsertNotSuccessException 新增失败
-     */
-    K insertGetIdOrFailMapStyle(Map<String, Object> entityMap) throws SQLRuntimeException, InsertNotSuccessException;
 
     /**
      * 批量插入数据
@@ -204,43 +135,11 @@ public interface Execute<B extends Builder<B, T, K>, T, K> {
     List<K> insertGetIds() throws SQLRuntimeException;
 
     /**
-     * 批量插入数据
-     * @param anyEntityList 数据实体对象列表
-     * @return 数据库自增id列表
-     * @throws SQLRuntimeException 数据库异常
-     */
-    List<K> insertGetIds(List<?> anyEntityList) throws SQLRuntimeException;
-
-    /**
-     * 批量插入数据
-     * @param entityMapList 数据实体map列表
-     * @return 数据库自增id列表
-     * @throws SQLRuntimeException 数据库异常
-     */
-    List<K> insertGetIdsMapStyle(List<Map<String, Object>> entityMapList) throws SQLRuntimeException;
-
-    /**
      * 更新数据
      * @return 受影响的行数
      * @throws SQLRuntimeException 数据库异常
      */
     int update() throws SQLRuntimeException;
-
-    /**
-     * 更新数据
-     * @param anyEntity 任意数据实体对象
-     * @return 受影响的行数
-     * @throws SQLRuntimeException 数据库异常
-     */
-    int update(Object anyEntity) throws SQLRuntimeException;
-
-    /**
-     * 更新数据
-     * @param entityMap 数据实体map
-     * @return 受影响的行数
-     * @throws SQLRuntimeException 数据库异常
-     */
-    int updateMapStyle(Map<String, Object> entityMap) throws SQLRuntimeException;
 
     /**
      * 删除数据(根据模型确定是否使用软删除)

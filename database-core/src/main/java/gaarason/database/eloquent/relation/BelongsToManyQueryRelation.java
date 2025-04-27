@@ -536,7 +536,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
         }
 
         // 批量插入
-        return belongsToManyTemplate.relationModel.newQuery().column(columnList).valueList(valuesList).insert();
+        return belongsToManyTemplate.relationModel.newQuery().column(columnList).values(valuesList).insert();
     }
 
     /**

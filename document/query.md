@@ -57,7 +57,7 @@ Eloquent ORM for Java
     * [limit](#limit)
     * [from](#from)
     * [index](#index)
-    * [relationResultData](#relationResultData)
+    * [data](#data)
     * [union](#union)
     * [事务](#事务)
         * [手动事物](#手动事物)
@@ -247,7 +247,13 @@ studentModel.where("age","<","9").dealChunk(2000, Student::getId, records -> {
 
 ## 插入
 
-#### insert insertMapStyle insertGetId insertGetIds insertGetIdMapStyle insertGetIdOrFail insertGetIdOrFailMapStyle
+#### value values insert insertGetId insertGetIdOrFail insertGetIds
+- value 单行插入的数据, 参数可以是`值列表`, `值MAP`, 以及`实体`, 其中`值MAP`和`实体`均已经包含`column`调用
+- values 多行插入的数据, 等价于多个`value`的调用
+- insert 返回插入的行数
+- insertGetId 返回插入后返回的主键id
+- insertGetIdOrFail 返回插入后返回的主键id(失败则异常)
+- insertGetIds 返回插入后返回的主键id列表
 
 ```java
 
@@ -263,10 +269,10 @@ student.setCreatedAt(new Date(1312312312));
 student.setUpdatedAt(new Date(1312312312));
 
 // 返回受影响的行数
-int num = studentModel.newQuery().insert(entity);
+int num = studentModel.newQuery().value(entity).insert();
 
 // 返回自增主键, 并对entity进行主键赋值
-Long id = studentModel.newQuery().insertGetIdOrFail(entity);
+Long id = studentModel.newQuery().value(entity).insertGetIdOrFail();
 
 
 // 推荐
@@ -285,10 +291,10 @@ for (int i = 99; i < 1000; i++) {
 }
 
 // 返回受影响的行数
-int num = studentModel.newQuery().insert(entityList);
+int num = studentModel.newQuery().values(entityList).insert();
 
 // 返回自增主键列表
-List<Long> ids = studentModel.newQuery().insertGetIds(entity);
+List<Long> ids = studentModel.newQuery().value(entity).insertGetIds();
 
 // c. 构造语句插入
  List<String> columnNameList = new ArrayList<>();
@@ -312,10 +318,10 @@ map.put("teacher_id", 0);
 map.put("created_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
 map.put("updated_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
 
-int insert = studentModel.newQuery().insertMapStyle(map);
+int insert = studentModel.newQuery().value(map).insert();
 
 // e.多个map操作
-List<Map<String, Object>> entityList = new ArrayList<>();
+List<Map<String, Object>> maps = new ArrayList<>();
 for (int i = 99; i < 10000; i++) {
     Map<String, Object> map = new HashMap<>();
     map.put("name", "姓名");
@@ -324,35 +330,37 @@ for (int i = 99; i < 10000; i++) {
     map.put("teacher_id", i * 3);
     map.put("created_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date()));
     map.put("updated_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date()));
-    entityList.add(map);
+    maps.add(map);
 }
-int insert = studentModel.newQuery().insertMapStyle(entityList);
+int insert = studentModel.newQuery().values(maps).insert();
 ```
 
 ## 更新
 
-#### update  updateMapStyle
+#### update
+
+- update 返回更新的行数
 
 当一个更新语句没有`where`时,将会抛出`ConfirmOperationException`
 
 ```java
-int num = studentModel.newQuery().relationResultData("name", "xxcc").where("id", "3").update();
+int num = studentModel.newQuery().data("name", "xxcc").where("id", "3").update();
 
-int num = studentModel.newQuery().relationResultData("name", "vvv").where("id", ">", "3").update();
+int num = studentModel.newQuery().data("name", "vvv").where("id", ">", "3").update();
 
 // 抛出`ConfirmOperationException`
-studentModel.newQuery().relationResultData("name", "xxcc").update();
+studentModel.newQuery().data("name", "xxcc").update();
 
-studentModel.newQuery().relationResultData("name", "xxcc").whereRaw(1).update();
+studentModel.newQuery().data("name", "xxcc").whereRaw(1).update();
 
 // 使用map
 Map<String, Object> map = new HashMap<>();
 map.put("name", "gggg");
 map.put("age", "7");
 
-int update = studentModel.newQuery().relationResultData(map).where("id", "3").update();
+int update = studentModel.newQuery().data(map).where("id", "3").update();
 
-int update = studentModel.newQuery().where("id", "3").updateMapStyle(map);
+int update = studentModel.newQuery().data(new Student()).where("id", "3").update();
 
 ```
 
@@ -360,30 +368,66 @@ int update = studentModel.newQuery().where("id", "3").updateMapStyle(map);
 
 单个原子操作中更新或创建记录
 
-#### replace  upsert
+#### replace upsert
 
 - `replace` 对于`mysql`而言为 :  **无冲突则插入, 有冲突就先删除再插入 (其余列使用默认值)**
 - `upsert` 对于`mysql`而言为 : **无冲突则插入, 有冲突就更新指定列 (其余列不变)**
+- 均触发`插入类型`的事件 (**并非`更新`事件**)
 
 ```java
 // 一次一行
+// sql 风格
 // replace into `student`(`id`,`name`) values ("3","xxcc")
 studentModel.newQuery().column("id", "name").value(Arrays.asList(3, "xxcc")).replace();
 
+// map风格
+Map<String, Object> map = new HashMap<>();
+map.put("id", 99);
+map.put("name", "姓名");
+map.put("age", 13);
+map.put("sex", 1);
+map.put("teacher_id", 0);
+map.put("created_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
+map.put("updated_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(1312312312)));
+studentModel.newQuery().value(map).replace();
+
+// 实体风格
+studentModel.newQuery().value(new Student()).replace();
+
 // 一次多行
+// sql 风格
 // replace into `student`(`id`,`name`) values ("19","xxcc1"),("199","xxcc2")
 studentModel.newQuery().column("id", "name")
-.valueList(Arrays.asList(Arrays.asList(19, "xxcc1"), Arrays.asList(199, "xxcc2")))
+.values(Arrays.asList(Arrays.asList(19, "xxcc1"), Arrays.asList(199, "xxcc2")))
 .replace();
 
+// map风格
+List<Map<String, Object>> maps = new ArrayList<>();
+for (int i = 99; i < 10000; i++) {
+Map<String, Object> map = new HashMap<>();
+    map.put("name", "姓名");
+    map.put("age", 13);
+    map.put("sex", 1);
+    map.put("teacher_id", i * 3);
+    map.put("created_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date()));
+    map.put("updated_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date()));
+    maps.add(map);
+}
+studentModel.newQuery().values(maps).replace();
+
+// 实体风格
+studentModel.newQuery().values(Array.asList(new Student(), new Student())).replace();
+
 // 一次一行
+// sql 风格
 // insert into `student`(`id`,`name`) values ("3","xxcc") ON DUPLICATE KEY UPDATE `name`=VALUES(`name`)
 studentModel.newQuery().column("id", "name").value(Arrays.asList(3, "xxcc")).upsert(StudentModel.Entity::getName);
 
 // 一次多行
+// sql 风格
 // insert into `student`(`id`,`name`) values ("19","xxcc1"),("199","xxcc2") ON DUPLICATE KEY UPDATE `name`=VALUES(`name`)
 istudentModel.newQuery().column("id", "name")
-.valueList(Arrays.asList(Arrays.asList(19, "xxcc1"), Arrays.asList(199, "xxcc2")))
+.values(Arrays.asList(Arrays.asList(19, "xxcc1"), Arrays.asList(199, "xxcc2")))
 .upsert("name");
 
 ```
@@ -1146,9 +1190,9 @@ RecordList<StudentModel.Entity, Integer> records2 = studentModel.newQuery().wher
 RecordList<StudentModel.Entity, Integer> records3 = studentModel.newQuery().whereRaw("1").forceIndex("PRI").ignoreIndex("PRI").get();
 ```
 
-## relationResultData
+## data
 
-### relationResultData
+### data
 
 ```java
 Map<String, String> map = new HashMap<>();
@@ -1156,10 +1200,10 @@ map.put("name", "gggg");
 map.put("age", "7");
 
 // update `student` set`name`="gggg",`age`="7" where `id`="3"
-int num = studentModel.newQuery().relationResultData(map).where("id", "3").update();
+int num = studentModel.newQuery().data(map).where("id", "3").update();
 
 // update `student` set`name`="小明",`age`="7" where `id`="3"
-int num = studentModel.newQuery().relationResultData("name","小明").relationResultData("age","7").where("id", "3").update();
+int num = studentModel.newQuery().data("name","小明").data("age","7").where("id", "3").update();
 
 
 Map<String, String> mapHasNull = new HashMap<>();
@@ -1167,10 +1211,10 @@ mapHasNull.put("name", "gggg");
 mapHasNull.put("age", null);
 
 // update `student` set`name`="gggg",`age`= null where `id`="3"
-int num = studentModel.newQuery().relationResultData(mapHasNull).where("id", "3").update();
+int num = studentModel.newQuery().data(mapHasNull).where("id", "3").update();
 
 // update `student` set`name`="小明",`age`=null where `id`="3"
-int num = studentModel.newQuery().relationResultData("name","小明").relationResultData("age",null).where("id", "3").update();
+int num = studentModel.newQuery().data("name","小明").data("age",null).where("id", "3").update();
 ```
 
 ### dataIgnoreNull
@@ -1186,7 +1230,7 @@ map.put("age", null);
 int num = studentModel.newQuery().dataIgnoreNull(map).where("id", "3").update();
 
 // update `student` set`age`="7" where `id`="3"
-int num = studentModel.newQuery().dataIgnoreNull("name",null).relationResultData("age","7").where("id", "3").update();
+int num = studentModel.newQuery().dataIgnoreNull("name",null).data("age","7").where("id", "3").update();
 ```
 
 ### dateBit
@@ -1228,7 +1272,7 @@ studentModel.newQuery().begin();
 
 // do something
 // 请手动捕获异常, 以确保 rollBack()/commit() 的正确执行, 以释放连接
-studentModel.newQuery().where("id", "1").relationResultData("name", "dddddd").update();
+studentModel.newQuery().where("id", "1").data("name", "dddddd").update();
 StudentSingleModel.Entity entity = studentModel.newQuery().where("id", "1").firstOrFail().toObject();
 
 // 回滚
@@ -1250,7 +1294,7 @@ studentModel.newQuery().commit();
 // 开启事物
 studentModel.newQuery().transaction(() -> {
     // do something
-    studentModel.newQuery().where("id", "1").relationResultData("name", "dddddd").update();
+    studentModel.newQuery().where("id", "1").data("name", "dddddd").update();
     StudentSingleModel.Entity entity = studentModel.newQuery().where("id", "1").firstOrFail().toObject();
 }, 3);
 ```
@@ -1261,7 +1305,7 @@ studentModel.newQuery().transaction(() -> {
 // 开启事物
 boolean success = studentModel.newQuery().transaction(() -> {
     // do something
-    studentModel.newQuery().where("id", "1").relationResultData("name", "dddddd").update();
+    studentModel.newQuery().where("id", "1").data("name", "dddddd").update();
     StudentSingleModel.Entity entity = studentModel.newQuery().where("id", "1").firstOrFail().toObject();
     
     return true;

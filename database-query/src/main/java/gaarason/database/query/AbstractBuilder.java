@@ -17,6 +17,7 @@ import gaarason.database.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -152,11 +153,35 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
     }
 
     @Override
-    public B valueList(Collection<? extends Collection<?>> valuesList) {
-        for (Collection<?> values : valuesList) {
-            value(values);
+    public B value(@Nullable Map<String, Object> entityMap) {
+        if (ObjectUtils.isEmpty(entityMap)) {
+            return value((Collection<?>) null);
         }
+        beforeBatchInsertMapStyle(Collections.singleton(entityMap));
         return getSelf();
+    }
+
+    @Override
+    public B value(Object anyEntity) {
+        return values(Collections.singleton(anyEntity));
+    }
+
+    @Override
+    public B values(@Nullable Collection<?> entitiesOrMapsOrLists) {
+        if (ObjectUtils.isEmpty(entitiesOrMapsOrLists)) {
+            return value(Collections.emptyList());
+        }
+        Object ele = entitiesOrMapsOrLists.stream().findFirst().orElseThrow(IllegalArgumentException::new);
+        if (ele instanceof Collection) {
+            for (Object values : entitiesOrMapsOrLists) {
+                value((Collection<?>) values);
+            }
+            return getSelf();
+        } else if (ele instanceof Map){
+            return beforeBatchInsertMapStyle(ObjectUtils.typeCast(entitiesOrMapsOrLists));
+        } else {
+            return beforeBatchInsertEntityStyle(entitiesOrMapsOrLists);
+        }
     }
 
     @Override
