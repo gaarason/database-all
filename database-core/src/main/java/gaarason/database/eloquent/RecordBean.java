@@ -373,7 +373,7 @@ public class RecordBean<T, K> implements Record<T, K> {
         }
         // 执行
         boolean success =
-            model.newQuery().where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString()).delete() > 0;
+            model.newQueryWithoutApply().where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString()).delete() > 0;
         // 成功删除后后,刷新自身属性
         if (success) {
             this.metadataMap.clear();
@@ -638,7 +638,7 @@ public class RecordBean<T, K> implements Record<T, K> {
         Map<String, Object> entityMap = modelShadow.entityToMap(entity, EntityUseType.UPDATE);
         // 执行
         boolean success =
-            model.newQuery().where(model.getPrimaryKeyColumnName(), primaryKeyValue).data(entityMap).update() > 0;
+            model.newQueryWithoutApply().where(model.getPrimaryKeyColumnName(), primaryKeyValue).data(entityMap).update() > 0;
         // 成功更新后,刷新自身属性
         if (success) {
             // 更新自身

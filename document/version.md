@@ -25,6 +25,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 6.4.1
+
+- 在`Record`中, 将`ORM`的更新与删除相关操作, 即`save`/`delete`/`saveByPrimaryKey`中的实现, 由`newQuery()`更改为`newQueryWithoutApply()`
+
 ### 6.4.0
 
 - 在`Builder`中, 新增`upsert`/`replcae`用于在单个原子操作中更新或创建(单条or多条)记录, 它们均触发`插入`事件
