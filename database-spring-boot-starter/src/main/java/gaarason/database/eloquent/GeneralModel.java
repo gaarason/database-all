@@ -37,7 +37,7 @@ public class GeneralModel extends Model<MySqlBuilder<GeneralModel.Table, Seriali
         }
     }
 
-    @gaarason.database.annotation.Table(name = "@@GeneralModel.Table@@")
+    @gaarason.database.annotation.Table(name = "@@GeneralModel_Table@@")
     public static class Table implements Serializable {
 
     }

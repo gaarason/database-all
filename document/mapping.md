@@ -44,25 +44,10 @@ Eloquent ORM for Java
 数据映射是用将数据库字段与java对象进行相互转换的必要手段, 理解为`数据`  
 [反向生成代码 Generate](/document/generate.md)  
 **数据类型应该使用包装类型替代基本类型 例如使用`Integer`替代`int`**  
-任意一个普通pojo对象即可, 下面是一个例子
+任意一个普通pojo对象即可, 下面是一个例子  
+最常见的情况下, 是可以不需要任何的额外的注解的
 
 ```java
-package temp.pojo;
-
-import gaarason.database.annotation.Column;
-import gaarason.database.annotation.Primary;
-import gaarason.database.annotation.Table;
-import gaarason.database.contract.support.FieldConversion;
-import gaarason.database.contract.support.FieldStrategy;
-import gaarason.database.contract.support.IdGenerator;
-import gaarason.database.lang.Nullable;
-import lombok.Data;
-import java.io.Serializable;
-import java.util.Date;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-
 @Data
 @Table(name = "null_test")
 public class PrimaryKeyEntity implements Serializable {
@@ -97,6 +82,7 @@ public class PrimaryKeyEntity implements Serializable {
 
 }
 
+@Data
 public static class Info {
     public String name;
     public Integer age;
@@ -106,7 +92,11 @@ public static class Info {
 
 ## 数据库建议
 
-数据库字段建议不允许为`null`, 如果允许为null则在使用`ORM新增`等操作时,需要声明每一个字段,因为程序不能分辨`null`值的意义
+**数据库字段`建议`不允许为`null`**, 如果允许为`null`则在使用`ORM新增`等操作时,需要声明每一个字段,因为程序不能分辨`null`值的意义 (是不需要插入, 还是插入`null`值)   
+**数据库字段`建议`不允许为`null`**, 在查询出的结果中有`null`, 业务上无法判断是列值为`null`, 还是根本没有查询这个列   
+**数据库字段`建议`不允许为`null`**, `null`的存在无法带来任何好处  
+  
+其实, 数据库字段为`null`也可以, 程序中也有对于`null`的兼容处理, 毕竟世界上存在历史悠远的项目, 也只能接受.
 
 ## 注解
 
@@ -183,10 +173,12 @@ Assert.assertEquals(200, record0.getEntity().getId().intValue());
 #### 使用策略
 - strategy
 - 是否在插入/更新/条件时使用本字段的值  
-- 默认 insertStrategy() == FieldStrategy.Default.class , 即 insertStrategy() 取用 strategy() 的值
-- 默认 updateStrategy() == FieldStrategy.Default.class , 即 updateStrategy() 取用 strategy() 的值
-- 默认 conditionStrategy() == FieldStrategy.Default.class , 即 conditionStrategy() 取用 strategy() 的值
+- 默认 insertStrategy() == FieldStrategy.Default.class , 即 insertStrategy() 直接取用 strategy() 的值
+- 默认 updateStrategy() == FieldStrategy.Default.class , 即 updateStrategy() 直接取用 strategy() 的值
+- 默认 conditionStrategy() == FieldStrategy.Default.class , 即 conditionStrategy() 直接取用 strategy() 的值
 - 默认 strategy() == FieldStrategy.NotNull.class, 即非null时使用
+
+**也就是说, 在默认的情况下, 只要`目标字段`是`非null`的, 那么就可以在"插入","更新"以及作为"条件"使用**
 
 #### 是否查询
 - selectable
@@ -194,13 +186,15 @@ Assert.assertEquals(200, record0.getEntity().getId().intValue());
 - 使用 select * 查询将略过本字段
 - 主要对于大字段使用
 
+**在`查询构造器 newQuery`下, 可能需要手动调用`select(entity)`, 使其生效**
+
 #### 字段填充
 - fill
 - 字段填充策略
 - 业务上可以自行实现 `FieldFill` 接口, 已确定在 插入/更新/条件时, 填充的值
 - 提供 `FieldFill.NotFill.class`(默认)不做填充
-- 提供 `FieldFill.CreatedTimeFill.class` 在 insert 时对时间类型的字段进行当前时间的填充
-- 提供 `FieldFill.UpdatedTimeFill.class` 在 insert 时对时间类型的字段进行当前时间的填充
+- 提供 `FieldFill.CreatedTimeFill.class` 在 insert 时, 对时间类型的字段进行当前时间的填充
+- 提供 `FieldFill.UpdatedTimeFill.class` 在 insert 时, 对时间类型的字段进行当前时间的填充
 
 ```java
 @Data
@@ -225,31 +219,72 @@ public class Entity implements Serializable {
 
 #### 类型转化
 - conversion
-- 序列与反序列化
-- 业务上可以自行实现 `FieldConversion` 接口, 已确定本字段特定的序列化与反序列化方式  
+- 序列与反序列化, 通过合理的定义, 可以让业务开发时, 不再关注`数据本身`在数据库中的存放形式, 从而专注与业务
+- 提供常用的几种方式, 可以直接声明使用
+- 业务上也可以自行实现 `FieldConversion` 接口, 已确定本字段特定的序列化与反序列化方式  
 
 
 ##### Default
-- conversion() 默认值为 FieldConversion.Default.class, 可以解决绝大多数的基本类型的序列化与反序列化
+- @Column(conversion = FieldConversion.Default.class)
+- conversion() 默认值为 FieldConversion.Default.class, 可以解决绝大多数的`基本类型`的序列化与反序列化
 
 ##### Json
+- @Column(conversion = FieldConversion.Json.class)
 - conversion() 可选值为 FieldConversion.Json.class, 以json规范进行序列化与反序列化, 数据的字段应该为合法的json字符串
 - 实现依赖于`jackson`, 需要自行引入 `com.fasterxml.jackson.core: jackson-databind` 以及 `com.fasterxml.jackson.datatype: jackson-datatype-jsr310`依赖项
 - 因为`json规范`的兼容性细节较多, 所以业务上也可以参考`JsonConversion`自行实现, 与使用
 - 数据库列一般使用 varchar
+```java
+@Column(conversion = FieldConversion.Json.class)
+private SomeObjectDto someObjectDto;
+```
 
 ##### EnumInteger
-- conversion() 可选值为 FieldConversion.EnumInteger.class, 以枚举类型的`自然次序`进行序列化与反序列化
+- @Column(conversion = FieldConversion.EnumInteger.class)
+- conversion() 可选值为 FieldConversion.EnumInteger.class, 以`枚举类型`的`自然次序`进行序列化与反序列化
 - 枚举类型的自然次序从 0 开始
 - 数据库列一般使用 int
 
+```java
+@Column(conversion = FieldConversion.EnumInteger.class)
+private Sex sex;
+```
+
 ##### EnumString
-- conversion() 可选值为 FieldConversion.EnumString.class, 以枚举类型的`名称`进行序列化与反序列化
+- @Column(conversion = FieldConversion.EnumString.class)
+- conversion() 可选值为 FieldConversion.EnumString.class, 以`枚举类型`的`名称`进行序列化与反序列化
 - 数据库列一般使用 varchar
 
+```java
+@Column(conversion = FieldConversion.EnumString.class)
+private Sex sex;
+```
+
 ##### Bit
-- conversion() 可选值为 FieldConversion.Bit.class, 将集合按位进行序列化与反序列化
+- @Column(conversion = FieldConversion.Bit.class)
+- conversion() 可选值为 FieldConversion.Bit.class, 将`数字的集合`按`位`进行序列化与反序列化
+- 可以配合`查询构造器`中的`dataBit`以及`whereBit`等方法, 对于`多选项`的业务场景, 进行**十分高效**的查询与更新
 - 数据库列一般使用 int, bigint
+
+```java
+@Column(conversion = FieldConversion.Bit.class)
+private List<Long> hobby;
+
+// in java, hobby = []
+// in db  , hobby = 0
+
+// in java, hobby = [0]
+// in db  , hobby = 1
+
+// in java, hobby = [0,1]
+// in db  , hobby = 3
+
+// in java, hobby = [0,1,2]
+// in db  , hobby = 7
+
+// in java, hobby = [0,1,3]
+// in db  , hobby = 12
+```
 
 ##### 自定义类型转化
 
@@ -319,7 +354,7 @@ public class EnumEntity implements Serializable {
 }
 
 /**
- * 使用
+ * 使用 (完全透明)
  */
 String name = "test_people";
 AnnotationTestModel.EnumEntity entity = new AnnotationTestModel.EnumEntity();
@@ -327,7 +362,7 @@ entity.setSex(AnnotationTestModel.Sex.WOMAN);
 entity.setName(name);
 
 // 插入时 自动转化
-Integer id = annotationTestModel.newQuery().from(entity).insertGetId(entity);
+Integer id = annotationTestModel.newQuery().from(entity).value(entity).insertGetId();
 
 // 获取后 自动转化
 AnnotationTestModel.EnumEntity resultEntity = annotationTestModel.newQuery()

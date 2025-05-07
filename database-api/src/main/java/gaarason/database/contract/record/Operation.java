@@ -60,14 +60,14 @@ public interface Operation<T, K> {
      * 刷新(重新从数据库查询获取)
      * 现有的模型实例不会受到影响
      * retrieved
-     * @return 执行成功
+     * @return 全新的Record
      */
     Record<T, K> fresh();
 
     /**
      * 刷新(重新从数据库查询获取)
      * retrieved
-     * @return 执行成功
+     * @return 原Record (刷新后)
      */
     Record<T, K> refresh();
 

@@ -25,6 +25,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 6.4.2
+
+- 修复预置的`GeneralModel`中的虚拟表名与别名特性冲突的问题
+
 ### 6.4.1
 
 - 在`Record`中, 将`ORM`的更新与删除相关操作, 即`save`/`delete`/`saveByPrimaryKey`中的实现, 由`newQuery()`更改为`newQueryWithoutApply()`
