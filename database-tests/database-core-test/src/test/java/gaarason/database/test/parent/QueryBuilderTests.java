@@ -164,6 +164,16 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
+    public void 新增_批量_insertUsing() {
+        int row = studentModel.newQuery().column(StudentModel.Entity::getName)
+                .values(builder -> builder.select(StudentModel.Entity::getName)
+                        .where(StudentModel.Entity::getSex, 1)
+                        .limit(3))
+                .insert();
+        Assert.assertEquals(3, row);
+    }
+
+    @Test
     public void 新增_单条记录_并获取数据库自增id_mapStyle() {
         Map<String, Object> map = new HashMap<>();
         map.put("name", "姓名");

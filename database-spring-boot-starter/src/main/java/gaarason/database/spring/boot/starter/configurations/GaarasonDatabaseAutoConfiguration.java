@@ -12,6 +12,7 @@ import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.generator.GeneralGenerator;
 import gaarason.database.logging.Log;
 import gaarason.database.logging.LogFactory;
+import gaarason.database.provider.GodProvider;
 import gaarason.database.provider.ModelInstanceProvider;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.spring.boot.starter.annotation.GaarasonDatabaseScanRegistrar;
@@ -82,9 +83,10 @@ public class GaarasonDatabaseAutoConfiguration {
         // 从配置创建全新容器
         ContainerBootstrap container = ContainerBootstrap.build(gaarasonDatabaseProperties);
 
-        /*
-         * 序列化的必要步骤
-         */
+        // 简单兼容下`spring-boot-devtools`等等会重新加载Bean的技术方案
+        GodProvider.remove("primary-container");
+
+        // 查询构造器序列化的必要步骤
         container.signUpIdentification("primary-container");
 
         container.defaultRegister();

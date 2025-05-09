@@ -140,16 +140,53 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
         return closure.execute(sqlPartInfo.getSqlString(), sqlPartInfo.getParameters());
     }
 
+// --------------------------- value ---------------------------- //
+
+    protected B valueGrammar(String sqlPart, @Nullable Collection<Object> parameters) {
+        /*
+         * 插入语句 : insert into table (column1, column2) values (v1, v2)
+         * 插入语句 : insert into table (column1, column2) values (v1, v2),(v3, v4),(v5, v6)
+         * 插入语句 : insert into table (column1, column2) (select c1, c2 from tableOther where id>9 limit 3)
+         */
+        grammar.addSmartSeparator(Grammar.SQLPartType.VALUE, sqlPart, parameters, ",");
+        return getSelf();
+    }
+
+    @Override
+    public B valueRaw(@Nullable String sqlPart, @Nullable Collection<?> parameters) {
+        if (!ObjectUtils.isEmpty(sqlPart)) {
+            sqlPart = grammar.isEmpty(Grammar.SQLPartType.VALUE) ? " values " + sqlPart : sqlPart;
+            return valueGrammar(sqlPart, ObjectUtils.isEmpty(parameters) ? null : ObjectUtils.typeCast(parameters));
+        }
+        return getSelf();
+    }
+
+    @Override
+    public B valueRaw(@Nullable String sqlPart) {
+        if (!ObjectUtils.isEmpty(sqlPart)) {
+            return valueRaw(sqlPart, null);
+        }
+        return getSelf();
+    }
+
+    @Override
+    public B valueRaw(@Nullable Collection<String> sqlParts) {
+        if (!ObjectUtils.isEmpty(sqlParts)) {
+            for (String sqlPart : sqlParts) {
+                valueRaw(sqlPart);
+            }
+        }
+        return getSelf();
+    }
+
     @Override
     public B value(@Nullable Collection<?> values) {
         if (ObjectUtils.isEmpty(values)) {
-            grammar.addSmartSeparator(Grammar.SQLPartType.VALUE, "()", null, ",");
-            return getSelf();
+            return valueRaw("()", null);
         }
         Collection<Object> parameters = new ArrayList<>();
         String sqlPart = supportBracket(grammar.replaceValuesAndFillParameters(values, parameters, ","));
-        grammar.addSmartSeparator(Grammar.SQLPartType.VALUE, sqlPart, parameters, ",");
-        return getSelf();
+        return valueRaw(sqlPart, parameters);
     }
 
     @Override
@@ -171,6 +208,7 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
         if (ObjectUtils.isEmpty(entitiesOrMapsOrLists)) {
             return value(Collections.emptyList());
         }
+        // 用第一个元素来判断类型
         Object ele = entitiesOrMapsOrLists.stream().findFirst().orElseThrow(IllegalArgumentException::new);
         if (ele instanceof Collection) {
             for (Object values : entitiesOrMapsOrLists) {
@@ -182,6 +220,13 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
         } else {
             return beforeBatchInsertEntityStyle(entitiesOrMapsOrLists);
         }
+    }
+
+    @Override
+    public B values(BuilderWrapper<B, T, K> closure) {
+        Grammar.SQLPartInfo sqlPartInfo = generateSql(closure);
+        String sql = supportBracket(sqlPartInfo.getSqlString());
+        return valueGrammar(sql, sqlPartInfo.getParameters());
     }
 
     @Override

@@ -195,12 +195,20 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         return instanceSQLPartInfoWithAliasPlaceHolder(sqlBuilder.toString(), allParameters);
     }
 
+    /**
+     * 连接sql片段
+     * @param sqlType 语句类型
+     * @param sqlPartType 片段类型
+     * @param sqlBuilder sql字符
+     * @param allParameters sql绑定参数
+     */
     protected void concatenate(SqlType sqlType, SQLPartType sqlPartType, StringBuilder sqlBuilder,
         Collection<Object> allParameters) {
         List<SQLPartInfo> sqlParts = SQLPartMap.get(sqlPartType);
         if (ObjectUtils.isEmpty(sqlParts)) {
             // 使用默认值
             sqlParts = getDefault(sqlPartType);
+            // 无默认值, 直接跳过
             if (ObjectUtils.isEmpty(sqlParts)) {
                 return;
             }
@@ -209,8 +217,11 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         // keyword
         sqlBuilder.append(sqlPartType.getKeyword());
 
+        // 需要括号
+        boolean needBracket = PARENTHESES_ARE_REQUIRED.contains(sqlPartType);
+
         // begin
-        if (PARENTHESES_ARE_REQUIRED.contains(sqlPartType)) {
+        if (needBracket) {
             sqlBuilder.append('(');
         }
 
@@ -225,15 +236,23 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         }
 
         // end
-        if (PARENTHESES_ARE_REQUIRED.contains(sqlPartType)) {
+        if (needBracket) {
             sqlBuilder.append(')');
         }
 
     }
 
+    /**
+     * 编排所有 sql片段
+     * @param sqlType 语句类型
+     * @param sqlBuilder sql字符
+     * @param allParameters sql绑定参数
+     * @param sqlPartTypes 片段类型
+     */
     protected void choreography(SqlType sqlType, StringBuilder sqlBuilder, Collection<Object> allParameters,
         SQLPartType... sqlPartTypes) {
         for (SQLPartType sqlPartType : sqlPartTypes) {
+            // 单个 sql 片段
             concatenate(sqlType, sqlPartType, sqlBuilder, allParameters);
         }
     }
@@ -308,7 +327,7 @@ public abstract class BaseGrammar implements Grammar, Serializable {
             case SELECT:
                 return Collections.singletonList(simpleInstanceSQLPartInfo("*", null));
             case VALUE:
-                return Collections.singletonList( simpleInstanceSQLPartInfo("()", null));
+                return Collections.singletonList(simpleInstanceSQLPartInfo(" values ()", null));
         }
         return null;
     }

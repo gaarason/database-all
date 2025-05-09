@@ -249,7 +249,7 @@ studentModel.where("age","<","9").dealChunk(2000, Student::getId, records -> {
 
 #### value values insert insertGetId insertGetIdOrFail insertGetIds
 - value 单行插入的数据, 参数可以是`值列表`, `值MAP`, 以及`实体`, 其中`值MAP`和`实体`均已经包含`column`调用
-- values 多行插入的数据, 等价于多个`value`的调用
+- values 多行插入的数据, 一般等价于多个`value`的调用
 - insert 返回插入的行数
 - insertGetId 返回插入后返回的主键id
 - insertGetIdOrFail 返回插入后返回的主键id(失败则异常)
@@ -333,6 +333,15 @@ for (int i = 99; i < 10000; i++) {
     maps.add(map);
 }
 int insert = studentModel.newQuery().values(maps).insert();
+
+// f.查询后插入
+// insert into `student`(`name`)(select `name` from `student` as `student_770379332` where `sex`="1" limit "3")
+studentModel.newQuery()
+    .column(StudentModel.Entity::getName)
+    .values(builder -> builder.select(StudentModel.Entity::getName)
+            .where(StudentModel.Entity::getSex, 1)
+            .limit(3))
+    .insert();
 ```
 
 ## 更新
@@ -417,6 +426,8 @@ studentModel.newQuery().values(maps).replace();
 
 // 实体风格
 studentModel.newQuery().values(Array.asList(new Student(), new Student())).replace();
+
+
 
 // 一次一行
 // sql 风格

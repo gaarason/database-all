@@ -25,6 +25,11 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### next version
+
+- 在`database-spring-boot-starter`中, 简单兼容下`spring-boot-devtools`等等会重新加载Bean的技术方案
+- 在`Builder`中, 增加`values(closure)` 即查询后批量插入
+
 ### 6.4.2
 
 - 修复预置的`GeneralModel`中的虚拟表名与别名特性冲突的问题

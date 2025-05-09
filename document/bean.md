@@ -14,7 +14,7 @@ Eloquent ORM for Java
     * [非spring boot](#非spring)
     * [拓展配置](#拓展配置)
         * [包扫描](#包扫描)
-        * [自定义查询构造器](#自定义查询构造器Query方法)
+        * [自定义查询构造器](#自定义查询构造器)
         * [新增支持的数据库](#新增支持的数据库)
 * [数据映射 Mapping](/document/mapping.md)
 * [数据模型 Model](/document/model.md)
@@ -642,7 +642,7 @@ testModel.newQuery().add("ss").get();
 
 ### 新增支持的数据库
 可以支持任意的 ( java 的 jdbc 支持的 )  数据库类型   
-大致方式同上, 稍有区别的是  
+大致方式`同上`, 稍有区别的是  
 在实现 `QueryBuilderConfig` 接口时, 多实现几个方法
 - 根据实际情况, 重写 Builder 查询构造器
 - 根据实际情况, 重写 Grammar 语法

@@ -140,7 +140,7 @@ public interface Grammar {
      * SQL片段类型
      */
     enum SQLPartType implements Serializable {
-        SELECT("select "), COLUMN(""), DATA(" set "), VALUE(" values "), FROM(" from "), TABLE(""),
+        SELECT("select "), COLUMN(""), DATA(" set "), VALUE(""), FROM(" from "), TABLE(""),
         FORCE_INDEX(" force index "), IGNORE_INDEX(" ignore index "), ORDER(" order by "), LIMIT(" limit "),
         GROUP(" group by "), JOIN(""), WHERE(" where "), HAVING(" having "), LOCK(""), UNION(""),
         LAST(" ");
