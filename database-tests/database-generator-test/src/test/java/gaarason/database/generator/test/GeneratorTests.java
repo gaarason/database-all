@@ -61,7 +61,7 @@ public class GeneratorTests {
         generator.setColumnUpdateStrategy(FieldStrategy.Never.class, "created_at", "updated_at");   // 字段, 更新使用策略
         generator.setColumnConditionStrategy(FieldStrategy.Default.class, "created_at", "updated_at");   // 字段, 条件使用策略
 
-        generator.setColumnConversion(FieldConversion.Default.class, "created_at", "updated_at");   // 字段, 序列化与反序列化方式
+        generator.setColumnConversion(FieldConversion.SimpleValue.class, "created_at", "updated_at");   // 字段, 序列化与反序列化方式
 
         generator.setBaseModelDir("base");              // 模型父类的相对路径
         generator.setBaseModelName("BaseModel");        // 模型父类的类名

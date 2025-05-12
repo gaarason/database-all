@@ -115,15 +115,16 @@ public class ContainerBootstrap extends ContainerProvider {
         // 类型转化
         // todo better
         register(ConversionConfig.class, clazz -> initConversionConfig());
-        //
+
+        // 填充
         register(FieldFill.NotFill.class, clazz -> new FieldFill.NotFill());
         //
-        register(FieldConversion.Default.class, clazz -> new DefaultConversion(this));
+        register(FieldConversion.SimpleValue.class, clazz -> new SimpleValueConversion(this));
         register(FieldConversion.Json.class, clazz -> new JsonConversion());
         register(FieldConversion.EnumInteger.class, clazz -> new EnumIntegerConversion());
         register(FieldConversion.EnumString.class, clazz -> new EnumStringConversion());
         register(FieldConversion.Bit.class, clazz -> new BitConversion());
-        //
+        // 使用策略
         register(FieldStrategy.Default.class, clazz -> new FieldStrategy.Default());
         //
         register(FieldStrategy.Never.class, clazz -> new FieldStrategy.Never());

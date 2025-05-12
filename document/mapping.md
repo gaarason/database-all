@@ -218,15 +218,23 @@ public class Entity implements Serializable {
 ```
 
 #### 类型转化
+
 - conversion
 - 序列与反序列化, 通过合理的定义, 可以让业务开发时, 不再关注`数据本身`在数据库中的存放形式, 从而专注与业务
 - 提供常用的几种方式, 可以直接声明使用
 - 业务上也可以自行实现 `FieldConversion` 接口, 已确定本字段特定的序列化与反序列化方式  
 
+#### Auto
+- @Column 中的默认值, 可以根据当前的java类型自动选择合适的序列与反序列化方式
 
-##### Default
-- @Column(conversion = FieldConversion.Default.class)
-- conversion() 默认值为 FieldConversion.Default.class, 可以解决绝大多数的`基本类型`的序列化与反序列化
+* 1.如果是枚举类型, 那么以 `枚举类型的自然次序` 进行序列化与反序列化, 即 : `EnumInteger`
+* 2.如果是集合类型, 且集合内为数字, 那么以 `位` 进行序列化与反序列化, 即 : `Bit`
+* 3.如果是基本类型, 那么进行普通序列化与反序列化, 即 : `SimpleValueConversion`
+* 4.兜底使用Json序列化, 即 : `Json`  (实现依赖于jackson, 需要手动引入 com.fasterxml.jackson.core: jackson-databind 与 com.fasterxml.jackson.datatype: jackson-datatype-jsr310 依赖)
+
+##### SimpleValueConversion
+- @Column(conversion = FieldConversion.SimpleValueConversion.class)
+- 可以解决绝大多数的`基本类型`的序列化与反序列化
 
 ##### Json
 - @Column(conversion = FieldConversion.Json.class)

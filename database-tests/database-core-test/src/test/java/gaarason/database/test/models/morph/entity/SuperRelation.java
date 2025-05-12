@@ -36,10 +36,10 @@ public class SuperRelation extends BaseEntity {
     @Column(name = "relation_two_value", unsigned = true)
     private Long relationTwoValue;
 
-    @Column(name = "created_at", selectable = true, fill = FieldFill.NotFill.class, strategy = FieldStrategy.Default.class, insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class, conditionStrategy = FieldStrategy.Default.class, conversion = FieldConversion.Default.class, comment = "新增时间")
+    @Column(name = "created_at", selectable = true, fill = FieldFill.NotFill.class, strategy = FieldStrategy.Default.class, insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class, conditionStrategy = FieldStrategy.Default.class, conversion = FieldConversion.SimpleValue.class, comment = "新增时间")
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", selectable = true, fill = FieldFill.NotFill.class, strategy = FieldStrategy.Default.class, insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class, conditionStrategy = FieldStrategy.Default.class, conversion = FieldConversion.Default.class, comment = "更新时间")
+    @Column(name = "updated_at", selectable = true, fill = FieldFill.NotFill.class, strategy = FieldStrategy.Default.class, insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class, conditionStrategy = FieldStrategy.Default.class, conversion = FieldConversion.SimpleValue.class, comment = "更新时间")
     private LocalDateTime updatedAt;
 
 

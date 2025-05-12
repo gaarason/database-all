@@ -108,6 +108,13 @@ public @interface Column {
 
     /**
      * 序列与反序列化
+     * 自定模式 (默认)
+     * 1.如果是枚举类型, 那么以 `枚举类型的自然次序` 进行序列化与反序列化
+     * 2.如果是集合类型, 且集合内为数字, 那么以 `位` 进行序列化与反序列化
+     * 3.如果是基本类型, 那么进行普通序列化与反序列化
+     * 4.兜底使用Json序列化 (实现依赖于jackson, 需要手动引入 com.fasterxml.jackson.core: jackson-databind 与 com.fasterxml.jackson.datatype: jackson-datatype-jsr310 依赖)
+     * 手动指定
+     * 1.自定义实现 FieldConversion 接口即可
      */
-    Class<? extends FieldConversion> conversion() default FieldConversion.Default.class;
+    Class<? extends FieldConversion> conversion() default FieldConversion.Auto.class;
 }

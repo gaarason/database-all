@@ -29,6 +29,7 @@ Eloquent ORM for Java
 
 - 在`database-spring-boot-starter`中, 简单兼容下`spring-boot-devtools`等等会重新加载Bean的技术方案
 - 在`Builder`中, 增加`values(closure)` 即查询后批量插入
+- 在`@Column`中, 将`conversion`的默认值, 更改为全新的`FieldConversion.Auto.class`, 可以根据当前的java类型自动选择合适的序列与反序列化方式
 
 ### 6.4.2
 

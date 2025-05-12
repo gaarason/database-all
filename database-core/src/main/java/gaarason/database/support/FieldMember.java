@@ -3,6 +3,7 @@ package gaarason.database.support;
 import gaarason.database.annotation.Column;
 import gaarason.database.annotation.Primary;
 import gaarason.database.appointment.EntityUseType;
+import gaarason.database.appointment.FinalVariable;
 import gaarason.database.appointment.JDBCValueWrapper;
 import gaarason.database.appointment.ValueWrapper;
 import gaarason.database.config.ConversionConfig;
@@ -19,8 +20,11 @@ import gaarason.database.util.StringUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 
 /**
  * 数据库字段信息
@@ -136,7 +140,7 @@ public class FieldMember<F> extends Container.SimpleKeeper implements Serializab
         this.conditionStrategy = dealFieldStrategy(EntityUseType.CONDITION);
 
         // 序列化与反序列化
-        this.fieldConversion = container.getBean(column.conversion());
+        this.fieldConversion = dealFieldConversion();
     }
 
     /**
@@ -408,6 +412,70 @@ public class FieldMember<F> extends Container.SimpleKeeper implements Serializab
          */
         else {
             return container.getBean(primary.idGenerator());
+        }
+    }
+
+    /**
+     * 主键auto生成器选择
+     * @return 主键生成器
+     */
+    private FieldConversion<?, ?> dealFieldConversion() {
+        Class<?> keyJavaType = field.getType();
+        Class<? extends FieldConversion> conversionClass = column.conversion();
+        /*
+         * 自动化判断
+         */
+        if (conversionClass.isAssignableFrom(FieldConversion.Auto.class)) {
+            /*
+             * 1.如果是枚举类型, 那么以 `枚举类型的自然次序` 进行序列化与反序列化
+             */
+            if (keyJavaType.isEnum()) {
+                return container.getBean(FieldConversion.EnumInteger.class);
+            }
+
+            /*
+             * 2.如果是集合类型, 且集合内为数字, 那么以 `位` 进行序列化与反序列化
+             */
+            else if (Collection.class.isAssignableFrom(keyJavaType)) {
+                // 获取字段的泛型类型信息
+                Type genericType = field.getGenericType();
+                if (genericType instanceof ParameterizedType) {
+                    ParameterizedType parameterizedType = (ParameterizedType) genericType;
+                    Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+
+                    // 检查泛型参数是否为整数类型
+                    if (actualTypeArguments.length > 0) {
+                        Class<?> elementType = (Class<?>) actualTypeArguments[0];
+                        if (elementType == Integer.class ||
+                                elementType == Long.class ||
+                                elementType == Short.class ||
+                                elementType == Byte.class) {
+                            return container.getBean(FieldConversion.Bit.class);
+                        }
+                    }
+                }
+            }
+
+            /*
+             * 3.如果是基本类型, 那么进行普通序列化与反序列化
+             */
+            else if (FinalVariable.ALLOW_FIELD_TYPES.contains(keyJavaType)) {
+                return container.getBean(FieldConversion.SimpleValue.class);
+            }
+
+            /*
+             * 兜底
+             * 4.Json序列化与反序列化
+             */
+            return container.getBean(FieldConversion.Json.class);
+
+        }
+
+        /*
+         * 手动指定
+         */
+        else {
+            return container.getBean(column.conversion());
         }
     }
 

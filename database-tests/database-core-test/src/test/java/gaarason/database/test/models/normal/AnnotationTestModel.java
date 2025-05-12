@@ -40,10 +40,10 @@ public class AnnotationTestModel extends SingleModel<AnnotationTestModel.Primary
         @Column(length = 20, nullable = true)
         private String name;
 
-        @Column(name = "json_object_column", conversion = FieldConversion.Json.class, strategy = FieldStrategy.Always.class)
+        @Column(name = "json_object_column", strategy = FieldStrategy.Always.class)
         private Info info;
 
-        @Column(name = "json_array_column", conversion = FieldConversion.Json.class, strategy = FieldStrategy.Always.class)
+        @Column(name = "json_array_column", strategy = FieldStrategy.Always.class)
         private List<Info> infos;
 
         @Column(name = "time_column", nullable = true)
@@ -168,7 +168,7 @@ public class AnnotationTestModel extends SingleModel<AnnotationTestModel.Primary
 
         private Byte age;
 
-        @Column(conversion = FieldConversion.EnumInteger.class)
+        @Column
         private Sex sex;
 
         @Column(name = "teacher_id")
@@ -202,7 +202,7 @@ public class AnnotationTestModel extends SingleModel<AnnotationTestModel.Primary
 
         private Byte age;
 
-        @Column(conversion = FieldConversion.EnumInteger.class)
+        @Column
         private Sex sex;
 
         @Column(name = "teacher_id")
@@ -230,10 +230,10 @@ public class AnnotationTestModel extends SingleModel<AnnotationTestModel.Primary
 
         private Byte age;
 
-        @Column(conversion = FieldConversion.EnumInteger.class)
+        @Column
         private Sex sex;
 
-        @Column(conversion = FieldConversion.Bit.class)
+        @Column
         private List<Long> hobby;
 
         @Column(name = "teacher_id")

@@ -12,12 +12,12 @@ import java.sql.SQLException;
 /**
  * 序列化与反序列化
  */
-public class DefaultConversion extends Container.SimpleKeeper implements FieldConversion.Default {
+public class SimpleValueConversion extends Container.SimpleKeeper implements FieldConversion.SimpleValue {
 
     @Nullable
     protected ConversionConfig conversionConfig = null;
 
-    public DefaultConversion(Container container) {
+    public SimpleValueConversion(Container container) {
         super(container);
     }
 

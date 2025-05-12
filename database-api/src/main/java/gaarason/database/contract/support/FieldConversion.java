@@ -55,7 +55,14 @@ public interface FieldConversion<F, D> {
      * 默认值
      * 在运行时, 会替换
      */
-    interface Default extends FieldConversion<Object, Object> {
+    interface Auto extends FieldConversion<Object, Object> {
+
+    }
+
+    /**
+     * 单值序列化
+     */
+    interface SimpleValue extends FieldConversion<Object, Object> {
 
     }
 
