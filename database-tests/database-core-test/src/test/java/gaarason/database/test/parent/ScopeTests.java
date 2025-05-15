@@ -5,6 +5,7 @@ import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.test.models.normal.StudentEventModel;
+import gaarason.database.test.models.normal.StudentEventV2Model;
 import gaarason.database.test.models.normal.StudentSoftDeleteModel;
 import gaarason.database.test.parent.base.BaseTests;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,9 @@ abstract public class ScopeTests extends BaseTests {
     protected static StudentSoftDeleteModel studentModel = new StudentSoftDeleteModel();
 
     protected static StudentEventModel studentEventModel = new StudentEventModel();
+
+    // 注解用法
+    protected static StudentEventV2Model studentEventV2Model = new StudentEventV2Model();
 
     @Override
     protected GaarasonDataSource getGaarasonDataSource() {
@@ -92,5 +96,52 @@ abstract public class ScopeTests extends BaseTests {
         System.out.println(record);
         record.delete();
         System.out.println(record);
+    }
+
+    @Test
+    public void event_Quietly () {
+        Record<StudentEventV2Model.Entity, Integer> record = studentEventV2Model.newRecord();
+        StudentEventV2Model.Entity entity = record.getEntity();
+        entity.setName("test");
+        entity.setAge((byte) 66);
+        // 事件中会拒绝 age 66 的插入
+        Assert.assertFalse(record.save());
+        // 事件中会拒绝 age 66 的插入, 不触发事件, 自然就成功啦
+        Assert.assertTrue(record.saveQuietly());
+
+        boolean  b = studentEventV2Model.newQuery().quiet(() -> {
+            return record.save();
+        });
+        // 事件中会拒绝 age 66 的插入, 不触发事件, 自然就成功啦
+        Assert.assertTrue(b);
+    }
+
+    @Test
+    public void event_顺序 () {
+        Record<StudentEventV2Model.Entity, Integer> record = studentEventV2Model.find(1);
+        StudentEventV2Model.Entity entity = record.getEntity();
+        entity.setName("test11");
+        entity.setAge((byte) 66);
+        // 事件中会拒绝 age 66 的插入
+        Assert.assertFalse(record.save());
+        Assert.assertNotEquals("test11", StudentEventV2Model.StudentEvent.RES);
+        // 事件中会拒绝 age 66 的插入, 不触发事件, 自然就成功啦
+        Assert.assertTrue(record.saveQuietly());
+    }
+
+    @Test
+    public void event_顺序_事务后执行 () {
+        Record<StudentEventV2Model.Entity, Integer> record = studentEventV2Model.find(1);
+        StudentEventV2Model.Entity entity = record.getEntity();
+        entity.setName("test112");
+        entity.setAge((byte) 99);
+
+        studentEventV2Model.newQuery().transaction(() -> {
+            Assert.assertTrue(record.save());
+            Assert.assertNotEquals("test112", StudentEventV2Model.StudentEvent.RES);
+        });
+        // 事务结束后, 才会执行事件
+        Assert.assertEquals("test112", StudentEventV2Model.StudentEvent.RES);
+
     }
 }

@@ -29,7 +29,12 @@ Eloquent ORM for Java
 
 - 在`database-spring-boot-starter`中, 简单兼容下`spring-boot-devtools`等等会重新加载Bean的技术方案
 - 在`Builder`中, 增加`values(closure)` 即查询后批量插入
+- 在`Builder`中, 增加`quiet(closure)` 静默 (无事件触发) 执行逻辑
 - 在`@Column`中, 将`conversion`的默认值, 更改为全新的`FieldConversion.Auto.class`, 可以根据当前的java类型自动选择合适的序列与反序列化方式
+- 在`Record`中, 增加`saveQuietly()`/`saveByPrimaryKeyQuietly()`/`deleteQuietly()`/`forceDeleteQuietly()`/`restoreQuietly()`/`restoreQuietly(boolean)`等静默 (无事件触发) 执行逻辑
+- 增加`@ObservedBy`, 用于在`model`声明多个独立的`事件处理器`
+- 增加`ShouldHandleEventsAfterCommit`接口, 用于标记`事件处理器`中的`ed`事件在事务提交后再触发
+- fix一些问题
 
 ### 6.4.2
 

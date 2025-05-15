@@ -1,8 +1,9 @@
-package gaarason.database.contract.model;
+package gaarason.database.contract.model.base;
 
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.lang.Nullable;
 
 import java.util.Collection;
 import java.util.List;
@@ -24,7 +25,7 @@ import java.util.List;
  * @see RecordEvent
  * @author xt
  */
-public interface QueryEvent<T, K> {
+public interface QueryEvent<B extends Builder<B, T, K>, T, K> {
 
     /**
      * sql日志记录
@@ -42,22 +43,24 @@ public interface QueryEvent<T, K> {
      * 查询数据时
      * @param builder 查询构造器
      */
-    default void eventQueryRetrieving(Builder<?, T, K> builder) {
+    default void eventQueryRetrieving(Builder<B, T, K> builder) {
     }
 
     /**
      * 查询数据后
+     * @param builder 查询构造器
      * @param record 结果集
      */
-    default void eventQueryRetrieved(Record<T, K> record) {
+    default void eventQueryRetrieved(Builder<B, T, K> builder, Record<T, K> record) {
 
     }
 
     /**
      * 查询数据后
+     * @param builder 查询构造器
      * @param records 结果集合
      */
-    default void eventQueryRetrieved(RecordList<T, K> records) {
+    default void eventQueryRetrieved(Builder<B, T, K> builder, RecordList<T, K> records) {
 
     }
 
@@ -65,33 +68,36 @@ public interface QueryEvent<T, K> {
      * 插入数据时
      * @param builder 查询构造器.
      */
-    default void eventQueryCreating(Builder<?, T, K> builder) {
+    default void eventQueryCreating(Builder<B, T, K> builder) {
     }
 
     /**
      * 插入数据后
      * 3个created()事件, 相互互补, 不会重复; 具体触发哪一个, 取决于调用的执行方法(所预期的返回值)
+     * @param builder 查询构造器
      * @param rows 受影响的行数
      */
-    default void eventQueryCreated(int rows) {
+    default void eventQueryCreated(Builder<B, T, K> builder, int rows) {
 
     }
 
     /**
      * 插入数据后
      * 3个created()事件, 相互互补, 不会重复; 具体触发哪一个, 取决于调用的执行方法(所预期的返回值)
-     * @param primaryKeyValue 主键值列表
+     * @param builder 查询构造器
+     * @param primaryKeyValue 主键值
      */
-    default void eventQueryCreated(K primaryKeyValue) {
+    default void eventQueryCreated(Builder<B, T, K> builder, @Nullable K primaryKeyValue) {
 
     }
 
     /**
      * 批量插入数据后
      * 3个created()事件, 相互互补, 不会重复; 具体触发哪一个, 取决于调用的执行方法(所预期的返回值)
+     * @param builder 查询构造器
      * @param primaryKeyValues 主键值列表
      */
-    default void eventQueryCreated(List<K> primaryKeyValues) {
+    default void eventQueryCreated(Builder<B, T, K> builder, List<K> primaryKeyValues) {
 
     }
 
@@ -99,14 +105,15 @@ public interface QueryEvent<T, K> {
      * 更新数据时
      * @param builder 查询构造器
      */
-    default void eventQueryUpdating(Builder<?, T, K> builder) {
+    default void eventQueryUpdating(Builder<B, T, K> builder) {
     }
 
     /**
      * 更新数据后
+     * @param builder 查询构造器
      * @param rows 受影响的行数
      */
-    default void eventQueryUpdated(int rows) {
+    default void eventQueryUpdated(Builder<B, T, K> builder, int rows) {
 
     }
 
@@ -114,14 +121,33 @@ public interface QueryEvent<T, K> {
      * 删除数据时
      * @param builder 查询构造器
      */
-    default void eventQueryDeleting(Builder<?, T, K> builder) {
+    default void eventQueryDeleting(Builder<B, T, K> builder) {
+
     }
 
     /**
      * 删除数据后
+     * @param builder 查询构造器
      * @param rows 受影响的行数
      */
-    default void eventQueryDeleted(int rows) {
+    default void eventQueryDeleted(Builder<B, T, K> builder, int rows) {
+
+    }
+
+    /**
+     * 硬删除数据时
+     * @param builder 查询构造器
+     */
+    default void eventQueryForceDeleting(Builder<B, T, K> builder) {
+
+    }
+
+    /**
+     * 硬删除数据后
+     * @param builder 查询构造器
+     * @param rows 受影响的行数
+     */
+    default void eventQueryForceDeleted(Builder<B, T, K> builder, int rows) {
 
     }
 
@@ -129,14 +155,15 @@ public interface QueryEvent<T, K> {
      * 恢复数据时
      * @param builder 查询构造器
      */
-    default void eventQueryRestoring(Builder<?, T, K> builder) {
+    default void eventQueryRestoring(Builder<B, T, K> builder) {
     }
 
     /**
      * 恢复数据后
+     * @param builder 查询构造器
      * @param rows 受影响的行数
      */
-    default void eventQueryRestored(int rows) {
+    default void eventQueryRestored(Builder<B, T, K> builder, int rows) {
 
     }
 }

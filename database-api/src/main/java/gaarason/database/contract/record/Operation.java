@@ -11,7 +11,7 @@ import java.util.Map;
  * ORM 操作
  * @author xt
  */
-public interface Operation<T, K> {
+public interface Operation<T, K> extends Support<T, K> {
 
     /**
      * 新增或者更新
@@ -26,6 +26,14 @@ public interface Operation<T, K> {
     boolean save();
 
     /**
+     * 无事件的调研save
+     * @return 执行成功
+     */
+    default boolean saveQuietly() {
+        return getModel().newQueryWithoutApply().quiet(this::save);
+    }
+
+    /**
      * 新增或者更新
      * 新增情况下: saving -> creating -> created -> saved
      * 更新情况下: saving -> updating -> updated -> saved
@@ -35,11 +43,42 @@ public interface Operation<T, K> {
     boolean saveByPrimaryKey();
 
     /**
-     * 删除
+     * 无事件的调研saveByPrimaryKey
+     * @return 执行成功
+     */
+    default boolean saveByPrimaryKeyQuietly() {
+        return getModel().newQueryWithoutApply().quiet(this::saveByPrimaryKey);
+    }
+
+    /**
+     * 删除 (根据model情况, 进行软删除或者硬删除)
      * deleting -> deleted
      * @return 执行成功
      */
     boolean delete();
+
+    /**
+     * 无事件的调研delete
+     * @return 执行成功
+     */
+    default boolean deleteQuietly() {
+        return getModel().newQueryWithoutApply().quiet(this::delete);
+    }
+
+    /**
+     * 硬删除
+     * forceDeleting -> forceDeleted
+     * @return 执行成功
+     */
+    boolean forceDelete();
+
+    /**
+     * 无事件的调研forceDelete
+     * @return 执行成功
+     */
+    default boolean forceDeleteQuietly() {
+        return getModel().newQueryWithoutApply().quiet(this::forceDelete);
+    }
 
     /**
      * 恢复(成功恢复后将会刷新record)
@@ -49,12 +88,28 @@ public interface Operation<T, K> {
     boolean restore();
 
     /**
+     * 无事件的调研restore
+     * @return 执行成功
+     */
+    default boolean restoreQuietly() {
+        return getModel().newQueryWithoutApply().quiet(() -> restore());
+    }
+
+    /**
      * 恢复
      * restoring -> restored
      * @param refresh 是否刷新自身
      * @return 执行成功
      */
     boolean restore(boolean refresh);
+
+    /**
+     * 无事件的调研restore
+     * @return 执行成功
+     */
+    default boolean restoreQuietly(boolean refresh) {
+        return getModel().newQueryWithoutApply().quiet(() -> restore(refresh));
+    }
 
     /**
      * 刷新(重新从数据库查询获取)

@@ -1,9 +1,9 @@
 package gaarason.database.contract.builder;
 
-import gaarason.database.contract.function.TransactionFunctionalInterface;
 import gaarason.database.exception.SQLRuntimeException;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 /**
  * 事物
@@ -34,14 +34,14 @@ public interface Transaction {
      * @param closure 事物中的处理
      * @return 事物中的处理的结果 (事物失败抛出异常)
      */
-    <V> V transaction(TransactionFunctionalInterface<V> closure);
+    <V> V transaction(Supplier<V> closure);
 
     /**
      * 以闭包异步开启一个事物
      * @param closure 事物中的处理
      * @return 事物中的处理的结果 (事物失败抛出异常)
      */
-    <V> CompletableFuture<V> transactionAsync(TransactionFunctionalInterface<V> closure);
+    <V> CompletableFuture<V> transactionAsync(Supplier<V> closure);
 
     /**
      * 以闭包开启一个事物
@@ -49,7 +49,7 @@ public interface Transaction {
      * @param maxAttempts 事物死锁重试次数
      * @return 事物中的处理的结果 (事物失败抛出异常)
      */
-    <V> V transaction(TransactionFunctionalInterface<V> closure, int maxAttempts);
+    <V> V transaction(Supplier<V> closure, int maxAttempts);
 
     /**
      * 以闭包异步开启一个事物
@@ -57,7 +57,7 @@ public interface Transaction {
      * @param maxAttempts 事物死锁重试次数
      * @return 事物中的处理的结果 (事物失败抛出异常)
      */
-    <V> CompletableFuture<V> transactionAsync(TransactionFunctionalInterface<V> closure, int maxAttempts);
+    <V> CompletableFuture<V> transactionAsync(Supplier<V> closure, int maxAttempts);
 
     /**
      * 以闭包开启一个事物

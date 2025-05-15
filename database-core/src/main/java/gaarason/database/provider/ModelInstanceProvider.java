@@ -1,5 +1,6 @@
 package gaarason.database.provider;
 
+import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.function.InstantiationModelFunctionalInterface;
 import gaarason.database.core.Container;
@@ -55,7 +56,7 @@ public class ModelInstanceProvider extends Container.SimpleKeeper {
      * @return 模型对象
      * @throws ModelNewInstanceException 模型实例化失败
      */
-    public <T, K> Model<?, T, K> getModel(
+    public <B extends Builder<B, T, K>, T, K> Model<B, T, K> getModel(
         Class<? extends Model<?, T, K>> modelClass) throws ModelNewInstanceException {
         synchronized (this) {
             executed = true;

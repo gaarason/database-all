@@ -2,6 +2,7 @@ package gaarason.database.provider;
 
 import gaarason.database.appointment.EntityUseType;
 import gaarason.database.appointment.LambdaInfo;
+import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
@@ -34,6 +35,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
     private final Persistence persistence = new Persistence();
     /**
      * 缓存信息
+     * todo check
      */
     private final Cache cache = new Cache();
 
@@ -62,7 +64,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
             // 所有 Model 的子类 (含抽象类等)进行初始化分析
             // 初始化模型的基本信息, 并构建索引
             for (Class<? extends Model<?, ?, ?>> modelClass : modelClasses) {
-                ModelMember<Object, Object> modelMember;
+                ModelMember<? extends Builder<?, Object, Object>, Object, Object> modelMember;
                 // 接口跳过/抽象类跳过
                 if (modelClass.isInterface() || Modifier.isAbstract(modelClass.getModifiers())) {
                     continue;
@@ -100,7 +102,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
         synchronized (persistence) {
             int i = 0;
             for (Class<? extends Model<?, ?, ?>> modelClass : modelClasses) {
-                ModelMember<?, ?> modelMember = persistence.modelIndexMap.remove(modelClass);
+                ModelMember<?, ?, ?> modelMember = persistence.modelIndexMap.remove(modelClass);
                 if (!ObjectUtils.isEmpty(modelMember)) {
                     i++;
                     persistence.entityIndexMap.remove(modelMember.getEntityClass());
@@ -118,7 +120,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param <K> 主键类型
      * @return 格式化后的Model信息
      */
-    public <T, K> ModelMember<T, K> get(Model<?, T, K> model) {
+    public <B extends Builder<B, T, K>, T, K> ModelMember<B, T, K> get(Model<B, T, K> model) {
         return getByModelClass(ObjectUtils.typeCast(model.getClass()));
     }
 
@@ -129,8 +131,8 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param <K> 主键类型
      * @return 格式化后的Model信息
      */
-    public <T, K> ModelMember<T, K> getByModelClass(Class<? extends Model<?, T, K>> modelClass) {
-        ModelMember<?, ?> result;
+    public <B extends Builder<B, T, K>, T, K> ModelMember<B, T, K> getByModelClass(Class<? extends Model<B, T, K>> modelClass) {
+        ModelMember<?, ?, ?> result;
         result = persistence.modelProxyIndexMap.get(modelClass);
         if (null == result) {
             result = persistence.modelIndexMap.get(modelClass);
@@ -158,8 +160,8 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
      * @param clazz 实体类(可查找泛型)
      * @return 格式化后的Model信息
      */
-    public <T> ModelMember<? super T, ?> getByEntityClass(Class<T> clazz) {
-        ModelMember<?, ?> result;
+    public <B extends Builder<B, T, K>, T, K> ModelMember<B, T, K> getByEntityClass(Class<T> clazz) {
+        ModelMember<?, ?, ?> result;
 
         result = persistence.entityIndexMap.get(clazz);
         if (null == result) {
@@ -203,7 +205,7 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
                 entityMember = cache.entity.get(anyEntityClass);
                 if (entityMember == null) {
                     // 优先使用 持久化的信息
-                    ModelMember<?, ?> modelMember = persistence.entityIndexMap.get(anyEntityClass);
+                    ModelMember<?, ?, ?> modelMember = persistence.entityIndexMap.get(anyEntityClass);
                     entityMember = null == modelMember ? new EntityMember<>(container, anyEntityClass) :
                         modelMember.getEntityMember();
                     // 更新缓存
@@ -400,17 +402,17 @@ public class ModelShadowProvider extends Container.SimpleKeeper {
         /**
          * Model Class做为索引
          */
-        private final Map<Class<? extends Model<?, ?, ?>>, ModelMember<?, ?>> modelIndexMap = new ConcurrentHashMap<>();
+        private final Map<Class<? extends Model<?, ?, ?>>, ModelMember<?, ?, ?>> modelIndexMap = new ConcurrentHashMap<>();
 
         /**
          * Model proxy Class做为索引
          */
-        private final Map<Class<?>, ModelMember<?, ?>> modelProxyIndexMap = new ConcurrentHashMap<>();
+        private final Map<Class<?>, ModelMember<?, ?, ?>> modelProxyIndexMap = new ConcurrentHashMap<>();
 
         /**
          * Entity Class作为索引
          */
-        private final Map<Class<?>, ModelMember<?, ?>> entityIndexMap = new ConcurrentHashMap<>();
+        private final Map<Class<?>, ModelMember<?, ?, ?>> entityIndexMap = new ConcurrentHashMap<>();
     }
 
     /**

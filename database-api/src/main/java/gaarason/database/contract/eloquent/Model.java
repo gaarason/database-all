@@ -1,7 +1,10 @@
 package gaarason.database.contract.eloquent;
 
 import gaarason.database.contract.connection.GaarasonDataSource;
-import gaarason.database.contract.model.*;
+import gaarason.database.contract.model.Event;
+import gaarason.database.contract.model.NativeQuery;
+import gaarason.database.contract.model.Query;
+import gaarason.database.contract.model.SoftDelete;
 import gaarason.database.core.Container;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
 
@@ -10,7 +13,7 @@ import gaarason.database.exception.PrimaryKeyNotFoundException;
  * @author xt
  */
 public interface Model<B extends Builder<B, T, K>, T, K>
-    extends Query<B, T, K>, NativeQuery<T, K>, RecordEvent<T, K>, QueryEvent<T, K>, SoftDelete<T, K> {
+    extends Query<B, T, K>, NativeQuery<T, K>, Event<B, T, K>, SoftDelete<T, K> {
 
     /**
      * 返回当前的模型

@@ -18,6 +18,9 @@ Eloquent ORM for Java
         * [事件触发顺序-硬删除](#事件触发顺序-硬删除)
         * [ORM事件](#ORM事件)
         * [Query事件](#Query事件)
+        * [注解声明事件](#注解声明事件)
+        * [事务完成后执行事件](#事务完成后执行事件)
+        * [静默事件](#静默事件)
     * [作用域](#作用域)
         * [自定义查询作用域](#自定义查询作用域)
         * [软删除](#软删除)
@@ -86,13 +89,16 @@ public class StudentModel extends BaseModel<Student, Long> {
 ## 事件
 
 Eloquent 模型，允许你在sql执行生命周期中的多个时间点调用如下这些方法：retrieving, retrieved, creating, created, updating, updated, saving, saved, deleting,
-deleted, restoring, restored。事件允许你在一个指定模型类每次保存或更新的时候执行代码。
+deleted, forceDeleting, forceDeleted, restoring, restored。事件允许你在一个指定模型类每次保存或更新的时候执行代码。
 
-- 其中以 eventRecord 为方法名前缀的事件, **仅**在使用 [ORM](/document/record.md#ORM) 时, 触发 
+- 其中以 eventRecord 为方法名前缀的事件, 一般 **仅**在使用 [ORM](/document/record.md#ORM) 时, 触发 
 - 其中以 eventQuery 为方法名前缀的事件, [ORM](/document/record.md#ORM) 以及 [Query](/document/query.md), **都会触发**
 - [原生语句](/document/query.md#原生语句) 的查询方式, **不会触发**任何事件
 
 ### 事件触发顺序-查询
+
+- `newQuery().get()`/`newQuery().first()`等
+- `model.find()`等
 
 | 次序 |      eventQuery      |     eventRecord      |
 |:--:|:--------------------:|:--------------------:|
@@ -101,6 +107,9 @@ deleted, restoring, restored。事件允许你在一个指定模型类每次保�
 | 3  | eventQueryRetrieved  |                      |
 
 ### 事件触发顺序-新增
+
+- `newQuery().insert()`/`newQuery().replace()`/`newQuery().upsert()`等
+- `record.save()`等
 
 | 次序 |     eventQuery     |     eventRecord     |
 |:--:|:------------------:|:-------------------:|
@@ -113,6 +122,9 @@ deleted, restoring, restored。事件允许你在一个指定模型类每次保�
 
 ### 事件触发顺序-修改
 
+- `newQuery().update()`等
+- `record.save()`/`record.saveByPrimaryKey()`等
+
 | 次序 |     eventQuery     |     eventRecord     |
 |:--:|:------------------:|:-------------------:|
 | 1  |                    |  eventRecordSaving  |
@@ -122,7 +134,10 @@ deleted, restoring, restored。事件允许你在一个指定模型类每次保�
 | 5  |                    | eventRecordUpdated  |
 | 6  |                    |  eventRecordSaved   |
 
-### 事件触发顺序-软删除
+### 事件触发顺序-删除 (实际为软删除)
+
+- `newQuery().delete()`等
+- `record.delete()`等
 
 | 次序 |     eventQuery     |     eventRecord     |
 |:--:|:------------------:|:-------------------:|
@@ -133,8 +148,25 @@ deleted, restoring, restored。事件允许你在一个指定模型类每次保�
 | 5  | eventQueryDeleted  |                     |
 | 6  |                    | eventRecordDeleted  |
 
+### 事件触发顺序-删除 (实际为硬删除)
+
+- `newQuery().delete()`等
+- `record.delete()`等
+
+| 次序 |       eventQuery        |     eventRecord     |
+|:--:|:-----------------------:|:-------------------:|
+| 1  |                         | eventRecordDeleting |
+| 2  |   eventQueryDeleting    |                     |
+| 3  | eventQueryForceDeleting |                     |
+| 4  | eventQueryForceDeleted  |                     |
+| 5  |    eventQueryDeleted    |                     |
+| 6  |                         | eventRecordDeleted  |
+
 
 ### 事件触发顺序-软删除恢复
+
+- `newQuery().restore()`等
+- `record.restore()`等
 
 | 次序 |     eventQuery      |     eventRecord      |
 |:--:|:-------------------:|:--------------------:|
@@ -147,12 +179,15 @@ deleted, restoring, restored。事件允许你在一个指定模型类每次保�
 
 ### 事件触发顺序-硬删除
 
-| 次序 |     eventQuery     |     eventRecord     |
-|:--:|:------------------:|:-------------------:|
-| 1  |                    | eventRecordDeleting |
-| 2  | eventQueryDeleting |                     |
-| 3  | eventQueryDeleted  |                     |
-| 4  |                    | eventRecordDeleted  |
+- `newQuery().forceDelete()`等
+- `record.forceDelete()`等
+
+| 次序 |       eventQuery        |       eventRecord        |
+|:--:|:-----------------------:|:------------------------:|
+| 1  |                         | eventRecordForceDeleting |
+| 2  | eventQueryForceDeleting |                          |
+| 3  | eventQueryForceDeleted  |                          |
+| 4  |                         | eventRecordForceDeleted  |
 
 ### ORM事件
 
@@ -194,7 +229,7 @@ public class StudentModel extends BaseModel<Student, Long> {
 
 所有事件在`Query风格操作时`时触发,[Query相关](/document/query.md) 事件可以继承自父类
 
-- `ing`结尾的事件, 均可以阻止查询的进行, 需要通过异常进行打断.
+- `ing`结尾的事件, 均可以阻止查询的进行, 需要通过`异常`进行打断.
 
 借用上面的`model`, 则一个事件的定义可以是以下形式
 
@@ -223,6 +258,81 @@ public class StudentModel extends BaseModel<Student, Long> {
 ```
 
 需要注意的是, `eventQueryCreated`方法包含3个不同的方法重载, 分别对应不同的响应类型.
+
+### 注解声明事件
+
+- 通过在模型上, 定义注解 `@ObservedBy()`, 可以将事件逻辑从模型上分离出去
+- `@ObservedBy()`可以同时声明多个`事件处理器`, 他们将依次按序执行
+- `@ObservedBy()`可以被继承, 在`父model`上声明, 可以被子类锁触发
+
+```java
+// model 定义
+@ObservedBy(StudentEvent.class)
+public class StudentEventV2Model extends SingleModel<StudentEventV2Model.Entity, Integer> {
+    
+}
+```
+```java
+// 事件处理程序定义
+import gaarason.database.contract.model.Event;
+
+public static class StudentEvent implements Event<MySqlBuilderV2<StudentEventV2Model.Entity, Integer>, StudentEventV2Model.Entity, Integer>{
+
+    @Override
+    public boolean eventRecordCreating(Record<Entity, Integer> record) {
+        Entity entity = record.getEntity();
+        // 不让 age 66 更新成功
+        return entity.age != 66;
+    }
+}
+```
+
+### 事务完成后执行事件
+
+- 为了避免`事务回滚`导致的`虚假事件`, 可以仅在数据库事务提交后执行其事件处理程序
+- 通过实现 `ShouldHandleEventsAfterCommit` 接口来实现这一点
+- 如果没有正在进行的数据库事务，事件处理程序将立即执行
+- 指的注意的是, 此功能仅会影响 `ed` 类型的事件
+- 事务成功提交后的事件, 将会使用`快照参数`进行回调
+- 多个事务嵌套时, 会在最外层事务成功提交后再触发
+- 此外, 即使没有使用`@ObservedBy()`声明专用的`事件处理器`, 也可以在`model`上实现 `ShouldHandleEventsAfterCommit` 达到一样的效果
+
+```java
+import gaarason.database.contract.model.Event;
+import gaarason.database.contract.support.ShouldHandleEventsAfterCommit;
+
+public static class StudentEvent implements Event<MySqlBuilderV2<StudentEventV2Model.Entity, Integer>, StudentEventV2Model.Entity, Integer>,
+    ShouldHandleEventsAfterCommit {
+
+    @Override
+    public void eventRecordUpdated(Record<Entity, Integer> record) {
+        Entity entity = record.getEntity();
+        // .....
+    }
+}
+```
+### 静默事件
+
+- 在`查询构造器`中, 通过`quiet()`包装的逻辑, 将不会触发任何事件
+- 不支持在此中进行线程切换
+
+```java
+newQuery().quiet(() -> {
+    // ....
+});
+
+```
+
+- 在`Record`中同样提供的更加便捷的`静默`方法
+
+```java
+record.saveQuietly();
+record.saveByPrimaryKeyQuietly();
+record.deleteQuietly();
+record.forceDeleteQuietly();
+record.restoreQuietly();
+record.restoreQuietly(boolean);
+```
 
 ## 作用域
 

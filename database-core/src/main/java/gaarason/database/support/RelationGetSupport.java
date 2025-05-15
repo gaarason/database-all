@@ -32,7 +32,7 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
     protected final boolean attachedRelationship;
 
     @Nullable
-    protected ModelMember<T, K> modelMember;
+    protected ModelMember<?, T, K> modelMember;
 
     /**
      * 基本对象转化
@@ -89,7 +89,7 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
     protected T generateEntity(Record<T, K> record, Map<Record.Relation, relationResultData> relationResultMap) {
         ModelShadowProvider modelShadow = getModelShadow();
         // 模型信息
-        ModelMember<T, K> modelMember = getModelMember();
+        ModelMember<?, T, K> modelMember = getModelMember();
         EntityMember<T, K> entityMember = modelMember.getEntityMember();
 
         // 实体类的对象 (仅包含基本数据库字段属性)
@@ -216,7 +216,7 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
      * 获取 ModelMember
      * @return ModelMember
      */
-    public ModelMember<T, K> getModelMember() {
+    public ModelMember<?, T, K> getModelMember() {
         if (modelMember == null) {
             // records 为空, 是不会调用这个方法的~
             modelMember = getModelShadow().get(records.get(0).getModel());

@@ -1,5 +1,6 @@
 package gaarason.database.query;
 
+import gaarason.database.appointment.EventType;
 import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
@@ -27,7 +28,7 @@ abstract class ExecuteLevel2Builder<B extends Builder<B, T, K>, T, K>  extends E
      * @param sqlType sql 类型
      * @return SQL片段信息
      */
-    Grammar.SQLPartInfo toSQLPartInfo(SqlType sqlType) {
+    protected Grammar.SQLPartInfo toSQLPartInfo(SqlType sqlType) {
         return grammar.generateSql(sqlType);
     }
 
@@ -36,7 +37,7 @@ abstract class ExecuteLevel2Builder<B extends Builder<B, T, K>, T, K>  extends E
      * @return 影响的行数
      * @throws SQLRuntimeException 数据库异常
      */
-    int updateSql(SqlType sqlType) throws SQLRuntimeException {
+    protected int updateSql(SqlType sqlType) throws SQLRuntimeException {
         if ((sqlType != SqlType.INSERT && sqlType != SqlType.REPLACE) && grammar.isEmpty(Grammar.SQLPartType.WHERE)) {
             throw new ConfirmOperationException(
                 "You made a risky operation without where conditions, use where(1) for sure");
@@ -50,25 +51,22 @@ abstract class ExecuteLevel2Builder<B extends Builder<B, T, K>, T, K>  extends E
 
     @Override
     public int replace() throws SQLRuntimeException {
-        // 事件
-        model.eventQueryCreating(this);
+        modelMember.triggerQueryIngEvents(EventType.QueryIng.eventQueryCreating, this);
         int rows = updateSql(SqlType.REPLACE);
-        model.eventQueryCreated(rows);
+        modelMember.triggerQueryEdEvents(EventType.QueryEd.eventQueryCreated, this, rows);
         return rows;
     }
 
     @Override
     public int insert() throws SQLRuntimeException {
-        // 事件
-        model.eventQueryCreating(this);
+        modelMember.triggerQueryIngEvents(EventType.QueryIng.eventQueryCreating, this);
         int rows = updateSql(SqlType.INSERT);
-        model.eventQueryCreated(rows);
+        modelMember.triggerQueryEdEvents(EventType.QueryEd.eventQueryCreated, this, rows);
         return rows;
     }
 
     @Override
     public int upsert(Collection<String> columns) throws SQLRuntimeException {
-        // 暂无事件
         // sql 语句拼接
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append("ON DUPLICATE KEY UPDATE ");
@@ -89,102 +87,87 @@ abstract class ExecuteLevel2Builder<B extends Builder<B, T, K>, T, K>  extends E
         // 加入 末端
         lastRaw(sqlBuilder.toString());
 
-        // 事件
-        model.eventQueryCreating(this);
-        // 执行
+        modelMember.triggerQueryIngEvents(EventType.QueryIng.eventQueryCreating, this);
         int rows = updateSql(SqlType.INSERT);
-        model.eventQueryCreated(rows);
+        modelMember.triggerQueryEdEvents(EventType.QueryEd.eventQueryCreated, this, rows);
         return rows;
     }
 
     @Override
     public int update() throws SQLRuntimeException {
-        // 事件
-        model.eventQueryUpdating(this);
+        modelMember.triggerQueryIngEvents(EventType.QueryIng.eventQueryUpdating, this);
         int rows = updateSql(SqlType.UPDATE);
-        model.eventQueryUpdated(rows);
+        modelMember.triggerQueryEdEvents(EventType.QueryEd.eventQueryUpdated, this, rows);
         return rows;
     }
 
     @Override
     public int restore() throws SQLRuntimeException {
-        // 事件
-        model.eventQueryRestoring(this);
+        modelMember.triggerQueryIngEvents(EventType.QueryIng.eventQueryRestoring, this);
         int rows = model.restore(this);
-        model.eventQueryRestored(rows);
+        modelMember.triggerQueryEdEvents(EventType.QueryEd.eventQueryRestored, this, rows);
         return rows;
     }
 
     @Override
     public int delete() throws SQLRuntimeException {
-        // 事件
-        model.eventQueryDeleting(this);
+        modelMember.triggerQueryIngEvents(EventType.QueryIng.eventQueryDeleting, this);
+        // 调用模型中定义, 以确定是`软删除`或者`硬删除`
         int rows = model.delete(this);
-        model.eventQueryDeleted(rows);
+        modelMember.triggerQueryEdEvents(EventType.QueryEd.eventQueryDeleted, this, rows);
         return rows;
     }
 
     @Override
     public int forceDelete() throws SQLRuntimeException {
-        // 事件
-        model.eventQueryDeleting(this);
+        modelMember.triggerQueryIngEvents(EventType.QueryIng.eventQueryForceDeleting, this);
         int rows = updateSql(SqlType.DELETE);
-        model.eventQueryDeleted(rows);
+        modelMember.triggerQueryEdEvents(EventType.QueryEd.eventQueryForceDeleted, this, rows);
         return rows;
     }
 
     @Override
     @Nullable
     public K insertGetId() throws SQLRuntimeException {
-        // 事件
-        model.eventQueryCreating(this);
+        modelMember.triggerQueryIngEvents(EventType.QueryIng.eventQueryCreating, this);
         Grammar.SQLPartInfo sqlPartInfo = toSQLPartInfo(SqlType.INSERT);
         K id = executeGetId(sqlPartInfo.getSqlString(), sqlPartInfo.getParameters());
-        if (id != null) {
-            model.eventQueryCreated(id);
-        }
+        modelMember.triggerQueryEdEvents(EventType.QueryEd.eventQueryCreated, this, id);
         return id;
     }
 
     @Override
     public List<K> insertGetIds() throws SQLRuntimeException {
-        // 事件
-        model.eventQueryCreating(this);
+        modelMember.triggerQueryIngEvents(EventType.QueryIng.eventQueryCreating, this);
         Grammar.SQLPartInfo sqlPartInfo = toSQLPartInfo(SqlType.INSERT);
         List<K> ids = executeGetIds(sqlPartInfo.getSqlString(), sqlPartInfo.getParameters());
-        model.eventQueryCreated(ids);
+        modelMember.triggerQueryEdEvents(EventType.QueryEd.eventQueryCreated, this, ids);
         return ids;
     }
 
     @Override
     public Record<T, K> firstOrFail() throws SQLRuntimeException, EntityNotFoundException {
         limit(1);
-        // 事件
-        model.eventQueryRetrieving(this);
-
+        modelMember.triggerQueryIngEvents(EventType.QueryIng.eventQueryRetrieving, this);
         Grammar.SQLPartInfo sqlPartInfo = toSQLPartInfo(SqlType.SELECT);
         String sql = sqlPartInfo.getSqlString();
         Collection<Object> parameterList = sqlPartInfo.getParameters();
         Record<T, K> record = queryOrFail(sql, parameterList);
-
-        // 事件
-        model.eventQueryRetrieved(record);
+        modelMember.triggerQueryEdEvents(EventType.QueryEd.eventQueryRetrieved, this, record);
         return record;
     }
 
     @Override
     public RecordList<T, K> get() throws SQLRuntimeException {
         // 事件
-        model.eventQueryRetrieving(this);
-
+        modelMember.triggerQueryIngEvents(EventType.QueryIng.eventQueryRetrieving, this);
         // sql组装执行
         Grammar.SQLPartInfo sqlPartInfo = toSQLPartInfo(SqlType.SELECT);
         String sql = sqlPartInfo.getSqlString();
         Collection<Object> parameterList = sqlPartInfo.getParameters();
         RecordList<T, K> records = queryList(sql, parameterList);
-
         // 事件
-        model.eventQueryRetrieved(records);
+        modelMember.triggerQueryEdEvents(EventType.QueryEd.eventQueryRetrieved, this, records);
         return records;
     }
 

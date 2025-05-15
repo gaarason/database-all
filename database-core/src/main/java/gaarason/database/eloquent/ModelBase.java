@@ -59,7 +59,7 @@ abstract class ModelBase<B extends Builder<B, T, K>, T, K> implements Model<B, T
      * 获取模型信息
      * @return 模型信息
      */
-    protected ModelMember<T, K> getModelMember() {
+    protected ModelMember<B, T, K> getModelMember() {
         return getModelShadow().get(this);
     }
 

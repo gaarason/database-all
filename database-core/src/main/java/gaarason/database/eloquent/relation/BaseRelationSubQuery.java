@@ -185,7 +185,7 @@ public abstract class BaseRelationSubQuery implements RelationSubQuery {
             return objectList;
         }
         // 模型信息
-        ModelMember<?, ?> modelMember = modelShadowProvider.getByEntityClass(
+        ModelMember<?, ?, ?> modelMember = modelShadowProvider.getByEntityClass(
             relationshipObjectList.get(0).getClass());
 
         // 字段信息

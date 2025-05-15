@@ -26,7 +26,7 @@ public class BindBean<T, K> implements Bind {
     public BindBean(Record<T, K> tkRecord, String fieldName) {
         this.tkRecord = tkRecord;
         // 模型信息
-        ModelMember<T, K> modelMember = tkRecord.getModel()
+        ModelMember<?, T, K> modelMember = tkRecord.getModel()
             .getGaarasonDataSource()
             .getContainer()
             .getBean(ModelShadowProvider.class)

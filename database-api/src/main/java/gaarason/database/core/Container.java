@@ -40,7 +40,6 @@ public interface Container {
      */
     <T> T getBean(Class<T> interfaceClass);
 
-
     /**
      * 用于持有容器
      */

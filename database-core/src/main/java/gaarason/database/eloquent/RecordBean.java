@@ -1,6 +1,7 @@
 package gaarason.database.eloquent;
 
 import gaarason.database.appointment.EntityUseType;
+import gaarason.database.appointment.EventType;
 import gaarason.database.appointment.ValueWrapper;
 import gaarason.database.contract.eloquent.Model;
 import gaarason.database.contract.eloquent.Record;
@@ -15,10 +16,7 @@ import gaarason.database.exception.PrimaryKeyNotFoundException;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.GodProvider;
 import gaarason.database.provider.ModelShadowProvider;
-import gaarason.database.support.EntityMember;
-import gaarason.database.support.FieldMember;
-import gaarason.database.support.PrimaryKeyMember;
-import gaarason.database.support.RelationGetSupport;
+import gaarason.database.support.*;
 import gaarason.database.util.ClassUtils;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
@@ -54,14 +52,21 @@ public class RecordBean<T, K> implements Record<T, K> {
      * 数据模型
      */
     protected Model<?, T, K> model;
+
     /**
      * Model信息大全
      */
     protected ModelShadowProvider modelShadow;
+
     /**
      * 数据实体类
      */
     protected Class<T> entityClass;
+
+    /**
+     * modelMember
+     */
+    protected ModelMember<?, T, K> modelMember;
 
     /**
      * 原Sql
@@ -111,7 +116,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      * @param model 数据模型
      */
     public RecordBean(Model<?, T, K> model) {
-        initNewRecord(model, Collections.emptyMap(), "");
+        initRecord(model, Collections.emptyMap(), "");
     }
 
     /**
@@ -120,24 +125,23 @@ public class RecordBean<T, K> implements Record<T, K> {
      */
     public RecordBean(Record<T, K> recordBean) {
         initRecord(recordBean.getModel(), recordBean.getMetadataMap(), recordBean.getOriginalSql());
-        this.entity = recordBean.getEntity();
-        this.originalPrimaryKeyValue = recordBean.getOriginalPrimaryKeyValue();
-    }
-
-    protected void initNewRecord(Model<?, T, K> model, Map<String, Object> stringObjectMap, String originalSql) {
-        initRecord(model, stringObjectMap, originalSql);
-        this.entity = toObjectWithoutRelationship();
-        // 通知
-        model.eventRecordRetrieved(this);
     }
 
     protected void initRecord(Model<?, T, K> model, Map<String, Object> stringObjectMap, String originalSql) {
         this.entityClass = model.getEntityClass();
         this.model = model;
         this.modelShadow = model.getGaarasonDataSource().getContainer().getBean(ModelShadowProvider.class);
+        this.modelMember = modelShadow.get(model);
         this.originalSql = originalSql;
         init(stringObjectMap);
         hasBind = !metadataMap.isEmpty();
+        this.entity = toObjectWithoutRelationship();
+    }
+
+    protected void initNewRecord(Model<?, T, K> model, Map<String, Object> stringObjectMap, String originalSql) {
+        initRecord(model, stringObjectMap, originalSql);
+        // 通知
+        modelMember.triggerRecordEdEvents(EventType.RecordEd.eventRecordRetrieved, this);
     }
 
     /**
@@ -315,22 +319,23 @@ public class RecordBean<T, K> implements Record<T, K> {
      */
     @Override
     public boolean save() {
-        // aop阻止
-        if (!model.eventRecordSaving(this)) {
+        // 事件阻止
+        if (!modelMember.triggerRecordIngEvents(EventType.RecordIng.eventRecordSaving, this)) {
             return false;
         }
+
         // 执行
         boolean success = hasBind ? update() : insert();
-        // aop通知
-        model.eventRecordSaved(this);
+        // 事件通知
+        modelMember.triggerRecordEdEvents(EventType.RecordEd.eventRecordSaved, this);
         // 响应
         return success;
     }
 
     @Override
     public boolean saveByPrimaryKey() {
-        // aop阻止
-        if (!model.eventRecordSaving(this)) {
+        // 事件阻止
+        if (!modelMember.triggerRecordIngEvents(EventType.RecordIng.eventRecordSaving, this)) {
             return false;
         }
         boolean success = false;
@@ -350,25 +355,20 @@ public class RecordBean<T, K> implements Record<T, K> {
             success = insert();
         }
 
-        // aop通知
-        model.eventRecordSaved(this);
+        // 事件通知
+        modelMember.triggerRecordEdEvents(EventType.RecordEd.eventRecordSaved, this);
         // 响应
         return success;
     }
 
-    /**
-     * 删除
-     * deleting -> deleted
-     * @return 执行成功
-     */
     @Override
     public boolean delete() {
         // 主键未知
         if (originalPrimaryKeyValue == null) {
             throw new PrimaryKeyNotFoundException();
         }
-        // aop阻止
-        if (!model.eventRecordDeleting(this)) {
+        // 事件阻止
+        if (!modelMember.triggerRecordIngEvents(EventType.RecordIng.eventRecordDeleting, this)) {
             return false;
         }
         // 执行
@@ -380,7 +380,32 @@ public class RecordBean<T, K> implements Record<T, K> {
             entity = toObjectWithoutRelationship();
             hasBind = false;
             // 通知
-            model.eventRecordDeleted(this);
+            modelMember.triggerRecordEdEvents(EventType.RecordEd.eventRecordDeleted, this);
+        }
+        // 响应
+        return success;
+    }
+
+    @Override
+    public boolean forceDelete() {
+        // 主键未知
+        if (originalPrimaryKeyValue == null) {
+            throw new PrimaryKeyNotFoundException();
+        }
+        // 事件阻止
+        if (!modelMember.triggerRecordIngEvents(EventType.RecordIng.eventRecordForceDeleting, this)) {
+            return false;
+        }
+        // 执行
+        boolean success =
+                model.newQueryWithoutApply().where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString()).forceDelete() > 0;
+        // 成功删除后后,刷新自身属性
+        if (success) {
+            this.metadataMap.clear();
+            entity = toObjectWithoutRelationship();
+            hasBind = false;
+            // 通知
+            modelMember.triggerRecordEdEvents(EventType.RecordEd.eventRecordForceDeleted, this);
         }
         // 响应
         return success;
@@ -409,7 +434,7 @@ public class RecordBean<T, K> implements Record<T, K> {
             throw new PrimaryKeyNotFoundException();
         }
         // 阻止
-        if (!model.eventRecordRestoring(this)) {
+        if (!modelMember.triggerRecordIngEvents(EventType.RecordIng.eventRecordRestoring, this)) {
             return false;
         }
         // 执行
@@ -417,8 +442,11 @@ public class RecordBean<T, K> implements Record<T, K> {
             model.onlyTrashed().where(model.getPrimaryKeyColumnName(), originalPrimaryKeyValue.toString()).restore() >
                 0;
         // 成功恢复后,刷新自身属性
-        if (success && refresh) {
-            refresh();
+        if (success) {
+            if (refresh) {
+                refresh();
+            }
+            modelMember.triggerRecordEdEvents(EventType.RecordEd.eventRecordRestored, this);
         }
         // 响应
         return success;
@@ -564,14 +592,14 @@ public class RecordBean<T, K> implements Record<T, K> {
 
     @Override
     public T getOriginal() {
-        EntityMember<T, Object> entityMember = modelShadow.parseAnyEntityWithCache(entityClass);
+        EntityMember<T, K> entityMember = modelMember.getEntityMember();
         return entityMember.toEntity(originalMetadataMap);
     }
 
     @Override
     @Nullable
     public Object getOriginal(String fieldName) throws EntityAttributeInvalidException {
-        FieldMember<?> fieldMember = modelShadow.parseAnyEntityWithCache(entityClass)
+        FieldMember<?> fieldMember = modelMember.getEntityMember()
             .getFieldMemberByFieldName(fieldName);
 
         // 从元数据中获取字段值
@@ -584,8 +612,8 @@ public class RecordBean<T, K> implements Record<T, K> {
      * @return 执行成功
      */
     protected boolean insert() {
-        // aop阻止
-        if (!model.eventRecordCreating(this)) {
+        // 阻止
+        if (!modelMember.triggerRecordIngEvents(EventType.RecordIng.eventRecordCreating, this)) {
             return false;
         }
         // entity 2 map
@@ -603,7 +631,7 @@ public class RecordBean<T, K> implements Record<T, K> {
             // 新增的场景下, 对 originalMetadataMap 进行更新
             originalMetadataMap.putAll(entityMap);
             // 通知
-            model.eventRecordCreated(this);
+            modelMember.triggerRecordEdEvents(EventType.RecordEd.eventRecordCreated, this);
         }
         // 响应
         return success;
@@ -631,7 +659,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      */
     protected boolean updateByPrimaryKey(@Nullable Object primaryKeyValue) {
         // 阻止
-        if (!model.eventRecordUpdating(this)) {
+        if (!modelMember.triggerRecordIngEvents(EventType.RecordIng.eventRecordUpdating, this)) {
             return false;
         }
         // entity 2 map
@@ -644,7 +672,7 @@ public class RecordBean<T, K> implements Record<T, K> {
             // 更新自身
             selfUpdate(entityMap);
             // aop通知
-            model.eventRecordUpdated(this);
+            modelMember.triggerRecordEdEvents(EventType.RecordEd.eventRecordUpdated, this);
         }
         // 响应
         return success;

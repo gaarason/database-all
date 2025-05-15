@@ -1,4 +1,4 @@
-package gaarason.database.contract.model;
+package gaarason.database.contract.model.base;
 
 import gaarason.database.contract.eloquent.Record;
 
@@ -94,6 +94,23 @@ public interface RecordEvent<T, K> {
      * @param record 结果集
      */
     default void eventRecordDeleted(Record<T, K> record) {
+
+    }
+
+    /**
+     * 硬删除时
+     * @param record 结果集
+     * @return 继续操作
+     */
+    default boolean eventRecordForceDeleting(Record<T, K> record) {
+        return true;
+    }
+
+    /**
+     * 硬删除后
+     * @param record 结果集
+     */
+    default void eventRecordForceDeleted(Record<T, K> record) {
 
     }
 

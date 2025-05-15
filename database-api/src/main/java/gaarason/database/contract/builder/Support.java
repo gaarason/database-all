@@ -13,6 +13,8 @@ import gaarason.database.contract.support.ShowType;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.lang.Nullable;
 
+import java.util.function.Supplier;
+
 /**
  * 支持
  * @author xt
@@ -63,6 +65,22 @@ public interface Support<B extends Builder<B, T, K>, T, K> extends LambdaStyle, 
      * @return 查询构造器
      */
     B getSelf();
+
+    /**
+     * 在此闭包内执行的代码, 将不会触发事件
+     * "不会触发事件" 仅对当前线程生效
+     * @param supplier 逻辑
+     * @return 结果
+     * @param <V> 结果类型
+     */
+    <V> V quiet(Supplier<V> supplier);
+
+    /**
+     * 在此闭包内执行的代码, 将不会触发事件
+     * "不会触发事件" 仅对当前线程生效
+     * @param supplier 逻辑
+     */
+    void quiet(Runnable supplier);
 
     /**
      * 类型显示

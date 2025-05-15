@@ -13,10 +13,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Savepoint;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 
@@ -38,8 +35,13 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
      * 事物中的 savepoint 列表
      * 事物嵌套是才会使用
      */
-    protected final ThreadLocal<LinkedList<Savepoint>> localThreadTransactionSavepointLinkedList = ThreadLocal.withInitial(
+    protected final ThreadLocal<LinkedList<SavePointWrapper>> localThreadTransactionSavepointLinkedList = ThreadLocal.withInitial(
         LinkedList::new);
+
+    /**
+     * 最外层事务的待触发事件队列
+     */
+    protected final ThreadLocal<LinkedList<Runnable>> localThreadEvents = ThreadLocal.withInitial(LinkedList::new);
 
     /**
      * 写连接
@@ -121,11 +123,12 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
             try {
                 connection.commit();
                 setAutoCommit(connection, true);
+                // 触发所有事件
+                triggerEvents();
             } catch (SQLException e) {
                 throw new SQLRuntimeException(e.getMessage(), e);
             } finally {
                 connectionClose(connection);
-                localThreadTransactionConnection.remove();
             }
         }
         // 移除 savepoint
@@ -146,7 +149,6 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
                 throw new SQLRuntimeException(e.getMessage(), e);
             } finally {
                 connectionClose(connection);
-                localThreadTransactionConnection.remove();
             }
         }
         // 回滚到 savepoint
@@ -254,6 +256,30 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
         }
     }
 
+    @Override
+    public void addEvent(Runnable runnable) {
+        addEvent(Collections.singletonList(runnable));
+    }
+
+    @Override
+    public void addEvent(List<Runnable> runnableList) {
+        // 必须在事务中
+        if (!isLocalThreadInTransaction()) {
+            throw new TransactionStatusException();
+        }
+        // 获取当前的 savePoint
+        LinkedList<SavePointWrapper> savePointWrappers = localThreadTransactionSavepointLinkedList.get();
+        // 没有 savePoint 则直接加入最外层
+        if (ObjectUtils.isEmpty(savePointWrappers)) {
+            localThreadEvents.get().addAll(runnableList);
+        }
+        // 加入 savePoint
+        else {
+            SavePointWrapper lastWrapper = savePointWrappers.getLast();
+            lastWrapper.events.addAll(runnableList);
+        }
+    }
+
     /**
      * 当前线程是否在事物中
      * @return 是否事物中
@@ -268,12 +294,16 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
      * @param connection 数据库连接
      * @throws ConnectionCloseException 关闭异常
      */
-    protected static void connectionClose(Connection connection) throws ConnectionCloseException {
+    protected void connectionClose(Connection connection) throws ConnectionCloseException {
         try {
             connection.close();
         } catch (Throwable e) {
             throw new ConnectionCloseException(e.getMessage(), e);
         }
+        // 清除持有的连接
+        localThreadTransactionConnection.remove();
+        // 清除所有事件
+        localThreadEvents.remove();
     }
 
     @Override
@@ -281,7 +311,7 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
         Connection connection = localThreadTransactionConnection.get();
         try {
             Savepoint savepoint = connection.setSavepoint();
-            localThreadTransactionSavepointLinkedList.get().add(savepoint);
+            localThreadTransactionSavepointLinkedList.get().add(new SavePointWrapper(savepoint));
             return savepoint;
         } catch (SQLException e) {
             throw new SQLRuntimeException(e.getMessage(), e);
@@ -292,7 +322,9 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
     public void rollbackToSavepoint() {
         try {
             Connection connection = localThreadTransactionConnection.get();
-            Savepoint savepointReal = localThreadTransactionSavepointLinkedList.get().removeLast();
+            SavePointWrapper savePointWrapper = localThreadTransactionSavepointLinkedList.get().removeLast();
+            Savepoint savepointReal = savePointWrapper.savepoint;
+            // savePointWrapper.events 直接被垃圾回收
             connection.rollback(savepointReal);
         } catch (SQLException e) {
             throw new SQLRuntimeException(e.getMessage(), e);
@@ -302,7 +334,11 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
     @Override
     public void releaseSavepoint() {
         Connection connection = localThreadTransactionConnection.get();
-        Savepoint savepoint = localThreadTransactionSavepointLinkedList.get().removeLast();
+        SavePointWrapper savePointWrapper = localThreadTransactionSavepointLinkedList.get().removeLast();
+        Savepoint savepoint = savePointWrapper.savepoint;
+        LinkedList<Runnable> events = savePointWrapper.events;
+        // 将释放的 savePoint 的对应的事件, 加入到上一级(未释放的savePoint, 或者最外层的事务)
+        addEvent(events);
         try {
             connection.releaseSavepoint(savepoint);
         } catch (SQLException e) {
@@ -348,6 +384,16 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
         throw new TypeNotSupportedException("Database product name [" + databaseProductName + "] not supported yet.");
     }
 
+    /**
+     * 触发所有事件
+     */
+    protected void triggerEvents() {
+        LinkedList<Runnable> events = localThreadEvents.get();
+        for (Runnable event : events) {
+            event.run();
+        }
+    }
+
     @Override
     public List<DataSource> getMasterDataSourceList() {
         return masterDataSourceList;
@@ -369,9 +415,18 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
      * @param flag y/n
      * @throws SQLException sql异常
      */
-    void setAutoCommit(Connection connection, boolean flag) throws SQLException {
+    protected static void setAutoCommit(Connection connection, boolean flag) throws SQLException {
         if (!connection.isClosed()) {
             connection.setAutoCommit(flag);
+        }
+    }
+
+    public static class SavePointWrapper {
+        @Nullable
+        final Savepoint savepoint;
+        final LinkedList<Runnable> events = new LinkedList<>();
+        public SavePointWrapper(@Nullable Savepoint savepoint) {
+            this.savepoint = savepoint;
         }
     }
 }

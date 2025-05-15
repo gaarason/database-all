@@ -7,6 +7,7 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.support.FieldStrategy;
+import gaarason.database.test.config.MySqlBuilderV2;
 import gaarason.database.test.models.normal.base.SingleModel;
 import lombok.Data;
 
@@ -88,76 +89,76 @@ public class StudentEventModel extends SingleModel<StudentEventModel.Entity, Int
 
 
     @Override
-    public void eventQueryRetrieving(Builder<?, Entity, Integer> builder) {
+    public void eventQueryRetrieving(Builder<MySqlBuilderV2<Entity, Integer>, Entity, Integer> builder) {
         printCurrentMethodName();
     }
 
     @Override
-    public void eventQueryRetrieved(RecordList<Entity, Integer> records) {
+    public void eventQueryRetrieved(Builder<MySqlBuilderV2<Entity, Integer>, Entity, Integer> builder, RecordList<Entity, Integer> records) {
         printCurrentMethodName();
     }
 
     @Override
-    public void eventQueryRetrieved(Record<Entity, Integer> tkRecord) {
+    public void eventQueryRetrieved(Builder<MySqlBuilderV2<Entity, Integer>, Entity, Integer> builder, Record<Entity, Integer> tkRecord) {
         printCurrentMethodName();
     }
 
     @Override
-    public void eventQueryCreating(Builder<?, Entity, Integer> builder) {
+    public void eventQueryCreating(Builder<MySqlBuilderV2<Entity, Integer>, Entity, Integer> builder) {
         printCurrentMethodName();
     }
 
     @Override
-    public void eventQueryCreated(List<Integer> primaryKeyValues) {
-        super.eventQueryCreated(primaryKeyValues);
+    public void eventQueryCreated(Builder<MySqlBuilderV2<Entity, Integer>, Entity, Integer> builder, List<Integer> primaryKeyValues) {
+        super.eventQueryCreated(builder, primaryKeyValues);
         printCurrentMethodName();
     }
 
     @Override
-    public void eventQueryCreated(Integer primaryKeyValue) {
-        super.eventQueryCreated(primaryKeyValue);
+    public void eventQueryCreated(Builder<MySqlBuilderV2<Entity, Integer>, Entity, Integer> builder, Integer primaryKeyValue) {
+        super.eventQueryCreated(builder, primaryKeyValue);
         printCurrentMethodName();
     }
 
     @Override
-    public void eventQueryCreated(int rows) {
+    public void eventQueryCreated(Builder<MySqlBuilderV2<Entity, Integer>, Entity, Integer> builder, int rows) {
         printCurrentMethodName();
         printCurrentMethodName();
     }
 
     @Override
-    public void eventQueryUpdating(Builder<?, Entity, Integer> builder) {
+    public void eventQueryUpdating(Builder<MySqlBuilderV2<Entity, Integer>, Entity, Integer> builder) {
         super.eventQueryUpdating(builder);
         printCurrentMethodName();
     }
 
     @Override
-    public void eventQueryUpdated(int rows) {
-        super.eventQueryUpdated(rows);
+    public void eventQueryUpdated(Builder<MySqlBuilderV2<Entity, Integer>, Entity, Integer> builder, int rows) {
+        super.eventQueryUpdated(builder, rows);
         printCurrentMethodName();
     }
 
     @Override
-    public void eventQueryRestoring(Builder<?, Entity, Integer> builder) {
+    public void eventQueryRestoring(Builder<MySqlBuilderV2<Entity, Integer>, Entity, Integer> builder) {
         super.eventQueryRestoring(builder);
         printCurrentMethodName();
     }
 
     @Override
-    public void eventQueryRestored(int rows) {
-        super.eventQueryRestored(rows);
+    public void eventQueryRestored(Builder<MySqlBuilderV2<Entity, Integer>, Entity, Integer> builder, int rows) {
+        super.eventQueryRestored(builder, rows);
         printCurrentMethodName();
     }
 
     @Override
-    public void eventQueryDeleting(Builder<?, Entity, Integer> builder) {
+    public void eventQueryDeleting(Builder<MySqlBuilderV2<Entity, Integer>, Entity, Integer> builder) {
         super.eventQueryDeleting(builder);
         printCurrentMethodName();
     }
 
     @Override
-    public void eventQueryDeleted(int rows) {
-        super.eventQueryDeleted(rows);
+    public void eventQueryDeleted(Builder<MySqlBuilderV2<Entity, Integer>, Entity, Integer> builder, int rows) {
+        super.eventQueryDeleted(builder, rows);
         printCurrentMethodName();
     }
 

@@ -10,7 +10,6 @@ import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.RecordWrapper;
-import gaarason.database.contract.function.TransactionFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.core.Container;
 import gaarason.database.exception.AbnormalParameterException;
@@ -19,6 +18,7 @@ import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.GodProvider;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.support.ModelMember;
 import gaarason.database.util.ClassUtils;
 import gaarason.database.util.ExceptionUtils;
 import gaarason.database.util.ObjectUtils;
@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 /**
  * 基础查询构造器(sql生成器)
@@ -46,6 +47,11 @@ abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements Builder<
      * 数据模型
      */
     protected Model<B, T, K> model;
+
+    /**
+     * modelMember
+     */
+    protected ModelMember<B, T, K> modelMember;
 
     /**
      * 容器
@@ -83,6 +89,7 @@ abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements Builder<
         this.modelShadowProvider = container.getBean(ModelShadowProvider.class);
         this.conversion = container.getBean(ConversionConfig.class);
         this.model = model;
+        this.modelMember = modelShadowProvider.get(model);
         this.entityClass = model.getEntityClass();
         this.grammar = grammar;
         return getSelf();
@@ -230,21 +237,34 @@ abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements Builder<
     }
 
     @Override
-    public <V> V transaction(TransactionFunctionalInterface<V> closure) {
+    public <V> V quiet(Supplier<V> supplier) {
+        return modelMember.quiet(supplier);
+    }
+
+    @Override
+    public void quiet(Runnable supplier) {
+        quiet(() -> {
+            supplier.run();
+            return true;
+        });
+    }
+
+    @Override
+    public <V> V transaction(Supplier<V> closure) {
         return transaction(closure, FinalVariable.DEFAULT_CAUSED_BY_DEADLOCK_RETRY_COUNT);
     }
 
     @Override
-    public <V> CompletableFuture<V> transactionAsync(TransactionFunctionalInterface<V> closure) {
+    public <V> CompletableFuture<V> transactionAsync(Supplier<V> closure) {
         return transactionAsync(closure, FinalVariable.DEFAULT_CAUSED_BY_DEADLOCK_RETRY_COUNT);
     }
 
     @Override
-    public <V> V transaction(TransactionFunctionalInterface<V> closure, int maxAttempts) {
+    public <V> V transaction(Supplier<V> closure, int maxAttempts) {
         for (int currentAttempt = 0; currentAttempt <= maxAttempts; currentAttempt++) {
             begin();
             try {
-                V result = closure.execute();
+                V result = closure.get();
                 commit();
                 return result;
             } catch (Throwable e) {
@@ -258,7 +278,7 @@ abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements Builder<
     }
 
     @Override
-    public <V> CompletableFuture<V> transactionAsync(TransactionFunctionalInterface<V> closure, int maxAttempts) {
+    public <V> CompletableFuture<V> transactionAsync(Supplier<V> closure, int maxAttempts) {
         return CompletableFuture.supplyAsync(() -> transaction(closure, maxAttempts), model.getExecutorService());
     }
 

@@ -236,6 +236,7 @@ abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends E
 
     @Override
     public String columnAlias(String column) {
+        // todo 兼容入参包含 表名的情况 ( table.column) ?
         column = alias() + "." + column;
         return supportBackQuote(column);
     }

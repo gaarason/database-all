@@ -33,4 +33,16 @@ public interface GaarasonDataSource extends DataSource, SavepointManager, Transa
      * @throws SQLRuntimeException 数据库异常
      */
     QueryBuilderConfig getQueryBuilder() throws SQLRuntimeException;
+
+    /**
+     * 加入一个事务结束后的事件回调
+     * @param runnable 事件回调
+     */
+    void addEvent(Runnable runnable);
+
+    /**
+     * 加入一个事务结束后的事件回调
+     * @param runnableList 事件回调列表
+     */
+    void addEvent(List<Runnable> runnableList);
 }
