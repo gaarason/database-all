@@ -92,17 +92,24 @@ abstract public class RelationTests extends BaseTests {
     public void 一对一关系_子关系不存在() {
         // 声明且使用
         Student student1 =
-            studentModel.newQuery().firstOrFail().with(Student::getTeacher, builder -> builder.where("id", "99"),
-                record -> record.with("students", builder -> builder, record1 -> record1.with("teacher"))).toObject();
+                studentModel.newQuery().firstOrFail().with(Student::getTeacher, builder -> builder.where("id", "99"),
+                        record -> record.with("students", builder -> builder, record1 -> record1.with("teacher"))).toObject();
         System.out.println(student1);
         Assert.assertNull(student1.getTeacher());
 
         // 声明且使用
         Student student2 =
-            studentModel.newQuery().firstOrFail().with("teacher", builder -> builder.where("id", "99"),
-                record -> record.with("students", builder -> builder, record1 -> record1.with("teacher"))).toObject();
+                studentModel.newQuery().firstOrFail().with("teacher", builder -> builder.where("id", "99"),
+                        record -> record.with("students", builder -> builder, record1 -> record1.with("teacher"))).toObject();
         System.out.println(student2);
         Assert.assertNull(student2.getTeacher());
+    }
+
+    @Test
+    public void 一对一关系_分页() {
+        studentModel.newQuery().with(Student::getTeacher, builder -> builder.where("id", "99"),
+                record -> record.with("students", builder -> builder, record1 -> record1.with("teacher")))
+                .paginate(1,8);
     }
 
 

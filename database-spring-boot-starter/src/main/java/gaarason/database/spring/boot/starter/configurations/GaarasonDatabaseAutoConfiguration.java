@@ -94,8 +94,10 @@ public class GaarasonDatabaseAutoConfiguration {
         // 注册 model实例获取方式
         container.getBean(ModelInstanceProvider.class).register(modelClass -> {
             try {
+                LOGGER.info("通过 Spring 实例化 model 类 ["+ modelClass +"]");
                 return ObjectUtils.typeCast(applicationContext.getBean(modelClass));
             } catch (BeansException e) {
+                LOGGER.info("通过 Spring 实例化 model 名 ["+ StringUtils.lowerFirstChar(modelClass.getSimpleName()) +"]");
                 return ObjectUtils.typeCast(
                     applicationContext.getBean(StringUtils.lowerFirstChar(modelClass.getSimpleName())));
             }

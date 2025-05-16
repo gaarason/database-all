@@ -1,7 +1,8 @@
 package gaarason.database.spring.boot.starter.test;
 
-import gaarason.database.contract.eloquent.Model;
+import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
+import gaarason.database.contract.support.ShowType;
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.generator.GeneralGenerator;
 import gaarason.database.generator.Generator;
@@ -9,6 +10,7 @@ import gaarason.database.query.MySqlBuilder;
 import gaarason.database.spring.boot.starter.test.data.entity.Student;
 import gaarason.database.spring.boot.starter.test.data.entity.Teacher;
 import gaarason.database.spring.boot.starter.test.data.entity.TestEntity;
+import gaarason.database.spring.boot.starter.test.data.model.StudentModel;
 import gaarason.database.spring.boot.starter.test.data.repository.StudentQuery;
 import gaarason.database.spring.boot.starter.test.data.repository.TeacherQuery;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +50,7 @@ public class DruidApplicationTests {
     TeacherQuery<Teacher, Integer> teacherQuery;
 
     @Resource
-    Model<MySqlBuilder<Student, Long>, Student, Long> studentModel;
+    StudentModel studentModel;
 
     @Test
     public void 生成代码() {
@@ -124,6 +126,13 @@ public class DruidApplicationTests {
         Assert.assertNotNull(studentId);
 
         Assert.assertEquals(Integer.parseInt(studentId.toString()) - 1, Integer.parseInt(id.toString()));
+    }
+
+    @Test
+    public void 分页_关系() {
+        GaarasonDataSource gaarasonDataSource = studentModel.getGaarasonDataSource();
+        studentModel.newQuery().with("relationshipStudentTeachers", builder -> builder.showType(
+                new ShowType<MySqlBuilder<Student, Long>>() {}).limit(3)).paginate(1, 7);
     }
 
     @Test

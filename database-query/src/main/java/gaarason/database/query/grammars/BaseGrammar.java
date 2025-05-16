@@ -2,8 +2,6 @@ package gaarason.database.query.grammars;
 
 import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.eloquent.Record;
-import gaarason.database.contract.function.BuilderWrapper;
-import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.contract.query.Alias;
 import gaarason.database.contract.query.Grammar;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
@@ -29,17 +27,11 @@ public abstract class BaseGrammar implements Grammar, Serializable {
      */
     protected final static Set<SQLPartType> PARENTHESES_ARE_REQUIRED = EnumSet.of(SQLPartType.FORCE_INDEX,
         SQLPartType.IGNORE_INDEX, SQLPartType.COLUMN);
-    /**
-     * column -> [ GenerateSqlPart , RelationshipRecordWith ]
-     * @see RecordWrapper
-     * @see BuilderWrapper
-     */
-    protected final Map<String, Object[]> withMap = new HashMap<>();
 
     /**
      * 关联关系
      */
-    protected final Map<String, Record.Relation> relationMap = new HashMap<>();
+    public final Map<String, Record.Relation> relationMap = new HashMap<>();
 
     /**
      * SQL片段信息MAP
@@ -344,7 +336,17 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
     @Override
     public Grammar deepCopy() throws CloneNotSupportedRuntimeException {
-        return ObjectUtils.deepCopy(this);
+        // 浅拷贝 relationMap
+        HashMap<String, Record.Relation> copy = new HashMap<>(relationMap);
+        // 清空自身 relationMap
+        relationMap.clear();
+        // 一个全新的 grammar
+        BaseGrammar grammar = ObjectUtils.deepCopy(this);
+        // 恢复自身 relationMap
+        relationMap.putAll(copy);
+        // grammar 也赋值相同的 relationMap
+        grammar.relationMap.putAll(copy);
+        return grammar;
     }
 
     @Override

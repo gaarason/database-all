@@ -6,6 +6,8 @@ import gaarason.database.contract.function.InstantiationModelFunctionalInterface
 import gaarason.database.core.Container;
 import gaarason.database.exception.InvalidConfigException;
 import gaarason.database.exception.ModelNewInstanceException;
+import gaarason.database.logging.Log;
+import gaarason.database.logging.LogFactory;
 import gaarason.database.util.ClassUtils;
 import gaarason.database.util.ObjectUtils;
 
@@ -18,6 +20,8 @@ import java.util.List;
  * @author xt
  */
 public class ModelInstanceProvider extends Container.SimpleKeeper {
+
+    private static final Log LOGGER = LogFactory.getLog(ModelInstanceProvider.class);
 
     /**
      * Model实例化工厂 列表
@@ -65,6 +69,7 @@ public class ModelInstanceProvider extends Container.SimpleKeeper {
                 try {
                     return ObjectUtils.typeCast(instantiation.execute(ObjectUtils.typeCast(modelClass)));
                 } catch (Throwable e) {
+                    LOGGER.error("实例化 model 类 [" + modelClass + "]出错, 可能尝试其他方式", e);
                     throwableList.add(e);
                 }
             }
@@ -77,6 +82,9 @@ public class ModelInstanceProvider extends Container.SimpleKeeper {
      */
     protected void init() {
         // 初始化默认的 Model实例化工厂
-        INSTANTIATIONS.add(ClassUtils::newInstance);
+        INSTANTIATIONS.add( (modelClass) -> {
+            LOGGER.info("通过 java 实例化 model 类 ["+modelClass+"]");
+            return ClassUtils.newInstance(modelClass);
+        });
     }
 }

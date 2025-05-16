@@ -263,6 +263,7 @@ public class StudentModel extends BaseModel<Student, Long> {
 
 - 通过在模型上, 定义注解 `@ObservedBy()`, 可以将事件逻辑从模型上分离出去
 - `@ObservedBy()`可以同时声明多个`事件处理器`, 他们将依次按序执行
+- `事件处理器`需要实现`Event`接口
 - `@ObservedBy()`可以被继承, 在`父model`上声明, 可以被子类锁触发
 
 ```java
@@ -289,10 +290,10 @@ public static class StudentEvent implements Event<MySqlBuilderV2<StudentEventV2M
 
 ### 事务完成后执行事件
 
-- 为了避免`事务回滚`导致的`虚假事件`, 可以仅在数据库事务提交后执行其事件处理程序
+- 为了避免`事务回滚`导致的`虚假事件`, 我们会希望, 数据库事务提交成功后, 再执行其事件处理程序
 - 通过实现 `ShouldHandleEventsAfterCommit` 接口来实现这一点
-- 如果没有正在进行的数据库事务，事件处理程序将立即执行
-- 指的注意的是, 此功能仅会影响 `ed` 类型的事件
+- 如果没有正在进行的数据库事务，事件处理程序将和之前一样, 立即执行
+- 值的注意的是, 此功能仅会影响 `ed` 类型的事件
 - 事务成功提交后的事件, 将会使用`快照参数`进行回调
 - 多个事务嵌套时, 会在最外层事务成功提交后再触发
 - 此外, 即使没有使用`@ObservedBy()`声明专用的`事件处理器`, 也可以在`model`上实现 `ShouldHandleEventsAfterCommit` 达到一样的效果
@@ -318,12 +319,13 @@ public static class StudentEvent implements Event<MySqlBuilderV2<StudentEventV2M
 
 ```java
 newQuery().quiet(() -> {
-    // ....
+    // .... 不会触发事件
+    newQuery().get();
 });
 
 ```
 
-- 在`Record`中同样提供的更加便捷的`静默`方法
+- 在`Record`中同样提供了更加便捷的`静默`方法
 
 ```java
 record.saveQuietly();
