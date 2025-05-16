@@ -236,8 +236,10 @@ abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends E
 
     @Override
     public String columnAlias(String column) {
-        // todo 兼容入参包含 表名的情况 ( table.column) ?
-        column = alias() + "." + column;
+        // 兼容入参包含 表名的情况 eg : table.column
+        int lastIndex = column.lastIndexOf('.');
+        String result = column.substring(lastIndex + 1);
+        column = alias() + "." + result;
         return supportBackQuote(column);
     }
 

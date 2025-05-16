@@ -25,7 +25,7 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
-### 6.4.3
+### 6.5.0
 
 - 在`database-spring-boot-starter`中, 简单兼容下`spring-boot-devtools`等等会重新加载Bean的技术方案
 - 在`Builder`中, 增加`values(closure)` 即查询后批量插入
