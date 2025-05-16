@@ -122,7 +122,7 @@ public class GeneratorTests {
     autoGenerator.setStaticField(true);
     autoGenerator.setCorePoolSize(20);
     autoGenerator.setOutputDir("./src/test/java/");
-    autoGenerator.setNamespace("test.relationResultData");
+    autoGenerator.setNamespace("test.data");
     autoGenerator.setDisInsertable("created_at", "updated_at");
     autoGenerator.setDisUpdatable("created_at", "updated_at");
 

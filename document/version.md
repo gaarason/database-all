@@ -25,6 +25,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 6.5.1
+
+- fix代码生成时, 生成的代码有误的问题
+
 ### 6.5.0
 
 - 在`database-spring-boot-starter`中, 简单兼容下`spring-boot-devtools`等等会重新加载Bean的技术方案
@@ -479,8 +483,8 @@ Builder<T, K> havingNotIn(String column,Object...valueArray);
 Builder<T, K> havingBetween(String column,Object min,Object max);
 Builder<T, K> havingNotBetween(String column,Object min,Object max);
 
-Builder<T, K> relationResultData(String column,Object value);
-Builder<T, K> relationResultData(Map<String, Object> map);
+Builder<T, K> data(String column,Object value);
+Builder<T, K> data(Map<String, Object> map);
 ```
 
 ### 2.4.0
