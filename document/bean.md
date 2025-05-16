@@ -547,7 +547,8 @@ public class TestModel extends Model<MysqlBuilder, TestModel.Inner, Integer> {
 
 - Java 代码中指定`System.setProperty("gaarason.database.scan.packages", "you.package1,you.package2")`
 - Jvm 启动时指定`-Dgaarason.database.scan.packages=you.package1,you.package2`
-- SpringBoot 下使用 `@GaarasonDatabaseScan("you.package1,you.package2")`
+- SpringBoot 下, 可使用 `@GaarasonDatabaseScan({"you.package1","you.package2"})`
+- SpringBoot 下, 可通过`application.properties` 中配置 `gaarason.database.scan.packages=you.package1,you.package2`
 
 
 ### 自定义查询构造器

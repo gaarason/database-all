@@ -223,7 +223,7 @@ public class ContainerBootstrap extends ContainerProvider {
     protected ModelShadowProvider initModelShadow() {
         ModelShadowProvider modelShadowProvider = getBean(ModelShadowProvider.class);
         int i = modelShadowProvider.loadModels(getBean(ReflectionScan.class).scanModels());
-        LOGGER.info("All " + i + " Models has been load.");
+        LOGGER.info("All " + i + " Models have been loaded.");
         return modelShadowProvider;
     }
 

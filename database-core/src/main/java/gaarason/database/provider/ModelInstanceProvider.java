@@ -69,7 +69,7 @@ public class ModelInstanceProvider extends Container.SimpleKeeper {
                 try {
                     return ObjectUtils.typeCast(instantiation.execute(ObjectUtils.typeCast(modelClass)));
                 } catch (Throwable e) {
-                    LOGGER.error("实例化 model 类 [" + modelClass + "]出错, 可能尝试其他方式", e);
+                    LOGGER.debug("实例化 model 类 [" + modelClass + "]出错 [" + e.getMessage() + "], 可能尝试其他方式");
                     throwableList.add(e);
                 }
             }
@@ -83,7 +83,7 @@ public class ModelInstanceProvider extends Container.SimpleKeeper {
     protected void init() {
         // 初始化默认的 Model实例化工厂
         INSTANTIATIONS.add( (modelClass) -> {
-            LOGGER.info("通过 java 实例化 model 类 ["+modelClass+"]");
+            LOGGER.debug("通过 java 实例化 model 类 [" + modelClass + "]");
             return ClassUtils.newInstance(modelClass);
         });
     }

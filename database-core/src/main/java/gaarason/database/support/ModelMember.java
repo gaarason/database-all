@@ -261,7 +261,7 @@ public class ModelMember<B extends Builder<B, T, K>, T, K> extends Container.Sim
         if (primaryKeyMember != null &&
             !primaryKeyMember.getFieldMember().getField().getType().equals(primaryKeyClass)) {
             throw new InvalidPrimaryKeyTypeException(
-                "The primary key type [" + primaryKeyMember.getFieldMember().getField().getType() +
+                "In the Model [" + modelClass + "], the primary key type [" + primaryKeyMember.getFieldMember().getField().getType() +
                     "] of the entity does not match with the generic [" + primaryKeyClass + "]");
         }
     }
