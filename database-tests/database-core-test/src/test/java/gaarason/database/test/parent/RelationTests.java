@@ -1250,6 +1250,7 @@ abstract public class RelationTests extends BaseTests {
             .with("teachersBelongsToMany")
             .toObject();
 
+        System.out.println("--------------------------------");
         System.out.println(student);
 
 

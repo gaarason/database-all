@@ -452,7 +452,7 @@ public static class HasOneQueryRelation extends BaseRelationSubQuery implements 
 
     // 提供此构造函数
     
-    public HasOneQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
+    public HasOneQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?, ?> model) {
         super(modelShadowProvider, model);
     }
     
@@ -465,7 +465,7 @@ public static class HasOneQueryRelation extends BaseRelationSubQuery implements 
 ```java
 public static class HasOneQueryRelation extends HasOneOrManyQueryRelation {
 
-    public HasOneQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?> model) {
+    public HasOneQueryRelation(Field field, ModelShadowProvider modelShadowProvider, Model<?, ?, ?> model) {
         super(field, modelShadowProvider, model);
     }
 
@@ -589,8 +589,8 @@ Paginate<Student> paginate = studentModel.newQuery().orderBy("id").with("relatio
 
 #### 示例中间表数据查询
 
-在定义 entity 时, 除了通过 @BelongsToMany 注解定义与目标表的多堆多关系时, 还可以通过 @HasOneOrMany 定义与中间表的一对多关系  
-在查询中间表时, 直接 with 对应的一对多关系即可, 并且在同时 with 对应的多对多关系时, 不会产生额外的查询
+- 在定义`entity`时, 除了通过`@BelongsToMany`注解定义与目标表的多堆多关系时, 还可以通过`@HasOneOrMany`定义与中间表的一对多关系  
+- 在查询中间表时, 直接`with`对应的一对多关系即可
 
 ```java
 studentModel..newQuery().with("teachers").with("relation").get();
@@ -776,6 +776,7 @@ List<Student> students = studentModel.newQuery()
     .get()
     .toObjectList();
 ```
+
 ### whereHasIn
 使用 `where in` 实现的 `whereHas`语句   
 **当`主要查询表`的数据量(条件约束后), 大于, `从表`的数据量(条件约束后)时, 推荐使用.**  

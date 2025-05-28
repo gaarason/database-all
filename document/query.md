@@ -320,7 +320,13 @@ map.put("updated_at", LocalDateUtils.SIMPLE_DATE_FORMAT.get().format(new Date(13
 
 int insert = studentModel.newQuery().value(map).insert();
 
-// e.多个map操作
+// e.多个list插入
+studentModel.newQuery()
+        .column("id", "name")
+        .values(Arrays.asList(Arrays.asList(19, "xxcc1"), Arrays.asList(199, "xxcc2")))
+        .insert();
+
+// f.多个map操作
 List<Map<String, Object>> maps = new ArrayList<>();
 for (int i = 99; i < 10000; i++) {
     Map<String, Object> map = new HashMap<>();
@@ -334,7 +340,7 @@ for (int i = 99; i < 10000; i++) {
 }
 int insert = studentModel.newQuery().values(maps).insert();
 
-// f.查询后插入
+// g.查询后插入
 // insert into `student`(`name`)(select `name` from `student` as `student_770379332` where `sex`="1" limit "3")
 studentModel.newQuery()
     .column(StudentModel.Entity::getName)

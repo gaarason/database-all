@@ -164,7 +164,6 @@ public class GaarasonDatabaseAutoConfiguration {
             LOGGER.info("GaarasonDataSource init with " + dataSource.getClass().getName());
             // 创建 GaarasonDataSource
             return new GaarasonSmartDataSourceWrapper(Collections.singletonList(dataSource), container);
-//            return GaarasonDataSourceBuilder.build(dataSource, container);
         }
 
         /**
