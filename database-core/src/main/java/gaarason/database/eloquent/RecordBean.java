@@ -684,7 +684,7 @@ public class RecordBean<T, K> implements Record<T, K> {
      */
     protected void selfUpdate(Map<String, Object> entityMap) {
         // 更新元数据
-        selfUpdateMetadataMap(entityMap);
+        selfUpdateMetadataMap(entityMap, false);
         // 更新相关对象
         // 这一步操作可以剔除无效的字段
         T entity = toObjectWithoutRelationship();
@@ -695,9 +695,12 @@ public class RecordBean<T, K> implements Record<T, K> {
     /**
      * 更新元数据
      * @param entityMap 新的实体所对应的MAP
+     * @param clear 是否清除原本数据
      */
-    protected void selfUpdateMetadataMap(Map<String, Object> entityMap) {
-        metadataMap.clear();
+    protected void selfUpdateMetadataMap(Map<String, Object> entityMap, boolean clear) {
+        if (clear) {
+            metadataMap.clear();
+        }
         metadataMap.putAll(entityMap);
         hasBind = true;
     }

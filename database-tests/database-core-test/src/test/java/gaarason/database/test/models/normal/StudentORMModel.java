@@ -30,6 +30,12 @@ public class StudentORMModel extends SingleModel<StudentORMModel.Entity, Integer
     }
 
     @Override
+    public void eventRecordUpdated(Record<Entity, Integer> record) {
+        Entity entity = record.getEntity();
+        super.eventRecordUpdated(record);
+    }
+
+    @Override
     public void eventQueryRetrieved(Builder<MySqlBuilderV2<Entity, Integer>, Entity, Integer> builder,
             Record<Entity, Integer> record) {
         System.out.println("已经从数据库中查询到数据");

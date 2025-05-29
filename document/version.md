@@ -25,6 +25,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 6.5.2
+
+- fix, 字段如果定义`updateStrategy = FieldStrategy.Never.class` 再调用 `record.save()`后, 在 `eventRecordUpdated`中`getEntity`获取可以获取字段的原值
+
 ### 6.5.1
 
 - fix代码生成时, 生成的代码有误的问题

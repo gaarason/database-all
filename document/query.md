@@ -277,9 +277,9 @@ Long id = studentModel.newQuery().value(entity).insertGetIdOrFail();
 
 // 推荐
 // b. 多个实体操作
-List<Student> studentList = new ArrayList<>();
+List<Student> entityList = new ArrayList<>();
 for (int i = 99; i < 1000; i++) {
-    Student student = new Student();
+    Student entity = new Student();
 //    entity.setId(i);
     entity.setName("姓名");
     entity.setAge(Byte.valueOf("13"));

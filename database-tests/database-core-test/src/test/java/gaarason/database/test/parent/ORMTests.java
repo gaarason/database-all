@@ -70,8 +70,12 @@ abstract public class ORMTests extends BaseTests {
     public void ORM更新() {
         Record<StudentORMModel.Entity, Integer> record = studentORMModel.findOrFail(8);
         record.getEntity().setAge(Byte.valueOf("121"));
+        Assert.assertNotNull(record.getEntity().getUpdatedAt());
         boolean save = record.save();
         Assert.assertTrue(save);
+
+        StudentORMModel.Entity entityAfterUpdate = record.getEntity();
+        Assert.assertNotNull(entityAfterUpdate.getUpdatedAt());
 
         Byte age = studentORMModel.newQuery().where("id", "8").firstOrFail().toObject().getAge();
         Assert.assertEquals(age, Byte.valueOf("121"));
