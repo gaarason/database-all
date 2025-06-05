@@ -202,7 +202,9 @@ abstract public class QueryBuilderTests extends BaseTests {
     @Test
     public void 新增_使用list单次新增多条记录() {
         List<StudentModel.Entity> entityList = new ArrayList<>();
-        for (int i = 99; i < 10000; i++) {
+        int m = 10000;
+        int n = 99;
+        for (int i = n; i < m; i++) {
             StudentModel.Entity entity = new StudentModel.Entity();
             entity.setName("姓名");
             entity.setAge(Byte.valueOf("13"));
@@ -212,7 +214,9 @@ abstract public class QueryBuilderTests extends BaseTests {
             entity.setUpdatedAt(new Date());
             entityList.add(entity);
         }
+        long time1 = System.currentTimeMillis();
         int insert = studentModel.newQuery().values(entityList).insert();
+        System.out.println("批量耗时 " + (System.currentTimeMillis()-time1));
         Assert.assertEquals(9901, insert);
 
         RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery()

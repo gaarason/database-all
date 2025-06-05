@@ -48,7 +48,7 @@ public interface Value<B extends Builder<B, T, K>, T, K> {
     /**
      * 插入数据使用
      * 已自动调用 column() 方法
-     * @param entityMap 值列表map
+     * @param entityMap 值列表map, 建议使用顺序稳定的map, eg:LinkedHashMap
      * @return 查询构造器
      */
     B value(@Nullable Map<String, Object> entityMap);
@@ -63,6 +63,10 @@ public interface Value<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 批量插入数据使用
+     * 性能而言, `值列表类型(list<list<String>>)` 要好于 `map类型(list<map<String, Object>>)` 要好于 `实体`,
+     * 因为`实体`先转化为`map`类型再转化为`值列表`,
+     * 且在上述处理的过程中, 会根据`实体`上的注解, 进行策略判断,数值填充,序列化等操作, 均会有所消耗.
+     * 注 : `map类型`时, 建议使用顺序稳定的map, eg:LinkedHashMap
      * @param entitiesOrMapsOrLists 多个实体 or 多个值MAP or多个值列表
      * @return 查询构造器
      */

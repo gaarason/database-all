@@ -25,6 +25,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 6.5.3
+
+- 略微提升下批量插入的性能, `newQuery().values(entities).insert()` 10w个对象约3000ms, 包含的实体上注解处理
+
 ### 6.5.2
 
 - fix, 字段如果定义`updateStrategy = FieldStrategy.Never.class` 再调用 `record.save()`后, 在 `eventRecordUpdated`中`getEntity`获取可以获取字段的原值

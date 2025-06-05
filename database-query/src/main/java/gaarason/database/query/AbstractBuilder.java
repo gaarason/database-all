@@ -210,15 +210,20 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
         }
         // 用第一个元素来判断类型
         Object ele = entitiesOrMapsOrLists.stream().findFirst().orElseThrow(IllegalArgumentException::new);
+        // 列表
         if (ele instanceof Collection) {
             for (Object values : entitiesOrMapsOrLists) {
                 value((Collection<?>) values);
             }
             return getSelf();
-        } else if (ele instanceof Map){
+        }
+        // map
+        else if (ele instanceof Map) {
             return beforeBatchInsertMapStyle(ObjectUtils.typeCast(entitiesOrMapsOrLists));
-        } else {
-            return beforeBatchInsertEntityStyle(entitiesOrMapsOrLists);
+        }
+        // 实体
+        else {
+            return beforeBatchInsertEntityStyle(ele, entitiesOrMapsOrLists);
         }
     }
 

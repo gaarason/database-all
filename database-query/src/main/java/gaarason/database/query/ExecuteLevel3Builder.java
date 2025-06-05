@@ -7,13 +7,10 @@ import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.ChunkFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
-import gaarason.database.exception.CloneNotSupportedRuntimeException;
-import gaarason.database.exception.EntityNotFoundException;
-import gaarason.database.exception.InsertNotSuccessException;
-import gaarason.database.exception.SQLRuntimeException;
+import gaarason.database.exception.*;
 import gaarason.database.lang.Nullable;
+import gaarason.database.support.EntityMember;
 import gaarason.database.util.FormatUtils;
-import gaarason.database.util.MapUtils;
 import gaarason.database.util.ObjectUtils;
 
 import java.util.*;
@@ -187,12 +184,16 @@ abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends E
 
     /**
      * 批量插入数据, entityList处理
+     * @param firstElement 数据实体对象列表 中的第一个元素
      * @param entityCollection 数据实体对象列表
      */
-    protected B beforeBatchInsertEntityStyle(Collection<?> entityCollection) {
+    protected B beforeBatchInsertEntityStyle(Object firstElement, Collection<?> entityCollection) {
         List<Map<String, Object>> mapList = new LinkedList<>();
+        EntityMember<Object, Object> entityMember = modelShadowProvider.parseAnyEntityWithCache(firstElement);
         for (Object entity : entityCollection) {
-            mapList.add(modelShadowProvider.entityToMap(entity, EntityUseType.INSERT));
+            // 根据实体上的注解, 进行填充,判定,回填,以及序列化
+            // 可能出现map结构不一致的情况 (根据实体上的注解, 有不合法的属性, 就不会被加入到map), 那么调用类似 inset into table k1,k2 values((v11,v12),(v21,v22)) 批量插入就会失败
+            mapList.add(entityMember.toFillMap(entity, EntityUseType.INSERT, false));
         }
         // 转入mapList处理
         return beforeBatchInsertMapStyle(mapList);
@@ -209,18 +210,15 @@ abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends E
         // 获取entity所有有效字段
         Set<String> columnNameSet = entityMapCollection.stream()
                 .findFirst()
-                .orElseThrow(IllegalArgumentException::new)
+                .orElseThrow(AbnormalParameterException::new)
                 .keySet();
         // 值
-        List<List<Object>> valueListList = new ArrayList<>();
         for (Map<String, Object> map : entityMapCollection) {
-            List<Object> valueList = MapUtils.mapValueToList(map);
-            valueListList.add(valueList);
+            //  字段的值加入grammar
+            value(map.values());
         }
         // 字段加入grammar
-        column(columnNameSet);
-        // 字段的值加入grammar
-        return values(valueListList);
+        return column(columnNameSet);
     }
 
     @Override

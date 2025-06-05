@@ -135,6 +135,7 @@ public class EntityMember<T, K> extends Container.SimpleKeeper implements Serial
      * 将实体对象中有效的数据库字段, 转化为简单Map
      * @param entity 实体对象
      * @return 简单Map
+     * @see #toFillMap(Object, EntityUseType, boolean)
      */
     public Map<String, Object> toSimpleMap(@Nullable T entity) {
         if (ObjectUtils.isNull(entity)) {
@@ -162,6 +163,7 @@ public class EntityMember<T, K> extends Container.SimpleKeeper implements Serial
      * @param type 实体的使用目的
      * @param backFill 是否回填
      * @return MAP
+     * @see #toSimpleMap(Object)
      */
     public Map<String, Object> toFillMap(@Nullable T entity, EntityUseType type, boolean backFill) {
         if (ObjectUtils.isNull(entity)) {
@@ -175,7 +177,7 @@ public class EntityMember<T, K> extends Container.SimpleKeeper implements Serial
         for (Map.Entry<String, FieldMember<?>> entry : columnFieldMap.entrySet()) {
             // 属性信息
             FieldMember<?> fieldMember = entry.getValue();
-            // 值
+            // 值 (已完成填充)
             ValueWrapper<?> valueWrapper = fieldMember.fieldFillGet(entity, type, backFill);
             // 有效则加入 结果集
             if (valueWrapper.isValid()) {
