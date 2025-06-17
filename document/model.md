@@ -13,7 +13,7 @@ Eloquent ORM for Java
         * [事件触发顺序-查询](#事件触发顺序-查询)
         * [事件触发顺序-新增](#事件触发顺序-新增)
         * [事件触发顺序-修改](#事件触发顺序-修改)
-        * [事件触发顺序-软删除](#事件触发顺序-软删除)
+        * [事件触发顺序-删除](#事件触发顺序-删除)
         * [事件触发顺序-软删除恢复](#事件触发顺序-软删除恢复)
         * [事件触发顺序-硬删除](#事件触发顺序-硬删除)
         * [ORM事件](#ORM事件)
@@ -134,7 +134,11 @@ deleted, forceDeleting, forceDeleted, restoring, restored。事件允许你在�
 | 5  |                    | eventRecordUpdated  |
 | 6  |                    |  eventRecordSaved   |
 
-### 事件触发顺序-删除 (实际为软删除)
+### 事件触发顺序-删除
+
+根据配置, 实际执行`软删除`或者`硬删除`
+
+#### 实际为软删除
 
 - `newQuery().delete()`等
 - `record.delete()`等
@@ -148,7 +152,7 @@ deleted, forceDeleting, forceDeleted, restoring, restored。事件允许你在�
 | 5  | eventQueryDeleted  |                     |
 | 6  |                    | eventRecordDeleted  |
 
-### 事件触发顺序-删除 (实际为硬删除)
+#### 实际为硬删除
 
 - `newQuery().delete()`等
 - `record.delete()`等

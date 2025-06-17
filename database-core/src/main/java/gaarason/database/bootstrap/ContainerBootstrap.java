@@ -151,18 +151,18 @@ public class ContainerBootstrap extends ContainerProvider {
         Set<Class<? extends GaarasonAutoconfiguration>> gaarasonAutoconfigurations = getBean(
             ReflectionScan.class).scanAutoconfiguration();
 
-        for (Class<? extends GaarasonAutoconfiguration> gaarasonAutoconfiguration : gaarasonAutoconfigurations) {
+        for (Class<? extends GaarasonAutoconfiguration> gaarasonAutoConfiguration : gaarasonAutoconfigurations) {
             try {
-                ClassUtils.newInstance(gaarasonAutoconfiguration).init(this);
+                ClassUtils.newInstance(gaarasonAutoConfiguration).init(this);
                 LOGGER.debug(
-                    "Auto configuration [" + gaarasonAutoconfiguration.getName() + "] executed successfully .");
+                    "Auto configuration [" + gaarasonAutoConfiguration.getName() + "] executed successfully .");
             } catch (Throwable e) {
                 LOGGER.error(
-                    "A problem was encountered during automatic configuration [" + gaarasonAutoconfiguration.getName() +
+                    "A problem was encountered during automatic configuration [" + gaarasonAutoConfiguration.getName() +
                         "].", e);
             }
         }
-        LOGGER.debug("All gaarasonAutoconfiguration has been init.");
+        LOGGER.debug("All gaarasonAutoConfiguration has been init.");
         return this;
     }
 

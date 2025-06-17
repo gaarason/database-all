@@ -56,10 +56,10 @@ public class GaarasonSmartDataSourceMultipleLinksWrapper extends GaarasonSmartDa
     }
 
 
-    /**
-     * 示例, 获取当前 web 线程的 request
-     * @return request
-     */
+//    /**
+//     * 示例, 获取当前 web 线程的 request
+//     * @return request
+//     */
 //    public static HttpServletRequest getHttpServletRequest() {
 //        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 //        if(requestAttributes == null) {

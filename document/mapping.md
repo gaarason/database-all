@@ -18,7 +18,8 @@ Eloquent ORM for Java
             * [是否查询](#是否查询)
             * [字段填充](#字段填充)
             * [类型转化](#类型转化)
-                * [Default](#Default)
+                * [Auto](#Auto)
+                * [SimpleValueConversion](#SimpleValueConversion)
                 * [Json](#Json)
                 * [EnumInteger](#EnumInteger)
                 * [EnumString](#EnumString)
@@ -224,7 +225,7 @@ public class Entity implements Serializable {
 - 提供常用的几种方式, 可以直接声明使用
 - 业务上也可以自行实现 `FieldConversion` 接口, 已确定本字段特定的序列化与反序列化方式  
 
-#### Auto
+##### Auto
 - @Column 中的默认值, 可以根据当前的java类型自动选择合适的序列与反序列化方式
 
 * 1.如果是枚举类型, 那么以 `枚举类型的自然次序` 进行序列化与反序列化, 即 : `EnumInteger`
