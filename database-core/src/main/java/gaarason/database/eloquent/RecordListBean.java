@@ -5,7 +5,7 @@ import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
-import gaarason.database.contract.function.FilterRecordAttributeFunctionalInterface;
+import gaarason.database.contract.function.RecordConversionFunctionalInterface;
 import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.core.Container;
 import gaarason.database.exception.AbnormalParameterException;
@@ -174,10 +174,10 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
      */
     @Override
     public <V> List<V> toList(
-        FilterRecordAttributeFunctionalInterface<T, K, V> filterRecordAttributeFunctionalInterface) {
+        RecordConversionFunctionalInterface<T, K, V> RecordConversionFunctionalInterface) {
         List<V> list = new ArrayList<>();
         for (Record<T, K> theRecord : this) {
-            V result = filterRecordAttributeFunctionalInterface.execute(theRecord);
+            V result = RecordConversionFunctionalInterface.execute(theRecord);
             if (null == result) {
                 continue;
             }

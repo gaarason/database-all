@@ -25,6 +25,12 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### next version
+
+- 在`Builder`中, 增加新`cursorPaginate` 索引(光标)分页查询
+- 在`Builder`中, 增加新`paginate` 偏移分页查询
+- 在`Builder`中, 标记原`paginate`/`paginateMapStyle`/`simplePaginateMapStyle`/`simplePaginate` 为过期, 会在后续版本中移除, 相关用法可以使用新`paginate`方法平替
+
 ### 6.5.3
 
 - 略微提升下批量插入的性能, `newQuery().values(entities).insert()` 10w个对象约3000ms, 包含的实体上注解处理

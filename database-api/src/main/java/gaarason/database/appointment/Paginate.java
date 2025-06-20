@@ -46,7 +46,7 @@ public class Paginate<T> implements Serializable {
      * 总的数据条数
      */
     @Nullable
-    protected Integer total;
+    protected Long total;
 
     /**
      * 当前页的具体数据
@@ -58,24 +58,10 @@ public class Paginate<T> implements Serializable {
      * @param itemList 当前页的具体数据
      * @param currentPage 当前页的页码
      * @param perPage 每页数量
-     */
-    public Paginate(List<T> itemList, int currentPage, int perPage) {
-        this.currentPage = currentPage;
-        this.perPage = perPage;
-        this.itemList = itemList;
-        from = theFrom(itemList, currentPage, perPage);
-        to = theTo(itemList, currentPage, perPage);
-    }
-
-    /**
-     * 构建分页
-     * @param itemList 当前页的具体数据
-     * @param currentPage 当前页的页码
-     * @param perPage 每页数量
      * @param total 数据总量
      */
-    public Paginate(List<T> itemList, int currentPage, int perPage, int total) {
-        lastPage = Math.max((int) Math.ceil((float) total / perPage), 1);
+    public Paginate(List<T> itemList, int currentPage, int perPage, @Nullable Long total) {
+        lastPage = null == total ? null : Math.max((int) Math.ceil((float) total / perPage), 1);
         this.currentPage = currentPage;
         this.perPage = perPage;
         this.total = total;
@@ -138,7 +124,7 @@ public class Paginate<T> implements Serializable {
     }
 
     @Nullable
-    public Integer getTotal() {
+    public Long getTotal() {
         return total;
     }
 

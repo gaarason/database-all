@@ -1,6 +1,6 @@
 package gaarason.database.contract.record;
 
-import gaarason.database.contract.function.FilterRecordAttributeFunctionalInterface;
+import gaarason.database.contract.function.RecordConversionFunctionalInterface;
 
 import java.util.List;
 import java.util.Map;
@@ -39,11 +39,11 @@ public interface FriendlyList<T, K> {
 
     /**
      * 过滤成list
-     * @param filterRecordAttributeFunctionalInterface 结果集过滤
+     * @param recordConversionFunctionalInterface 结果集过滤
      * @param <V> 指定的响应类型
      * @return 单个字段列表
      */
-    <V> List<V> toList(FilterRecordAttributeFunctionalInterface<T, K, V> filterRecordAttributeFunctionalInterface);
+    <V> List<V> toList(RecordConversionFunctionalInterface<T, K, V> recordConversionFunctionalInterface);
 
     /**
      * 过滤成list(取Record中的第一列)

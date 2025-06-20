@@ -1,13 +1,18 @@
 package gaarason.database.query;
 
+import gaarason.database.appointment.CursorPaginate;
 import gaarason.database.appointment.EntityUseType;
 import gaarason.database.appointment.Paginate;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.ChunkFunctionalInterface;
+import gaarason.database.contract.function.RecordListConversionFunctionalInterface;
 import gaarason.database.contract.query.Grammar;
-import gaarason.database.exception.*;
+import gaarason.database.exception.AbnormalParameterException;
+import gaarason.database.exception.EntityNotFoundException;
+import gaarason.database.exception.InsertNotSuccessException;
+import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
 import gaarason.database.support.EntityMember;
 import gaarason.database.util.FormatUtils;
@@ -122,64 +127,24 @@ abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends E
         return executeGetId(sql, Arrays.asList(parameters));
     }
 
-
-    /**
-     * 带总数的分页
-     * @param currentPage 当前页
-     * @param perPage 每页数量
-     * @return 分页对象
-     * @throws SQLRuntimeException 数据库异常
-     * @throws CloneNotSupportedRuntimeException 克隆异常
-     */
     @Override
-    public Paginate<T> paginate(int currentPage, int perPage)
-        throws SQLRuntimeException, CloneNotSupportedRuntimeException {
-        Long count = clone().count("*");
-        List<T> list = limit((currentPage - 1) * perPage, perPage).get().toObjectList();
-        return new Paginate<>(list, currentPage, perPage, count.intValue());
+    public <V> Paginate<V> paginate(RecordListConversionFunctionalInterface<T, K, V> func, int currentPage, int perPage,
+            boolean hasTotal) {
+        Long total = hasTotal ? clone().count() : null;
+        RecordList<T, K> records = limit((currentPage - 1) * perPage, perPage).get();
+        return new Paginate<>(func.execute(records), currentPage, perPage, total);
     }
 
-    /**
-     * 带总数的分页
-     * @param currentPage 当前页
-     * @param perPage 每页数量
-     * @return 分页对象
-     * @throws SQLRuntimeException 数据库异常
-     * @throws CloneNotSupportedRuntimeException 克隆异常
-     */
     @Override
-    public Paginate<Map<String, Object>> paginateMapStyle(int currentPage, int perPage)
-        throws SQLRuntimeException, CloneNotSupportedRuntimeException {
-        Long count = clone().count("*");
-        List<Map<String, Object>> list = limit((currentPage - 1) * perPage, perPage).get().toMapList();
-        return new Paginate<>(list, currentPage, perPage, count.intValue());
-    }
-
-    /**
-     * 不带总数的分页
-     * @param currentPage 当前页
-     * @param perPage 每页数量
-     * @return 分页对象
-     * @throws SQLRuntimeException 数据库异常
-     */
-    @Override
-    public Paginate<T> simplePaginate(int currentPage, int perPage) throws SQLRuntimeException {
-        List<T> list = limit((currentPage - 1) * perPage, perPage).get().toObjectList();
-        return new Paginate<>(list, currentPage, perPage);
-    }
-
-    /**
-     * 不带总数的分页
-     * @param currentPage 当前页
-     * @param perPage 每页数量
-     * @return 分页对象
-     * @throws SQLRuntimeException 数据库异常
-     */
-    @Override
-    public Paginate<Map<String, Object>> simplePaginateMapStyle(int currentPage, int perPage)
-        throws SQLRuntimeException {
-        List<Map<String, Object>> list = limit((currentPage - 1) * perPage, perPage).get().toMapList();
-        return new Paginate<>(list, currentPage, perPage);
+    public <V> CursorPaginate<V> cursorPaginate(RecordListConversionFunctionalInterface<T, K, V> func, String indexColumn,
+            @Nullable Object indexValue, int perPage, boolean hasTotal) {
+        Builder<B, T, K> theBuilder = select(indexColumn)
+                .whereIgnoreNull(indexColumn, ">", indexValue)
+                .firstOrderBy(builder -> builder.orderBy(indexColumn));
+        Long total = hasTotal ? theBuilder.clone().count():  null;
+        RecordList<T, K> records = theBuilder.limit(perPage).get();
+        Object lastIndex = records.last().getMetadataMap().get(indexColumn);
+        return new CursorPaginate<>(func.execute(records), lastIndex, perPage, total);
     }
 
     /**

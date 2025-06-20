@@ -12,7 +12,7 @@ import gaarason.database.contract.support.ExtendedSerializable;
 public interface Builder<B extends Builder<B, T, K>, T, K>
     extends Debug, ColumnLambda<B, T, K>, Union<B, T, K>, Support<B, T, K>, From<B, T, K>, ExecuteLambda<B, T, K>,
     WithLambda<B, T, K>, SelectLambda<B, T, K>, Special<B, T, K>, OrderLambda<B, T, K>, Limit<B, T, K>, GroupLambda<B, T, K>,
-    Value<B, T, K>, DataLambda<B, T, K>, Transaction, AggregatesLambda<B, T, K>, Pager<B, T, K>, Index<B, T, K>, Lock<B, T, K>,
+    Value<B, T, K>, DataLambda<B, T, K>, Transaction, AggregatesLambda<B, T, K>, PagerLambda<B, T, K>, Index<B, T, K>, Lock<B, T, K>,
     Native<T, K>, JoinLambda<B, T, K>, AbilityLambda<B, T, K>, When<B, T, K>, WhereLambda<B, T, K>, HavingLambda<B, T, K>,
     ExtendedSerializable {
 
