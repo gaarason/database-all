@@ -25,7 +25,7 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
-### next version
+### 6.5.4
 
 - 在`Builder`中, 增加新`cursorPaginate` 索引(光标)分页查询
 - 在`Builder`中, 增加新`paginate` 偏移分页查询

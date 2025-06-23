@@ -1375,6 +1375,8 @@ studentModel.newQuery().transaction(()-> {
  
 ### 偏移分页
 
+- 支持指定页查询
+
 #### Paginate
 
 ```java
@@ -1398,6 +1400,8 @@ Paginate<Map<String, Object>> page = studentModel.newQuery().paginate(FriendlyLi
 
 ### 光标分页
 
+- 支持上一页, 下一页, 以及倒序查询
+
 #### 与偏移分页相比，光标分页查询具有以下优势
 
 - 对于大数据集，如果 "order by" 列被索引，光标分页将提供更好的性能。这是因为 "偏移" 子句会扫描之前所有匹配的数据。
@@ -1405,7 +1409,7 @@ Paginate<Map<String, Object>> page = studentModel.newQuery().paginate(FriendlyLi
 
 #### 然而，光标分页也有以下限制
 
-- 光标分页只能用来查询基于当前索引值的 "下一页" ，不支持查询指定页，因此获取数据总数的意义不大。
+- 光标分页只能用来查询基于当前索引值的 "上一页"，"下一页" 不支持查询指定页，因此获取数据总数的意义不大。
 - 它要求排序基于至少一个唯一列或唯一的列组合。不支持带有 null 值的列。
 - "order by" 子句中的查询表达式仅在它们被别名化并添加到 "select" 子句中时受支持。
 
