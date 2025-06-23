@@ -1,12 +1,11 @@
 package gaarason.database.test.parent;
 
-import gaarason.database.appointment.JoinType;
-import gaarason.database.appointment.OrderBy;
-import gaarason.database.appointment.Paginate;
+import gaarason.database.appointment.*;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.contract.record.FriendlyList;
 import gaarason.database.contract.support.ShowType;
 import gaarason.database.exception.ConfirmOperationException;
 import gaarason.database.exception.EntityNotFoundException;
@@ -2636,6 +2635,109 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertNotNull(paginate4.getTotal());
         Assert.assertEquals(paginate4.getLastPage().intValue(), 3);
         Assert.assertEquals(paginate4.getTotal().intValue(), 10);
+    }
+
+    @Test
+    public void 分页_光标分页_ASC() {
+        // 初始
+        CursorPaginate<StudentModel.Entity> paginate = studentModel.newQuery()
+                .cursorPaginate(FriendlyList::toObjectList, StudentModel.Entity::getId, null, null, OrderBy.ASC, PageNavigation.NEXT, 4, true);
+        Long count = studentModel.newQuery().count();
+        Assert.assertEquals(4, paginate.getPerPage());
+        Assert.assertEquals(4, paginate.getItemList().size());
+        Assert.assertEquals(count, paginate.getTotal());
+        Assert.assertEquals(4, paginate.getNextIndex());
+        Assert.assertEquals(4, paginate.getItemList().get(3).getId().intValue());
+
+
+        // 下一页
+        CursorPaginate<StudentModel.Entity> paginate2 = studentModel.newQuery().cursorPaginate(4, 4);
+        Assert.assertNull(paginate2.getTotal());
+        Assert.assertEquals(4, paginate2.getPerPage());
+        Assert.assertEquals(4, paginate2.getItemList().size());
+        Assert.assertEquals(5, paginate2.getPreviousIndex());
+        Assert.assertEquals(8, paginate2.getNextIndex());
+        StudentModel.Entity entity = paginate2.getItemList().get(0);
+        Assert.assertNotNull(entity);
+        Assert.assertNotNull(entity.getId());
+        Assert.assertEquals(5, entity.getId().intValue());
+        Assert.assertNotNull(entity.getAge());
+        Assert.assertNotNull(entity.getSex());
+        Assert.assertNotNull(entity.getName());
+        Assert.assertNotNull(entity.getCreatedAt());
+        Assert.assertNotNull(entity.getUpdatedAt());
+
+        // 上一页
+        CursorPaginate<StudentModel.Entity> paginate3 = studentModel.newQuery()
+                .cursorPaginate(FriendlyList::toObjectList, StudentModel.Entity::getId, 5, 8,
+                        OrderBy.ASC, PageNavigation.PREVIOUS, 4, true);
+        Assert.assertEquals(10, paginate3.getTotal().intValue());
+        Assert.assertEquals(4, paginate3.getPerPage());
+        Assert.assertEquals(4, paginate3.getItemList().size());
+        Assert.assertEquals(1, paginate3.getPreviousIndex());
+        Assert.assertEquals(4, paginate3.getNextIndex());
+        StudentModel.Entity entity3 = paginate3.getItemList().get(0);
+        Assert.assertNotNull(entity3);
+        Assert.assertNotNull(entity3.getId());
+        Assert.assertEquals(1, entity3.getId().intValue());
+        Assert.assertNotNull(entity3.getAge());
+        Assert.assertNotNull(entity3.getSex());
+        Assert.assertNotNull(entity3.getName());
+        Assert.assertNotNull(entity3.getCreatedAt());
+        Assert.assertNotNull(entity3.getUpdatedAt());
+    }
+
+    @Test
+    public void 分页_光标分页_DESC() {
+        // 初始
+        CursorPaginate<StudentModel.Entity> paginate = studentModel.newQuery()
+                .cursorPaginate(FriendlyList::toObjectList, StudentModel.Entity::getId, null, null, OrderBy.DESC, PageNavigation.NEXT, 4, true);
+        Long count = studentModel.newQuery().count();
+        Assert.assertEquals(4, paginate.getPerPage());
+        Assert.assertEquals(4, paginate.getItemList().size());
+        Assert.assertEquals(count, paginate.getTotal());
+        Assert.assertEquals(7, paginate.getNextIndex());
+        Assert.assertEquals(7, paginate.getItemList().get(3).getId().intValue());
+
+        // 下一页
+        CursorPaginate<StudentModel.Entity> paginate2 = studentModel.newQuery()
+                .cursorPaginate(FriendlyList::toObjectList, StudentModel.Entity::getId, paginate.getPreviousIndex(),
+                        paginate.getNextIndex(), OrderBy.DESC, PageNavigation.NEXT, 4, false);
+
+        Assert.assertNull(paginate2.getTotal());
+        Assert.assertEquals(4, paginate2.getPerPage());
+        Assert.assertEquals(4, paginate2.getItemList().size());
+        Assert.assertEquals(6, paginate2.getPreviousIndex());
+        Assert.assertEquals(3, paginate2.getNextIndex());
+        StudentModel.Entity entity = paginate2.getItemList().get(0);
+        Assert.assertNotNull(entity);
+        Assert.assertNotNull(entity.getId());
+        Assert.assertEquals(6, entity.getId().intValue());
+        Assert.assertNotNull(entity.getAge());
+        Assert.assertNotNull(entity.getSex());
+        Assert.assertNotNull(entity.getName());
+        Assert.assertNotNull(entity.getCreatedAt());
+        Assert.assertNotNull(entity.getUpdatedAt());
+
+        // 上一页
+        CursorPaginate<StudentModel.Entity> paginate3 = studentModel.newQuery()
+                .cursorPaginate(FriendlyList::toObjectList, StudentModel.Entity::getId, paginate2.getPreviousIndex(),
+                        paginate2.getNextIndex(), OrderBy.DESC, PageNavigation.PREVIOUS, 4, true);
+
+        Assert.assertEquals(10, paginate3.getTotal().intValue());
+        Assert.assertEquals(4, paginate3.getPerPage());
+        Assert.assertEquals(4, paginate3.getItemList().size());
+        Assert.assertEquals(10, paginate3.getPreviousIndex());
+        Assert.assertEquals(7, paginate3.getNextIndex());
+        StudentModel.Entity entity3 = paginate3.getItemList().get(0);
+        Assert.assertNotNull(entity3);
+        Assert.assertNotNull(entity3.getId());
+        Assert.assertEquals(10, entity3.getId().intValue());
+        Assert.assertNotNull(entity3.getAge());
+        Assert.assertNotNull(entity3.getSex());
+        Assert.assertNotNull(entity3.getName());
+        Assert.assertNotNull(entity3.getCreatedAt());
+        Assert.assertNotNull(entity3.getUpdatedAt());
     }
 
     @Test

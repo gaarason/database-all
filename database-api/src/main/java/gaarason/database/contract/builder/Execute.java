@@ -63,6 +63,7 @@ public interface Execute<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 分块获取所有数据(兼容性强), 并处理
+     * 使用偏移分页
      * @param num 单次获取的数据量
      * @param chunkFunctionalInterface 对单次获取的数据量的处理
      * @throws SQLRuntimeException 数据库异常
@@ -71,6 +72,7 @@ public interface Execute<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 分块获取所有数据(数据库性能好), 并处理
+     * 使用索引(光标)分页
      * @param num 单次获取的数据量
      * @param column 分页字段 (字段要求: 数据库唯一约束(索引), 排序稳定 . eg: 单调递增主键)
      * @param chunkFunctionalInterface 对单次获取的数据量的处理

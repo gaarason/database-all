@@ -29,7 +29,7 @@ Eloquent ORM for Java
 
 - 在`Builder`中, 增加新`cursorPaginate` 索引(光标)分页查询
 - 在`Builder`中, 增加新`paginate` 偏移分页查询
-- 在`Builder`中, 标记原`paginate`/`paginateMapStyle`/`simplePaginateMapStyle`/`simplePaginate` 为过期, 会在后续版本中移除, 相关用法可以使用新`paginate`方法平替
+- 在`Builder`中, 标记原`paginateMapStyle`/`simplePaginateMapStyle` 为过期, 会在后续版本中移除, 相关用法可以使用新`paginate`方法平替
 
 ### 6.5.3
 

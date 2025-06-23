@@ -1,8 +1,6 @@
 package gaarason.database.query;
 
-import gaarason.database.appointment.CursorPaginate;
-import gaarason.database.appointment.EntityUseType;
-import gaarason.database.appointment.Paginate;
+import gaarason.database.appointment.*;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
@@ -82,14 +80,19 @@ abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends E
 
     @Override
     public void dealChunk(int num, ChunkFunctionalInterface<T, K> chunkFunctionalInterface) throws SQLRuntimeException {
-        int offset = 0;
+        int currentPage = 1;
         boolean flag;
         do {
+            // 复制查询构造器
             Builder<B, T, K> cloneBuilder = clone();
-            cloneBuilder.limit(offset, num);
-            RecordList<T, K> records = cloneBuilder.get();
+            // 偏移分页查询
+            Paginate<Record<T, K>> paginate = cloneBuilder.paginate(records -> records, currentPage, num, false);
+            // 查询结果集集合
+            RecordList<T, K> records = ObjectUtils.typeCast(paginate.getItemList());
+            // 是否继续
             flag = !records.isEmpty() && chunkFunctionalInterface.execute(records) && (records.size() == num);
-            offset += num;
+            // 页码增加
+            currentPage++;
         } while (flag);
     }
 
@@ -99,15 +102,17 @@ abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends E
         boolean flag;
         Object columnValue = null;
         do {
+            // 复制查询构造器
             Builder<B, T, K> cloneBuilder = clone();
-            cloneBuilder.whereIgnoreNull(column, ">", columnValue)
-                .firstOrderBy(builder -> builder.orderBy(column))
-                .limit(num);
-            RecordList<T, K> records = cloneBuilder.get();
-            if (!records.isEmpty()) {
-                columnValue = records.last().getMetadataMap().get(column);
-            }
+            // 光标分页查询
+            CursorPaginate<Record<T, K>> cursorPaginate = cloneBuilder.cursorPaginate(records -> records,
+                    column, null, columnValue, OrderBy.ASC, PageNavigation.NEXT, num, false);
+            // 查询结果集集合
+            RecordList<T, K> records = ObjectUtils.typeCast(cursorPaginate.getItemList());
+            // 是否继续
             flag = !records.isEmpty() && chunkFunctionalInterface.execute(records) && (records.size() == num);
+            // 光标移动
+            columnValue = cursorPaginate.getNextIndex();
         } while (flag);
     }
 
@@ -136,15 +141,39 @@ abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends E
     }
 
     @Override
+    public CursorPaginate<T> cursorPaginate(@Nullable K nextPrimaryKeyValue, int perPage) {
+        return cursorPaginate(model.getPrimaryKeyColumnName(), nextPrimaryKeyValue, perPage);
+    }
+
+    @Override
     public <V> CursorPaginate<V> cursorPaginate(RecordListConversionFunctionalInterface<T, K, V> func, String indexColumn,
-            @Nullable Object indexValue, int perPage, boolean hasTotal) {
-        Builder<B, T, K> theBuilder = select(indexColumn)
-                .whereIgnoreNull(indexColumn, ">", indexValue)
-                .firstOrderBy(builder -> builder.orderBy(indexColumn));
+            @Nullable Object previousIndex, @Nullable Object nextIndex, OrderBy order, PageNavigation pageNavigation,
+            int perPage, boolean hasTotal) {
+        // 排序
+        Builder<B, T, K> theBuilder = firstOrderBy(builder -> builder.orderBy(indexColumn, order));
+        // 查询总数
         Long total = hasTotal ? theBuilder.clone().count():  null;
+        // 如果 select 非空, 说明存在手动指定查询列, 为避免`索引列`未被手动指定查询, 在这里加上
+        if (!getGrammar().isEmpty(Grammar.SQLPartType.SELECT)) {
+            select(indexColumn);
+        }
+        // 条件取用
+        if (OrderBy.ASC.equals(order) && PageNavigation.PREVIOUS.equals(pageNavigation)) {
+            whereIgnoreNull(indexColumn, "<", previousIndex);
+        } else if (OrderBy.ASC.equals(order) && PageNavigation.NEXT.equals(pageNavigation)) {
+            whereIgnoreNull(indexColumn, ">", nextIndex);
+        } else if (OrderBy.DESC.equals(order) && PageNavigation.PREVIOUS.equals(pageNavigation)) {
+            whereIgnoreNull(indexColumn, ">", previousIndex);
+        } else {
+            whereIgnoreNull(indexColumn, "<", nextIndex);
+        }
+        // 限制当前页的数量, 并查询
         RecordList<T, K> records = theBuilder.limit(perPage).get();
-        Object lastIndex = records.last().getMetadataMap().get(indexColumn);
-        return new CursorPaginate<>(func.execute(records), lastIndex, perPage, total);
+        // 没有数据, 则光标不变
+        Object previousIndexNew = records.isEmpty() ? previousIndex : records.first().getMetadataMap().get(indexColumn);
+        Object nextIndexNew = records.isEmpty() ? nextIndex : records.last().getMetadataMap().get(indexColumn);
+
+        return new CursorPaginate<>(func.execute(records), previousIndexNew, nextIndexNew, perPage, total);
     }
 
     /**

@@ -1,6 +1,8 @@
 package gaarason.database.contract.builder;
 
 import gaarason.database.appointment.CursorPaginate;
+import gaarason.database.appointment.OrderBy;
+import gaarason.database.appointment.PageNavigation;
 import gaarason.database.appointment.Paginate;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.RecordListConversionFunctionalInterface;
@@ -23,9 +25,7 @@ public interface Pager<B extends Builder<B, T, K>, T, K> extends Support<B, T, K
      * @param perPage 每页数量
      * @return 分页信息对象
      * @throws SQLRuntimeException sql错误
-     * @see #paginate(RecordListConversionFunctionalInterface, int, int, boolean)
      */
-    @Deprecated
     default Paginate<T> simplePaginate(int currentPage, int perPage) {
         return paginate(FriendlyList::toObjectList, currentPage, perPage, false);
     }
@@ -49,6 +49,7 @@ public interface Pager<B extends Builder<B, T, K>, T, K> extends Support<B, T, K
      * @param perPage 每页数量
      * @return 分页信息对象
      * @throws SQLRuntimeException sql错误
+     * @deprecated 使用 paginate(FriendlyList::toMapList, currentPage, perPage, false); 替代
      * @see #paginate(RecordListConversionFunctionalInterface, int, int, boolean)
      */
     @Deprecated
@@ -76,9 +77,7 @@ public interface Pager<B extends Builder<B, T, K>, T, K> extends Support<B, T, K
      * @param perPage 每页数量
      * @return 分页信息对象
      * @throws SQLRuntimeException sql错误
-     * @see #paginate(RecordListConversionFunctionalInterface, int, int, boolean)
      */
-    @Deprecated
     default Paginate<T> paginate(int currentPage, int perPage) throws SQLRuntimeException {
         return paginate(FriendlyList::toObjectList, currentPage, perPage, true);
     }
@@ -102,6 +101,7 @@ public interface Pager<B extends Builder<B, T, K>, T, K> extends Support<B, T, K
      * @param perPage 每页数量
      * @return 分页信息对象
      * @throws SQLRuntimeException sql错误
+     * @deprecated 使用 paginate(FriendlyList::toMapList, currentPage, perPage, true); 替代
      * @see #paginate(RecordListConversionFunctionalInterface, int, int, boolean)
      */
     @Deprecated
@@ -137,14 +137,40 @@ public interface Pager<B extends Builder<B, T, K>, T, K> extends Support<B, T, K
 
     /**
      * 光标分页
+     * 根据主键, 查询下一页
+     * @param nextPrimaryKeyValue 主键值, 用于查询下一页
+     * @param perPage 每页数量
+     * @return 光标分页对象
+     */
+    CursorPaginate<T> cursorPaginate(@Nullable K nextPrimaryKeyValue, int perPage);
+
+    /**
+     * 光标分页
+     * 根据指定键, 查询下一页
+     * @param indexColumn 索引列名 (建议自增主键等, 会加入查询列并进行排序)
+     * @param nextIndex 光标位置, 用于查询下一页
+     * @param perPage 每页数量
+     * @return 光标分页对象
+     */
+    default CursorPaginate<T> cursorPaginate(String indexColumn, @Nullable Object nextIndex, int perPage) {
+        return cursorPaginate(FriendlyList::toObjectList, indexColumn, null, nextIndex, OrderBy.ASC,
+                PageNavigation.NEXT, perPage, false);
+    }
+
+    /**
+     * 光标分页
      * @param func 查询结果集转化 eg : FriendlyList::toObjectList
-     * @param indexColumn 索引列名 (建议自增主键等)
-     * @param indexValue 索引值 (当前光标位置, null 表示初始位置)
+     * @param indexColumn 索引列名 (建议自增主键等, 会加入查询列并进行排序)
+     * @param previousIndex 光标位置, 用于查询上一页
+     * @param nextIndex 光标位置, 用于查询下一页
+     * @param order 排序方式
+     * @param pageNavigation 下一页或者上一页
      * @param perPage 每页数量
      * @param hasTotal 是否查询总数
      * @return 光标分页对象
      * @param <V> 数据类型
      */
     <V> CursorPaginate<V> cursorPaginate(RecordListConversionFunctionalInterface<T, K, V> func, String indexColumn,
-            @Nullable Object indexValue, int perPage, boolean hasTotal);
+            @Nullable Object previousIndex, @Nullable Object nextIndex, OrderBy order, PageNavigation pageNavigation,
+            int perPage, boolean hasTotal);
 }

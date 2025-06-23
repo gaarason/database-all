@@ -384,9 +384,8 @@ public interface CollectionOperation<E> extends List<E>, Deque<E> {
      * 返回第一个元素
      * @return 第一个元素
      */
-    @Nullable
     default E first() {
-        return first((index, e) -> true);
+        return get(0);
     }
 
     /**

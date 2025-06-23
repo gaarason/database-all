@@ -1352,41 +1352,97 @@ future.get();
 #### sharedLock  lockForUpdate
 
 ```java
-studentModel.newQuery().transaction(()->{
+// 开事务
+studentModel.newQuery().transaction(()-> {
+    // 加锁
     studentModel.newQuery().where("id", "3").sharedLock().get();
 }, 3);
 ```
 
 ```java
-studentModel.newQuery().transaction(()->{
+// 开事务
+studentModel.newQuery().transaction(()-> {
+    // 加锁
     studentModel.newQuery().where("id", "3").lockForUpdate().get();
 }, 3);
 ```
 
 ## 分页
 
-### 快速分页
+- 提供常用的`偏移分页`与性能更好的`光标分页`
+- 支持增加限制条件(`where`子句)等
+- 支持关联关系(`with`方法)
+ 
+### 偏移分页
 
-#### simplePaginate
-
-不包含总数的分页
+#### Paginate
 
 ```java
-Paginate<Student> paginate = studentModel.newQuery().orderBy("id").simplePaginate(1, 3);
+// 快捷用法 (结果集合转化为对象集合, 不查询总数)
+Paginate<StudentModel.Entity> page = studentModel.newQuery().simplePaginate(currentPage, perPage);
+// 快捷用法 (结果集合转化为对象集合, 查询总数)
+Paginate<StudentModel.Entity> page = studentModel.newQuery().paginate(currentPage, perPage);
 
-Paginate<Map<String, Object>> paginateMap = studentModel.newQuery().orderBy("id").simplePaginateMapStyle(1, 3);
+
+// 不包含总数的分页
+// select * from student limit 1,2
+Paginate<StudentModel.Entity> page = studentModel.newQuery().paginate(FriendlyList::toObjectList, currentPage, perPage, false);
+Paginate<Map<String, Object>> page = studentModel.newQuery().paginate(FriendlyList::toMapList, currentPage, perPage, false);
+
+// 包含总数的分页
+// select count(*) from student
+// select * from student limit 1,2
+Paginate<StudentModel.Entity> page = studentModel.newQuery().paginate(FriendlyList::toObjectList, currentPage, perPage, true);
+Paginate<Map<String, Object>> page = studentModel.newQuery().paginate(FriendlyList::toMapList, currentPage, perPage, true);
 ```
 
-### 总数分页
+### 光标分页
 
-#### paginate
+#### 与偏移分页相比，光标分页查询具有以下优势
 
-包含总数的分页, 会额外执行一次总数查询
+- 对于大数据集，如果 "order by" 列被索引，光标分页将提供更好的性能。这是因为 "偏移" 子句会扫描之前所有匹配的数据。
+- 对于频繁写入的数据集，如果用户当前查看的页面最近添加或删除了结果，偏移分页可能会跳过记录或显示重复记录。
+
+#### 然而，光标分页也有以下限制
+
+- 光标分页只能用来查询基于当前索引值的 "下一页" ，不支持查询指定页，因此获取数据总数的意义不大。
+- 它要求排序基于至少一个唯一列或唯一的列组合。不支持带有 null 值的列。
+- "order by" 子句中的查询表达式仅在它们被别名化并添加到 "select" 子句中时受支持。
+
+#### cursorPaginate
+
+- 在实现上, 会在`查询构造器`中, 加上排序(根据索引列), 加上查询(根据索引列)
+- `cursorPaginate` 同时接受上下界(`previousIndex`, `nextIndex`)索引值, 由程序判断使用
+- 快捷用法中, 仅支持查询下一页(这也是光标分页最常用的场景), 因此仅接受下界(`nextIndex`)索引值
+- 上下界(`previousIndex`, `nextIndex`)索引值, 若当前为第一页, 则传`null`即可, 非第一页, 则直接取用分页对象(`CursorPaginate`)的`previousIndex`与`nextIndex`属性即可
 
 ```java
-Paginate<Student> paginate = studentModel.newQuery().orderBy("id").paginate(1, 4);
+// 快捷用法( 结果集合转化为对象集合, 使用主键索引, 主键索引从小到大排序, 不查询总数, 查询下一页 )
+// select * from `student` where `id`>"4" order by `id` asc limit 4
+CursorPaginate<StudentModel.Entity> page = studentModel.newQuery().cursorPaginate(nextIndex, 4);
 
-Paginate<Map<String, Object>> paginate = studentModel.newQuery().orderBy("id").paginateMapStyle(1, 4);
+// 快捷用法( 结果集合转化为对象集合, 使用指定索引, 指定索引从小到大排序, 不查询总数, 查询下一页 )
+// select * from `student` where `id`>"4" order by `id` asc limit 4
+CursorPaginate<StudentModel.Entity> page = studentModel.newQuery().cursorPaginate(StudentModel.Entity::getId, nextIndex, 4);
+
+// 不包含总数的分页
+// select * from `student` where `id`>"4" order by `id` asc limit 4
+CursorPaginate<StudentModel.Entity> page = studentModel.newQuery()
+        .cursorPaginate(FriendlyList::toObjectList, StudentModel.Entity::getId, previousIndex,
+                nextIndex, OrderBy.ASC, PageNavigation.NEXT, 4, false);
+CursorPaginate<Map<String, Object>> page = studentModel.newQuery()
+        .cursorPaginate(FriendlyList::toMapList, StudentModel.Entity::getId, previousIndex,
+                nextIndex, OrderBy.ASC, PageNavigation.NEXT, 4, false);
+
+// 包含总数的分页
+// select count(*) from student
+// select * from `student` where `id`>"4" order by `id` asc limit 4
+CursorPaginate<StudentModel.Entity> page = studentModel.newQuery()
+        .cursorPaginate(FriendlyList::toObjectList, StudentModel.Entity::getId, previousIndex,
+                nextIndex, OrderBy.ASC, PageNavigation.NEXT, 4, true);
+CursorPaginate<Map<String, Object>> page = studentModel.newQuery()
+        .cursorPaginate(FriendlyList::toMapList, StudentModel.Entity::getId, previousIndex,
+                nextIndex, OrderBy.ASC, PageNavigation.NEXT, 4, true);
 ```
 
 ## 功能
