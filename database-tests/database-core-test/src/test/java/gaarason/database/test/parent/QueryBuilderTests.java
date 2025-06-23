@@ -2638,7 +2638,7 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
-    public void 分页_光标分页_ASC() {
+    public void 分页_游标分页_ASC() {
         // 初始
         CursorPaginate<StudentModel.Entity> paginate = studentModel.newQuery()
                 .cursorPaginate(FriendlyList::toObjectList, StudentModel.Entity::getId, null, null, OrderBy.ASC, PageNavigation.NEXT, 4, true);
@@ -2688,7 +2688,7 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
-    public void 分页_光标分页_DESC() {
+    public void 分页_游标分页_DESC() {
         // 初始
         CursorPaginate<StudentModel.Entity> paginate = studentModel.newQuery()
                 .cursorPaginate(FriendlyList::toObjectList, StudentModel.Entity::getId, null, null, OrderBy.DESC, PageNavigation.NEXT, 4, true);

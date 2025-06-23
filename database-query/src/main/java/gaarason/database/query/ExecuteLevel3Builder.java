@@ -104,14 +104,14 @@ abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends E
         do {
             // 复制查询构造器
             Builder<B, T, K> cloneBuilder = clone();
-            // 光标分页查询
+            // 游标分页查询
             CursorPaginate<Record<T, K>> cursorPaginate = cloneBuilder.cursorPaginate(records -> records,
                     column, null, columnValue, OrderBy.ASC, PageNavigation.NEXT, num, false);
             // 查询结果集集合
             RecordList<T, K> records = ObjectUtils.typeCast(cursorPaginate.getItemList());
             // 是否继续
             flag = !records.isEmpty() && chunkFunctionalInterface.execute(records) && (records.size() == num);
-            // 光标移动
+            // 游标移动
             columnValue = cursorPaginate.getNextIndex();
         } while (flag);
     }
@@ -169,7 +169,7 @@ abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends E
         }
         // 限制当前页的数量, 并查询
         RecordList<T, K> records = theBuilder.limit(perPage).get();
-        // 没有数据, 则光标不变
+        // 没有数据, 则游标不变
         Object previousIndexNew = records.isEmpty() ? previousIndex : records.first().getMetadataMap().get(indexColumn);
         Object nextIndexNew = records.isEmpty() ? nextIndex : records.last().getMetadataMap().get(indexColumn);
 
