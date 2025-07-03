@@ -170,8 +170,8 @@ abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends E
         // 限制当前页的数量, 并查询
         RecordList<T, K> records = theBuilder.limit(perPage).get();
         // 没有数据, 则游标不变
-        Object previousIndexNew = records.isEmpty() ? previousIndex : records.first().getMetadataMap().get(indexColumn);
-        Object nextIndexNew = records.isEmpty() ? nextIndex : records.last().getMetadataMap().get(indexColumn);
+        Object previousIndexNew = records.isEmpty() ? previousIndex : records.getFirst().getMetadataMap().get(indexColumn);
+        Object nextIndexNew = records.isEmpty() ? nextIndex : records.getLast().getMetadataMap().get(indexColumn);
 
         return new CursorPaginate<>(func.execute(records), previousIndexNew, nextIndexNew, perPage, total);
     }

@@ -385,7 +385,7 @@ public interface CollectionOperation<E> extends List<E>, Deque<E> {
      * @return 第一个元素
      */
     default E first() {
-        return get(0);
+        return getFirst();
     }
 
     /**
@@ -474,7 +474,7 @@ public interface CollectionOperation<E> extends List<E>, Deque<E> {
      * @return 最后个元素
      */
     default E last() {
-        return get(size() - 1);
+        return getLast();
     }
 
     /**
