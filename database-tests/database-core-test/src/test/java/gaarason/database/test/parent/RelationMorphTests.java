@@ -7,6 +7,7 @@ import gaarason.database.test.models.morph.entity.Image;
 import gaarason.database.test.models.morph.entity.Post;
 import gaarason.database.test.models.morph.entity.SuperRelation;
 import gaarason.database.test.parent.base.BaseTests;
+import gaarason.database.util.JsonUtils;
 import gaarason.database.util.ObjectUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
@@ -56,6 +57,28 @@ abstract public class RelationMorphTests extends BaseTests {
     }
 
     @Test
+    public void 多态一对一_同时多个() {
+        List<Post> posts = postModel.newQuery()
+                .with(Post::getComments)
+                .with(Post::getCommentsV2)
+                .get()
+                .toObjectList();
+
+        for (Post post : posts) {
+            List<Comment> comments = post.getComments();
+            List<Comment> commentsV2 = post.getCommentsV2();
+            for (Comment comment : comments) {
+                Assert.assertEquals("post", comment.getPType());
+            }
+            for (Comment comment : commentsV2) {
+                Assert.assertEquals("comment", comment.getPType());
+            }
+        }
+
+        System.out.println(posts);
+    }
+
+    @Test
     public void 多态反向一对一() {
         Comment comment2 = commentModel.findOrFail(2).with(Comment::getPost).with(Comment::getPcomment).toObject();
         Assert.assertNull(comment2.getPost());
@@ -72,6 +95,28 @@ abstract public class RelationMorphTests extends BaseTests {
         Assert.assertEquals(2, comment3.getPcomment().getId().intValue());
         Assert.assertNotNull(comment3.getPcomment().getPcomment());
         Assert.assertEquals(1, comment3.getPcomment().getPcomment().getId().intValue());
+    }
+
+    @Test
+    public void 多态反向一对一_同时多个() {
+        List<Comment> commentList = commentModel.newQuery()
+                .with(Comment::getPost)
+                .with(Comment::getPcomment)
+                .get()
+                .toObjectList();
+
+        System.out.println(JsonUtils.objectToJson(commentList));
+
+        for (Comment comment : commentList) {
+            // 指定了 p_type 是 post, 那么肯定是属于 post 为非 comment
+            if ("post".equals(comment.getPType())) {
+                Assert.assertNull(comment.getComment());
+            }
+            // 指定了 p_type 是 comment, 那么肯定是属于 comment 为非 post
+            else if ("comment".equals(comment.getPType())) {
+                Assert.assertNull(comment.getPost());
+            }
+        }
     }
 
     @Test
@@ -96,6 +141,55 @@ abstract public class RelationMorphTests extends BaseTests {
         Assert.assertEquals("url3333333333333", post4.getImagesWithTargetMorph().get(0).getUrl());
         Assert.assertEquals("url44444", post4.getImagesWithTargetMorph().get(1).getUrl());
         Assert.assertEquals("url8888", post4.getImagesWithTargetMorph().get(2).getUrl());
+    }
+
+    @Test
+    public void 多态多对多_同时多个() {
+        List<Post> posts = postModel.newQuery()
+                .with(Post::getImagesWithMorph)
+                .with(Post::getImagesWithLocalMorph)
+                .with(Post::getImagesWithTargetMorph)
+                .get()
+                .toObjectList();
+
+        System.out.println(JsonUtils.objectToJson(posts));
+
+        for (Post post : posts) {
+            List<Image> imagesWithMorph = post.getImagesWithMorph();
+            List<Image> imagesWithLocalMorph = post.getImagesWithLocalMorph();
+            List<Image> imagesWithTargetMorph = post.getImagesWithTargetMorph();
+
+            if (post.getId() == 1) {
+                Assert.assertTrue(imagesWithMorph.isEmpty());
+                Assert.assertTrue(imagesWithLocalMorph.isEmpty());
+                Assert.assertEquals(1, imagesWithTargetMorph.size());
+                Assert.assertEquals(1, imagesWithTargetMorph.get(0).getId().intValue());
+            }
+
+            else if (post.getId() == 2) {
+                Assert.assertTrue(imagesWithMorph.isEmpty());
+                Assert.assertTrue(imagesWithLocalMorph.isEmpty());
+                Assert.assertTrue(imagesWithTargetMorph.isEmpty());
+            }
+
+            else if (post.getId() == 3) {
+                Assert.assertEquals(2, imagesWithMorph.size());
+                Assert.assertEquals(3, imagesWithMorph.get(0).getId().intValue());
+                Assert.assertEquals(4, imagesWithMorph.get(1).getId().intValue());
+
+                Assert.assertEquals(4, imagesWithLocalMorph.size());
+                Assert.assertEquals(3, imagesWithLocalMorph.get(0).getId().intValue());
+                Assert.assertEquals(4, imagesWithLocalMorph.get(1).getId().intValue());
+                Assert.assertEquals(5, imagesWithLocalMorph.get(2).getId().intValue());
+                Assert.assertEquals(6, imagesWithLocalMorph.get(3).getId().intValue());
+
+                Assert.assertEquals(3, imagesWithTargetMorph.size());
+                Assert.assertEquals(3, imagesWithTargetMorph.get(0).getId().intValue());
+                Assert.assertEquals(4, imagesWithTargetMorph.get(1).getId().intValue());
+                Assert.assertEquals(8, imagesWithTargetMorph.get(2).getId().intValue());
+            }
+        }
+
     }
 
     @Test
@@ -378,9 +472,12 @@ abstract public class RelationMorphTests extends BaseTests {
         // select * from comment where not exists (select * from post where `p_type`="post" and `comment`.`p_id`=`post`.`id`) order by `id` asc
         List<Comment> comments = commentModel.newQuery().orderBy(Comment::getId).whereNotHasSingle(Comment::getPost).get().toObjectList();
         System.out.println(comments);
-        Assert.assertEquals(2, comments.size());
+        Assert.assertEquals(5, comments.size());
         Assert.assertEquals(2, comments.get(0).getId().intValue());
         Assert.assertEquals(3, comments.get(1).getId().intValue());
+        Assert.assertEquals(4, comments.get(2).getId().intValue());
+        Assert.assertEquals(5, comments.get(3).getId().intValue());
+        Assert.assertEquals(6, comments.get(4).getId().intValue());
     }
 
     @Test
@@ -397,9 +494,12 @@ abstract public class RelationMorphTests extends BaseTests {
         // select * from comment where `p_id`not in(select `id` from post where `p_type`="post") order by `id` asc
         List<Comment> comments = commentModel.newQuery().orderBy(Comment::getId).whereNotHasInSingle(Comment::getPost).get().toObjectList();
         System.out.println(comments);
-        Assert.assertEquals(2, comments.size());
+        Assert.assertEquals(5, comments.size());
         Assert.assertEquals(2, comments.get(0).getId().intValue());
         Assert.assertEquals(3, comments.get(1).getId().intValue());
+        Assert.assertEquals(4, comments.get(2).getId().intValue());
+        Assert.assertEquals(5, comments.get(3).getId().intValue());
+        Assert.assertEquals(6, comments.get(4).getId().intValue());
     }
 
     @Test
@@ -420,9 +520,12 @@ abstract public class RelationMorphTests extends BaseTests {
         // where `super_relation`.`relation_one_value`=`comment`.`id` and `super_relation`.`relation_one_type`="comment") order by `id` asc
         List<Comment> comments = commentModel.newQuery().orderBy(Comment::getId).whereNotHasSingle(Comment::getImages).get().toObjectList();
         System.out.println(comments);
-        Assert.assertEquals(2, comments.size());
+        Assert.assertEquals(5, comments.size());
         Assert.assertEquals(2, comments.get(0).getId().intValue());
         Assert.assertEquals(3, comments.get(1).getId().intValue());
+        Assert.assertEquals(4, comments.get(2).getId().intValue());
+        Assert.assertEquals(5, comments.get(3).getId().intValue());
+        Assert.assertEquals(6, comments.get(4).getId().intValue());
     }
 
     @Test
@@ -450,8 +553,11 @@ abstract public class RelationMorphTests extends BaseTests {
         // order by `id` asc
         List<Comment> comments = commentModel.newQuery().orderBy(Comment::getId).whereNotHasInSingle(Comment::getImages).get().toObjectList();
         System.out.println(comments);
-        Assert.assertEquals(2, comments.size());
+        Assert.assertEquals(5, comments.size());
         Assert.assertEquals(2, comments.get(0).getId().intValue());
         Assert.assertEquals(3, comments.get(1).getId().intValue());
+        Assert.assertEquals(4, comments.get(2).getId().intValue());
+        Assert.assertEquals(5, comments.get(3).getId().intValue());
+        Assert.assertEquals(6, comments.get(4).getId().intValue());
     }
 }

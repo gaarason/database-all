@@ -41,11 +41,11 @@ public class Comment extends BaseEntity {
 
     /** auto generator end **/
 
-    // 省略了`localModelMorphValue`, 表示当 p_type 的值为 Post的表名时, 关系成立
+    // 省略了`localModelMorphValue`, 表示当本表的 p_type 的值为 Post的表名时, 关系成立
     @BelongsTo(localModelForeignKey = "p_id", localModelMorphKey = "p_type")
     private Post post;
 
-    // 省略了`localModelMorphValue`, 表示当 p_type 的值为 Comment的表名时, 关系成立
+    // 省略了`localModelMorphValue`, 表示当本表的 p_type 的值为 Comment的表名时, 关系成立
     @BelongsTo(localModelForeignKey = "p_id", localModelMorphKey = "p_type")
     private Comment pcomment;
 

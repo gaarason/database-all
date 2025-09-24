@@ -119,7 +119,7 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
             // 赋值 关联关系
             else {
                 // 筛选批量关联查询结果对象
-                List<?> objects = relationSubQuery.filterBatchRecord(record, relationResultData.records, relationResultData.objs);
+                List<?> objects = relationSubQuery.filterBatchRecord(record, relationResultData.records, relationResultData.objects);
 
                 // 是否是集合
                 if (fieldRelationMember.isPlural()) {
@@ -256,13 +256,13 @@ public class RelationGetSupport<T, K> extends Container.SimpleKeeper {
         public String targetFieldName;
         public FieldRelationMember fieldRelationMember;
         public RecordList<?, ?> records;
-        public List<?> objs;
+        public List<?> objects;
         public relationResultData(String targetFieldName, FieldRelationMember fieldRelationMember, RecordList<?, ?> records,
-                List<?> objs) {
+                 @Nullable List<?> objects) {
             this.targetFieldName = targetFieldName;
             this.fieldRelationMember = fieldRelationMember;
             this.records = records;
-            this.objs = objs;
+            this.objects = objects == null ? Collections.emptyList() : objects;
         }
     }
 

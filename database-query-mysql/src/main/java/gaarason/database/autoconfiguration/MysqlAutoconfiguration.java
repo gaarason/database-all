@@ -13,7 +13,7 @@ public class MysqlAutoconfiguration implements GaarasonAutoconfiguration {
         container.register(QueryBuilderConfig.class,
             new InstanceCreatorFunctionalInterface<QueryBuilderConfig>() {
                 @Override
-                public QueryBuilderConfig execute(Class<QueryBuilderConfig> clazz) throws Throwable {
+                public QueryBuilderConfig execute(Class<QueryBuilderConfig> clazz) {
                     return new MysqlQueryBuilderConfig();
                 }
 

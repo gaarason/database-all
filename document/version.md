@@ -25,6 +25,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 6.5.5
+
+- 修复在关联关系`@BelongsTo`中, 启用多态定义, 且同时查询多个多态关系时, 会出现结果绑定错误的问题.
+
 ### 6.5.4
 
 - 在`Builder`中, 增加新`cursorPaginate` 索引(游标)分页查询

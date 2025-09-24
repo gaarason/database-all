@@ -90,6 +90,12 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
         // 本表的关系键值
         Object value = theRecord.getMetadataMap().get(belongsToTemplate.localModelForeignKey);
 
+        // 另外2种关联关系( hasOneOrMany 与  belongsToMany ). 因为多态是非本表实现 (即由目标表 或 者中间表实现的), 在查询阶段就确定了数据和属性的对应关系, 因此不会出现绑定错误
+        // 此处需要额外判断多态时的绑定关系
+        if (enableMorph && !belongsToTemplate.localModelMorphValue.equals(theRecord.getMetadataMap().get(belongsToTemplate.localModelMorphKey))) {
+            return new ArrayList<>();
+        }
+
         return findObjList(targetObjectList, column, value);
     }
 

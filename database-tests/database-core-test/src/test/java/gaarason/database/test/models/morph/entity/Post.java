@@ -49,6 +49,10 @@ public class Post extends BaseEntity {
     @HasOneOrMany(sonModelForeignKey = "p_id", sonModelMorphKey = "p_type")
     private List<Comment> comments;
 
+    // 用于测试 !
+    @HasOneOrMany(sonModelForeignKey = "p_id", sonModelMorphKey = "p_type", sonModelMorphValue = "comment")
+    private List<Comment> commentsV2;
+
     @BelongsToMany(relationModel = SuperRelation.Model.class, foreignKeyForLocalModel = "relation_one_value", foreignKeyForTargetModel = "relation_two_value")
     private List<Image> images;
 
@@ -59,10 +63,16 @@ public class Post extends BaseEntity {
         morphKeyForLocalModel = "relation_one_type", morphKeyForTargetModel = "relation_two_type")
     private List<Image> imagesWithMorph;
 
+    // 省略了`morphKeyForTargetModel`, 表示对于`目标表`不启用多态
+    // 省略了`morphValueForLocalModel`, 表示当 relation_one_value 的值为 Post的表名时, 和本表(post)关系成立
+    // 当上述均成立时, 关系成立
     @BelongsToMany(relationModel = SuperRelation.Model.class, foreignKeyForLocalModel = "relation_one_value", foreignKeyForTargetModel = "relation_two_value",
         morphKeyForLocalModel = "relation_one_type")
     private List<Image> imagesWithLocalMorph;
 
+    // 省略了`morphKeyForLocalModel`, 表示对于`本表`不启用多态
+    // 省略了`morphValueForTargetModel`, 表示当 relation_two_value 的值为 Image的表名时, 和目标表(image)关系成立
+    // 当上述均成立时, 关系成立
     @BelongsToMany(relationModel = SuperRelation.Model.class, foreignKeyForLocalModel = "relation_one_value", foreignKeyForTargetModel = "relation_two_value",
         morphKeyForTargetModel = "relation_two_type")
     private List<Image> imagesWithTargetMorph;;

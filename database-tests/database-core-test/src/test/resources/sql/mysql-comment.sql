@@ -20,3 +20,9 @@ INSERT INTO `comment`
 VALUES ('2', 'comment', '1', '评论评论1', '2009-03-14 20:15:23', '2009-04-24 22:11:03');
 INSERT INTO `comment`
 VALUES ('3', 'comment', '2', '评论评论2', '2009-03-14 20:15:23', '2009-04-24 22:11:03');
+INSERT INTO `comment`
+VALUES ('4', 'comment', '3', '评论评论3', '2009-03-14 20:15:23', '2009-04-24 22:11:03');
+INSERT INTO `comment`
+VALUES ('5', 'comment', '4', '评论评论4', '2009-03-14 20:15:23', '2009-04-24 22:11:03');
+INSERT INTO `comment`
+VALUES ('6', 'comment', '4', '评论评论4 - 1', '2009-03-14 20:15:23', '2009-04-24 22:11:03');

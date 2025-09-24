@@ -1,5 +1,6 @@
 package gaarason.database.appointment;
 
+import gaarason.database.exception.AbnormalParameterException;
 import gaarason.database.lang.Nullable;
 
 /**
@@ -46,7 +47,11 @@ public class ValueWrapper<V> {
 
         @Override
         public V getValue() {
-            return super.getValue();
+            V v = super.getValue();
+            if (v == null) {
+                throw new AbnormalParameterException();
+            }
+            return v;
         }
     }
 }
