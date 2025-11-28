@@ -592,6 +592,10 @@ Paginate<Student> paginate = studentModel.newQuery().orderBy("id").with("relatio
 
 ```java
 studentModel..newQuery().with("teachers").with("relation").get();
+// 等价于
+studentModel..newQuery().with("teachers", "relation").get();
+
+// 注意 with("teachers", "relation") 与 with("teachers.relation") 是完全不同的含义.
 ```
 
 ## 关联聚合查询

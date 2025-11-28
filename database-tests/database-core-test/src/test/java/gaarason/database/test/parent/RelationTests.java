@@ -216,11 +216,16 @@ abstract public class RelationTests extends BaseTests {
 
     @Test
     public void 指定select() {
+
+        studentModel.newQuery()
+                .with("relationshipStudentTeachers", builder -> builder.showType(teacherModel).select("note"));
+
+
         List<Student> objectList = studentModel.newQuery()
                 .where("id", 1)
                 .with("relationshipStudentTeachers", builder -> builder.showType(new ShowType<MySqlBuilderV2<Teacher, Long>>() {}).select("note"))
                 .withMany(Student::getTeachersBelongsToMany, builder -> builder.select("name"))
-                .with(Student::getTeacher, builder -> builder.select("age"))
+                .with(Student::getTeacher, builder -> builder.select(Teacher::getAge))
                 .get()
                 .toObjectList();
         System.out.println(objectList);

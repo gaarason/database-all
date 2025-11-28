@@ -20,6 +20,21 @@ public interface LambdaStyle {
 
     /**
      * 通过 表达式 推断属性名
+     * @param columns Lambda表达式数组
+     * @return 列名数组
+     */
+    default String[] lambda2FieldName(ColumnFunctionalInterface<?, ?>... columns) {
+        String[] columnArr = new String[columns.length];
+        int i = 0;
+        for (ColumnFunctionalInterface<?, ?> column : columns) {
+            columnArr[i++] = lambda2FieldName(column);
+        }
+        return columnArr;
+    }
+
+
+    /**
+     * 通过 表达式 推断属性名
      * @param column Lambda表达式
      * @return 列名
      */

@@ -1500,14 +1500,17 @@ studentModel.newQuery().limit(5).setBuilder(builder).get().toObjectList();
 studentModel.newQuery().limit(5).mergerBuilder(builder).get().toObjectList();
 ```
 
-#### 类型指定
+### 类型指定
+#### showType
 在是用`with(string)`等方法时, 可以指定到查询构造器, 以便编译器在编码时给出代码提示
 ```java
 studentModel.newQuery().with("teacher", builder -> builder.showType(
                 new ShowType<MySqlBuilderV2<Teacher, Long>>() {}).paginate(1, 15);
+
+studentModel.newQuery().with("teacher", builder -> builder.showType(studentModel).paginate(1, 15);
 ```
 
-#### lastRaw
+### lastRaw
 - 在`查询构造器`生成的sql的尾部, 拼接不经过任何处理的原生sql片段 (支持sql参数绑定)
 ```java
 // select * from `student` as `student_290579508` order by `student_290579508`.`id` desc limit 2 ,3

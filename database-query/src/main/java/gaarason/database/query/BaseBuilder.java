@@ -18,6 +18,7 @@ import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.GodProvider;
 import gaarason.database.provider.ModelShadowProvider;
+import gaarason.database.support.FieldRelationMember;
 import gaarason.database.support.ModelMember;
 import gaarason.database.util.ClassUtils;
 import gaarason.database.util.ExceptionUtils;
@@ -27,6 +28,10 @@ import gaarason.database.util.StringUtils;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
@@ -157,13 +162,30 @@ abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements Builder<
 
     /**
      * 渴求式关联
-     * @param fieldName 所关联的Model(当前模块的属性名)
+     * @param fieldNames 所关联的Model(当前模块的属性名)
      * @return 关联的Model的查询构造器
      */
     @Override
-    public B with(String fieldName) {
-        return with(fieldName, BuilderAnyWrapper.empty(), RecordWrapper.empty());
+    public B with(String... fieldNames) {
+        for (String fieldName : fieldNames) {
+            with(fieldName, BuilderAnyWrapper.empty(), RecordWrapper.empty());
+        }
+        return getSelf();
     }
+
+    @Override
+    public B withAll(String... withoutFieldName) {
+        Set<String> withoutFieldNameSet = new HashSet<>(Arrays.asList(withoutFieldName));
+        Map<String, FieldRelationMember> map = modelMember.getEntityMember().getRelationFieldMap();
+        for (FieldRelationMember member : map.values()) {
+            String fieldName = member.getName();
+            if (!withoutFieldNameSet.contains(fieldName)) {
+                with(fieldName, BuilderAnyWrapper.empty(), RecordWrapper.empty());
+            }
+        }
+        return getSelf();
+    }
+
 
     /**
      * 渴求式关联

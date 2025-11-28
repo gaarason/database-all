@@ -519,6 +519,12 @@ abstract public class QueryBuilderTests extends BaseTests {
     }
 
     @Test
+    public void 查询() {
+        RecordList<StudentModel.Entity, Integer> records = studentModel.newQuery().get();
+        Assert.assertEquals(10, records.size());
+    }
+
+    @Test
     public void 查询_单条记录() {
         Record<StudentModel.Entity, Integer> RecordFirst1 =
             studentModel.newQuery().select("name").select("id").first();

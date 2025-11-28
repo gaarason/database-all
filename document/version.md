@@ -25,6 +25,12 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### next version
+
+- 在`Builder`中, 增加新`withAll` 查询全部关联关系
+- 在`Builder`中, 增加`showType(model)`方法, 用于在个别场景下, 手动指定查询构造器的类型
+
+
 ### 6.5.5
 
 - 修复在关联关系`@BelongsTo`中, 启用多态定义, 且同时查询多个多态关系时, 会出现结果绑定错误的问题.

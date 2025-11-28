@@ -19,7 +19,14 @@ public interface With<B extends Builder<B, T, K>, T, K> {
      * @param fieldName 所关联的Model(当前模块的属性名)
      * @return 关联的Model的查询构造器
      */
-    B with(String fieldName);
+    B with(String... fieldName);
+
+    /**
+     * 渴求式关联, 关联全部
+     * @param withoutFieldName 排除的关系(当前模块的属性名)
+     * @return 关联的Model的查询构造器
+     */
+    B withAll(String... withoutFieldName);
 
     /**
      * 渴求式关联
@@ -28,7 +35,7 @@ public interface With<B extends Builder<B, T, K>, T, K> {
      * @return 关联的Model的查询构造器
      * @see WithLambda
      */
-    default B withMany(String fieldName) {
+    default B withMany(String... fieldName) {
         return with(fieldName);
     }
 

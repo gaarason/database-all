@@ -84,11 +84,23 @@ public interface Support<B extends Builder<B, T, K>, T, K> extends LambdaStyle, 
 
     /**
      * 类型显示
-     * @param builderClass 子类
+     * eg : builder.showType(new ShowType<MySqlBuilderV2<Teacher, Long>>() {})
+     * @param builderClass builder子类
      * @return 查询构造器
      * @param <BB> 子类类形
      */
     default <BB extends Builder<BB, TT, KK>, TT, KK> BB showType(ShowType<BB> builderClass) {
+        return (BB) getSelf();
+    }
+
+    /**
+     * 类型显示
+     * eg : builder.showType(teacherModel)
+     * @param model 数据模型
+     * @return 查询构造器
+     * @param <BB> 子类类形
+     */
+    default <BB extends Builder<BB, TT, KK>, TT, KK> BB showType(Model<BB, TT, KK> model) {
         return (BB) getSelf();
     }
 
