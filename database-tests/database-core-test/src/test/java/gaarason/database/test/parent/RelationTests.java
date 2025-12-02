@@ -218,8 +218,12 @@ abstract public class RelationTests extends BaseTests {
     public void 指定select() {
 
         studentModel.newQuery()
-                .with("relationshipStudentTeachers", builder -> builder.showType(teacherModel).select("note"));
+                .with(Student::getRelationshipStudentTeacher, builder11 -> {
+                    return builder11;
+                })
 
+                .with("relationshipStudentTeachers", builder -> builder.showType(teacherModel).select("note"))
+                .with("relationshipStudentTeachers", builder -> builder.showType(Teacher.class).select("note").where(Teacher::getAge, 1));
 
         List<Student> objectList = studentModel.newQuery()
                 .where("id", 1)
@@ -1322,14 +1326,14 @@ abstract public class RelationTests extends BaseTests {
         System.out.println("断言的 student 如下");
         System.out.println(student);
 
-        Assert.assertEquals(student.getId().intValue(), 1);
-        Assert.assertEquals(student.getTeachersBelongsToMany().size(), 2);
-        Assert.assertEquals(student.getTeachersBelongsToMany().get(0).getId().intValue(), 1);
-        Assert.assertEquals(student.getTeachersBelongsToMany().get(1).getId().intValue(), 2);
+        Assert.assertEquals(1, student.getId().intValue());
+        Assert.assertEquals(2, student.getTeachersBelongsToMany().size());
+        Assert.assertEquals(1, student.getTeachersBelongsToMany().get(0).getId().intValue());
+        Assert.assertEquals(2, student.getTeachersBelongsToMany().get(1).getId().intValue());
 
 
-        Assert.assertEquals(student.getTeachersBelongsToMany().get(0).getStudentsBelongsToMany().size(), 3);
-        Assert.assertEquals(student.getTeachersBelongsToMany().get(1).getStudentsBelongsToMany().size(), 10);
+        Assert.assertEquals(3, student.getTeachersBelongsToMany().get(0).getStudentsBelongsToMany().size());
+        Assert.assertEquals(10, student.getTeachersBelongsToMany().get(1).getStudentsBelongsToMany().size());
         // todo
 
         System.out.println("teacherid = 1 的学生如下");
@@ -1352,11 +1356,11 @@ abstract public class RelationTests extends BaseTests {
             "relationshipStudentTeachers.teacher.relationshipStudentTeachers", builder -> builder.orderBy("student_id"),
             record2 -> record2.with("student")).simplePaginate(1, 3);
         System.out.println(paginate);
-        Assert.assertEquals(paginate.getCurrentPage(), 1);
+        Assert.assertEquals(1, paginate.getCurrentPage());
         Assert.assertNotNull(paginate.getFrom());
         Assert.assertNotNull(paginate.getTo());
-        Assert.assertEquals(paginate.getFrom().intValue(), 1);
-        Assert.assertEquals(paginate.getTo().intValue(), 3);
+        Assert.assertEquals(1, paginate.getFrom().intValue());
+        Assert.assertEquals(3, paginate.getTo().intValue());
         Assert.assertNull(paginate.getLastPage());
         Assert.assertNull(paginate.getTotal());
 
@@ -1374,15 +1378,15 @@ abstract public class RelationTests extends BaseTests {
                 record2 -> record2.with("student")).paginate(1, 4);
 
         System.out.println(paginate);
-        Assert.assertEquals(paginate.getCurrentPage(), 1);
+        Assert.assertEquals(1, paginate.getCurrentPage());
         Assert.assertNotNull(paginate.getFrom());
         Assert.assertNotNull(paginate.getTo());
-        Assert.assertEquals(paginate.getFrom().intValue(), 1);
-        Assert.assertEquals(paginate.getTo().intValue(), 4);
+        Assert.assertEquals(1, paginate.getFrom().intValue());
+        Assert.assertEquals(4, paginate.getTo().intValue());
         Assert.assertNotNull(paginate.getLastPage());
         Assert.assertNotNull(paginate.getTotal());
-        Assert.assertEquals(paginate.getLastPage().intValue(), 3);
-        Assert.assertEquals(paginate.getTotal().intValue(), 10);
+        Assert.assertEquals(3, paginate.getLastPage().intValue());
+        Assert.assertEquals(10, paginate.getTotal().intValue());
 
         Student student = paginate.getItemList().get(0);
         通用断言(student);

@@ -104,6 +104,17 @@ public interface Support<B extends Builder<B, T, K>, T, K> extends LambdaStyle, 
         return (BB) getSelf();
     }
 
+    /**
+     * 类型显示
+     * eg : builder.showType(Teacher.class)
+     * @param entityClass 数据实体
+     * @return 查询构造器
+     * @param <BB> 子类类形
+     */
+    default <BB extends Builder<BB, TT, KK>, TT, KK> BB showType(Class<TT> entityClass) {
+        return (BB) getSelf();
+    }
+
     default Alias alias() {
         return getGrammar().alias();
     }

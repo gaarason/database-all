@@ -55,7 +55,7 @@ public interface With<B extends Builder<B, T, K>, T, K> {
      * @return 关联的Model的查询构造器
      * @see WithLambda
      */
-    default <F> B withMany(String fieldName, BuilderAnyWrapper builderClosure) {
+    default B withMany(String fieldName, BuilderAnyWrapper builderClosure) {
         return with(fieldName, builderClosure);
     }
 

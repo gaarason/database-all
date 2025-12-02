@@ -25,11 +25,11 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
-### next version
+### 6.6.0
 
+- 在`Builder`中, 优化`with`/`whereHas`/`whereHasIn`等方法中关于`Builder`的类型提示
+- 在`Builder`中, 增加`showType(model)`/`showType(entityClass)`方法, 用于手动指定查询构造器的类型
 - 在`Builder`中, 增加新`withAll` 查询全部关联关系
-- 在`Builder`中, 增加`showType(model)`方法, 用于在个别场景下, 手动指定查询构造器的类型
-
 
 ### 6.5.5
 

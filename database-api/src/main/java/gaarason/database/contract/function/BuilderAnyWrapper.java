@@ -37,6 +37,10 @@ public interface BuilderAnyWrapper extends Serializable {
         return builder -> builderWrapper.execute(typeCast(builder));
     }
 
+    static BuilderAnyWrapper turn2(BuilderEntityWrapper<?> builderWrapper) {
+        return builder -> builderWrapper.execute(typeCast(builder));
+    }
+
     @SuppressWarnings("unchecked")
     static <T, N> N typeCast(T original) throws TypeCastException {
         try {
