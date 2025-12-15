@@ -62,7 +62,7 @@ abstract public class TransactionTests extends BaseTests {
                                     .where("id", "1")
                                     .firstOrFail()
                                     .toObject();
-                                Assert.assertEquals(entity.getName(), "11111");
+                                Assert.assertEquals("11111", entity.getName());
                                 throw new RuntimeException("业务上抛了个异常");
 
                             }, 1);
@@ -70,10 +70,10 @@ abstract public class TransactionTests extends BaseTests {
                         } catch (RuntimeException e) {
                         }
                         StudentModel.Entity entity = studentModel.findOrFail(1).toObject();
-                        Assert.assertNotEquals(entity.getName(), "11111");
+                        Assert.assertNotEquals("11111", entity.getName());
 
                         StudentModel.Entity entity1 = studentModel.findOrFail(2).toObject();
-                        Assert.assertEquals(entity1.getName(), "22222");
+                        Assert.assertEquals("22222", entity1.getName());
                         throw new RuntimeException("业务上抛了个异常22");
                     }, 1);
 
@@ -81,21 +81,21 @@ abstract public class TransactionTests extends BaseTests {
 
                 }
                 StudentModel.Entity entity1 = studentModel.findOrFail(2).toObject();
-                Assert.assertNotEquals(entity1.getName(), "22222");
+                Assert.assertNotEquals("22222", entity1.getName());
 
                 StudentModel.Entity entity11 = studentModel.findOrFail(3).toObject();
-                Assert.assertEquals(entity11.getName(), "33333");
+                Assert.assertEquals("33333", entity11.getName());
             }, 1);
 
             StudentModel.Entity entity11 = studentModel.findOrFail(3).toObject();
-            Assert.assertEquals(entity11.getName(), "33333");
+            Assert.assertEquals("33333", entity11.getName());
 
             StudentModel.Entity entity111 = studentModel.findOrFail(4).toObject();
-            Assert.assertEquals(entity111.getName(), "44444");
+            Assert.assertEquals("44444", entity111.getName());
         }, 3);
 
         StudentModel.Entity entity111 = studentModel.findOrFail(4).toObject();
-        Assert.assertEquals(entity111.getName(), "44444");
+        Assert.assertEquals("44444", entity111.getName());
     }
 
 
@@ -204,7 +204,7 @@ abstract public class TransactionTests extends BaseTests {
                         .where("id", "9")
                         .firstOrFail()
                         .toObject();
-                    Assert.assertEquals(entity.getName(), "tesxxt");
+                    Assert.assertEquals("tesxxt", entity.getName());
                     throw new RuntimeException("业务上抛了个异常");
                     // 第1层事物结束
                 } finally {
@@ -217,7 +217,7 @@ abstract public class TransactionTests extends BaseTests {
             .where("id", "9")
             .firstOrFail()
             .toObject();
-        Assert.assertEquals(entity.getName(), "tesxxt");
+        Assert.assertEquals("tesxxt", entity.getName());
 //        Assert.assertEquals(entity.getName(), "vv");
     }
 
@@ -249,7 +249,7 @@ abstract public class TransactionTests extends BaseTests {
                             .where("id", "1")
                             .firstOrFail()
                             .toObject();
-                        Assert.assertEquals(entity.getName(), "ddddddxx");
+                        Assert.assertEquals("ddddddxx", entity.getName());
                         throw new RuntimeException("业务上抛了个异常");
                     }, 1);
                 } catch (RuntimeException e) {
@@ -257,34 +257,34 @@ abstract public class TransactionTests extends BaseTests {
                 }
                 // student3Model 回滚
                 Student3Model.Entity entity = student3Model.newQuery().where("id", "1").firstOrFail().toObject();
-                Assert.assertNotEquals(entity.getName(), "ddddddxx");
+                Assert.assertNotEquals("ddddddxx", entity.getName());
 
                 // student2Model 不受影响
                 Student2Model.Entity id = student2Model.newQuery()
                     .where("id", "4")
                     .firstOrFail().toObject();
-                Assert.assertEquals(id.getName(), "testttt");
+                Assert.assertEquals("testttt", id.getName());
 
             }, 1);
             StudentModel.Entity id = studentModel.newQuery()
                 .where("id", "9")
                 .firstOrFail().toObject();
-            Assert.assertEquals(id.getName(), "testttt");
+            Assert.assertEquals("testttt", id.getName());
         }, 3);
 
         // 事物结束后
         StudentModel.Entity id = studentModel.newQuery()
             .where("id", "9")
             .firstOrFail().toObject();
-        Assert.assertEquals(id.getName(), "testttt");
+        Assert.assertEquals("testttt", id.getName());
 
         Student2Model.Entity id2 = student2Model.newQuery()
             .where("id", "4")
             .firstOrFail().toObject();
-        Assert.assertEquals(id2.getName(), "testttt");
+        Assert.assertEquals("testttt", id2.getName());
 
         Student3Model.Entity entity = student3Model.newQuery().where("id", "1").firstOrFail().toObject();
-        Assert.assertNotEquals(entity.getName(), "ddddddxx");
+        Assert.assertNotEquals("ddddddxx", entity.getName());
 
     }
 

@@ -25,6 +25,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 6.6.1
+
+- 在`Builder`中, 优化`selectFuncation`等非数据库列的查询结果的赋值, 即 sql中使用下划线风格的别名 eg : cc_column, 可以直接赋值到实体中的 ccColumn 属性
+
 ### 6.6.0
 
 - 在`Builder`中, 优化`with`/`whereHas`/`whereHasIn`等方法中关于`Builder`的类型提示

@@ -715,6 +715,14 @@ abstract public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 查询_调用mysql中的其他函数() {
+        List<StudentModel.Entity> entities = studentModel.newQuery().select("*")
+                .selectFunction("GREATEST", "age, sex", "test_column_false")
+                .get().toObjectList();
+        for (StudentModel.Entity entity : entities) {
+            Assert.assertNotNull(entity.getTestColumnFalse());
+            Assert.assertEquals(entity.getTestColumnFalse(), String.valueOf(Math.max(entity.getAge(), entity.getSex())));
+        }
+
         Record<StudentModel.Entity, Integer> entityRecord = studentModel.newQuery()
             .selectFunction("concat_ws", "\"-\",`name`,`id`", "newKey")
             .first();
@@ -726,6 +734,7 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertNull(entity.getAge());
         Assert.assertNull(entity.getTeacherId());
         Assert.assertEquals(stringObjectMap.get("newKey"), "小明-1");
+
     }
 
     @Test

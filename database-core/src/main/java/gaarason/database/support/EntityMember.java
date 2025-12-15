@@ -190,7 +190,7 @@ public class EntityMember<T, K> extends Container.SimpleKeeper implements Serial
     }
 
     /**
-     * 将Map中的数据库字段, 反序列化后, 赋值到全新的实体对象
+     * 将Map中的字段, 反序列化后, 赋值到全新的实体对象
      * @param columnValueMap MAP对象
      * @return 实体对象
      */
@@ -200,9 +200,9 @@ public class EntityMember<T, K> extends Container.SimpleKeeper implements Serial
             return entity;
         }
 
-        // 属性信息集合 (ColumnName 为key)
-        Map<String, FieldMember<?>> columnFieldMap = this.columnFieldMap;
-        for (Map.Entry<String, FieldMember<?>> entry : columnFieldMap.entrySet()) {
+        // 属性信息集合
+        Map<String, FieldMember<?>> javaFieldMap = this.javaFieldMap;
+        for (Map.Entry<String, FieldMember<?>> entry : javaFieldMap.entrySet()) {
             // 属性信息
             FieldMember<?> fieldMember = entry.getValue();
             // 值

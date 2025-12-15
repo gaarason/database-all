@@ -711,8 +711,10 @@ studentModel.newQuery().select("name").select("id").select("id").first();
 // select name,id,created_at from student limit 1;
 studentModel.newQuery().select("name","id","created_at").first();
 
-// select concat_ws(name, id) as newkey from student limit 1;
-studentModel.newQuery().selectFunction("concat_ws", "\"-\",`name`,`id`", "newKey").first();
+// select concat_ws(name, id) as new_key from student limit 1;
+// 要赋值到对象的话, sql中使用下划线别名, 实体中定义为驼峰属性
+studentModel.newQuery().selectFunction("concat_ws", "\"-\",`name`,`id`", "new_key").first();
+
 ```
 
 ## when

@@ -37,5 +37,8 @@ public class StudentModel extends SingleModel<StudentModel.Entity, Integer> {
 
         @Column(name = "updated_at", selectable = false, insertStrategy = FieldStrategy.Never.class, updateStrategy = FieldStrategy.Never.class)
         private Date updatedAt;
+
+        @Column(inDatabase = false)
+        private String testColumnFalse;
     }
 }
