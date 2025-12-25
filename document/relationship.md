@@ -516,7 +516,7 @@ public class Entity implements Serializable {
 ```java
 // select * from student limit 1
 // select * from teacher where id in (?)
-Student student = studentModel.newQuery().firstOrFail().with("teacher").toObject();
+Student student = studentModel.newQuery().with("teacher").firstOrFail().toObject();
 
 ```
 
@@ -536,7 +536,7 @@ Student student = studentModel.newQuery().firstOrFail().with("teacher.pet").toOb
 // 多级简单一对一包含筛选
 // select * from student limit 1
 // select * from teacher where id in (?) and age > 32
-Student student = studentModel.newQuery().firstOrFail().with("teacher", bulider -> bulider.where("age",">","32")).toObject();
+Student student = studentModel.newQuery().with("teacher", bulider -> bulider.where("age",">","32")).firstOrFail().toObject();
 
 ```
 
@@ -547,11 +547,11 @@ Student student = studentModel.newQuery().firstOrFail().with("teacher", bulider 
 // select * from `teacher` where `id`in("6")
 // select * from `student` where `teacher_id`in("6")
 // select * from `student` where `id`in("2","3") and `teacher_id`in("6")
-Student student = studentModel.newQuery().firstOrFail().with("teacher", builder -> builder, 
-    record -> record.with("students", builder -> builder,
-        record1 -> record1.with("teacher", builder -> builder, 
-            record2 -> record2.with("students",builder -> builder.whereIn("id", "3", "2"), 
-                record3 -> record3.with("teacher"))))).toObject();
+Student student = studentModel.newQuery().firstOrFail().with("teacher", builder -> builder
+                .with("students", builder1 -> builder1
+                        .with("teacher", builder2 -> builder2
+                                .with("students", builder3 -> builder3.whereIn("id", "3", "2")
+                                        .with("teacher"))))).toObject();
 
 ```
 
@@ -566,8 +566,8 @@ Student student = studentModel.newQuery().firstOrFail().with("teacher", builder 
 // select * from `student` where `teacher_id`in("1","2","6")
 // select * from `teacher` where `id`in("1","2","6")
 // select * from `student` where `id`in("2","3") and `teacher_id`in("1","2","6")
-Student student = studentModel.newQuery().firstOrFail().with("teacher.students.relationshipStudentTeachers", builder -> builder, 
-    record -> record.with("teacher.students.teacher.students.teacher.students",builder -> builder.whereIn("id", "3", "2"), record2 -> record2.with("teacher"))).toObject();
+Student student = studentModel.newQuery().firstOrFail().with("teacher.students.relationshipStudentTeachers", builder -> builder
+                .with("teacher.students.teacher.students.teacher.students", builder1 -> builder1.whereIn("id", "3", "2").with("teacher"))).toObject();
 
 ```
 
@@ -581,7 +581,7 @@ Student student = studentModel.newQuery().firstOrFail().with("teacher.students.r
 // select * from `relationship_student_teacher` where `teacher_id`in("1","2","6") order by `student_id` asc
 // select * from `student` where `id`in("1","2","3","4","5","6","7","8","9","10")
 Paginate<Student> paginate = studentModel.newQuery().orderBy("id").with("relationshipStudentTeachers.teacher.relationshipStudentTeachers",
-     builder -> builder.orderBy("student_id"), record2 -> record2.with("student")).paginate(1, 4);
+     builder -> builder.orderBy("student_id").with("student")).paginate(1, 4);
 
 ```
 

@@ -25,9 +25,13 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### next_version
+
+- 在`Builder`中, 为简化写法, 标记部分`with`方法为过期, 即将 withMany(Obj::getF, builder -> builder, r -> r.with() ) 更改为 withMany(Obj::getF, builder -> builder.with())
+
 ### 6.6.1
 
-- 在`Builder`中, 优化`selectFuncation`等非数据库列的查询结果的赋值, 即 sql中使用下划线风格的别名 eg : cc_column, 可以直接赋值到实体中的 ccColumn 属性
+- 在`Builder`中, 优化`selectFuncation`等非数据库列的查询结果的赋值, 默认情况下 sql中使用下划线风格的别名 eg : cc_column, 可以直接赋值到实体中的 ccColumn 属性
 
 ### 6.6.0
 

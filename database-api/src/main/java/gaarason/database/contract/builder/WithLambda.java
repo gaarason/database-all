@@ -21,18 +21,16 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
      * @param fieldNames 所关联的Model(当前模块的属性名表达式)
      * @return 关联的Model的查询构造器
      */
-    default <F> B with(ColumnFunctionalInterface<T, F>... fieldNames) {
-        return with(lambda2FieldName(fieldNames));
-    }
+    @SuppressWarnings("unchecked")
+    <F> B with(ColumnFunctionalInterface<T, F>... fieldNames);
 
     /**
      * 渴求式关联, 关联全部
      * @param withoutFieldNames 排除的关系(当前模块的属性名)
      * @return 关联的Model的查询构造器
      */
-    default <F> B withAll(ColumnFunctionalInterface<T, F>... withoutFieldNames) {
-        return withAll(lambda2FieldName(withoutFieldNames));
-    }
+    @SuppressWarnings("unchecked")
+    <F> B withAll(ColumnFunctionalInterface<T, F>... withoutFieldNames);
 
     /**
      * 渴求式关联
@@ -40,9 +38,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
      * @param fieldNames 所关联的Model(当前模块的属性名表达式)
      * @return 关联的Model的查询构造器
      */
-    default <F> B withMany(ColumnFunctionalInterface.ColumnCollection<T, F>... fieldNames) {
-        return withMany(lambda2FieldName(fieldNames));
-    }
+    @SuppressWarnings("unchecked")
+    <F> B withMany(ColumnFunctionalInterface.ColumnCollection<T, F>... fieldNames);
 
     /**
      * 渴求式关联
@@ -50,9 +47,8 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
      * @param fieldName 所关联的Model(当前模块的属性名表达式)
      * @return 关联的Model的查询构造器
      */
-    default <F> B withMany(ColumnFunctionalInterface.ColumnArray<T, F> fieldName) {
-        return withMany(lambda2FieldName(fieldName));
-    }
+    @SuppressWarnings("unchecked")
+    <F> B withMany(ColumnFunctionalInterface.ColumnArray<T, F>... fieldName);
 
     /**
      * 渴求式关联
@@ -95,7 +91,9 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
      * @param builderClosure 所关联的Model的查询构造器约束
      * @param recordClosure 所关联的Model的再一级关联
      * @return 关联的Model的查询构造器
+     * @deprecated 将 with(Obj::getF, builder -> builder, r -> r.with() ) 更改为 with(Obj::getF, builder -> builder.with()) 即可
      */
+    @Deprecated
     default <F> B with(ColumnFunctionalInterface<T, F> fieldName,
             BuilderEntityWrapper<F> builderClosure, RecordWrapper recordClosure) {
         return with(lambda2FieldName(fieldName), BuilderAnyWrapper.turn2(builderClosure), recordClosure);
@@ -108,7 +106,9 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
      * @param builderClosure 所关联的Model的查询构造器约束
      * @param recordClosure 所关联的Model的再一级关联
      * @return 关联的Model的查询构造器
+     * @deprecated 将 withMany(Obj::getF, builder -> builder, r -> r.with() ) 更改为 withMany(Obj::getF, builder -> builder.with()) 即可
      */
+    @Deprecated
     default <F> B withMany(ColumnFunctionalInterface.ColumnCollection<T, F> fieldName,
             BuilderEntityWrapper<F> builderClosure, RecordWrapper recordClosure) {
         return withMany(lambda2FieldName(fieldName), BuilderAnyWrapper.turn2(builderClosure), recordClosure);
@@ -121,7 +121,9 @@ public interface WithLambda<B extends Builder<B, T, K>, T, K> extends With<B, T,
      * @param builderClosure 所关联的Model的查询构造器约束
      * @param recordClosure 所关联的Model的再一级关联
      * @return 关联的Model的查询构造器
+     * @deprecated 将 withMany(Obj::getF, builder -> builder, r -> r.with() ) 更改为 withMany(Obj::getF, builder -> builder.with()) 即可
      */
+    @Deprecated
     default <F> B withMany(ColumnFunctionalInterface.ColumnArray<T, F> fieldName,
             BuilderEntityWrapper<F> builderClosure, RecordWrapper recordClosure) {
         return withMany(lambda2FieldName(fieldName), BuilderAnyWrapper.turn2(builderClosure), recordClosure);

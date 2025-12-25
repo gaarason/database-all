@@ -21,7 +21,10 @@ public interface RelationshipLambda<T, K>
      * @param fieldName 所关联的Model(当前模块的属性名)表达式
      * @param <F> 属性类型
      * @return 关联的Model的查询构造器
+     * @deprecated 将 record.with() 使用 builder.with() 进行替换
+     * @see gaarason.database.contract.eloquent.Builder#with(ColumnFunctionalInterface[])
      */
+    @Deprecated
     default <F> Record<T, K> with(ColumnFunctionalInterface<T, F> fieldName) {
         return with(lambda2FieldName(fieldName));
     }

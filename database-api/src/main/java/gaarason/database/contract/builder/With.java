@@ -77,7 +77,9 @@ public interface With<B extends Builder<B, T, K>, T, K> {
      * @param recordClosure 所关联的Model的再一级关联
      * @return 关联的Model的查询构造器
      * @see WithLambda
+     * @deprecated 将 withMany("field", builder -> builder, r -> r.with() ) 更改为 withMany("field", builder -> builder.with()) 即可
      */
+    @Deprecated
     default B withMany(String fieldName, BuilderAnyWrapper builderClosure,
         RecordWrapper recordClosure) {
         return with(fieldName, builderClosure, recordClosure);

@@ -13,6 +13,7 @@ import gaarason.database.test.models.relation.model.TeacherModel;
 import gaarason.database.test.models.relation.pojo.RelationshipStudentTeacher;
 import gaarason.database.test.models.relation.pojo.Student;
 import gaarason.database.test.models.relation.pojo.Teacher;
+import gaarason.database.test.models.relation.pojo.base.BaseEntity;
 import gaarason.database.test.parent.base.BaseTests;
 import gaarason.database.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -107,8 +108,8 @@ abstract public class RelationTests extends BaseTests {
 
     @Test
     public void 一对一关系_分页() {
-        studentModel.newQuery().with(Student::getTeacher, builder -> builder.where("id", "99"),
-                record -> record.with("students", builder -> builder, record1 -> record1.with("teacher")))
+        studentModel.newQuery().with(Student::getTeacher, builder -> builder.where("id", "99")
+                        .with("students", builder2 -> builder2.with("teacher")))
                 .paginate(1,8);
     }
 
@@ -1280,8 +1281,8 @@ abstract public class RelationTests extends BaseTests {
         Student student = studentModel.newQuery()
             .where("id", "1")
             .firstOrFail()
-            .with("relationshipStudentTeachers")
-            .with("teachersBelongsToMany")
+            .with(Student::getRelationshipStudentTeachers)
+            .with(Student::getTeachersBelongsToMany)
             .toObject();
 
 
@@ -1300,12 +1301,22 @@ abstract public class RelationTests extends BaseTests {
     @Test
     public void 多对多关系_中间表_BelongsToMany() {
         Student student = studentModel.newQuery()
-            .where("id", "1")
-            .firstOrFail()
-            .with("teachersBelongsToMany", builder -> builder, record -> record.with(
-                "studentsBelongsToMany",
-                builder -> builder))
-            .toObject();
+                .where("id", "1")
+                .firstOrFail()
+                .with("teachersBelongsToMany", builder -> builder.with(
+                        "studentsBelongsToMany",
+                        builder2 -> builder2))
+                .toObject();
+        assert2(student);
+    }
+
+    @Test
+    public void 多对多关系_中间表_BelongsToMany_表达式() {
+        Student student = studentModel.newQuery()
+                .where(BaseEntity::getId, "1")
+                .withMany(Student::getTeachersBelongsToMany, builder -> builder.whereIn(Teacher::getSex, 1,2,3,4).with(Teacher::getStudentsBelongsToMany))
+                .firstOrFail()
+                .toObject();
         assert2(student);
     }
 

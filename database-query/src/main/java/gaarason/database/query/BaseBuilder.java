@@ -141,6 +141,26 @@ abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements Builder<
         return modelShadowProvider.parseColumnNameByLambdaWithCache(column);
     }
 
+    @SafeVarargs
+    public final <F> B with(ColumnFunctionalInterface<T, F>... fieldNames) {
+        return with(lambda2FieldName(fieldNames));
+    }
+
+    @SafeVarargs
+    public final <F> B withAll(ColumnFunctionalInterface<T, F>... withoutFieldNames) {
+        return withAll(lambda2FieldName(withoutFieldNames));
+    }
+
+    @SafeVarargs
+    public final <F> B withMany(ColumnFunctionalInterface.ColumnCollection<T, F>... fieldNames) {
+        return withMany(lambda2FieldName(fieldNames));
+    }
+
+    @SafeVarargs
+    public final <F> B withMany(ColumnFunctionalInterface.ColumnArray<T, F>... fieldName) {
+        return withMany(lambda2FieldName(fieldName));
+    }
+
     /**
      * 克隆当前查询构造器
      * @return 查询构造器
