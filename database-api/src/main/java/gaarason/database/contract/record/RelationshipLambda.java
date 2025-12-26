@@ -3,6 +3,7 @@ package gaarason.database.contract.record;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.extra.Bind;
 import gaarason.database.contract.function.BuilderAnyWrapper;
+import gaarason.database.contract.function.BuilderEntityWrapper;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.contract.support.LambdaStyle;
@@ -35,10 +36,12 @@ public interface RelationshipLambda<T, K>
      * @param builderClosure 所关联的Model的查询构造器约束
      * @param <F> 属性类型
      * @return 关联的Model的查询构造器
+     * @deprecated 将 record.with() 使用 builder.with() 进行替换
+     * @see gaarason.database.contract.eloquent.Builder#with(ColumnFunctionalInterface, BuilderEntityWrapper)
      */
-    default <F> Record<T, K> with(ColumnFunctionalInterface<T, F> fieldName, BuilderAnyWrapper builderClosure) {
-        return with(lambda2FieldName(fieldName), builderClosure);
-
+    @Deprecated
+    default <F> Record<T, K> with(ColumnFunctionalInterface<T, F> fieldName, BuilderEntityWrapper<F> builderClosure) {
+        return with(lambda2FieldName(fieldName), BuilderAnyWrapper.turn2(builderClosure));
     }
 
     /**
@@ -48,10 +51,13 @@ public interface RelationshipLambda<T, K>
      * @param recordClosure 所关联的Model的再一级关联
      * @param <F> 属性类型
      * @return 关联的Model的查询构造器
+     * @deprecated 将 record.with() 使用 builder.with() 进行替换
+     * @see gaarason.database.contract.eloquent.Builder#with(ColumnFunctionalInterface, BuilderEntityWrapper)
      */
-    default <F> Record<T, K> with(ColumnFunctionalInterface<T, F> fieldName, BuilderAnyWrapper builderClosure,
+    @Deprecated
+    default <F> Record<T, K> with(ColumnFunctionalInterface<T, F> fieldName, BuilderEntityWrapper<F> builderClosure,
         RecordWrapper recordClosure) {
-        return with(lambda2FieldName(fieldName), builderClosure, recordClosure);
+        return with(lambda2FieldName(fieldName), BuilderAnyWrapper.turn2(builderClosure), recordClosure);
     }
 
     /**

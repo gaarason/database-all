@@ -13,6 +13,7 @@ import gaarason.database.exception.InsertNotSuccessException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
 import gaarason.database.support.EntityMember;
+import gaarason.database.support.RecordFactory;
 import gaarason.database.util.FormatUtils;
 import gaarason.database.util.ObjectUtils;
 
@@ -149,26 +150,47 @@ abstract class ExecuteLevel3Builder<B extends Builder<B, T, K>, T, K>  extends E
     public <V> CursorPaginate<V> cursorPaginate(RecordListConversionFunctionalInterface<T, K, V> func, String indexColumn,
             @Nullable Object previousIndex, @Nullable Object nextIndex, OrderBy order, PageNavigation pageNavigation,
             int perPage, boolean hasTotal) {
-        // 排序
-        Builder<B, T, K> theBuilder = firstOrderBy(builder -> builder.orderBy(indexColumn, order));
         // 查询总数
-        Long total = hasTotal ? theBuilder.clone().count():  null;
+        Long total = hasTotal ? clone().count():  null;
         // 如果 select 非空, 说明存在手动指定查询列, 为避免`索引列`未被手动指定查询, 在这里加上
         if (!getGrammar().isEmpty(Grammar.SQLPartType.SELECT)) {
             select(indexColumn);
         }
-        // 条件取用
-        if (OrderBy.ASC.equals(order) && PageNavigation.PREVIOUS.equals(pageNavigation)) {
-            whereIgnoreNull(indexColumn, "<", previousIndex);
-        } else if (OrderBy.ASC.equals(order) && PageNavigation.NEXT.equals(pageNavigation)) {
-            whereIgnoreNull(indexColumn, ">", nextIndex);
-        } else if (OrderBy.DESC.equals(order) && PageNavigation.PREVIOUS.equals(pageNavigation)) {
-            whereIgnoreNull(indexColumn, ">", previousIndex);
-        } else {
-            whereIgnoreNull(indexColumn, "<", nextIndex);
+
+        // 顺序
+        if (OrderBy.ASC.equals(order)) {
+            // 上一页
+            if (PageNavigation.PREVIOUS.equals(pageNavigation)) {
+                firstOrderBy(builder -> builder.orderBy(indexColumn, OrderBy.DESC))
+                        .whereIgnoreNull(indexColumn, "<", previousIndex);
+            }
+            // 下一页
+            else {
+                firstOrderBy(builder -> builder.orderBy(indexColumn, OrderBy.ASC))
+                        .whereIgnoreNull(indexColumn, ">", nextIndex);
+            }
+        }
+        // 逆序
+        else {
+            // 上一页
+            if (PageNavigation.PREVIOUS.equals(pageNavigation)) {
+                firstOrderBy(builder -> builder.orderBy(indexColumn, OrderBy.ASC))
+                        .whereIgnoreNull(indexColumn, ">", previousIndex);
+            }
+            // 下一页
+            else {
+                firstOrderBy(builder -> builder.orderBy(indexColumn, OrderBy.DESC))
+                        .whereIgnoreNull(indexColumn, "<", nextIndex);
+            }
         }
         // 限制当前页的数量, 并查询
-        RecordList<T, K> records = theBuilder.limit(perPage).get();
+        RecordList<T, K> recordsLimit = limit(perPage).get();
+
+        // 上一页的查询, 都需要进行顺序反转
+        RecordList<T, K> records = PageNavigation.PREVIOUS.equals(pageNavigation)
+                ? RecordFactory.newRecordList(container, recordsLimit.reverse())
+                : recordsLimit;
+
         // 没有数据, 则游标不变
         Object previousIndexNew = records.isEmpty() ? previousIndex : records.getFirst().getMetadataMap().get(indexColumn);
         Object nextIndexNew = records.isEmpty() ? nextIndex : records.getLast().getMetadataMap().get(indexColumn);

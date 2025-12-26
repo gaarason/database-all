@@ -1391,12 +1391,14 @@ Paginate<StudentModel.Entity> page = studentModel.newQuery().paginate(currentPag
 // 不包含总数的分页
 // select * from student limit 1,2
 Paginate<StudentModel.Entity> page = studentModel.newQuery().paginate(FriendlyList::toObjectList, currentPage, perPage, false);
+
 Paginate<Map<String, Object>> page = studentModel.newQuery().paginate(FriendlyList::toMapList, currentPage, perPage, false);
 
 // 包含总数的分页
 // select count(*) from student
 // select * from student limit 1,2
 Paginate<StudentModel.Entity> page = studentModel.newQuery().paginate(FriendlyList::toObjectList, currentPage, perPage, true);
+
 Paginate<Map<String, Object>> page = studentModel.newQuery().paginate(FriendlyList::toMapList, currentPage, perPage, true);
 ```
 
@@ -1420,25 +1422,34 @@ Paginate<Map<String, Object>> page = studentModel.newQuery().paginate(FriendlyLi
 - 在实现上, 会在`查询构造器`中, 加上排序(根据索引列), 加上查询(根据索引列)
 - `cursorPaginate` 同时接受上下界(`previousIndex`, `nextIndex`)索引值, 由程序判断使用
 - 快捷用法中, 仅支持查询下一页(这也是游标分页最常用的场景), 因此仅接受下界(`nextIndex`)索引值
-- 上下界(`previousIndex`, `nextIndex`)索引值, 若当前为第一页, 则传`null`即可, 非第一页, 则直接取用分页对象(`CursorPaginate`)的`previousIndex`与`nextIndex`属性即可
+- 上下界(`previousIndex`, `nextIndex`)索引值, 若当前为第一页, 则传`null`即可, 非第一页, 则**直接取用**上次的分页对象(`CursorPaginate`)的`previousIndex`与`nextIndex`属性即可
 
 ```java
 // 快捷用法( 结果集合转化为对象集合, 使用主键索引, 主键索引从小到大排序, 不查询总数, 查询下一页 )
-// select * from `student` where `id`>"4" order by `id` asc limit 4
-CursorPaginate<StudentModel.Entity> page = studentModel.newQuery().cursorPaginate(nextIndex, 4);
+// select * from `student` where `id`>"17" order by `id` asc limit 9
+int nextIndex = 17;
+CursorPaginate<StudentModel.Entity> page = studentModel.newQuery().cursorPaginate(nextIndex, 9);
 
 // 快捷用法( 结果集合转化为对象集合, 使用指定索引, 指定索引从小到大排序, 不查询总数, 查询下一页 )
-// select * from `student` where `id`>"4" order by `id` asc limit 4
-CursorPaginate<StudentModel.Entity> page = studentModel.newQuery().cursorPaginate(StudentModel.Entity::getId, nextIndex, 4);
+// select * from `student` where `id`>"17" order by `id` asc limit 9
+int nextIndex = 17;
+CursorPaginate<StudentModel.Entity> page = studentModel.newQuery().cursorPaginate(StudentModel.Entity::getId, nextIndex, 9);
 
-// 不包含总数的分页
-// select * from `student` where `id`>"4" order by `id` asc limit 4
+// 不包含总数的分页, 查询下一页
+// select * from `student` where `id`>"17" order by `id` asc limit 9
+int previousIndex = 11;
+int nextIndex = 17;
 CursorPaginate<StudentModel.Entity> page = studentModel.newQuery()
         .cursorPaginate(FriendlyList::toObjectList, StudentModel.Entity::getId, previousIndex,
-                nextIndex, OrderBy.ASC, PageNavigation.NEXT, 4, false);
+                nextIndex, OrderBy.ASC, PageNavigation.NEXT, 9, false);
+
+// 不包含总数的分页, 查询上一页
+// select * from `student` where `id`<"11" order by `id` asc limit 9
+int previousIndex = 11;
+int nextIndex = 17;
 CursorPaginate<Map<String, Object>> page = studentModel.newQuery()
         .cursorPaginate(FriendlyList::toMapList, StudentModel.Entity::getId, previousIndex,
-                nextIndex, OrderBy.ASC, PageNavigation.NEXT, 4, false);
+                nextIndex, OrderBy.ASC, PageNavigation.PREVIOUS, 9, false);
 
 // 包含总数的分页
 // select count(*) from student
@@ -1446,6 +1457,7 @@ CursorPaginate<Map<String, Object>> page = studentModel.newQuery()
 CursorPaginate<StudentModel.Entity> page = studentModel.newQuery()
         .cursorPaginate(FriendlyList::toObjectList, StudentModel.Entity::getId, previousIndex,
                 nextIndex, OrderBy.ASC, PageNavigation.NEXT, 4, true);
+
 CursorPaginate<Map<String, Object>> page = studentModel.newQuery()
         .cursorPaginate(FriendlyList::toMapList, StudentModel.Entity::getId, previousIndex,
                 nextIndex, OrderBy.ASC, PageNavigation.NEXT, 4, true);

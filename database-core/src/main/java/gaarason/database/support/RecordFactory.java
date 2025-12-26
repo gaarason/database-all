@@ -79,7 +79,6 @@ public final class RecordFactory {
 
     /**
      * 单体结果集列表,转化为 批量结果集
-     * 仅 ToObject 构造方法中使用
      * 保持 record 对象地址一致
      * @param container 容器
      * @param records 单体结果列表

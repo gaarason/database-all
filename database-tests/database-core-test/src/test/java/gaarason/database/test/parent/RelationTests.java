@@ -1440,7 +1440,6 @@ abstract public class RelationTests extends BaseTests {
         Teacher teacher = teacherModel.newQuery()
 //            .withAggregate(AggregatesType.min, Teacher::getStudents, Student::getAge, builder -> builder.where("sss",231), null)
 //            .withMany(Teacher::getStudentArray, builder -> builder.where(Student::getAge, "12"))
-            .findOrFail(1)
             .with(Teacher::getStudents)
             .with(Teacher::getStudentArray)
             .with(Teacher::getStudentArrayList)
@@ -1449,6 +1448,7 @@ abstract public class RelationTests extends BaseTests {
                 builder -> builder.where("id", 3).orWhere(builder1 -> builder1.where("id", 1)))
             .with(Teacher::getStudentLinkedHashSet)
             .with(Teacher::getStudentSet)
+            .findOrFail(1)
             .toObject();
         System.out.println(teacher);
         Assert.assertNotNull(teacher.getStudents());

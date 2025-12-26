@@ -22,7 +22,7 @@ import java.util.Map;
 abstract class ExecuteLevel1Builder<B extends Builder<B, T, K>, T, K> extends BaseBuilder<B, T, K> {
 
     /**
-     * 传递有效的with信息
+     * 将 builder 中的 with 信息, 传递给到 record
      * @param record 查询结果集
      */
     protected void with(Record<T, K> record) {
@@ -39,7 +39,7 @@ abstract class ExecuteLevel1Builder<B extends Builder<B, T, K>, T, K> extends Ba
     }
 
     /**
-     * 传递有效的with信息
+     * 将 builder 中的 with 信息, 传递给到 records
      * @param records 查询结果集
      */
     protected void with(RecordList<T, K> records) {

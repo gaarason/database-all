@@ -27,7 +27,8 @@ Eloquent ORM for Java
 
 ### next_version
 
-- 在`Builder`中, 为简化写法, 标记部分`with`方法为过期, 即将 withMany(Obj::getF, builder -> builder, r -> r.with() ) 更改为 withMany(Obj::getF, builder -> builder.with())
+- 在`Builder`中, 修复`cursorPaginate`查询上一页时数据结果错误的问题.
+- 在`Builder`中, 标记部分`with`方法为过期, 需要将 withMany(Obj::getF, builder -> builder, r -> r.with() ) 更改为 withMany(Obj::getF, builder -> builder.with())
 
 ### 6.6.1
 
