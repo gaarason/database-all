@@ -25,7 +25,7 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
-### next_version
+### 6.6.2
 
 - 在`Builder`中, 修复`cursorPaginate`查询上一页时数据结果错误的问题.
 - 在`Builder`中, 标记部分`with`方法为过期, 需要将 withMany(Obj::getF, builder -> builder, r -> r.with() ) 更改为 withMany(Obj::getF, builder -> builder.with())

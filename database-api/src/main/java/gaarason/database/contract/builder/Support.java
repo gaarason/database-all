@@ -183,7 +183,7 @@ public interface Support<B extends Builder<B, T, K>, T, K> extends LambdaStyle, 
     String tableAlias(String table);
 
     /**
-     * 给列名增肌别名
+     * 给列名增加表名
      * @param column 列名 eg: name
      * @return eg: `table_12376541`.`name`
      */

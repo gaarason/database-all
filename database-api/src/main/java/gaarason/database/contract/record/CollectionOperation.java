@@ -1,6 +1,8 @@
 package gaarason.database.contract.record;
 
 import gaarason.database.config.ConversionConfig;
+import gaarason.database.contract.eloquent.Record;
+import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.exception.NoSuchAlgorithmException;
 import gaarason.database.exception.OperationNotSupportedException;
 import gaarason.database.lang.Nullable;
@@ -17,6 +19,15 @@ import java.util.stream.Collectors;
  * @since 2021/11/8 7:04 下午
  */
 public interface CollectionOperation<E> extends List<E>, Deque<E> {
+
+    /**
+     * 根据结果集列表生成 RecordList
+     * @param records 结果集列表
+     * @return 结果集集合对象
+     * @param <TT> 实体类
+     * @param <KK> 主键
+     */
+    <TT, KK> RecordList<TT, KK> newRecordList(Collection<Record<TT, KK>> records);
 
     /**
      * 根据元素中的属性名获取值
@@ -51,19 +62,6 @@ public interface CollectionOperation<E> extends List<E>, Deque<E> {
      */
     default List<E> all() {
         return new ArrayList<>(this);
-    }
-
-    /**
-     * 返回所有集合中元素的平均值
-     * @return 平均值
-     */
-    default BigDecimal avg() {
-        BigDecimal bigDecimal = BigDecimal.ZERO;
-        for (E e : this) {
-            bigDecimal = bigDecimal.add(
-                isEmpty(e) ? BigDecimal.ZERO : getConversionWorkerFromContainer().castNullable(e, BigDecimal.class));
-        }
-        return bigDecimal.divide(new BigDecimal(size()), RoundingMode.HALF_UP);
     }
 
     /**

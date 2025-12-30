@@ -15,6 +15,7 @@ import gaarason.database.lang.Nullable;
 import gaarason.database.provider.GodProvider;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.support.EntityMember;
+import gaarason.database.support.RecordFactory;
 import gaarason.database.support.RelationGetSupport;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
@@ -229,6 +230,15 @@ public class RecordListBean<T, K> extends LinkedList<Record<T, K>>
     @Override
     public String toString() {
         return toMapList().toString();
+    }
+
+    @Override
+    public <TT, KK> RecordList<TT, KK> newRecordList(Collection<Record<TT, KK>> records) {
+        if (!ObjectUtils.isEmpty(records)) {
+            return RecordFactory.newRecordList(records.iterator().next().getModel().getContainer(), records);
+        } else {
+            return RecordFactory.newRecordList(container);
+        }
     }
 
     @Override

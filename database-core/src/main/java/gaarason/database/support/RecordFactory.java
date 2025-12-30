@@ -14,10 +14,7 @@ import gaarason.database.util.ObjectUtils;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 结果集生成
@@ -87,8 +84,8 @@ public final class RecordFactory {
      * @return 批量结果集(RecordList全新, Record为引用地址)
      */
     public static <T, K> RecordList<T, K> newRecordList(Container container,
-        List<Record<T, K>> records) {
-        String sql = !records.isEmpty() ? records.get(0).getOriginalSql() : "";
+        Collection<Record<T, K>> records) {
+        String sql = !records.isEmpty() ? records.iterator().next().getOriginalSql() : "";
         RecordList<T, K> recordList = new RecordListBean<>(sql, container);
         // 此处不应使用, deepCopyRecord
         recordList.addAll(records);
