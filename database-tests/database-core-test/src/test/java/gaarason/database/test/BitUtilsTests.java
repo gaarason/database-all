@@ -18,7 +18,7 @@ public class BitUtilsTests {
         long pack = BitUtils.packArr(0, 1, 2);
         Assert.assertEquals(7, pack);
 
-        List<Long> unpack = BitUtils.unpack(pack);
+        List<Integer> unpack = BitUtils.unpack(pack);
         Assert.assertEquals(0, unpack.get(0).intValue());
         Assert.assertEquals(1, unpack.get(1).intValue());
         Assert.assertEquals(2, unpack.get(2).intValue());
@@ -38,13 +38,13 @@ public class BitUtilsTests {
 
     @Test
     public void unpack() {
-        List<Long> unpack = BitUtils.unpack(7);
+        List<Integer> unpack = BitUtils.unpack(7);
         Assert.assertEquals(3, unpack.size());
         Assert.assertEquals(0, unpack.get(0).intValue());
         Assert.assertEquals(1, unpack.get(1).intValue());
         Assert.assertEquals(2, unpack.get(2).intValue());
 
-        List<Long> unpack2 = BitUtils.unpack(10);
+        List<Integer> unpack2 = BitUtils.unpack(10);
         Assert.assertEquals(2, unpack2.size());
         Assert.assertEquals(1, unpack2.get(0).intValue());
         Assert.assertEquals(3, unpack2.get(1).intValue());
@@ -52,7 +52,7 @@ public class BitUtilsTests {
 
     @Test
     public void setOptions() {
-        long pack = BitUtils.setOptions(0L, 1L);
+        long pack = BitUtils.setOptions(0L, 1);
         pack = BitUtils.setOptions(pack, 1);
         pack = BitUtils.setOptions(pack, 1);
         Assert.assertEquals(2, pack);

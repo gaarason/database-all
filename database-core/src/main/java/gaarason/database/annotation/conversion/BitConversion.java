@@ -37,7 +37,7 @@ public class BitConversion implements FieldConversion.Bit {
     @Nullable
     @Override
     public Object deserialize(Field field, @Nullable Object originalValue) {
-        List<Long> unpack = BitUtils.unpack(originalValue);
+        List<Integer> unpack = BitUtils.unpack(originalValue);
         return JsonUtils.ObjectToObject(unpack, field.getGenericType());
     }
 }

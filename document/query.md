@@ -684,25 +684,30 @@ int update2 = studentModel.newQuery().dataIncrement("age", 4).whereRaw("id=4").u
 int update = studentModel.newQuery().dataDecrement("age", 2).whereRaw("id=4").update();
 ```
 ### 位存储增加指定的选项
+适合一个字段存储多个选项的场景
 #### dataBitIncrement dataBitDecrement 
-列(位存储)增加(移除)指定的选项  
-重复执行时, 幂等
+- 列(位存储)增加(移除)指定的选项  
+- 数据库使用数字类型存储 eg : int, bigint, ...
+- 选项可以为自然数的集合 [0, 1, 2 ...31, ... 63]
+- 重复执行时, 幂等
 ```java
 // 目标选项集合
 ArrayList<Object> objects = new ArrayList<>();
 objects.add(4);
 objects.add(5);
 
+// 将 [4,5] 转化为 2^4 + 2^5 = 48
 // update student set `sex`=`sex`| "48"  where id=4
 int update = studentModel.newQuery().dataBitIncrement(StudentModel.Entity::getSex, objects).whereRaw("id=4").update();
 
+// 将 [4,5] 转化为 2^4 + 2^5 = 48
 // update student set `sex`=`sex`& ~ "48"  where id=4
 int update2 = studentModel.newQuery().dataBitDecrement(StudentModel.Entity::getSex, objects).whereRaw("id=4").update();
 ```
 
 ## select
 
-确定查询时返回的列
+确定查询时返回的(第一)列
 
 ```java
 // select name,id,id from student limit 1;

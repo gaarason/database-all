@@ -403,17 +403,17 @@ abstract public class QueryBuilderTests extends BaseTests {
         Assert.assertEquals(update, 1);
         StudentModel.Entity entity = studentModel.newQuery().where("id", "4").firstOrFail().toObject();
         Assert.assertEquals(entity.getId().intValue(), 4);
-        List<Long> unpack = BitUtils.unpack(entity.getSex().longValue());
+        List<Integer> unpack = BitUtils.unpack(entity.getSex().longValue());
         System.out.println(unpack);
-        Assert.assertTrue(unpack.contains(4L) && unpack.contains(5L));
+        Assert.assertTrue(unpack.contains(4) && unpack.contains(5));
 
         int update2 = studentModel.newQuery().dataBitDecrement(StudentModel.Entity::getSex, objects).whereRaw("id=4").update();
         Assert.assertEquals(update2, 1);
         StudentModel.Entity entity2 = studentModel.newQuery().where("id", "4").firstOrFail().toObject();
         Assert.assertEquals(entity2.getId().intValue(), 4);
-        List<Long> unpack2 = BitUtils.unpack(entity2.getSex().longValue());
+        List<Integer> unpack2 = BitUtils.unpack(entity2.getSex().longValue());
         System.out.println(unpack2);
-        Assert.assertTrue(!unpack2.contains(4L) && !unpack2.contains(5L));
+        Assert.assertTrue(!unpack2.contains(4) && !unpack2.contains(5));
     }
 
     @Test

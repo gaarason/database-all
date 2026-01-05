@@ -15,7 +15,7 @@ public final class BitUtils {
 
     /**
      * 打包选项 ( 可以理解成, 选项转十进制数字 )
-     * @param options 选项 eg: 0,1,2,3,4
+     * @param options 选项 eg: 0,1,2,3,4 ... 63
      * @return 十进制数字
      */
     public static long packs(@Nullable Collection<Object> options) {
@@ -24,20 +24,20 @@ public final class BitUtils {
 
     /**
      * 打包选项 ( 可以理解成, 选项转十进制数字 )
-     * @param option 选项 eg: 0,1,2,3,4
+     * @param option 选项 eg: 0,1,2,3,4 ... 63
      * @return 十进制数字
      */
     public static long pack(@Nullable Object option) {
         if (option == null) {
             return 0;
         }
-        long l = Long.parseLong(String.valueOf(option));
+        int l = Integer.parseInt(String.valueOf(option));
         return setOption(0, l);
     }
 
     /**
      * 打包选项 ( 可以理解成, 选项转十进制数字 )
-     * @param options 选项 eg: 0,1,2,3,4
+     * @param options 选项 eg: 0,1,2,3,4 ... 63
      * @return 十进制数字
      */
     public static long packArr(Object... options) {
@@ -50,7 +50,7 @@ public final class BitUtils {
      * @param packValue 打包后的十进制数字 eg: 0
      * @return 选项列表
      */
-    public static List<Long> unpack(@Nullable Object packValue) {
+    public static List<Integer> unpack(@Nullable Object packValue) {
         if (packValue == null) {
             return Collections.emptyList();
         }
@@ -63,35 +63,37 @@ public final class BitUtils {
      * @param packValue 打包后的十进制数字 eg: 0
      * @return 选项列表
      */
-    public static List<Long> unpack(long packValue) {
-        List<Long> selectedOptions = new ArrayList<>();
+    public static List<Integer> unpack(long packValue) {
+        List<Integer> res = new ArrayList<>(Long.bitCount(packValue));
+        long x = packValue;
+        while (x != 0) {
+            // 找到当前最低位的 1
+            int bit = Long.numberOfTrailingZeros(x);
 
-        // 遍历所有可能的选项位
-        for (long i = 0; i < 32; i++) {
-            long optionMask = 1 << i;
-            if ((packValue & optionMask) != 0) {
-                selectedOptions.add(i);
-            }
+            // 加入结果
+            res.add(bit);
+
+            // 清掉这一位
+            x &= (x - 1);
         }
-
-        return selectedOptions;
+        return res;
     }
 
     /**
      * 设置选项
      * @param packValue 打包后的十进制数字 eg: 0
-     * @param options 选项值 eg: 0,1,2,3,4
+     * @param options 选项值 eg: 0,1,2,3,4 ... 63
      * @return 新值
      */
-    public static long setOptions(Object packValue, Object... options) {
-        List<Object> collect = Arrays.stream(options).collect(Collectors.toList());
+    public static long setOptions(long packValue, Integer... options) {
+        List<Integer> collect = Arrays.stream(options).collect(Collectors.toList());
         return setOptions(packValue, collect);
     }
 
     /**
      * 设置选项
      * @param packValue 打包后的十进制数字 eg: 0
-     * @param options 选项值 eg: 0,1,2,3,4
+     * @param options 选项值 eg: 0,1,2,3,4 ... 63
      * @return 新值
      */
     public static long setOptions(Object packValue, @Nullable Collection<Object> options) {
@@ -99,9 +101,9 @@ public final class BitUtils {
         if (options == null) {
             return packValueLong;
         }
-        List<Long> longList = new ArrayList<>();
+        List<Integer> longList = new ArrayList<>();
         for (Object option : options) {
-            longList.add(Long.parseLong(String.valueOf(option)));
+            longList.add(Integer.parseInt(String.valueOf(option)));
         }
         return setOptions(packValueLong, longList);
     }
@@ -109,11 +111,11 @@ public final class BitUtils {
     /**
      * 设置选项
      * @param packValue 打包后的十进制数字 eg: 0
-     * @param options 选项值 eg: 0,1,2,3,4
+     * @param options 选项值 eg: 0,1,2,3,4 ... 63
      * @return 新值
      */
-    public static long setOptions(long packValue, Collection<Long> options) {
-        for (long option : options) {
+    public static long setOptions(long packValue, Collection<Integer> options) {
+        for (int option : options) {
             packValue = setOption(packValue, option);
         }
         return packValue;
@@ -122,10 +124,10 @@ public final class BitUtils {
     /**
      * 设置选项
      * @param packValue 打包后的十进制数字 eg: 0
-     * @param option 选项值 eg: 0,1,2,3,4
+     * @param option 选项值 eg: 0,1,2,3,4 ... 63
      * @return 新值
      */
-    public static long setOption(long packValue, long option) {
+    public static long setOption(long packValue, int option) {
         long bitValue = 1L << option;
         packValue |= bitValue;
         return packValue;
@@ -134,7 +136,7 @@ public final class BitUtils {
     /**
      * 取消选项
      * @param packValue 打包后的十进制数字 eg: 0
-     * @param options 选项值 eg: 0,1,2,3,4
+     * @param options 选项值 eg: 0,1,2,3,4 ... 63
      * @return 新值
      */
     public static long unsetOptions(Object packValue, Object... options) {
@@ -146,26 +148,26 @@ public final class BitUtils {
     /**
      * 取消选项
      * @param packValue 打包后的十进制数字 eg: 0
-     * @param options 选项值 eg: 0,1,2,3,4
+     * @param options 选项值 eg: 0,1,2,3,4 ... 63
      * @return 新值
      */
     public static long unsetOptions(Object packValue, Collection<Object> options) {
         long packValueLong = Long.parseLong(String.valueOf(packValue));
-        List<Long> longList = new ArrayList<>();
+        List<Integer> intList = new ArrayList<>();
         for (Object option : options) {
-            longList.add(Long.parseLong(String.valueOf(option)));
+            intList.add(Integer.parseInt(String.valueOf(option)));
         }
-        return unsetOptions(packValueLong, longList);
+        return unsetOptions(packValueLong, intList);
     }
 
     /**
      * 取消选项
      * @param packValue 打包后的十进制数字 eg: 0
-     * @param options 选项值 eg: 0,1,2,3,4
+     * @param options 选项值 eg: 0,1,2,3,4 ... 63
      * @return 新值
      */
-    public static long unsetOptions(long packValue, Collection<Long> options) {
-        for (long value : options) {
+    public static long unsetOptions(long packValue, Collection<Integer> options) {
+        for (int value : options) {
             packValue = unsetOption(packValue, value);
         }
         return packValue;
@@ -174,10 +176,10 @@ public final class BitUtils {
     /**
      * 取消选项
      * @param packValue 打包后的十进制数字 eg: 0
-     * @param option 选项值 eg: 0,1,2,3,4
+     * @param option 选项值 eg: 0,1,2,3,4 ... 63
      * @return 新值
      */
-    public static long unsetOption(long packValue, long option) {
+    public static long unsetOption(long packValue, int option) {
         long bitValue = 1L << option;
         packValue &= ~bitValue;
         return packValue;
@@ -186,10 +188,10 @@ public final class BitUtils {
     /**
      * 是否已设置选项
      * @param packValue 打包后的十进制数字 eg: 0
-     * @param option 选项值 eg: 0,1,2,3,4
+     * @param option 选项值 eg: 0,1,2,3,4 ... 63
      * @return boolean
      */
-    public static boolean checkOptionSet(long packValue, long option) {
+    public static boolean checkOptionSet(long packValue, int option) {
         long bitValue = 1L << option;
         return (packValue & bitValue) != 0;
     }
