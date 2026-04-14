@@ -28,5 +28,5 @@ public @interface Primary {
      * id生成策略
      * @return id生成策略
      */
-    Class<? extends IdGenerator> idGenerator() default IdGenerator.Auto.class;
+    Class<? extends IdGenerator<?>> idGenerator() default IdGenerator.Auto.class;
 }

@@ -89,6 +89,7 @@ public interface Support<B extends Builder<B, T, K>, T, K> extends LambdaStyle, 
      * @return 查询构造器
      * @param <BB> 子类类形
      */
+    @SuppressWarnings({"unchecked"})
     default <BB extends Builder<BB, TT, KK>, TT, KK> BB showType(ShowType<BB> builderClass) {
         return (BB) getSelf();
     }
@@ -100,6 +101,7 @@ public interface Support<B extends Builder<B, T, K>, T, K> extends LambdaStyle, 
      * @return 查询构造器
      * @param <BB> 子类类形
      */
+    @SuppressWarnings({"unchecked"})
     default <BB extends Builder<BB, TT, KK>, TT, KK> BB showType(Model<BB, TT, KK> model) {
         return (BB) getSelf();
     }
@@ -111,6 +113,7 @@ public interface Support<B extends Builder<B, T, K>, T, K> extends LambdaStyle, 
      * @return 查询构造器
      * @param <BB> 子类类形
      */
+    @SuppressWarnings({"unchecked"})
     default <BB extends Builder<BB, TT, KK>, TT, KK> BB showType(Class<TT> entityClass) {
         return (BB) getSelf();
     }

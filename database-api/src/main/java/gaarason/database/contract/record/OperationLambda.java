@@ -41,6 +41,7 @@ public interface OperationLambda<T, K> extends Operation<T, K>, LambdaStyle {
      * @param fieldNames 实体属性名
      * @return bool
      */
+    @SuppressWarnings({"unchecked", "varargs"})
     default <F> boolean wasChanged(ColumnFunctionalInterface<T, F>... fieldNames) {
         return wasChanged(lambda2FieldName(Arrays.asList(fieldNames)));
     }

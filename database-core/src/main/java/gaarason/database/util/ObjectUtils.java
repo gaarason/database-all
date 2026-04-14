@@ -15,7 +15,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -28,9 +27,6 @@ public final class ObjectUtils {
      * 线程安全随机对象
      */
     private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
-
-    private static final ConcurrentHashMap.KeySetView<String, Boolean> CACHE = ConcurrentHashMap.newKeySet();
-
 
     private ObjectUtils() {
     }

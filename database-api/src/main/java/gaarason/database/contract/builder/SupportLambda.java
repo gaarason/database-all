@@ -2,13 +2,12 @@ package gaarason.database.contract.builder;
 
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
-import gaarason.database.contract.support.LambdaStyle;
 
 /**
  * 支持
  * @author xt
  */
-public interface SupportLambda<B extends Builder<B, T, K>, T, K> extends Support<B, T, K>, LambdaStyle, Cloneable{
+public interface SupportLambda<B extends Builder<B, T, K>, T, K> extends Support<B, T, K> {
 
     /**
      * 给列名增肌别名

@@ -1,6 +1,5 @@
 package gaarason.database.appointment;
 
-import java.io.Serializable;
 import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +8,7 @@ import java.util.Map;
  * jdbc类型
  * @author xt
  */
-public enum JdbcType implements Serializable {
+public enum JdbcType {
 
     /**
      * 类型

@@ -421,7 +421,7 @@ public class FieldMember<F> extends Container.SimpleKeeper implements Serializab
      */
     private FieldConversion<?, ?> dealFieldConversion() {
         Class<?> keyJavaType = field.getType();
-        Class<? extends FieldConversion> conversionClass = column.conversion();
+        Class<? extends FieldConversion<?, ?>> conversionClass = column.conversion();
         /*
          * 自动化判断
          */

@@ -72,7 +72,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 
 
-public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
+public class SoftCache<K, V> extends AbstractMap<K, V> {
 
     /* Hash table mapping keys to ValueCells */
     private final Map<K, ValueCell<V>> hash;
@@ -209,8 +209,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
     @Override
     public Set<Map.Entry<K, V>> entrySet() {
         if (this.entrySet == null) {
-            Set<? extends Map.Entry<K, V>> entrySetTemp = new EntrySet();
-            this.entrySet = (Set<Map.Entry<K, V>>) entrySetTemp;
+            this.entrySet = new EntrySet();
         }
         return this.entrySet;
     }
@@ -335,12 +334,12 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
     }
 
     /* Internal class for entry sets */
-    private class EntrySet extends AbstractSet<Entry> {
+    private class EntrySet extends AbstractSet<Map.Entry<K, V>> {
         final Set<Map.Entry<K, ValueCell<V>>> hashEntries = hash.entrySet();
 
         @Override
-        public Iterator<Entry> iterator() {
-            return new Iterator<Entry>() {
+        public Iterator<Map.Entry<K, V>> iterator() {
+            return new Iterator<Map.Entry<K, V>>() {
                 final Iterator<Map.Entry<K, ValueCell<V>>> hashIterator = hashEntries.iterator();
 
                 @Nullable
@@ -364,7 +363,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
                 }
 
                 @Override
-                public Entry next() {
+                public Map.Entry<K, V> next() {
                     if ((next == null) && !hasNext()) {
                         throw new NoSuchElementException();
                     }
@@ -390,7 +389,7 @@ public class SoftCache<K, V> extends AbstractMap<K, V> implements Map<K, V> {
         @Override
         public int size() {
             int j = 0;
-            for (Iterator<Entry> i = iterator(); i.hasNext(); i.next()) {
+            for (Iterator<Map.Entry<K, V>> i = iterator(); i.hasNext(); i.next()) {
                 j++;
             }
             return j;

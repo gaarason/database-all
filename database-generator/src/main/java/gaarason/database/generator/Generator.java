@@ -33,14 +33,6 @@ import java.util.concurrent.*;
  */
 public class Generator {
 
-
-    private static final String TEMPLATE_PATH = "/template";
-
-    /**
-     * 未知主键类型时, 使用的java类
-     */
-    private static final String UNKNOWN_PRIMARY_KEY_TYPE = "Object";
-
     /**
      * 存储 表名 -> 主键类型 的映射关系, 稍微提高性能
      */

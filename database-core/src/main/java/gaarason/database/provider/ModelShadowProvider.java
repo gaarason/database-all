@@ -9,8 +9,6 @@ import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.core.Container;
 import gaarason.database.exception.*;
 import gaarason.database.lang.Nullable;
-import gaarason.database.logging.Log;
-import gaarason.database.logging.LogFactory;
 import gaarason.database.support.*;
 import gaarason.database.util.EntityUtils;
 import gaarason.database.util.LambdaUtils;
@@ -28,7 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ModelShadowProvider extends Container.SimpleKeeper {
 
-    private static final Log LOGGER = LogFactory.getLog(ModelShadowProvider.class);
     /**
      * 持久信息
      */

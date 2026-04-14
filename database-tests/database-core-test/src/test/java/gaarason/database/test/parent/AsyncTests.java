@@ -217,6 +217,11 @@ abstract public class AsyncTests extends BaseTests {
                 Record<StudentModel.Entity, Integer> record = studentModel.newQuery().findOrFail(1);
                 StudentModel.Entity student = record.getEntity();
                 student.setName(newName);
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
                 return record.save();
             });
 

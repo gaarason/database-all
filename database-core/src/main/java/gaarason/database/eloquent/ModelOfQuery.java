@@ -8,7 +8,6 @@ import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.ExecSqlWithinConnectionFunctionalInterface;
-import gaarason.database.contract.model.Query;
 import gaarason.database.core.Container;
 import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.PrimaryKeyNotFoundException;
@@ -30,7 +29,7 @@ import java.util.concurrent.CompletableFuture;
  * 数据模型对象
  * @author xt
  */
-abstract class ModelOfQuery<B extends Builder<B, T, K>, T, K> extends ModelOfSoftDelete<B, T, K> implements Query<B, T, K> {
+abstract class ModelOfQuery<B extends Builder<B, T, K>, T, K> extends ModelOfSoftDelete<B, T, K> {
 
     /**
      * 全局查询作用域

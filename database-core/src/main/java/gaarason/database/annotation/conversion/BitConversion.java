@@ -23,7 +23,12 @@ public class BitConversion implements FieldConversion.Bit {
     public Object serialize(Field field, @Nullable Object fieldValue) {
         boolean collection = ObjectUtils.isCollection(field.getType());
         if (collection) {
-            return BitUtils.packs((Collection<Object>) fieldValue);
+            if (fieldValue == null) {
+                return BitUtils.packs(null);
+            }
+            if (fieldValue instanceof Collection<?>) {
+                return BitUtils.packs((Collection<?>) fieldValue);
+            }
         }
         throw new InvalidEntityException("列[" +field.getName()+"] 应该为集合类型");
     }

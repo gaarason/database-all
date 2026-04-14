@@ -116,5 +116,5 @@ public @interface Column {
      * 手动指定
      * 1.自定义实现 FieldConversion 接口即可
      */
-    Class<? extends FieldConversion> conversion() default FieldConversion.Auto.class;
+    Class<? extends FieldConversion<?, ?>> conversion() default FieldConversion.Auto.class;
 }

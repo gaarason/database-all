@@ -5,7 +5,6 @@ import gaarason.database.contract.function.RecordWrapper;
 import gaarason.database.contract.record.Friendly;
 import gaarason.database.contract.record.OperationLambda;
 import gaarason.database.contract.record.RelationshipLambda;
-import gaarason.database.contract.record.Support;
 import gaarason.database.contract.support.ExtendedSerializable;
 import gaarason.database.lang.Nullable;
 
@@ -17,7 +16,7 @@ import java.util.Map;
  * @author xt
  */
 public interface Record<T, K> extends Friendly<T, K>, OperationLambda<T, K>,
-    RelationshipLambda<T, K>, Support<T, K>, ExtendedSerializable {
+    RelationshipLambda<T, K>, ExtendedSerializable {
 
     /**
      * 本表元数据

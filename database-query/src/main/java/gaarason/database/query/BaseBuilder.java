@@ -280,7 +280,7 @@ abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements Builder<
 
     @Override
     public <V> V quiet(Supplier<V> supplier) {
-        return modelMember.quiet(supplier);
+        return ModelMember.quiet(supplier);
     }
 
     @Override

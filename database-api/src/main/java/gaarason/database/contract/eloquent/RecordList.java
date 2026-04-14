@@ -13,7 +13,7 @@ import java.util.*;
  * @author xt
  */
 public interface RecordList<T, K> extends FriendlyList<T, K>,
-    RelationshipListLambda<T, K>, List<Record<T, K>>,
+    RelationshipListLambda<T, K>,
     CollectionOperationLambda<T, K>, Container.Keeper, RandomAccess, Cloneable, ExtendedSerializable {
 
     /**

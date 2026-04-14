@@ -18,7 +18,7 @@ public final class BitUtils {
      * @param options 选项 eg: 0,1,2,3,4 ... 63
      * @return 十进制数字
      */
-    public static long packs(@Nullable Collection<Object> options) {
+    public static long packs(@Nullable Collection<?> options) {
         return setOptions(0, options);
     }
 
@@ -96,7 +96,7 @@ public final class BitUtils {
      * @param options 选项值 eg: 0,1,2,3,4 ... 63
      * @return 新值
      */
-    public static long setOptions(Object packValue, @Nullable Collection<Object> options) {
+    public static long setOptions(Object packValue, @Nullable Collection<?> options) {
         long packValueLong = Long.parseLong(String.valueOf(packValue));
         if (options == null) {
             return packValueLong;

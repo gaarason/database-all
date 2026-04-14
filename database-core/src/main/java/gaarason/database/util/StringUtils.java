@@ -260,7 +260,14 @@ public class StringUtils {
     private static String realQueryBuild(Object object, String parentStr, boolean first, boolean sort) {
         StringBuilder r = new StringBuilder();
         if (object instanceof Map) {
-            List<Map.Entry<String, Object>> list = new ArrayList<>(((Map<String, Object>) object).entrySet());
+            Map<?, ?> sourceMap = (Map<?, ?>) object;
+            List<Map.Entry<String, Object>> list = new ArrayList<>(sourceMap.size());
+            for (Map.Entry<?, ?> entry : sourceMap.entrySet()) {
+                if (!(entry.getKey() instanceof String)) {
+                    throw new ClassCastException("Map key must be String");
+                }
+                list.add(new AbstractMap.SimpleEntry<>((String) entry.getKey(), entry.getValue()));
+            }
             // 按照map的key排序
             if (sort) {
                 // 升序排序

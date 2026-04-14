@@ -85,7 +85,7 @@ public class AnnotationTestModel extends SingleModel<AnnotationTestModel.Primary
         WOMAN,
         OTHER;
 
-        static class SexConversion implements FieldConversion {
+        static class SexConversion implements FieldConversion<Object, Object> {
 
             @Nullable
             @Override

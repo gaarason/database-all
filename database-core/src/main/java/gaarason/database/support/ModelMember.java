@@ -191,6 +191,8 @@ public class ModelMember<B extends Builder<B, T, K>, T, K> extends Container.Sim
             case eventQueryRestored:
                 dealEventQueryEd((eventProcessor, b, r, rs) -> eventProcessor.eventQueryRestored(b, rows), builder, null, null);
                 return;
+            case eventQueryRetrieved:
+                throw new AbnormalParameterException(eventType.name());
         }
         throw new AbnormalParameterException(eventType.name());
     }
