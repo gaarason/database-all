@@ -11,14 +11,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import java.io.Serializable;
 import java.util.*;
 
 @Data
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Table(name = "teacher")
-public class Teacher extends BaseEntity implements Serializable {
+public class Teacher extends BaseEntity {
 
     final public static String NAME = "name";
     final public static String AGE = "age";

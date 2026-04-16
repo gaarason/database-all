@@ -116,7 +116,7 @@ abstract public class BaseTests {
                             try{
                                 for (String sql : sqls) {
                                     PreparedStatement preparedStatement = connection.prepareStatement(sql);
-                                    int i = preparedStatement.executeUpdate();
+                                    preparedStatement.executeUpdate();
                                 }
                             }catch (Throwable e){
                                 log.error("sql init error", e);

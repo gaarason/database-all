@@ -118,10 +118,11 @@ abstract public class RelationTests extends BaseTests {
     @Test
     public void 自定义关系() {
         // 声明且使用
-        Student student = studentModel.findOrFail(2)
+        Student student = studentModel.newQuery()
             .with(Student::getTeachersBelongsToMany)
             .with(Student::getRelationshipStudentTeachers)
             .with(Student::getRelationshipStudentTeacher)
+            .findOrFail(2)
             .toObject();
 
         Assert.assertEquals(2, student.getTeachersBelongsToMany().size());

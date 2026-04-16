@@ -8,13 +8,12 @@ import gaarason.database.test.models.relation.pojo.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.io.Serializable;
 import java.util.Date;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Table(name = "relationship_student_teacher")
-public class RelationshipStudentTeacher extends BaseEntity implements Serializable {
+public class RelationshipStudentTeacher extends BaseEntity {
 
     final public static String STUDENT_ID = "student_id";
     final public static String TEACHER_ID = "teacher_id";

@@ -1853,19 +1853,19 @@ abstract public class ORMTests extends BaseTests {
         Assert.assertFalse(record.isDirty());
         Assert.assertFalse(record.isDirty(Teacher::getAge));
         Assert.assertFalse(record.isDirty(Teacher::getName));
-        Assert.assertFalse(record.isDirty(Teacher::getAge, Teacher::getName));
+        Assert.assertFalse(record.isDirty(Arrays.asList(Teacher::getAge, Teacher::getName)));
 
         teacher1.setName("新老师的新名字");
 
         Assert.assertTrue(record.isDirty());
         Assert.assertFalse(record.isDirty(Teacher::getAge));
         Assert.assertTrue(record.isDirty(Teacher::getName));
-        Assert.assertTrue(record.isDirty(Teacher::getAge, Teacher::getName));
+        Assert.assertTrue(record.isDirty(Arrays.asList(Teacher::getAge, Teacher::getName)));
 
         Assert.assertFalse(record.isClean());
         Assert.assertTrue(record.isClean(Teacher::getAge));
         Assert.assertFalse(record.isClean(Teacher::getName));
-        Assert.assertFalse(record.isClean(Teacher::getAge, Teacher::getName));
+        Assert.assertFalse(record.isClean(Arrays.asList(Teacher::getAge, Teacher::getName)));
 
         record.save();
 
@@ -1886,7 +1886,7 @@ abstract public class ORMTests extends BaseTests {
         Assert.assertFalse(record.wasChanged());
         Assert.assertFalse(record.wasChanged(Teacher::getAge));
         Assert.assertFalse(record.wasChanged(Teacher::getName));
-        Assert.assertFalse(record.wasChanged(Teacher::getAge, Teacher::getName));
+        Assert.assertFalse(record.wasChanged(Arrays.asList(Teacher::getAge, Teacher::getName)));
 
         // 仅设置, 未提交
         teacher1.setName("新老师的新名字");
@@ -1894,7 +1894,7 @@ abstract public class ORMTests extends BaseTests {
         Assert.assertFalse(record.wasChanged());
         Assert.assertFalse(record.wasChanged(Teacher::getAge));
         Assert.assertFalse(record.wasChanged(Teacher::getName));
-        Assert.assertFalse(record.wasChanged(Teacher::getAge, Teacher::getName));
+        Assert.assertFalse(record.wasChanged(Arrays.asList(Teacher::getAge, Teacher::getName)));
 
         // 提交到数据库
         record.save();
@@ -1902,7 +1902,7 @@ abstract public class ORMTests extends BaseTests {
         Assert.assertTrue(record.wasChanged());
         Assert.assertFalse(record.wasChanged(Teacher::getAge));
         Assert.assertTrue(record.wasChanged(Teacher::getName));
-        Assert.assertTrue(record.wasChanged(Teacher::getAge, Teacher::getName));
+        Assert.assertTrue(record.wasChanged(Arrays.asList(Teacher::getAge, Teacher::getName)));
     }
 
     @Test

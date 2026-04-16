@@ -6,11 +6,13 @@ import gaarason.database.annotation.Table;
 import gaarason.database.contract.support.FieldStrategy;
 import gaarason.database.test.models.normal.base.SingleModel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.util.Date;
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 @Table(name = "student")
 public class StudentCombination extends SingleModel<StudentCombination, Integer> implements Serializable {
 

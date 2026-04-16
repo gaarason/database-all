@@ -72,7 +72,6 @@ abstract public class QueryBuilderTests extends BaseTests {
                 .orderBy("id", OrderBy.DESC)
                 .firstOrFail()
                 .toObject();
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             System.out.println(entityFirst);
             Assert.assertNotNull(entityFirst);
             Assert.assertEquals(11, entityFirst.getAge().intValue());

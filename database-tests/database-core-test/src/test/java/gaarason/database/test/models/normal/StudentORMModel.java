@@ -31,7 +31,7 @@ public class StudentORMModel extends SingleModel<StudentORMModel.Entity, Integer
 
     @Override
     public void eventRecordUpdated(Record<Entity, Integer> record) {
-        Entity entity = record.getEntity();
+        // Entity entity = record.getEntity();
         super.eventRecordUpdated(record);
     }
 

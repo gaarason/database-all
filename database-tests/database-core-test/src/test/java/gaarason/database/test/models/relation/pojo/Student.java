@@ -12,7 +12,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import java.io.Serializable;
 import java.lang.annotation.*;
 import java.lang.reflect.Field;
 import java.util.Date;
@@ -22,7 +21,7 @@ import java.util.List;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Table(name = "student")
-public class Student extends BaseEntity implements Serializable {
+public class Student extends BaseEntity {
 
     final public static String NAME = "name";
     final public static String AGE = "age";

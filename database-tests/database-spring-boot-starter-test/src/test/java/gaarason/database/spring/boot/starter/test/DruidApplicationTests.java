@@ -1,6 +1,5 @@
 package gaarason.database.spring.boot.starter.test;
 
-import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.support.ShowType;
 import gaarason.database.eloquent.GeneralModel;
@@ -130,7 +129,7 @@ public class DruidApplicationTests {
 
     @Test
     public void 分页_关系() {
-        GaarasonDataSource gaarasonDataSource = studentModel.getGaarasonDataSource();
+        // GaarasonDataSource gaarasonDataSource = studentModel.getGaarasonDataSource();
         studentModel.newQuery().with("relationshipStudentTeachers", builder -> builder.showType(
                 new ShowType<QueryBuilder<Student, Long>>() {}).limit(3)).paginate(1, 7);
     }

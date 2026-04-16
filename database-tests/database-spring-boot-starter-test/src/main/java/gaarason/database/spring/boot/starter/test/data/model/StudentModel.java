@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class StudentModel extends BaseModel<Student, Long> implements StudentQuery<Student, Long> {
 
+    @SuppressWarnings("unused")
     @Override
     public Student updateName() {
         newQuery().where("id", "1").data("name", "bgfd").update();
