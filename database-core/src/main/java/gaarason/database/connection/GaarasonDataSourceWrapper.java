@@ -373,7 +373,7 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
             databaseProductName = connection.getMetaData().getDatabaseProductName().toLowerCase(Locale.ENGLISH);
             for (QueryBuilderConfig queryBuilderConfig : list) {
                 if (!ObjectUtils.isEmpty(queryBuilderConfig) && queryBuilderConfig.support(databaseProductName)) {
-                    return queryBuilderConfig;
+                    return queryBuilderConfig.forProductName(databaseProductName);
                 }
             }
         } catch (Throwable e) {

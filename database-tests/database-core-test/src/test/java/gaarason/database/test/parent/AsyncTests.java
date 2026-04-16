@@ -25,8 +25,9 @@ abstract public class AsyncTests extends BaseTests {
 
     private static final StudentModel studentModel = new StudentModel();
 
+    @SuppressWarnings("unused")
     private static final StudentReversal.Model studentReversalModel = new StudentReversal.Model();
-
+    @SuppressWarnings("unused")
     private static final StudentCombination studentCombination = new StudentCombination();
 
     @Override

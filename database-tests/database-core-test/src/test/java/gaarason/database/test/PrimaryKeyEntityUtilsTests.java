@@ -1,7 +1,5 @@
 package gaarason.database.test;
 
-import gaarason.database.annotation.Primary;
-import gaarason.database.test.models.normal.NullTestModel;
 import gaarason.database.util.EntityUtils;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -47,7 +45,9 @@ public class PrimaryKeyEntityUtilsTests {
             private String name = "son son";
             private Integer age = 6;
             private String onlySonSon = "onlySonSon";
+            @SuppressWarnings("unused")
             Son this$0 = new Son();
+            @SuppressWarnings("unused")
             Son this$0$;
 
             @Override
@@ -69,11 +69,11 @@ public class PrimaryKeyEntityUtilsTests {
             public void setAge(Integer age) {
                 this.age = age;
             }
-
+            @SuppressWarnings("unused")
             public String getOnlySonSon() {
                 return onlySonSon;
             }
-
+            @SuppressWarnings("unused")
             public void setOnlySonSon(String onlySonSon) {
                 this.onlySonSon = onlySonSon;
             }

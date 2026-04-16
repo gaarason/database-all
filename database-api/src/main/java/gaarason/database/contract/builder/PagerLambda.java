@@ -13,7 +13,7 @@ import gaarason.database.lang.Nullable;
  * @param <T>
  * @author xt
  */
-public interface PagerLambda<B extends Builder<B, T, K>, T, K> extends Pager<B, T, K>, Support<B, T, K> {
+public interface PagerLambda<B extends Builder<B, T, K>, T, K> extends Pager<B, T, K>, SupportLambda<B, T, K> {
 
     /**
      * 游标分页

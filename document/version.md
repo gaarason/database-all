@@ -25,6 +25,32 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### next_version
+
+- 新增 `DbType` 枚举(`gaarason.database.appointment.DbType`), 内置 40+ 种数据库方言支持(MySQL、PostgreSQL、Oracle、SQL Server、DB2、达梦、人大金仓、OceanBase、ClickHouse 等), 通过 JDBC 自动检测数据库类型
+- 新增 `DefaultQueryBuilderConfig`, 作为通用查询构造器配置, 根据 `DbType` 自动创建对应方言的 `Grammar` 实例
+- 新增 `DefaultAutoconfiguration`, 以最低优先级自动注册通用数据库方言支持
+- 新增方言 `Grammar` 类: `PostgreSqlGrammar`、`OracleGrammar`、`Oracle12cGrammar`、`Db2Grammar`、`InformixGrammar`、`FirebirdGrammar`, 以及将 `MsSqlGrammar` 迁入 `database-query` 模块
+- 在 `QueryBuilderConfig` 中, 新增 `forProductName(String)` default 方法, 允许通用配置返回绑定了具体方言的新实例
+- 移除 `database-query-mysql` 模块, 其中 `MySqlGrammar`、`MySqlBuilder`、`MysqlQueryBuilderConfig` 等已不再需要(MySQL 方言由 `DefaultQueryBuilderConfig` 内置处理)
+- 移除 `database-query-mssql` 模块, 其中 `MsSqlGrammar` 已迁入 `database-query`; `MsSqlBuilder`、`MssqlQueryBuilderConfig` 等已不再需要
+- 在`Builder`中, 移除`paginateMapStyle`/`simplePaginateMapStyle` 等过期方法, 使用 `paginate(FriendlyList::toMapList, currentPage, perPage, hasTotal)` 替代
+- 新增多数据源分组路由支持:
+  - 新增 `DataSourceGroup` 数据源组模型, 封装主从数据源列表与读写分离逻辑
+  - 新增 `GaarasonDataSourceContext` 基于 ThreadLocal 栈式实现的数据源组切换上下文, 支持嵌套调用自动恢复
+  - 新增 `GaarasonRoutingDataSourceBuilder` 编程式多组构建器(不依赖 Spring)
+  - 新增 `GaarasonRoutingDataSourceWrapper` 路由数据源包装器(Spring 环境), 替代 `GaarasonSmartDataSourceMultipleLinksWrapper`
+  - 新增 `GaarasonDataSourceProperties` YAML 多组数据源配置属性(`gaarason.database.datasource.groups`)
+  - 新增 `@GaarasonDS` 注解 + `GaarasonDataSourceAspect` AOP 切面, 声明式切换数据源组
+  - 更新 `GaarasonDatabaseAutoConfiguration`, 自动识别多组配置并创建路由数据源, 向后兼容单数据源模式
+  - 事务开始后自动锁定数据源组, 保证事务完整性
+- 版本升级指引:
+  - 如果之前 pom.xml 中依赖了 `database-query-mysql` 或 `database-query-mssql`, 请替换为 `database-query`
+  - 如果代码中继承了 `MysqlQueryBuilderConfig`, 请改为直接实现 `QueryBuilderConfig` 接口
+  - 如果代码中使用了 `MySqlBuilder` 或 `MsSqlBuilder`, 请替换为 `QueryBuilder`
+  - `mysql-connector-j` 驱动现在由 `database-query` 模块以 `runtime` scope 传递
+  - 如果之前使用了 `GaarasonSmartDataSourceMultipleLinksWrapper`, 请迁移到 `GaarasonRoutingDataSourceWrapper` + `GaarasonDataSourceContext` 或 YAML 多组配置
+
 ### 6.6.2
 
 - 在`Builder`中, 修复`cursorPaginate`查询上一页时数据结果错误的问题.

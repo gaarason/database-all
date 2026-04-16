@@ -8,6 +8,7 @@ import gaarason.database.lang.Nullable;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * 语法
@@ -135,6 +136,38 @@ public interface Grammar {
      * @return 目标属性 -> 关联关系信息
      */
     Map<String, Record.Relation> pullRelation();
+
+    /**
+     * 获取指定SQL片段类型的关键字, 允许方言子类覆盖
+     * @param sqlPartType SQL片段类型
+     * @return 关键字
+     */
+    default String getKeyword(SQLPartType sqlPartType) {
+        return sqlPartType.getKeyword();
+    }
+
+    /**
+     * 格式化LIMIT子句(含offset和take), 不同数据库语法不同
+     * @param offset 偏移量
+     * @param take 获取数量
+     * @param parameters 绑定参数集合(引用地址)
+     */
+    void formatLimit(Object offset, Object take, Collection<Object> parameters);
+
+    /**
+     * 格式化LIMIT子句(仅take), 不同数据库语法不同
+     * @param take 获取数量
+     * @param parameters 绑定参数集合(引用地址)
+     */
+    void formatLimit(Object take, Collection<Object> parameters);
+
+    /**
+     * 格式化UPSERT后缀, 不同数据库语法不同
+     * @param quotedColumns 已加引号的列名集合
+     * @param bracketFn 括号包装函数
+     * @return upsert SQL片段
+     */
+    String formatUpsertSuffix(Collection<String> quotedColumns, Function<String, String> bracketFn);
 
     /**
      * SQL片段类型

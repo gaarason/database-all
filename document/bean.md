@@ -9,9 +9,12 @@ Eloquent ORM for Java
         * [单连接](#单连接)
             * [单库连接](#单库连接)
             * [读写分离](#读写分离)
-        * [多连接](#多连接)
+        * [多数据源分组](#多数据源分组)
+            * [YAML 配置方式](#YAML-配置方式)
+            * [数据源组切换](#数据源组切换)
         * [使用GaarasonDataSource](#使用GaarasonDataSource)
     * [非spring boot](#非spring)
+        * [编程式多数据源分组](#编程式多数据源分组)
     * [拓展配置](#拓展配置)
         * [包扫描](#包扫描)
         * [自定义查询构造器](#自定义查询构造器)
@@ -245,7 +248,7 @@ database.slave1.useGlobalDataSourceStat=${useGlobalDataSourceStat}
 
 ```java
 @Repository
-public class StudentModel extends Model<MysqlBuilder, Student, Integer> {
+public class StudentModel extends Model<StudentModel.StudentBuilder, Student, Integer> {
 
     /**
      * 依赖注入
@@ -272,176 +275,149 @@ public class StudentModel extends Model<MysqlBuilder, Student, Integer> {
 }
 ```
 
-### 多连接
+### 多数据源分组
 
-- 多个数据库连接(DataSource), 一般场景是根据业务的上下文, 来确定使用哪个( DataSource ), 兼容于读写分离
-- 建议自定义代理类, 继承`GaarasonDataSourceWrapper`(即实现`GaarasonDataSource`接口),
-  并重写`protected DataSource getRealDataSource(boolean isWriteOrTransaction)`
+- 支持多个数据源组, 每组包含多个写库(一般为一个主库)和多个读库, 自动进行读写分离
+- 提供 YAML 配置和编程式两种构建方式
+- 提供 `@GaarasonDS` 注解和 [`GaarasonDataSourceContext`](/database-core/src/main/java/gaarason/database/connection/GaarasonDataSourceContext.java) 编码两种切换方式
+- 事务开始后自动锁定数据源组, 保证事务期间不会因上下文切换而路由到其他组
+- 未配置从库时, 读请求自动回退到主库
 
-#### 示例使用
-Web 场景下, 根据当前请求, 动态切换`DataSource`
+#### YAML 配置方式
 
-1. 定义`GaarasonSmartDataSourceMultipleLinksWrapper`(即实现`GaarasonDataSource`接口),
-   并重写`protected DataSource getRealDataSource(boolean isWriteOrTransaction)`
-```java
-public class GaarasonSmartDataSourceMultipleLinksWrapper extends GaarasonSmartDataSourceWrapper {
+通过 `gaarason.database.datasource` 前缀进行配置, 无需手动创建 DataSource Bean:
 
-    /**
-     * 每组链接 (写连接, 读链接)
-     */
-    protected final Map<String, List<List<DataSource>>> dataSourceMap;
-
-
-    public GaarasonSmartDataSourceMultipleLinksWrapper(Map<String, List<List<DataSource>>> dataSourceMap, Container container) {
-        // 不再使用原数据结构
-        super(Collections.emptyList(), Collections.emptyList(), container);
-        // 使用新的
-        this.dataSourceMap = dataSourceMap;
-    }
-
-    @Override
-    protected DataSource getRealDataSource(boolean isWriteOrTransaction) {
-        Object databaseLink = "";
-        // 选择合适的链接
-        databaseLink = getHttpServletRequest().getAttribute("databaseLink");
-
-        List<List<DataSource>> lists = dataSourceMap.get(String.valueOf(databaseLink));
-
-        if(ObjectUtils.isEmpty(lists)) {
-            throw new RuntimeException();
-        }
-        
-        List<DataSource> masterDataSourceList = lists.get(0);
-        List<DataSource> slaveDataSourceList = lists.size() > 1 ? lists.get(1) : Collections.emptyList();
-        boolean hasSlave = !ObjectUtils.isEmpty(slaveDataSourceList);
-
-        if (!hasSlave || isWriteOrTransaction) {
-            return masterDataSourceList.get(ThreadLocalRandom.current().nextInt(masterDataSourceList.size()));
-        } else {
-            return slaveDataSourceList.get(ThreadLocalRandom.current().nextInt(slaveDataSourceList.size()));
-        }
-    }
-
-    /**
-     * 2个写链接, 通过名字区分
-     */
-    public static GaarasonSmartDataSourceMultipleLinksWrapper build(DataSource dataSource1, DataSource dataSource2, Container container) {
-        Map<String, List<List<DataSource>>> dataSourceMap = new HashMap<>();
-        List<List<DataSource>> listOfName1 = dataSourceMap.computeIfAbsent("name1", k -> new ArrayList<>());
-        listOfName1.add(0, Collections.singletonList(dataSource1));
-
-        List<List<DataSource>> listOfName2 = dataSourceMap.computeIfAbsent("name2", k -> new ArrayList<>());
-        listOfName2.add(0, Collections.singletonList(dataSource2));
-
-        return new GaarasonSmartDataSourceMultipleLinksWrapper(dataSourceMap, container);
-    }
-
-
-    /**
-     * 示例, 获取当前 web 线程的 request
-     * @return request
-     */
-    public static HttpServletRequest getHttpServletRequest() {
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        if(requestAttributes == null) {
-            throw new BusinessHPException("No HttpServletRequest");
-        }
-        return requestAttributes.getRequest();
-    }
-}
-
-```
-2. 配置`GaarasonSmartDataSourceMultipleLinksWrapper`
-
-```java
-import java.util.HashMap;
-
-@Configuration
-@AutoConfigureBefore({DruidDataSourceAutoConfigure.class, DataSourceAutoConfiguration.class})
-@EnableConfigurationProperties({GaarasonDatabaseProperties.class})
-@Import({GeneralModel.class, GeneralGenerator.class})
-public class GaarasonDatabaseAutoConfiguration {
-
-    private static final Log LOGGER = LogFactory.getLog(GaarasonDatabaseAutoConfiguration.class);
-
-    // 省略其他配置项
-    // ....
-
-
-    @Configuration
-    public static class GaarasonDataSourceAutoconfigure {
-
-        @Resource
-        private Container container;
-
-        // 库1
-        @Bean
-        @ConfigurationProperties(prefix = "database.master1")
-        public DataSource dataSourceMaster1() {
-            return DruidDataSourceBuilder.create().build();
-        }
-
-        // 库2
-        @Bean
-        @ConfigurationProperties(prefix = "database.master2")
-        public DataSource dataSourceMaster2() {
-            return DruidDataSourceBuilder.create().build();
-        }
-
-        @Primary
-        @Bean
-        public GaarasonDataSource gaarasonDataSource(DataSource dataSourceMaster1, DataSource dataSourceMaster2, Container container) {
-            GaarasonSmartDataSourceMultipleLinksWrapper.build(dataSourceMaster1, dataSourceMaster2, container);
-        }
-
-        @Primary
-        @Bean
-        public GaarasonTransactionManager gaarasonTransactionManager(GaarasonDataSource gaarasonDataSource) {
-            return new GaarasonTransactionManager(gaarasonDataSource);
-        }
-    }
-}
-```
-3. 在业务入口处, 记录当前需要使用的链接 示例为 web 过滤器
-```java
-public class LoggingFilter implements Filter {
-
-
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
-        if (request instanceof HttpServletRequest) {
-            HttpServletRequest httpRequest = (HttpServletRequest) request;
-
-            // 业务判断
-            // ....
-            // 记录标记
-            request.setAttribute("databaseLink", "name1");
-        }
-
-        // 继续处理请求
-        chain.doFilter(request, response);
-    }
-}
+application.yml 示例:
+```yaml
+gaarason:
+  database:
+    datasource:
+      default-group: master
+      groups:
+        master:
+          type: com.alibaba.druid.pool.DruidDataSource  # 可选, 不指定时自动检测
+          master:
+            - url: jdbc:mysql://master1:3306/db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+              username: root
+              password: root
+              driver-class-name: com.mysql.cj.jdbc.Driver
+          slave:
+            - url: jdbc:mysql://slave1:3306/db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+              username: root
+              password: root
+              driver-class-name: com.mysql.cj.jdbc.Driver
+            - url: jdbc:mysql://slave2:3306/db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+              username: root
+              password: root
+              driver-class-name: com.mysql.cj.jdbc.Driver
+        order:
+          master:
+            - url: jdbc:mysql://order-master:3306/order_db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+              username: root
+              password: root
+              driver-class-name: com.mysql.cj.jdbc.Driver
 ```
 
-4. 业务使用
+配置属性说明:
+- 详见 [`GaarasonDataSourceProperties`](/database-spring-boot-starter/src/main/java/gaarason/database/spring/boot/starter/properties/GaarasonDataSourceProperties.java)
+
+| 属性 | 说明 | 默认值 |
+|---|---|---|
+| `default-group` | 默认使用的数据源组名 | `master` |
+| `groups` | 数据源组映射 (组名 -> 组配置) | 空 |
+| `groups.{name}.type` | DataSource 类型全限定类名 | 自动检测 |
+| `groups.{name}.master` | 主数据源列表(写) | 必填 |
+| `groups.{name}.slave` | 从数据源列表(读), 不配置时读回退到主库 | 空 |
+
+> **向后兼容**: 未配置 `gaarason.database.datasource.groups` 时, 框架保持原有的单 Spring DataSource 包装行为, 无需修改已有配置
+
+#### 数据源组切换
+
+提供两种切换方式, 可混合使用:
+
+**方式一: `@GaarasonDS` 注解 (依赖 Spring AOP)**
+
+可标注在方法或类上, 方法级别优先于类级别:
 
 ```java
-@Repository
-public class StudentModel extends Model<MysqlBuilder, Student, Integer> {
-    
+@Service
+public class OrderService {
+
     @Resource
-    private GaarasonDataSource gaarasonDataSource;
+    private OrderModel orderModel;
 
-    /**
-     * 普通业务调用
-     */
-    public void doSomeThing(){
-        newQuery().where("name", "alice").first();
+    @GaarasonDS("order")
+    public void processOrder(Long orderId) {
+        // 此方法内所有数据库操作将路由到 "order" 数据源组
+        orderModel.newQuery().where("id", orderId).first();
     }
 }
 ```
+
+类级别注解, 该类所有方法默认使用指定组:
+```java
+@GaarasonDS("order")
+@Service
+public class OrderService {
+
+    @Resource
+    private OrderModel orderModel;
+
+    public void processOrder(Long orderId) {
+        orderModel.newQuery().where("id", orderId).first();
+    }
+
+    @GaarasonDS("master")
+    public void syncToMaster() {
+        // 方法级别覆盖类级别, 使用 "master" 组
+    }
+}
+```
+
+- 详见 [`@GaarasonDS`](/database-spring-boot-starter/src/main/java/gaarason/database/spring/boot/starter/annotation/GaarasonDS.java)
+- 详见 [`GaarasonDataSourceAspect`](/database-spring-boot-starter/src/main/java/gaarason/database/spring/boot/starter/aop/GaarasonDataSourceAspect.java)
+
+**方式二: `GaarasonDataSourceContext` 编码 (不依赖 Spring)**
+
+适用于非 Spring 环境或需要细粒度控制的场景:
+
+```java
+// 方式 A: 手动 set / clear
+GaarasonDataSourceContext.set("order");
+try {
+    orderModel.newQuery().where("id", 1).first();
+} finally {
+    GaarasonDataSourceContext.clear();
+}
+
+// 方式 B: 自动管理 (推荐)
+GaarasonDataSourceContext.execute("order", () -> {
+    orderModel.newQuery().where("id", 1).first();
+});
+
+// 方式 C: 带返回值
+Order order = GaarasonDataSourceContext.execute("order", () -> {
+    return orderModel.newQuery().where("id", 1).first();
+});
+```
+
+支持嵌套调用, 基于栈式实现自动恢复前值:
+```java
+GaarasonDataSourceContext.execute("order", () -> {
+    // 此处使用 "order" 组
+    orderModel.newQuery().first();
+
+    GaarasonDataSourceContext.execute("master", () -> {
+        // 此处使用 "master" 组
+        userModel.newQuery().first();
+    });
+
+    // 自动恢复到 "order" 组
+    orderModel.newQuery().get();
+});
+```
+
+- 详见 [`GaarasonDataSourceContext`](/database-core/src/main/java/gaarason/database/connection/GaarasonDataSourceContext.java)
 
 
 
@@ -453,7 +429,7 @@ public class StudentModel extends Model<MysqlBuilder, Student, Integer> {
 /**
  * 定义model
  */
-public class TestModel extends Model<MysqlBuilder, TestModel.Inner, Integer> {
+public class TestModel extends Model<QueryBuilder<TestModel.Inner, Integer>, TestModel.Inner, Integer> {
 
     protected final static GaarasonDataSource gaarasonDataSource;
 
@@ -531,10 +507,51 @@ public class TestModel extends Model<MysqlBuilder, TestModel.Inner, Integer> {
 
 ```
 
+### 编程式多数据源分组
+
+不依赖 Spring, 使用 [`GaarasonRoutingDataSourceBuilder`](/database-core/src/main/java/gaarason/database/connection/GaarasonRoutingDataSourceBuilder.java) 构建多组路由数据源:
+
+```java
+// 创建各组的 DataSource
+DruidDataSource masterDs = new DruidDataSource();
+masterDs.setUrl("jdbc:mysql://master1:3306/db");
+masterDs.setUsername("root");
+masterDs.setPassword("root");
+
+DruidDataSource slaveDs = new DruidDataSource();
+slaveDs.setUrl("jdbc:mysql://slave1:3306/db");
+slaveDs.setUsername("root");
+slaveDs.setPassword("root");
+
+DruidDataSource orderDs = new DruidDataSource();
+orderDs.setUrl("jdbc:mysql://order1:3306/order_db");
+orderDs.setUsername("root");
+orderDs.setPassword("root");
+
+// 使用构建器创建路由数据源
+GaarasonDataSource gaarasonDataSource = GaarasonRoutingDataSourceBuilder.create()
+    .defaultGroup("master")
+    .group("master", Collections.singletonList(masterDs), Collections.singletonList(slaveDs))
+    .group("order", Collections.singletonList(orderDs))
+    .build(container);
+```
+
+切换数据源组使用 `GaarasonDataSourceContext`:
+
+```java
+// 在指定组内执行
+GaarasonDataSourceContext.execute("order", () -> {
+    orderModel.newQuery().where("id", 1).first();
+});
+```
+
+- 详见 [`GaarasonDataSourceContext`](/database-core/src/main/java/gaarason/database/connection/GaarasonDataSourceContext.java)
+- 详见 [`DataSourceGroup`](/database-core/src/main/java/gaarason/database/connection/DataSourceGroup.java)
+
 ## 拓展配置
 
-- 目前的主要是在做了mysql的适配,
-- 而各个数据库的功能的本质和逻辑比较类似, 但是部分api仍然存在差异
+- 框架内置了 40+ 种数据库方言支持(MySQL、PostgreSQL、Oracle、SQL Server、DB2、达梦、人大金仓等), 通过 JDBC `DatabaseMetaData.getDatabaseProductName()` 自动检测并选择对应的 SQL 语法
+- 各个数据库的功能本质和逻辑比较类似, 但分页、UPSERT、标识符引号等存在差异, 已通过 `DbType` 枚举和方言 `Grammar` 类进行适配
 
 ### 包扫描
 
@@ -587,14 +604,31 @@ public class MySqlBuilderV2 extends AbstractBuilder<MySqlBuilderV2<T, K>, T, K> 
 
 ```
 
-2. 实现 `QueryBuilderConfig` 接口, 因为是修改, 所以通过继承当前的 `MysqlQueryBuilderConfig` 后按需更改;
+2. 实现 `QueryBuilderConfig` 接口;
 
 ```java
-public class MysqlQueryBuilderConfigV2 extends MysqlQueryBuilderConfig {
+public class MysqlQueryBuilderConfigV2 implements QueryBuilderConfig, Serializable {
+
+    @Override
+    public String getValueSymbol() {
+        return "'";
+    }
+
+    @Override
+    public boolean support(String databaseProductName) {
+        return "mysql".equals(databaseProductName);
+    }
+
+    @Override
+    public Grammar newGrammar(String tableName) {
+        return new BaseGrammar(tableName, "`") {
+            private static final long serialVersionUID = 1L;
+        };
+    }
 
     @Override
     public <T, K> Builder<?, T, K> newBuilder(GaarasonDataSource gaarasonDataSource, Model<?, T, K> model) {
-        return new MySqlBuilderV2<T, K>().initBuilder(gaarasonDataSource, ObjectUtils.typeCast(model), new MySqlGrammar(model.getTableName()));
+        return new MySqlBuilderV2<T, K>().initBuilder(gaarasonDataSource, ObjectUtils.typeCast(model), newGrammar(model.getTableName()));
     }
 }
 
@@ -641,29 +675,77 @@ public abstract static class BaseModel<T extends BaseEntity, K> extends Model<My
 testModel.newQuery().add("ss").get();
 ```
 
+### 预置支持的数据库
+
+框架通过 [`DbType`](/database-api/src/main/java/gaarason/database/appointment/DbType.java) 枚举内置了以下数据库的方言支持, 通过 JDBC 自动检测, **无需任何额外配置**:
+
+| 数据库 | 描述 | 方言分组 |
+|---|---|---|
+| MySQL | MySQL 数据库 | MYSQL |
+| MariaDB | MariaDB 数据库 | MYSQL |
+| Oracle | Oracle11g 及以下数据库 | ORACLE |
+| Oracle 12c | Oracle12c 及以上数据库 | ORACLE_12C |
+| PostgreSQL | PostgreSQL 数据库 | POSTGRESQL |
+| SQL Server | SQLServer 数据库 | SQL_SERVER |
+| DB2 | DB2 数据库 | DB2 |
+| H2 | H2 数据库 | POSTGRESQL |
+| HSQL | HSQL 数据库 | POSTGRESQL |
+| SQLite | SQLite 数据库 | POSTGRESQL |
+| 达梦(DM) | 达梦数据库 | ORACLE_12C |
+| 人大金仓 | 人大金仓数据库 | POSTGRESQL |
+| OceanBase | OceanBase 数据库 | MYSQL |
+| ClickHouse | ClickHouse 数据库 | POSTGRESQL |
+| openGauss | 华为 openGauss 数据库 | POSTGRESQL |
+| Greenplum | Greenplum 数据库 | POSTGRESQL |
+| Informix | Informix 数据库 | INFORMIX |
+| Firebird | Firebird 数据库 | FIREBIRD |
+| Derby | Derby 数据库 | ORACLE_12C |
+| Doris | Doris 数据库 | MYSQL |
+| Hive | Hive 数据库 | MYSQL |
+| ... | 更多 40+ 种数据库 | 见 [`DbType`](/database-api/src/main/java/gaarason/database/appointment/DbType.java) 枚举 |
+
+各方言分组对应的 Grammar 实现:
+
+| 方言分组 | Grammar 类 | 分页语法 |
+|---|---|---|
+| MYSQL | [`BaseGrammar`](/database-query/src/main/java/gaarason/database/query/grammars/BaseGrammar.java) | `LIMIT offset, count` |
+| POSTGRESQL | [`PostgreSqlGrammar`](/database-query/src/main/java/gaarason/database/query/grammars/PostgreSqlGrammar.java) | `LIMIT count OFFSET offset` |
+| ORACLE | [`OracleGrammar`](/database-query/src/main/java/gaarason/database/query/grammars/OracleGrammar.java) | ROWNUM |
+| ORACLE_12C | [`Oracle12cGrammar`](/database-query/src/main/java/gaarason/database/query/grammars/Oracle12cGrammar.java) | `OFFSET n ROWS FETCH NEXT m ROWS ONLY` |
+| SQL_SERVER | [`MsSqlGrammar`](/database-query/src/main/java/gaarason/database/query/grammars/MsSqlGrammar.java) | `OFFSET n ROWS FETCH NEXT m ROWS ONLY` |
+| DB2 | [`Db2Grammar`](/database-query/src/main/java/gaarason/database/query/grammars/Db2Grammar.java) | `FETCH FIRST n ROWS ONLY` |
+| INFORMIX | [`InformixGrammar`](/database-query/src/main/java/gaarason/database/query/grammars/InformixGrammar.java) | `SKIP m FIRST n` |
+| FIREBIRD | [`FirebirdGrammar`](/database-query/src/main/java/gaarason/database/query/grammars/FirebirdGrammar.java) | `ROWS m TO n` |
+
 ### 新增支持的数据库
-可以支持任意的 ( java 的 jdbc 支持的 )  数据库类型   
-大致方式`同上`, 稍有区别的是  
-在实现 `QueryBuilderConfig` 接口时, 多实现几个方法
-- 根据实际情况, 重写 Builder 查询构造器
-- 根据实际情况, 重写 Grammar 语法
+
+如果预置的 `DbType` 未覆盖你的数据库, 可以通过自定义 `QueryBuilderConfig` 来支持:
+- 根据实际情况, 实现 `Grammar` 子类处理分页、UPSERT 等语法差异
+- 根据实际情况, 自定义 `Builder` 查询构造器
 
 ```java
-public class MysqlQueryBuilderConfigV2 extends MysqlQueryBuilderConfig {
+public class CustomQueryBuilderConfig implements QueryBuilderConfig, Serializable {
 
-    // 根据数据库名称, 启用当前配置
+    @Override
+    public String getValueSymbol() {
+        return "'";
+    }
+
+    // 根据 JDBC 返回的数据库产品名称, 启用当前配置
     @Override
     public boolean support(String databaseProductName) {
-        return "mysql".equals(databaseProductName);
+        return "your_database".equals(databaseProductName);
     }
 
-    // 其他 QueryBuilderConfig 接口方法, 按需实现
-    // 根据实际情况, 重写 Builder 查询构造器
-    // 根据实际情况, 重写 Grammar 语法
+    // 创建方言对应的 Grammar, 可继承 BaseGrammar 并重写分页等方法
+    @Override
+    public Grammar newGrammar(String tableName) {
+        return new PostgreSqlGrammar(tableName);
+    }
+
     @Override
     public <T, K> Builder<?, T, K> newBuilder(GaarasonDataSource gaarasonDataSource, Model<?, T, K> model) {
-        return new MySqlBuilderV2<T, K>().initBuilder(gaarasonDataSource, ObjectUtils.typeCast(model), new MySqlGrammar(model.getTableName()));
+        return new QueryBuilder<T, K>().initBuilder(gaarasonDataSource, ObjectUtils.typeCast(model), newGrammar(model.getTableName()));
     }
 }
-
 ```

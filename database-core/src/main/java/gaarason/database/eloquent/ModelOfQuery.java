@@ -3,6 +3,7 @@ package gaarason.database.eloquent;
 import gaarason.database.appointment.EntityUseType;
 import gaarason.database.appointment.JDBCValueWrapper;
 import gaarason.database.config.ConversionConfig;
+import gaarason.database.config.QueryBuilderConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
@@ -54,8 +55,28 @@ abstract class ModelOfQuery<B extends Builder<B, T, K>, T, K> extends ModelOfSof
      */
     protected B theBuilderWithoutApply() {
         GaarasonDataSource gaarasonDataSource = getGaarasonDataSource();
-        Builder<?, T, K> builder = gaarasonDataSource.getQueryBuilder().newBuilder(gaarasonDataSource, this);
-        return ObjectUtils.typeCast(builder);
+        QueryBuilderConfig config = gaarasonDataSource.getQueryBuilder();
+        return createBuilderInstance(gaarasonDataSource, config);
+    }
+
+    /**
+     * 创建并初始化Builder实例
+     * <p>
+     * 默认通过QueryBuilderConfig创建, 如需使用自定义Builder类型, 覆盖此方法:
+     * <pre>{@code
+     * protected MyBuilder<T, K> createBuilderInstance(GaarasonDataSource ds, QueryBuilderConfig config) {
+     *     Grammar grammar = config.newGrammar(getTableName());
+     *     return new MyBuilder<T, K>().initBuilder(ds, ObjectUtils.typeCast(this), grammar);
+     * }
+     * }</pre>
+     * @param gaarasonDataSource 数据源
+     * @param config 查询构造器配置(含方言Grammar工厂)
+     * @return 初始化完成的Builder实例
+     */
+    @SuppressWarnings("unchecked")
+    protected B createBuilderInstance(GaarasonDataSource gaarasonDataSource, QueryBuilderConfig config) {
+        Builder<?, T, K> builder = config.newBuilder(gaarasonDataSource, this);
+        return (B) builder;
     }
 
     @Override

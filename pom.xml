@@ -14,8 +14,6 @@
         <module>database-generator</module>
         <module>database-spring-boot-starter</module>
         <module>database-tests</module>
-        <module>database-query-mysql</module>
-        <module>database-query-mssql</module>
         <module>database-query</module>
     </modules>
     <properties>

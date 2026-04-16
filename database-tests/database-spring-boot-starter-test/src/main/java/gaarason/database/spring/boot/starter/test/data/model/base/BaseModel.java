@@ -2,7 +2,7 @@ package gaarason.database.spring.boot.starter.test.data.model.base;
 
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.eloquent.Model;
-import gaarason.database.query.MySqlBuilder;
+import gaarason.database.query.QueryBuilder;
 import gaarason.database.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
@@ -18,7 +18,7 @@ import java.util.Collection;
  * @author xt
  */
 @Slf4j
-public abstract class BaseModel<T extends Serializable, K extends Serializable> extends Model<MySqlBuilder<T, K>, T, K> {
+public abstract class BaseModel<T extends Serializable, K extends Serializable> extends Model<QueryBuilder<T, K>, T, K> {
 
     @Lazy
     @Resource

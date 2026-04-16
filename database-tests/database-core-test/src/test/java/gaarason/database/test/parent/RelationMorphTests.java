@@ -20,6 +20,7 @@ import java.util.List;
 
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
+@SuppressWarnings("unused")
 abstract public class RelationMorphTests extends BaseTests {
 
     protected static final Comment.Model commentModel = new Comment.Model();

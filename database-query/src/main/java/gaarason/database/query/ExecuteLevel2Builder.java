@@ -11,8 +11,8 @@ import gaarason.database.exception.EntityNotFoundException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.lang.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -67,25 +67,12 @@ abstract class ExecuteLevel2Builder<B extends Builder<B, T, K>, T, K>  extends E
 
     @Override
     public int upsert(Collection<String> columns) throws SQLRuntimeException {
-        // sql 语句拼接
-        StringBuilder sqlBuilder = new StringBuilder();
-        sqlBuilder.append("ON DUPLICATE KEY UPDATE ");
-        Iterator<String> iterator = columns.iterator();
-        while (iterator.hasNext()) {
-            // 列名
-            String column = iterator.next();
-            // `列名`
-            String backQuoteColumn = supportBackQuote(column);
-            // `列名`=VALUES(`列名`)
-            sqlBuilder.append(backQuoteColumn)
-                    .append("=VALUES")
-                    .append(supportBracket(backQuoteColumn));
-            if (iterator.hasNext()) {
-                sqlBuilder.append(", ");
-            }
+        List<String> quotedColumns = new ArrayList<>(columns.size());
+        for (String column : columns) {
+            quotedColumns.add(supportBackQuote(column));
         }
-        // 加入 末端
-        lastRaw(sqlBuilder.toString());
+        String upsertSql = grammar.formatUpsertSuffix(quotedColumns, this::supportBracket);
+        lastRaw(upsertSql);
 
         modelMember.triggerQueryIngEvents(EventType.QueryIng.eventQueryCreating, this);
         int rows = updateSql(SqlType.INSERT);

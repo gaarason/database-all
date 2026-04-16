@@ -19,7 +19,7 @@ import gaarason.database.generator.support.TemplateHelper;
 import gaarason.database.generator.support.TypeReference;
 import gaarason.database.lang.Nullable;
 import gaarason.database.provider.ModelShadowProvider;
-import gaarason.database.query.MySqlBuilder;
+import gaarason.database.query.QueryBuilder;
 import gaarason.database.util.StringUtils;
 
 import javax.sql.DataSource;
@@ -392,7 +392,7 @@ public class Generator {
         element.type2Name(Serializable.class);
         element.type2Name("lombok.Data");
         element.type2Name("lombok.experimental.Accessors");
-        element.type2Name(MySqlBuilder.class);
+        element.type2Name(QueryBuilder.class);
 
 
         Map<String, String> parameterMap = new HashMap<>();
@@ -876,7 +876,7 @@ public class Generator {
         return this;
     }
 
-    public static class ToolModel extends gaarason.database.eloquent.Model<MySqlBuilder<ToolModel.Inner, Serializable>, ToolModel.Inner, Serializable> {
+    public static class ToolModel extends gaarason.database.eloquent.Model<QueryBuilder<ToolModel.Inner, Serializable>, ToolModel.Inner, Serializable> {
 
         protected static GaarasonDataSource gaarasonDataSource;
 

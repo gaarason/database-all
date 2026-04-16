@@ -12,6 +12,7 @@ import gaarason.database.util.ObjectUtils;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -206,8 +207,8 @@ public abstract class BaseGrammar implements Grammar, Serializable {
             }
         }
 
-        // keyword
-        sqlBuilder.append(sqlPartType.getKeyword());
+        // keyword (通过getKeyword允许方言子类覆盖)
+        sqlBuilder.append(getKeyword(sqlPartType));
 
         // 需要括号
         boolean needBracket = PARENTHESES_ARE_REQUIRED.contains(sqlPartType);
@@ -320,6 +321,8 @@ public abstract class BaseGrammar implements Grammar, Serializable {
                 return Collections.singletonList(simpleInstanceSQLPartInfo("*", null));
             case VALUE:
                 return Collections.singletonList(simpleInstanceSQLPartInfo(" values ()", null));
+            default:
+                break;
         }
         return null;
     }
@@ -357,6 +360,36 @@ public abstract class BaseGrammar implements Grammar, Serializable {
             SQLPartInfo partInfo = grammar.get(type);
             add(type, partInfo.getSqlString(), partInfo.getParameters());
         }
+    }
+
+    @Override
+    public void formatLimit(Object offset, Object take, Collection<Object> parameters) {
+        String sqlPart = replaceValueAndFillParameters(offset, parameters) + "," +
+            replaceValueAndFillParameters(take, parameters);
+        set(SQLPartType.LIMIT, sqlPart, parameters);
+    }
+
+    @Override
+    public void formatLimit(Object take, Collection<Object> parameters) {
+        String sqlPart = replaceValueAndFillParameters(take, parameters);
+        set(SQLPartType.LIMIT, sqlPart, parameters);
+    }
+
+    @Override
+    public String formatUpsertSuffix(Collection<String> quotedColumns, Function<String, String> bracketFn) {
+        StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append("ON DUPLICATE KEY UPDATE ");
+        Iterator<String> iterator = quotedColumns.iterator();
+        while (iterator.hasNext()) {
+            String backQuoteColumn = iterator.next();
+            sqlBuilder.append(backQuoteColumn)
+                .append("=VALUES")
+                .append(bracketFn.apply(backQuoteColumn));
+            if (iterator.hasNext()) {
+                sqlBuilder.append(", ");
+            }
+        }
+        return sqlBuilder.toString();
     }
 
     /**

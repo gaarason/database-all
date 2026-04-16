@@ -453,18 +453,13 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
 
     @Override
     public B limit(Object offset, Object take) {
-        Collection<Object> parameters = new ArrayList<>(2);
-        String sqlPart = grammar.replaceValueAndFillParameters(offset, parameters) + "," +
-                grammar.replaceValueAndFillParameters(take, parameters);
-        grammar.set(Grammar.SQLPartType.LIMIT, sqlPart, parameters);
+        grammar.formatLimit(offset, take, new ArrayList<>(2));
         return getSelf();
     }
 
     @Override
     public B limit(Object take) {
-        Collection<Object> parameters = new ArrayList<>(1);
-        String sqlPart = grammar.replaceValueAndFillParameters(take, parameters);
-        grammar.set(Grammar.SQLPartType.LIMIT, sqlPart, parameters);
+        grammar.formatLimit(take, new ArrayList<>(1));
         return getSelf();
     }
 

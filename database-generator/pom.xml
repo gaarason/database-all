@@ -19,12 +19,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>database-query-mysql</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>database-query-mssql</artifactId>
+            <artifactId>database-query</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

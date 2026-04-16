@@ -26,6 +26,7 @@ import java.util.*;
 
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
+@SuppressWarnings("unused")
 abstract public class RelationTests extends BaseTests {
 
     protected static final StudentModel studentModel = new StudentModel();

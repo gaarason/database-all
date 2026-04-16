@@ -21,6 +21,7 @@ import java.util.concurrent.CountDownLatch;
  */
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
+@SuppressWarnings("unused")
 abstract public class TransactionTests extends BaseTests {
 
     /*********  以下分别使用不同的数据库连接, 理解成物理上不同的数据库即可  ***********/
@@ -126,6 +127,7 @@ abstract public class TransactionTests extends BaseTests {
 //        }, 3);
 //    }
 
+    @SuppressWarnings("unused")
     @Test
     public void 事物_多线程下_多个数据连接嵌套事物2() throws InterruptedException {
 

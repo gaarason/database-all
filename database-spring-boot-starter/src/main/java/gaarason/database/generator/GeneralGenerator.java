@@ -2,7 +2,7 @@ package gaarason.database.generator;
 
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.eloquent.Model;
-import gaarason.database.query.MySqlBuilder;
+import gaarason.database.query.QueryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +19,7 @@ public class GeneralGenerator extends Generator {
     GeneralModel generalModel;
 
     @Override
-    public Model<MySqlBuilder<GeneralModel.Table, Serializable>, GeneralModel.Table, Serializable> getModel() {
+    public Model<QueryBuilder<GeneralModel.Table, Serializable>, GeneralModel.Table, Serializable> getModel() {
         return generalModel;
     }
 }

@@ -6,7 +6,7 @@ import gaarason.database.contract.support.ShowType;
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.generator.GeneralGenerator;
 import gaarason.database.generator.Generator;
-import gaarason.database.query.MySqlBuilder;
+import gaarason.database.query.QueryBuilder;
 import gaarason.database.spring.boot.starter.test.data.entity.Student;
 import gaarason.database.spring.boot.starter.test.data.entity.Teacher;
 import gaarason.database.spring.boot.starter.test.data.entity.TestEntity;
@@ -132,7 +132,7 @@ public class DruidApplicationTests {
     public void 分页_关系() {
         GaarasonDataSource gaarasonDataSource = studentModel.getGaarasonDataSource();
         studentModel.newQuery().with("relationshipStudentTeachers", builder -> builder.showType(
-                new ShowType<MySqlBuilder<Student, Long>>() {}).limit(3)).paginate(1, 7);
+                new ShowType<QueryBuilder<Student, Long>>() {}).limit(3)).paginate(1, 7);
     }
 
     @Test

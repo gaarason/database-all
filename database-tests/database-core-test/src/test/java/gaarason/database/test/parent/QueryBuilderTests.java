@@ -2468,7 +2468,7 @@ abstract public class QueryBuilderTests extends BaseTests {
 
     @Test
     public void 分页_快速分页_mapStyle() {
-        Paginate<Map<String, Object>> paginate = studentModel.newQuery().orderBy("id").simplePaginateMapStyle(1, 3);
+        Paginate<Map<String, Object>> paginate = studentModel.newQuery().orderBy("id").paginate(FriendlyList::toMapList, 1, 3, false);
         System.out.println(paginate);
         Assert.assertEquals(paginate.getCurrentPage(), 1);
         Assert.assertNotNull(paginate.getFrom());
@@ -2483,7 +2483,7 @@ abstract public class QueryBuilderTests extends BaseTests {
             .where("sex", "1")
             .orWhere((builder -> builder.where("sex", "2")))
             .orderBy("id")
-            .simplePaginateMapStyle(2, 3);
+            .paginate(FriendlyList::toMapList, 2, 3, false);
         System.out.println(paginate2);
         Assert.assertEquals(paginate2.getCurrentPage(), 2);
         Assert.assertNotNull(paginate2.getFrom());
@@ -2497,7 +2497,7 @@ abstract public class QueryBuilderTests extends BaseTests {
             .where("sex", "1")
             .orWhere((builder -> builder.where("sex", "2")))
             .orderBy("id")
-            .simplePaginateMapStyle(3, 3);
+            .paginate(FriendlyList::toMapList, 3, 3, false);
         System.out.println(paginate3);
         Assert.assertEquals(paginate3.getCurrentPage(), 3);
         Assert.assertNotNull(paginate3.getFrom());
@@ -2512,7 +2512,7 @@ abstract public class QueryBuilderTests extends BaseTests {
             .orderBy("id")
             .where("sex", "1")
             .orWhere((builder -> builder.where("sex", "2")))
-            .simplePaginateMapStyle(4, 3);
+            .paginate(FriendlyList::toMapList, 4, 3, false);
         System.out.println(paginate4);
         Assert.assertEquals(paginate4.getCurrentPage(), 4);
         Assert.assertNotNull(paginate4.getFrom());
@@ -2527,7 +2527,7 @@ abstract public class QueryBuilderTests extends BaseTests {
             .where("sex", "1")
             .orWhere((builder -> builder.where("sex", "2")))
             .orderBy("id")
-            .simplePaginateMapStyle(5, 3);
+            .paginate(FriendlyList::toMapList, 5, 3, false);
         System.out.println(paginate5);
         Assert.assertEquals(paginate5.getCurrentPage(), 5);
         Assert.assertNull(paginate5.getFrom());
@@ -2604,8 +2604,7 @@ abstract public class QueryBuilderTests extends BaseTests {
     @Test
     public void 分页_通用分页_mapStyle() {
         Paginate<Map<String, Object>> paginate =
-            studentModel.newQuery().orderBy("id").paginateMapStyle(1,
-                4);
+            studentModel.newQuery().orderBy("id").paginate(FriendlyList::toMapList, 1, 4, true);
         System.out.println(paginate);
         Assert.assertEquals(paginate.getCurrentPage(), 1);
         Assert.assertNotNull(paginate.getFrom());
@@ -2623,7 +2622,7 @@ abstract public class QueryBuilderTests extends BaseTests {
                 .andWhere((builder -> builder.where("sex", "1")))
                 .orWhere((builder -> builder.where("sex", "2")))
                 .orderBy("id")
-                .paginateMapStyle(2, 4);
+                .paginate(FriendlyList::toMapList, 2, 4, true);
         System.out.println(paginate2);
         Assert.assertEquals(paginate2.getCurrentPage(), 2);
         Assert.assertNotNull(paginate2.getFrom());
@@ -2641,7 +2640,7 @@ abstract public class QueryBuilderTests extends BaseTests {
             .orderBy("id")
             .where("sex", "1")
             .orWhere((builder -> builder.where("sex", "2")))
-            .paginateMapStyle(4, 4);
+            .paginate(FriendlyList::toMapList, 4, 4, true);
         System.out.println(paginate4);
         Assert.assertEquals(paginate4.getCurrentPage(), 4);
         Assert.assertNull(paginate4.getFrom());
@@ -2763,7 +2762,7 @@ abstract public class QueryBuilderTests extends BaseTests {
             .orderBy("id")
             .where("sex", "1")
             .orWhere((builder -> builder.where("sex", "2")))
-            .paginateMapStyle(1, 4);
+            .paginate(FriendlyList::toMapList, 1, 4, true);
         System.out.println(paginate1);
         Assert.assertEquals(paginate1.getCurrentPage(), 1);
         Assert.assertEquals(1, paginate1.getFrom().intValue());
@@ -2782,7 +2781,7 @@ abstract public class QueryBuilderTests extends BaseTests {
             .where("sex", "1")
             .orWhere((builder -> builder.where("sex", "2")))
             .group("NAME", "age", "sex")
-            .paginateMapStyle(1, 4);
+            .paginate(FriendlyList::toMapList, 1, 4, true);
         System.out.println(paginate5);
         Assert.assertEquals(paginate5.getCurrentPage(), 1);
         Assert.assertNotNull(paginate5.getFrom());

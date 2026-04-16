@@ -1,13 +1,15 @@
 package gaarason.database.spring.boot.starter.configurations;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
-import gaarason.database.autoconfiguration.MssqlAutoconfiguration;
-import gaarason.database.autoconfiguration.MysqlAutoconfiguration;
+import gaarason.database.autoconfiguration.DefaultAutoconfiguration;
 import gaarason.database.bootstrap.ContainerBootstrap;
 import gaarason.database.config.GaarasonDatabaseProperties;
+import gaarason.database.connection.DataSourceGroup;
+import gaarason.database.connection.GaarasonRoutingDataSourceWrapper;
 import gaarason.database.connection.GaarasonSmartDataSourceWrapper;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.core.Container;
+import gaarason.database.lang.Nullable;
 import gaarason.database.eloquent.GeneralModel;
 import gaarason.database.generator.GeneralGenerator;
 import gaarason.database.logging.Log;
@@ -16,15 +18,22 @@ import gaarason.database.provider.GodProvider;
 import gaarason.database.provider.ModelInstanceProvider;
 import gaarason.database.provider.ModelShadowProvider;
 import gaarason.database.spring.boot.starter.annotation.GaarasonDatabaseScanRegistrar;
+import gaarason.database.spring.boot.starter.aop.GaarasonDataSourceAspect;
+import gaarason.database.spring.boot.starter.properties.GaarasonDataSourceProperties;
+import gaarason.database.spring.boot.starter.properties.GaarasonDataSourceProperties.DataSourceGroupProperties;
+import gaarason.database.spring.boot.starter.properties.GaarasonDataSourceProperties.DataSourceNodeProperties;
 import gaarason.database.spring.boot.starter.provider.GaarasonTransactionManager;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,8 +41,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 自动配置
@@ -54,6 +66,16 @@ public class GaarasonDatabaseAutoConfiguration {
     @ConfigurationProperties(prefix = GaarasonDatabaseProperties.PREFIX)
     public GaarasonDatabaseProperties gaarasonDatabaseProperties() {
         return new GaarasonDatabaseProperties();
+    }
+
+    /**
+     * 多数据源分组配置属性
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConfigurationProperties(prefix = GaarasonDataSourceProperties.PREFIX)
+    public GaarasonDataSourceProperties gaarasonDataSourceProperties() {
+        return new GaarasonDataSourceProperties();
     }
 
     /**
@@ -119,8 +141,7 @@ public class GaarasonDatabaseAutoConfiguration {
      */
     protected void bootstrapGaarasonAutoconfiguration(ContainerBootstrap container) {
         if (isNative()) {
-            new MysqlAutoconfiguration().init(container);
-            new MssqlAutoconfiguration().init(container);
+            new DefaultAutoconfiguration().init(container);
         } else {
             container.bootstrapGaarasonAutoconfiguration();
         }
@@ -155,14 +176,31 @@ public class GaarasonDatabaseAutoConfiguration {
 
         /**
          * 数据源配置
+         * <p>
+         * 当配置了 gaarason.database.datasource.groups 时, 自动创建多组路由数据源;
+         * 否则使用传统的单 Spring DataSource 包装.
          * @return 数据源
          */
         @Primary
         @Bean()
         @ConditionalOnMissingBean(GaarasonDataSource.class)
-        public GaarasonDataSource gaarasonDataSource(DataSource dataSource, Container container) {
+        public GaarasonDataSource gaarasonDataSource(ObjectProvider<DataSource> dataSourceProvider,
+            Container container, GaarasonDataSourceProperties dsProperties) {
+
+            if (!dsProperties.getGroups().isEmpty()) {
+                Map<String, DataSourceGroup> groupMap = buildGroupMap(dsProperties);
+                String defaultGroup = dsProperties.getDefaultGroup();
+                LOGGER.info("GaarasonDataSource init with routing mode, groups: " + groupMap.keySet()
+                    + ", default: " + defaultGroup);
+                return new GaarasonRoutingDataSourceWrapper(groupMap, defaultGroup, container);
+            }
+
+            DataSource dataSource = dataSourceProvider.getIfAvailable();
+            if (dataSource == null) {
+                throw new IllegalStateException(
+                    "No DataSource bean found. Either configure a Spring DataSource or set gaarason.database.datasource.groups.");
+            }
             LOGGER.info("GaarasonDataSource init with " + dataSource.getClass().getName());
-            // 创建 GaarasonDataSource
             return new GaarasonSmartDataSourceWrapper(Collections.singletonList(dataSource), container);
         }
 
@@ -176,6 +214,77 @@ public class GaarasonDatabaseAutoConfiguration {
         public GaarasonTransactionManager gaarasonTransactionManager(GaarasonDataSource gaarasonDataSource) {
             LOGGER.info("GaarasonTransactionManager init");
             return new GaarasonTransactionManager(gaarasonDataSource);
+        }
+
+        /**
+         * 数据源组切换 AOP 切面
+         */
+        @Bean
+        @ConditionalOnMissingBean
+        @ConditionalOnClass(name = "org.aspectj.lang.annotation.Aspect")
+        public GaarasonDataSourceAspect gaarasonDataSourceAspect() {
+            LOGGER.info("GaarasonDataSourceAspect init");
+            return new GaarasonDataSourceAspect();
+        }
+
+        /**
+         * 根据 YAML 配置构建数据源组映射
+         */
+        private static Map<String, DataSourceGroup> buildGroupMap(GaarasonDataSourceProperties dsProperties) {
+            Map<String, DataSourceGroup> groupMap = new LinkedHashMap<>();
+            for (Map.Entry<String, DataSourceGroupProperties> entry : dsProperties.getGroups().entrySet()) {
+                String groupKey = entry.getKey();
+                DataSourceGroupProperties groupProps = entry.getValue();
+
+                List<DataSource> masters = createDataSources(groupProps.getMaster(), groupProps.getType());
+                List<DataSource> slaves = createDataSources(groupProps.getSlave(), groupProps.getType());
+
+                if (masters.isEmpty()) {
+                    throw new IllegalArgumentException(
+                        "Datasource group [" + groupKey + "] must have at least one master datasource.");
+                }
+
+                groupMap.put(groupKey, slaves.isEmpty()
+                    ? new DataSourceGroup(masters)
+                    : new DataSourceGroup(masters, slaves));
+            }
+            return groupMap;
+        }
+
+        /**
+         * 从节点配置列表创建 DataSource 实例
+         */
+        @SuppressWarnings("unchecked")
+        private static List<DataSource> createDataSources(List<DataSourceNodeProperties> nodes,
+            @Nullable String dsType) {
+            if (ObjectUtils.isEmpty(nodes)) {
+                return Collections.emptyList();
+            }
+            List<DataSource> result = new ArrayList<>(nodes.size());
+            for (DataSourceNodeProperties node : nodes) {
+                DataSourceBuilder<?> builder = DataSourceBuilder.create();
+                if (node.getUrl() != null) {
+                    builder.url(node.getUrl());
+                }
+                if (node.getUsername() != null) {
+                    builder.username(node.getUsername());
+                }
+                if (node.getPassword() != null) {
+                    builder.password(node.getPassword());
+                }
+                if (node.getDriverClassName() != null) {
+                    builder.driverClassName(node.getDriverClassName());
+                }
+                if (!ObjectUtils.isEmpty(dsType)) {
+                    try {
+                        builder.type((Class<? extends DataSource>) Class.forName(dsType));
+                    } catch (ClassNotFoundException e) {
+                        throw new IllegalArgumentException("DataSource type class not found: " + dsType, e);
+                    }
+                }
+                result.add(builder.build());
+            }
+            return result;
         }
     }
 
