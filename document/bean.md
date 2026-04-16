@@ -41,239 +41,23 @@ Eloquent ORM for Java
 
 - 读写都在同一数据库的典型场景
 - 使用提供的`database-spring-boot-starter`, 即可以零配置使用
+- 底层实现上等价于`单组路由模式`（默认组仅一个 master 数据源）
 - 详见[GaarasonDatabaseAutoConfiguration.java](/database-spring-boot-starter/src/main/java/gaarason/database/spring/boot/starter/configurations/GaarasonDatabaseAutoConfiguration.java)
+
+
+```properties
+spring.datasource.url=jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai
+spring.datasource.username=root
+spring.datasource.password=root
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+```
 
 #### 读写分离
 
 - 读, 写操作使用不同的数据库链接(DataSource), 程序会自动选择合适的(DataSource)
-- 因为各个3方库都一般没有多数据源的默认配置, 所以在产生多个(DataSource)的步骤需要手动进行,
-- a. 在所有的 DataSourceAutoConfigure 执行前,产生我们自己的DataSource;
-- b. 使用这些 DataSource 产生 GaarasonDataSource
+- 在当前实现中, 单链接读写分离与多组读写分离已统一到同一套路由器实现, 区别仅在于是否存在多个数据源组
+- 推荐优先使用下文的`gaarason.database.datasource.groups`配置（单链接场景可仅配置一个组）
 
-```java
-@Configuration
-@AutoConfigureBefore({DruidDataSourceAutoConfigure.class, DataSourceAutoConfiguration.class})
-@EnableConfigurationProperties({GaarasonDatabaseProperties.class})
-@Import({GeneralModel.class, GeneralGenerator.class})
-public class GaarasonDatabaseAutoConfiguration {
-
-    private static final Log LOGGER = LogFactory.getLog(GaarasonDatabaseAutoConfiguration.class);
-    
-    // 省略其他配置项
-    // ....
-    
-
-    @Configuration
-    public static class GaarasonDataSourceAutoconfigure {
-
-        @Resource
-        private Container container;
-
-        // 主要写库1
-        @Bean
-        @ConfigurationProperties(prefix = "database.master0")
-        public DataSource dataSourceMaster0() {
-            return DruidDataSourceBuilder.create().build();
-        }
-
-        // 写库2
-        @Bean
-        @ConfigurationProperties(prefix = "database.master1")
-        public DataSource dataSourceMaster1() {
-            return DruidDataSourceBuilder.create().build();
-        }
-
-        // 读库1
-        @Bean
-        @ConfigurationProperties(prefix = "database.slave0")
-        public DataSource dataSourceSlave0() {
-            return DruidDataSourceBuilder.create().build();
-        }
-
-        // 读库2
-        @Bean
-        @ConfigurationProperties(prefix = "database.slave1")
-        public DataSource dataSourceSlave1() {
-            return DruidDataSourceBuilder.create().build();
-        }
-
-        /**
-         * 数据源配置
-         * @return 数据源
-         */
-        @Primary
-        @Bean(autowireCandidate = false)
-        @ConditionalOnMissingBean(GaarasonDataSource.class)
-        public GaarasonDataSource gaarasonDataSource() {
-            List<DataSource> dataSourceList = new ArrayList<>();
-            dataSourceList.add(dataSourceMaster0());
-            dataSourceList.add(dataSourceMaster1());
-            List<DataSource> readDataSourceList = new ArrayList<>();
-            readDataSourceList.add(dataSourceSlave0());
-            readDataSourceList.add(dataSourceSlave1());
-            return new GaarasonSmartDataSourceWrapper(dataSourceList, readDataSourceList, container);
-        }
-
-        /**
-         * Spring 事物管理器
-         * @return 事物管理器
-         */
-        @Primary
-        @Bean
-        @ConditionalOnMissingBean(GaarasonTransactionManager.class)
-        public GaarasonTransactionManager gaarasonTransactionManager() {
-            LOGGER.info("-------------------- GaarasonTransactionManager init ------------------");
-            return new GaarasonTransactionManager(gaarasonDataSource());
-        }
-    }
-}
-```
-
-application.properties 如下
-
-```
-driverClassName=com.mysql.cj.jdbc.Driver
-type=com.alibaba.druid.pool.DruidDataSource
-initialSize=5
-minIdle=5
-maxActive=20
-maxWait=60000
-timeBetweenEvictionRunsMillis=60000
-minEvictableIdleTimeMillis=300000
-validationQuery=SELECT 1
-connectionInitSqls[0]=SET SESSION SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'
-testWhileIdle=true
-testOnBorrow=false
-testOnReturn=false
-poolPreparedStatements=false
-maxPoolPreparedStatementPerConnectionSize=-1
-# 配置监控统计拦截的filters，去掉后监控界面sql无法统计，'wall'用于防火墙
-# filters=stat,wall,logback
-connectionProperties=druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
-useGlobalDataSourceStat=true
-
-
-# 主数据源
-database.master0.url=jdbc:mysql://localhost/test?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai
-database.master0.username=root
-database.master0.password=root
-database.master0.driverClassName=${driverClassName}
-database.master0.type=${type}
-database.master0.initialSize=${initialSize}
-database.master0.minIdle=${minIdle}
-database.master0.maxActive=${maxActive}
-database.master0.maxWait=${maxWait}
-database.master0.timeBetweenEvictionRunsMillis=${timeBetweenEvictionRunsMillis}
-database.master0.minEvictableIdleTimeMillis=${minEvictableIdleTimeMillis}
-database.master0.validationQuery=${validationQuery}
-database.master0.connectionInitSqls[0]=${connectionInitSqls[0]}
-database.master0.testOnBorrow=${testOnBorrow}
-database.master0.testOnReturn=${testOnReturn}
-database.master0.poolPreparedStatements=${poolPreparedStatements}
-database.master0.maxPoolPreparedStatementPerConnectionSize=${maxPoolPreparedStatementPerConnectionSize}
-# database.master0.filters=stat,wall,logback
-database.master0.connectionProperties=${connectionProperties}
-database.master0.useGlobalDataSourceStat=${useGlobalDataSourceStat}
-
-
-database.master1.url=jdbc:mysql://localhost/test?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai
-database.master1.username=root
-database.master1.password=root
-database.master1.driverClassName=${driverClassName}
-database.master1.type=${type}
-database.master1.initialSize=${initialSize}
-database.master1.minIdle=${minIdle}
-database.master1.maxActive=${maxActive}
-database.master1.maxWait=${maxWait}
-database.master1.timeBetweenEvictionRunsMillis=${timeBetweenEvictionRunsMillis}
-database.master1.minEvictableIdleTimeMillis=${minEvictableIdleTimeMillis}
-database.master1.validationQuery=${validationQuery}
-database.master1.connectionInitSqls[0]=${connectionInitSqls[0]}
-database.master1.testWhileIdle=${testWhileIdle}
-database.master1.testOnBorrow=${testOnBorrow}
-database.master1.testOnReturn=${testOnReturn}
-database.master1.poolPreparedStatements=${poolPreparedStatements}
-database.master1.maxPoolPreparedStatementPerConnectionSize=${maxPoolPreparedStatementPerConnectionSize}
-#database.master1.filters=stat,wall,logback
-database.master1.connectionProperties=${connectionProperties}
-database.master1.useGlobalDataSourceStat=${useGlobalDataSourceStat}
-
-# 从数据源
-database.slave0.type=${type}
-database.slave0.driverClassName=${driverClassName}
-database.slave0.url=jdbc:mysql://localhost/test?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai
-database.slave0.username=root
-database.slave0.password=root
-database.slave0.initialSize=${initialSize}
-database.slave0.minIdle=${minIdle}
-database.slave0.maxActive=${maxActive}
-database.slave0.maxWait=${maxWait}
-database.slave0.timeBetweenEvictionRunsMillis=${timeBetweenEvictionRunsMillis}
-database.slave0.minEvictableIdleTimeMillis=${minEvictableIdleTimeMillis}
-database.slave0.validationQuery=${validationQuery}
-database.slave0.connectionInitSqls[0]=${connectionInitSqls[0]}
-database.slave0.testWhileIdle=${testWhileIdle}
-database.slave0.testOnBorrow=${testOnBorrow}
-database.slave0.testOnReturn=${testOnReturn}
-database.slave0.poolPreparedStatements=${poolPreparedStatements}
-database.slave0.maxPoolPreparedStatementPerConnectionSize=${maxPoolPreparedStatementPerConnectionSize}
-#database.slave0.filters=stat,wall,logback
-database.slave0.connectionProperties=${connectionProperties}
-database.slave0.useGlobalDataSourceStat=${useGlobalDataSourceStat}
-
-database.slave1.type=${type}
-database.slave1.driverClassName=${driverClassName}
-database.slave1.url=jdbc:mysql://localhost/test?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai
-database.slave1.username=root
-database.slave1.password=root
-database.slave1.initialSize=${initialSize}
-database.slave1.minIdle=${minIdle}
-database.slave1.maxActive=${maxActive}
-database.slave1.maxWait=${maxWait}
-database.slave1.timeBetweenEvictionRunsMillis=${timeBetweenEvictionRunsMillis}
-database.slave1.minEvictableIdleTimeMillis=${minEvictableIdleTimeMillis}
-database.slave1.validationQuery=${validationQuery}
-database.slave1.connectionInitSqls[0]=${connectionInitSqls[0]}
-database.slave1.testWhileIdle=${testWhileIdle}
-database.slave1.testOnBorrow=${testOnBorrow}
-database.slave1.testOnReturn=${testOnReturn}
-database.slave1.poolPreparedStatements=${poolPreparedStatements}
-database.slave1.maxPoolPreparedStatementPerConnectionSize=${maxPoolPreparedStatementPerConnectionSize}
-#database.slave1.filters=stat,wall,logback
-database.slave1.connectionProperties=${connectionProperties}
-database.slave1.useGlobalDataSourceStat=${useGlobalDataSourceStat}
-
-```
-### 使用GaarasonDataSource
-
-```java
-@Repository
-public class StudentModel extends Model<StudentModel.StudentBuilder, Student, Integer> {
-
-    /**
-     * 依赖注入
-     * 父类依赖即可
-     */
-    @Resource
-    private GaarasonDataSource gaarasonDataSource;
-
-    /**
-     * 实现方法
-     * 父类实现即可
-     */
-    @Override
-    public GaarasonDataSource getGaarasonDataSource() {
-        return gaarasonDataSource;
-    }
-
-    /**
-     * 普通业务调用
-     */
-    public void doSomeThing(){
-        newQuery().where("name", "alice").first();
-    }
-}
-```
 
 ### 多数据源分组
 
@@ -295,7 +79,7 @@ gaarason:
       default-group: master
       groups:
         master:
-          type: com.alibaba.druid.pool.DruidDataSource  # 可选, 不指定时自动检测
+          type: com.alibaba.druid.pool.DruidDataSource
           master:
             - url: jdbc:mysql://master1:3306/db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
               username: root
@@ -311,6 +95,7 @@ gaarason:
               password: root
               driver-class-name: com.mysql.cj.jdbc.Driver
         order:
+          type: com.alibaba.druid.pool.DruidDataSource
           master:
             - url: jdbc:mysql://order-master:3306/order_db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
               username: root
@@ -329,7 +114,9 @@ gaarason:
 | `groups.{name}.master` | 主数据源列表(写) | 必填 |
 | `groups.{name}.slave` | 从数据源列表(读), 不配置时读回退到主库 | 空 |
 
-> **向后兼容**: 未配置 `gaarason.database.datasource.groups` 时, 框架保持原有的单 Spring DataSource 包装行为, 无需修改已有配置
+> **向后兼容**: 未配置 `gaarason.database.datasource.groups` 时, 框架会自动将单 Spring `DataSource` 映射为`单默认组`并使用同一套路由能力, 无需修改已有配置
+
+> **迁移建议**: 历史项目可继续沿用单 `DataSource` Bean；新项目建议统一使用 `gaarason.database.datasource.groups`，即便只有一个组，也便于后续平滑扩展到多组。
 
 #### 数据源组切换
 

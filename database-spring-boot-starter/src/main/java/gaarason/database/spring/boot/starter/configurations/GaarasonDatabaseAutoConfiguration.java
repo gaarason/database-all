@@ -6,7 +6,6 @@ import gaarason.database.bootstrap.ContainerBootstrap;
 import gaarason.database.config.GaarasonDatabaseProperties;
 import gaarason.database.connection.DataSourceGroup;
 import gaarason.database.connection.GaarasonRoutingDataSourceWrapper;
-import gaarason.database.connection.GaarasonSmartDataSourceWrapper;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.core.Container;
 import gaarason.database.lang.Nullable;
@@ -187,21 +186,20 @@ public class GaarasonDatabaseAutoConfiguration {
         public GaarasonDataSource gaarasonDataSource(ObjectProvider<DataSource> dataSourceProvider,
             Container container, GaarasonDataSourceProperties dsProperties) {
 
-            if (!dsProperties.getGroups().isEmpty()) {
-                Map<String, DataSourceGroup> groupMap = buildGroupMap(dsProperties);
-                String defaultGroup = dsProperties.getDefaultGroup();
-                LOGGER.info("GaarasonDataSource init with routing mode, groups: " + groupMap.keySet()
+            String defaultGroup = ObjectUtils.isEmpty(dsProperties.getDefaultGroup())
+                ? "master"
+                : dsProperties.getDefaultGroup();
+            Map<String, DataSourceGroup> groupMap;
+            if (dsProperties.getGroups().isEmpty()) {
+                groupMap = buildSingleGroupMap(dataSourceProvider, defaultGroup);
+                LOGGER.info("GaarasonDataSource init with single-group routing mode, groups: " + groupMap.keySet()
                     + ", default: " + defaultGroup);
-                return new GaarasonRoutingDataSourceWrapper(groupMap, defaultGroup, container);
+            } else {
+                groupMap = buildGroupMap(dsProperties, defaultGroup);
+                LOGGER.info("GaarasonDataSource init with multi-group routing mode, groups: " + groupMap.keySet()
+                    + ", default: " + defaultGroup);
             }
-
-            DataSource dataSource = dataSourceProvider.getIfAvailable();
-            if (dataSource == null) {
-                throw new IllegalStateException(
-                    "No DataSource bean found. Either configure a Spring DataSource or set gaarason.database.datasource.groups.");
-            }
-            LOGGER.info("GaarasonDataSource init with " + dataSource.getClass().getName());
-            return new GaarasonSmartDataSourceWrapper(Collections.singletonList(dataSource), container);
+            return new GaarasonRoutingDataSourceWrapper(groupMap, defaultGroup, container);
         }
 
         /**
@@ -229,8 +227,30 @@ public class GaarasonDatabaseAutoConfiguration {
 
         /**
          * 根据 YAML 配置构建数据源组映射
+         * @param dataSourceProvider 数据源提供者
+         * @param defaultGroup 默认组名
+         * @return 数据源组映射
          */
-        private static Map<String, DataSourceGroup> buildGroupMap(GaarasonDataSourceProperties dsProperties) {
+        private static Map<String, DataSourceGroup> buildSingleGroupMap(ObjectProvider<DataSource> dataSourceProvider,
+            String defaultGroup) {
+            DataSource dataSource = dataSourceProvider.getIfAvailable();
+            if (dataSource == null) {
+                throw new IllegalStateException(
+                    "No DataSource bean found. Either configure a Spring DataSource or set gaarason.database.datasource.groups.");
+            }
+            Map<String, DataSourceGroup> groupMap = new LinkedHashMap<>();
+            groupMap.put(defaultGroup, new DataSourceGroup(Collections.singletonList(dataSource)));
+            return groupMap;
+        }
+
+        /**
+         * 根据 YAML 配置构建数据源组映射
+         * @param dsProperties 数据源配置
+         * @param defaultGroup 默认组名
+         * @return 数据源组映射
+         */
+        private static Map<String, DataSourceGroup> buildGroupMap(GaarasonDataSourceProperties dsProperties,
+            String defaultGroup) {
             Map<String, DataSourceGroup> groupMap = new LinkedHashMap<>();
             for (Map.Entry<String, DataSourceGroupProperties> entry : dsProperties.getGroups().entrySet()) {
                 String groupKey = entry.getKey();
@@ -248,11 +268,17 @@ public class GaarasonDatabaseAutoConfiguration {
                     ? new DataSourceGroup(masters)
                     : new DataSourceGroup(masters, slaves));
             }
+            if (!groupMap.containsKey(defaultGroup)) {
+                throw new IllegalArgumentException("Default datasource group [" + defaultGroup + "] not found in configured groups.");
+            }
             return groupMap;
         }
 
         /**
          * 从节点配置列表创建 DataSource 实例
+         * @param nodes 节点配置列表
+         * @param dsType 数据源类型
+         * @return DataSource 实例列表
          */
         @SuppressWarnings("unchecked")
         private static List<DataSource> createDataSources(List<DataSourceNodeProperties> nodes,
