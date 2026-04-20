@@ -41,6 +41,19 @@ import java.util.Map;
 @Slf4j
 public class DruidApplicationTests {
 
+    /**
+     * 有参构造的 Generator 走系统属性构建配置，需保证包扫描覆盖默认自动配置包。
+     */
+    private static void ensureScanPackagesForGenerator() {
+        String key = "gaarason.database.scan.packages";
+        String current = System.getProperty(key);
+        if (current == null || current.trim().isEmpty()) {
+            System.setProperty(key, "gaarason.database");
+        } else if (!current.contains("gaarason.database")) {
+            System.setProperty(key, current + ",gaarason.database");
+        }
+    }
+
     @Resource
     GeneralGenerator generator;
 
@@ -99,6 +112,7 @@ public class DruidApplicationTests {
 
     @Test
     public void run有参构造() {
+        ensureScanPackagesForGenerator();
         String jdbcUrl = "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8" +
             "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
         String username = "root";

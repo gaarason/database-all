@@ -75,6 +75,7 @@ Eloquent ORM for Java
         * [lastRaw](#lastRaw)
 * [关联关系 Relationship](/document/relationship.md)
 * [生成代码 Generate](/document/generate.md)
+* [单元测试 Test](/document/test.md)
 * [GraalVM](/document/graalvm.md)
 * [版本信息 Version](/document/version.md)
 

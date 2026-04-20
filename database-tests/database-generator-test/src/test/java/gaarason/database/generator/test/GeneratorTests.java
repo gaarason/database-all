@@ -28,6 +28,19 @@ import java.util.List;
 public class GeneratorTests {
 
     /**
+     * 通过系统属性补齐包扫描，确保可发现默认方言自动配置，避免回退实例化 QueryBuilderConfig 接口。
+     */
+    private static void ensureScanPackagesForGenerator() {
+        String key = "gaarason.database.scan.packages";
+        String current = System.getProperty(key);
+        if (current == null || current.trim().isEmpty()) {
+            System.setProperty(key, "gaarason.database");
+        } else if (!current.contains("gaarason.database")) {
+            System.setProperty(key, current + ",gaarason.database");
+        }
+    }
+
+    /**
      * 生成供其它项目（如 Spring Boot 3 / Jakarta）拷贝的样例代码，勿写入 {@code src/test/java}，否则会参与本模块编译并导致依赖冲突。
      */
     private static String codegenExportDir() {
@@ -37,6 +50,7 @@ public class GeneratorTests {
 
     @Test
     public void run有参构造() {
+        ensureScanPackagesForGenerator();
         String jdbcUrl = "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8" +
             "&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai";
         String username = "root";
@@ -83,6 +97,7 @@ public class GeneratorTests {
 
     @Test
     public void run无参构造() {
+        ensureScanPackagesForGenerator();
         ToolModel.gaarasonDataSource = proxyDataSource();
         ToolModel toolModel = new ToolModel();
         AutoGenerator autoGenerator = new AutoGenerator(toolModel);

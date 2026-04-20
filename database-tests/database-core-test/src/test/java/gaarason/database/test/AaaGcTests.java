@@ -7,6 +7,7 @@ import gaarason.database.test.utils.MultiThreadUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
@@ -14,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
+@Ignore("压测/死循环场景，不参与常规单元测试")
 @FixMethodOrder(MethodSorters.JVM)
 public class AaaGcTests extends BaseTests {
 

@@ -11,6 +11,7 @@ Eloquent ORM for Java
 * [查询构造器 Query Builder](/document/query.md)
 * [生成代码 Generate](/document/generate.md)
 * [关联关系 Relationship](/document/relationship.md)
+* [单元测试 Test](/document/test.md)
 * [GraalVM](/document/graalvm.md)
     * [总览](#总览)
     * [配置注解](#配置注解)
