@@ -387,20 +387,24 @@ public class MysqlBizEcommerceRoutingSpringTests {
 
         private JoinQueryResult queryByJoinCore(Long userId, String yearMonth) {
             String joinSql = orderModel.newQuery()
-                .from("订单")
-                .join(JoinType.INNER, "订单商品 as op inner join 商品 as p on op.product_id = p.id",
-                    "id", "=", "`op`.`order_id`")
-                .where("user_id", userId)
-                .where("order_month", yearMonth)
-                .toSql(SqlType.SELECT);
+                    .from("订单")
+                    .join(JoinType.INNER, "订单商品 as op",
+                            b -> b.whereRaw(b.columnAlias("id") + "=`op`.`order_id`"))
+                    .join(JoinType.INNER, "商品 as p",
+                            b -> b.whereRaw("`op`.`product_id`=`p`.`id`"))
+                    .where("user_id", userId)
+                    .where("order_month", yearMonth)
+                    .toSql(SqlType.SELECT);
 
             Long joinRowCount = orderModel.newQuery()
-                .from("订单")
-                .join(JoinType.INNER, "订单商品 as op inner join 商品 as p on op.product_id = p.id",
-                    "id", "=", "`op`.`order_id`")
-                .where("user_id", userId)
-                .where("order_month", yearMonth)
-                .count("*");
+                    .from("订单")
+                    .join(JoinType.INNER, "订单商品 as op",
+                            b -> b.whereRaw(b.columnAlias("id") + "=`op`.`order_id`"))
+                    .join(JoinType.INNER, "商品 as p",
+                            b -> b.whereRaw("`op`.`product_id`=`p`.`id`"))
+                    .where("user_id", userId)
+                    .where("order_month", yearMonth)
+                    .count("*");
 
             return new JoinQueryResult(
                 joinSql,

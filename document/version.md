@@ -26,34 +26,30 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
-### next_version
+### 7.0.0
 
+- 新增 `QueryBuilder`全数据库通用查询构造器, 默认使用`DefaultQueryBuilderConfig`作为通用查询构造器 `QueryBuilder`的配置, 根据 `DbType` 自动创建对应方言的 `Grammar` 实例
+- 新增 `DefaultAutoconfiguration`, 以最低优先级自动注册通用数据库方言支持, 方言 `Grammar` 类: `PostgreSqlGrammar`、`OracleGrammar`、`Oracle12cGrammar`、`Db2Grammar`、`InformixGrammar`、`FirebirdGrammar`, 以及将 `MsSqlGrammar` 迁入 `database-query` 模块
 - 新增 `DbType` 枚举(`gaarason.database.appointment.DbType`), 内置 40+ 种数据库方言支持(MySQL、PostgreSQL、Oracle、SQL Server、DB2、达梦、人大金仓、OceanBase、ClickHouse 等), 通过 JDBC 自动检测数据库类型
-- 新增 `DefaultQueryBuilderConfig`, 作为通用查询构造器 `QueryBuilder`的配置, 根据 `DbType` 自动创建对应方言的 `Grammar` 实例
-- 新增 `DefaultAutoconfiguration`, 以最低优先级自动注册通用数据库方言支持
-- 新增方言 `Grammar` 类: `PostgreSqlGrammar`、`OracleGrammar`、`Oracle12cGrammar`、`Db2Grammar`、`InformixGrammar`、`FirebirdGrammar`, 以及将 `MsSqlGrammar` 迁入 `database-query` 模块
-- 在 `QueryBuilderConfig` 中, 新增 `forProductName(String)` default 方法, 允许通用配置返回绑定了具体方言的新实例
-- 移除 `database-query-mysql` 模块, 其中 `MySqlGrammar`、`MySqlBuilder`、`MysqlQueryBuilderConfig` 等已不再需要(MySQL 方言由 `DefaultQueryBuilderConfig` 内置处理)
-- 移除 `database-query-mssql` 模块, 其中 `MsSqlGrammar` 已迁入 `database-query`; `MsSqlBuilder`、`MssqlQueryBuilderConfig` 等已不再需要
-- 在`Builder`中, 移除`paginateMapStyle`/`simplePaginateMapStyle` 等过期方法, 使用 `paginate(FriendlyList::toMapList, currentPage, perPage, hasTotal)` 替代
+
 - 新增多数据源分组路由支持:
   - 新增 `DataSourceGroup` 数据源组模型, 封装主从数据源列表与读写分离逻辑
   - 新增 `GaarasonDataSourceContext` 基于 ThreadLocal 栈式实现的三维路由上下文, 支持 `数据源组` / `数据库` / `表` 的嵌套切换与自动恢复
-  - 新增 `GaarasonRoutingDataSourceBuilder` 编程式多组构建器(不依赖 Spring)
-  - 新增 `GaarasonRoutingDataSourceWrapper` 路由数据源包装器(Spring 环境), 替代 `GaarasonSmartDataSourceMultipleLinksWrapper`
-  - 新增 `GaarasonDataSourceProperties` YAML 多组数据源配置属性(`gaarason.database.datasource.groups`)
   - 新增 `@GaarasonDataSourceGroup` / `@GaarasonDatabase` / `@GaarasonTable` 注解 + `GaarasonDataSourceAspect` AOP 切面, 声明式三维路由, 支持通过 `spel = true` 使用 SpEL 动态计算路由键
   - 新增 `DynamicDataSourceGroupRouting`、`DynamicDatabaseRouting`、`DynamicTableRouting`、`DynamicExplicitTableRouting`、`DynamicJdbcCatalogRouting` 等路由扩展契约
   - 新增 `DefaultDynamicJdbcCatalogRouting`, 默认按 `setCatalog -> setSchema` 顺序执行同连接切库并提供失败处理钩子
   - 更新 `GaarasonDatabaseAutoConfiguration`, 自动识别多组配置并创建路由数据源, 向后兼容单数据源模式
- 
+
+- 移除 `database-query-mysql` 模块, 其中 `MySqlGrammar`、`MySqlBuilder`、`MysqlQueryBuilderConfig` 等已不再需要(MySQL 方言由 `DefaultQueryBuilderConfig` 内置处理)
+- 移除 `database-query-mssql` 模块, 其中 `MsSqlGrammar` 已迁入 `database-query`; `MsSqlBuilder`、`MssqlQueryBuilderConfig` 等已不再需要
+- 在`Builder`中, 移除`paginateMapStyle`/`simplePaginateMapStyle` 等过期方法, 使用 `paginate(FriendlyList::toMapList, currentPage, perPage, hasTotal)` 替代 
+
 - 版本升级指引:
   - 如果之前 pom.xml 中显示依赖了 `database-query-mysql` 或 `database-query-mssql`, 请替换为 `database-query`
   - 如果代码中继承了 `MysqlQueryBuilderConfig`, 请改为直接实现 `QueryBuilderConfig` 接口
   - 如果代码中使用了 `MySqlBuilder` 或 `MsSqlBuilder`, 请替换为 `QueryBuilder`
   - `mysql-connector-j` 驱动现在由 `database-query` 模块以 `runtime` scope 传递
   - 如果之前使用了 `GaarasonSmartDataSourceMultipleLinksWrapper`, 请迁移到 `GaarasonRoutingDataSourceWrapper` + `GaarasonDataSourceContext` 或 YAML 多组配置
-
 
 ### 6.6.2
 
