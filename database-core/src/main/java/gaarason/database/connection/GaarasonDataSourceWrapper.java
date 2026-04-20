@@ -1,5 +1,6 @@
 package gaarason.database.connection;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import gaarason.database.config.QueryBuilderConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.core.Container;
@@ -22,6 +23,9 @@ import java.util.logging.Logger;
  * 事物传播性: 使用 nested .如果不存在事务，创建事务。如果存在事务，则嵌套在事务内，嵌套事务依赖外层事务提交，不进行独立事务提交。
  * 嵌套事务如果发生异常，则抛出异常，回滚嵌套事务的操作，回到开始嵌套事务的“保存点”，由外层事务的逻辑继续执行（外层捕获异常并处理即可）。
  * 嵌套事务如果不发生异常，则继续执行，不提交。由外层事务的逻辑继续执行，若外层事务后续发生异常，则回滚包括嵌套事务在内的所有事务。
+ * <p>
+ * 与 {@link GaarasonDataSourceContext} 配合: 事务开始时解析并锁定库键,通过 {@link #applyDatabaseContext} 在同连接上切换 catalog/schema.
+ *
  * @author xt
  */
 public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements GaarasonDataSource {
@@ -42,6 +46,11 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
      * 最外层事务的待触发事件队列
      */
     protected final ThreadLocal<LinkedList<Runnable>> localThreadEvents = ThreadLocal.withInitial(LinkedList::new);
+
+    /**
+     * 事务中锁定的数据库键
+     */
+    protected final ThreadLocal<String> localThreadTransactionDatabaseKey = new ThreadLocal<>();
 
     /**
      * 写连接
@@ -103,6 +112,10 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
             try {
                 DataSource dataSource = getRealDataSource(true);
                 Connection connection = dataSource.getConnection();
+                String effectiveDatabaseKey = resolveEffectiveDatabaseKey(dataSource,
+                    resolveDatabaseKeyForCurrentContext());
+                localThreadTransactionDatabaseKey.set(effectiveDatabaseKey);
+                applyDatabaseContext(dataSource, connection, effectiveDatabaseKey);
                 setAutoCommit(connection, false);
                 localThreadTransactionConnection.set(connection);
             } catch (SQLException e) {
@@ -182,7 +195,11 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
         // 不存在事务则返回当前线程的数据源的连接池中的 Connection
         try {
             DataSource realDataSource = getRealDataSource(isWriteOrTransaction);
-            return realDataSource.getConnection();
+            Connection connection = realDataSource.getConnection();
+            String effectiveDatabaseKey = resolveEffectiveDatabaseKey(realDataSource,
+                resolveDatabaseKeyForCurrentContext());
+            applyDatabaseContext(realDataSource, connection, effectiveDatabaseKey);
+            return connection;
         } catch (SQLException e) {
             throw new SQLRuntimeException(e.getMessage(), e);
         } catch (Throwable e) {
@@ -302,8 +319,90 @@ public class GaarasonDataSourceWrapper extends Container.SimpleKeeper implements
         }
         // 清除持有的连接
         localThreadTransactionConnection.remove();
+        localThreadTransactionDatabaseKey.remove();
         // 清除所有事件
         localThreadEvents.remove();
+    }
+
+    /**
+     * 解析当前上下文的数据库键
+     * @return 数据库键
+     */
+    @Nullable
+    protected String resolveDatabaseKeyForCurrentContext() {
+        return GaarasonDataSourceContext.resolvePhysicalDatabaseKey();
+    }
+
+    /**
+     * 连接池归还后 catalog 可能停留在上一次 {@code executeDatabase} 的目标库；当上下文未指定库名时,
+     * 回退到当前物理数据源 JDBC URL 中的库名(如 Druid 的 jdbc:mysql://host/db).
+     */
+    @Nullable
+    protected String resolveEffectiveDatabaseKey(DataSource dataSource, @Nullable String contextDatabaseKey) {
+        if (!ObjectUtils.isEmpty(contextDatabaseKey)) {
+            return contextDatabaseKey;
+        }
+        return extractDefaultCatalog(dataSource);
+    }
+
+    /**
+     * 提取默认 catalog
+     * @param dataSource 数据源
+     * @return 默认 catalog
+     */
+    @Nullable
+    protected String extractDefaultCatalog(DataSource dataSource) {
+        try {
+            if (dataSource instanceof DruidDataSource) {
+                return extractDefaultCatalogFromJdbcUrl(((DruidDataSource) dataSource).getUrl());
+            }
+        } catch (Throwable ignored) {
+            // 非 Druid 或无法解析时保持原行为
+        }
+        return null;
+    }
+
+    /**
+     * 提取默认 catalog
+     * @param jdbcUrl jdbcUrl
+     * @return 默认 catalog
+     */
+    @Nullable
+    protected static String extractDefaultCatalogFromJdbcUrl(@Nullable String jdbcUrl) {
+        if (jdbcUrl == null) {
+            return null;
+        }
+        int question = jdbcUrl.indexOf('?');
+        String withoutParams = question >= 0 ? jdbcUrl.substring(0, question) : jdbcUrl;
+        int schemeSlashes = withoutParams.indexOf("//");
+        if (schemeSlashes < 0) {
+            return null;
+        }
+        String authorityAndPath = withoutParams.substring(schemeSlashes + 2);
+        int slash = authorityAndPath.indexOf('/');
+        if (slash < 0 || slash >= authorityAndPath.length() - 1) {
+            return null;
+        }
+        String catalog = authorityAndPath.substring(slash + 1).trim();
+        return catalog.isEmpty() ? null : catalog;
+    }
+
+    /**
+     * 应用数据库上下文
+     *
+     * @param dataSource   本次取连接所用的数据源（池），用于 catalog/schema 策略缓存
+     * @param connection 数据库连接
+     * @param databaseKey 数据库键
+     */
+    protected void applyDatabaseContext(DataSource dataSource, Connection connection, @Nullable String databaseKey) {
+        if (ObjectUtils.isEmpty(databaseKey)) {
+            return;
+        }
+        try {
+            GaarasonDataSourceContext.getDynamicJdbcCatalogRouting().switchTo(dataSource, connection, databaseKey);
+        } catch (Throwable throwable) {
+            GaarasonDataSourceContext.getDynamicJdbcCatalogRouting().handleFailure(connection, databaseKey, throwable);
+        }
     }
 
     @Override

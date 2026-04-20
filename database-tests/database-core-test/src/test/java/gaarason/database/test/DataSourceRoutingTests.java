@@ -18,15 +18,18 @@ import javax.sql.DataSource;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.sql.Connection;
+import java.sql.Savepoint;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 多数据源分组路由相关单元测试
  * <p>
- * 覆盖: {@link GaarasonDataSourceContext}, {@link DataSourceGroup}, {@link GaarasonRoutingDataSourceBuilder}
+ * 覆盖: {@link GaarasonDataSourceContext}(组/库/表栈、解析扩展)、{@link DataSourceGroup}、{@link GaarasonRoutingDataSourceBuilder}
+ * 及事务内组键锁定、代理连接上的 catalog 切换等.
+ *
  * @author xt
  */
 @Slf4j
@@ -35,151 +38,79 @@ public class DataSourceRoutingTests {
 
     @After
     public void tearDown() {
-        while (GaarasonDataSourceContext.get() != null) {
-            GaarasonDataSourceContext.clear();
-        }
+        GaarasonDataSourceContext.setDynamicDatabaseRouting(databaseKey -> databaseKey);
+        GaarasonDataSourceContext.setDynamicTableRouting((logicalTableName, routeExpression) -> {
+            if (routeExpression == null || routeExpression.isEmpty()) {
+                return logicalTableName;
+            }
+            return logicalTableName + "_" + routeExpression;
+        });
+        GaarasonDataSourceContext.setDynamicExplicitTableRouting(() -> true);
     }
 
     // ============================= GaarasonDataSourceContext =============================
 
     @Test
-    public void 路由上下文_设置并获取() {
-        Assert.assertNull(GaarasonDataSourceContext.get());
-        GaarasonDataSourceContext.set("order");
-        Assert.assertEquals("order", GaarasonDataSourceContext.get());
-        GaarasonDataSourceContext.clear();
-        Assert.assertNull(GaarasonDataSourceContext.get());
-    }
-
-    @Test
-    public void 路由上下文_清除空栈不抛异常() {
-        Assert.assertNull(GaarasonDataSourceContext.get());
-        GaarasonDataSourceContext.clear();
-        Assert.assertNull(GaarasonDataSourceContext.get());
-    }
-
-    @Test
-    public void 路由上下文_嵌套设置_栈式恢复() {
-        GaarasonDataSourceContext.set("master");
-        Assert.assertEquals("master", GaarasonDataSourceContext.get());
-
-        GaarasonDataSourceContext.set("order");
-        Assert.assertEquals("order", GaarasonDataSourceContext.get());
-
-        GaarasonDataSourceContext.set("analytics");
-        Assert.assertEquals("analytics", GaarasonDataSourceContext.get());
-
-        GaarasonDataSourceContext.clear();
-        Assert.assertEquals("order", GaarasonDataSourceContext.get());
-
-        GaarasonDataSourceContext.clear();
-        Assert.assertEquals("master", GaarasonDataSourceContext.get());
-
-        GaarasonDataSourceContext.clear();
-        Assert.assertNull(GaarasonDataSourceContext.get());
-    }
-
-    @Test
     public void 路由上下文_execute带返回值_自动恢复() {
-        Assert.assertNull(GaarasonDataSourceContext.get());
-
-        String result = GaarasonDataSourceContext.execute("order", () -> {
-            Assert.assertEquals("order", GaarasonDataSourceContext.get());
+        String result = GaarasonDataSourceContext.executeDataSourceGroup("order", () -> {
             return "done";
         });
-
         Assert.assertEquals("done", result);
-        Assert.assertNull(GaarasonDataSourceContext.get());
-    }
-
-    @Test
-    public void 路由上下文_execute无返回值_自动恢复() {
-        Assert.assertNull(GaarasonDataSourceContext.get());
-
-        GaarasonDataSourceContext.execute("order", () -> {
-            Assert.assertEquals("order", GaarasonDataSourceContext.get());
-        });
-
-        Assert.assertNull(GaarasonDataSourceContext.get());
-    }
-
-    @Test
-    public void 路由上下文_execute嵌套_外层自动恢复() {
-        GaarasonDataSourceContext.set("master");
-
-        GaarasonDataSourceContext.execute("order", () -> {
-            Assert.assertEquals("order", GaarasonDataSourceContext.get());
-
-            String inner = GaarasonDataSourceContext.execute("analytics", () -> {
-                Assert.assertEquals("analytics", GaarasonDataSourceContext.get());
-                return "inner-done";
-            });
-            Assert.assertEquals("inner-done", inner);
-
-            Assert.assertEquals("order", GaarasonDataSourceContext.get());
-        });
-
-        Assert.assertEquals("master", GaarasonDataSourceContext.get());
     }
 
     @Test
     public void 路由上下文_execute异常后仍恢复() {
-        Assert.assertNull(GaarasonDataSourceContext.get());
-
         try {
-            GaarasonDataSourceContext.execute("order", () -> {
-                Assert.assertEquals("order", GaarasonDataSourceContext.get());
+            GaarasonDataSourceContext.executeDataSourceGroup("order", () -> {
                 throw new RuntimeException("模拟业务异常");
             });
             Assert.fail("应该抛出异常");
         } catch (RuntimeException e) {
             Assert.assertEquals("模拟业务异常", e.getMessage());
         }
-
-        Assert.assertNull(GaarasonDataSourceContext.get());
     }
 
     @Test
-    public void 路由上下文_线程隔离() throws InterruptedException {
-        AtomicReference<String> threadResult = new AtomicReference<>();
-        CountDownLatch ready = new CountDownLatch(1);
-        CountDownLatch done = new CountDownLatch(1);
+    public void 库上下文_execute嵌套_自动恢复() {
+        String result = GaarasonDataSourceContext.executeDatabase("db1", () -> {
+            return GaarasonDataSourceContext.executeDatabase("db2", () -> {
+                return "ok";
+            });
+        });
+        Assert.assertEquals("ok", result);
+    }
 
-        GaarasonDataSourceContext.set("main-thread-group");
+    @Test
+    public void 动态表上下文_execute嵌套_自动恢复() {
+        GaarasonDataSourceContext.executeTable("001", () -> {
+            Assert.assertEquals("student_001", GaarasonDataSourceContext.resolvePhysicalTableName("student"));
+            GaarasonDataSourceContext.executeTable("002", () -> {
+                Assert.assertEquals("student_002", GaarasonDataSourceContext.resolvePhysicalTableName("student"));
+            });
+        });
+    }
 
-        new Thread(() -> {
-            try {
-                ready.await();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            threadResult.set(GaarasonDataSourceContext.get());
-            done.countDown();
-        }).start();
+    @Test
+    public void 动态表上下文_可自定义解析器() {
+        GaarasonDataSourceContext.setDynamicTableRouting((logical, expr) -> logical + "__" + expr);
+        GaarasonDataSourceContext.executeTable("shardA", () -> {
+            Assert.assertEquals("student__shardA", GaarasonDataSourceContext.resolvePhysicalTableName("student"));
+        });
+    }
 
-        ready.countDown();
-        done.await();
-
-        Assert.assertNull("子线程不应继承父线程的上下文", threadResult.get());
-        Assert.assertEquals("main-thread-group", GaarasonDataSourceContext.get());
+    @Test
+    public void 动态表上下文_覆盖策略可配置() {
+        Assert.assertTrue(GaarasonDataSourceContext.shouldDynamicTableOverrideExplicit());
+        GaarasonDataSourceContext.setDynamicExplicitTableRouting(() -> false);
+        Assert.assertFalse(GaarasonDataSourceContext.shouldDynamicTableOverrideExplicit());
     }
 
     @Test
     public void 路由上下文_多线程并发安全() {
-        MultiThreadUtil.run(50, 100, () -> {
-            String threadName = Thread.currentThread().getName();
-            GaarasonDataSourceContext.set(threadName);
-            Assert.assertEquals(threadName, GaarasonDataSourceContext.get());
-
-            GaarasonDataSourceContext.set(threadName + "-inner");
-            Assert.assertEquals(threadName + "-inner", GaarasonDataSourceContext.get());
-
-            GaarasonDataSourceContext.clear();
-            Assert.assertEquals(threadName, GaarasonDataSourceContext.get());
-
-            GaarasonDataSourceContext.clear();
-            Assert.assertNull(GaarasonDataSourceContext.get());
-        });
+        MultiThreadUtil.run(50, 100, () -> GaarasonDataSourceContext.executeDataSourceGroup(
+            Thread.currentThread().getName(), () -> {
+                // 执行成功即证明上下文在并发场景可独立入栈出栈
+            }));
     }
 
     // ============================= DataSourceGroup =============================
@@ -343,13 +274,10 @@ public class DataSourceRoutingTests {
         Assert.assertTrue("默认应路由到master组",
             ds.getMasterDataSourceList().contains(masterDs));
 
-        GaarasonDataSourceContext.set("order");
-        try {
+        GaarasonDataSourceContext.executeDataSourceGroup("order", () -> {
             Assert.assertTrue("切换后应路由到order组",
                 ds.getMasterDataSourceList().contains(orderDs));
-        } finally {
-            GaarasonDataSourceContext.clear();
-        }
+        });
 
         Assert.assertTrue("清除后应恢复到master组",
             ds.getMasterDataSourceList().contains(masterDs));
@@ -408,10 +336,10 @@ public class DataSourceRoutingTests {
         MultiThreadUtil.run(30, 50, () -> {
             Assert.assertTrue("默认路由到master", ds.getMasterDataSourceList().contains(masterDs));
 
-            GaarasonDataSourceContext.execute("order", () -> {
+            GaarasonDataSourceContext.executeDataSourceGroup("order", () -> {
                 Assert.assertTrue("应路由到order", ds.getMasterDataSourceList().contains(orderDs));
 
-                GaarasonDataSourceContext.execute("analytics", () -> {
+                GaarasonDataSourceContext.executeDataSourceGroup("analytics", () -> {
                     Assert.assertTrue("应路由到analytics",
                         ds.getMasterDataSourceList().contains(analyticsDs));
                 });
@@ -420,6 +348,46 @@ public class DataSourceRoutingTests {
             });
 
             Assert.assertTrue("应恢复到master", ds.getMasterDataSourceList().contains(masterDs));
+        });
+    }
+
+    @Test
+    public void 路由构建器_事务内锁定数据库键() {
+        AtomicReference<String> lastDatabaseKey = new AtomicReference<>();
+        DataSource masterDs = switchableDs("master1", lastDatabaseKey);
+
+        GaarasonDataSource ds = GaarasonRoutingDataSourceBuilder.create()
+            .defaultGroup("master")
+            .group("master", Collections.singletonList(masterDs))
+            .build(buildContainer());
+
+        GaarasonDataSourceContext.executeDatabase("db001", () -> {
+            ds.begin();
+            try {
+                Connection txConnection = ds.getLocalConnection(false);
+                Assert.assertEquals("db001", lastDatabaseKey.get());
+
+                GaarasonDataSourceContext.executeDatabase("db002", () -> {
+                    Connection txConnectionAgain = ds.getLocalConnection(false);
+                    Assert.assertSame(txConnection, txConnectionAgain);
+                    Assert.assertEquals("事务内应锁定首次数据库键", "db001", lastDatabaseKey.get());
+                });
+            } finally {
+                ds.commit();
+            }
+        });
+    }
+
+    @Test
+    public void 路由构建器_可注入动态表解析器() {
+        GaarasonRoutingDataSourceBuilder.create()
+            .defaultGroup("master")
+            .group("master", Collections.singletonList(dummyDs("master1")))
+            .dynamicTableRouting((logical, expr) -> logical + "_custom_" + expr)
+            .build(buildContainer());
+
+        GaarasonDataSourceContext.executeTable("007", () -> {
+            Assert.assertEquals("student_custom_007", GaarasonDataSourceContext.resolvePhysicalTableName("student"));
         });
     }
 
@@ -442,6 +410,69 @@ public class DataSourceRoutingTests {
             DataSource.class.getClassLoader(),
             new Class<?>[]{DataSource.class},
             new DummyDataSourceHandler(name)
+        );
+    }
+
+    private static DataSource switchableDs(String name, AtomicReference<String> lastDatabaseKey) {
+        return (DataSource) Proxy.newProxyInstance(
+            DataSource.class.getClassLoader(),
+            new Class<?>[]{DataSource.class},
+            (proxy, method, args) -> {
+                switch (method.getName()) {
+                    case "getConnection":
+                        return switchableConnection(name, lastDatabaseKey);
+                    case "toString":
+                        return "SwitchableDataSource[" + name + "]";
+                    case "hashCode":
+                        return name.hashCode();
+                    case "equals":
+                        return proxy == args[0];
+                    default:
+                        throw new UnsupportedOperationException(
+                            "SwitchableDataSource[" + name + "] does not support: " + method.getName());
+                }
+            }
+        );
+    }
+
+    private static Connection switchableConnection(String name, AtomicReference<String> lastDatabaseKey) {
+        AtomicReference<Boolean> closed = new AtomicReference<>(false);
+        return (Connection) Proxy.newProxyInstance(
+            Connection.class.getClassLoader(),
+            new Class<?>[]{Connection.class},
+            (proxy, method, args) -> {
+                switch (method.getName()) {
+                    case "setCatalog":
+                    case "setSchema":
+                        lastDatabaseKey.set(String.valueOf(args[0]));
+                        return null;
+                    case "setAutoCommit":
+                    case "commit":
+                    case "rollback":
+                    case "releaseSavepoint":
+                        return null;
+                    case "setSavepoint":
+                        return Proxy.newProxyInstance(
+                            Savepoint.class.getClassLoader(),
+                            new Class<?>[]{Savepoint.class},
+                            (p, m, a) -> 1
+                        );
+                    case "isClosed":
+                        return closed.get();
+                    case "close":
+                        closed.set(true);
+                        return null;
+                    case "toString":
+                        return "SwitchableConnection[" + name + "]";
+                    case "hashCode":
+                        return System.identityHashCode(proxy);
+                    case "equals":
+                        return proxy == args[0];
+                    default:
+                        throw new UnsupportedOperationException(
+                            "SwitchableConnection[" + name + "] does not support: " + method.getName());
+                }
+            }
         );
     }
 

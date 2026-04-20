@@ -3,6 +3,7 @@ package gaarason.database.eloquent;
 import gaarason.database.appointment.EntityUseType;
 import gaarason.database.appointment.JDBCValueWrapper;
 import gaarason.database.config.ConversionConfig;
+import gaarason.database.connection.GaarasonDataSourceContext;
 import gaarason.database.config.QueryBuilderConfig;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
@@ -27,7 +28,8 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * 数据模型对象
+ * 数据模型对象；表名解析与线程级 {@link GaarasonDataSourceContext} 表路由一致.
+ *
  * @author xt
  */
 abstract class ModelOfQuery<B extends Builder<B, T, K>, T, K> extends ModelOfSoftDelete<B, T, K> {
@@ -284,8 +286,18 @@ abstract class ModelOfQuery<B extends Builder<B, T, K>, T, K> extends ModelOfSof
         return getModelMember().getPrimaryKeyClass();
     }
 
+    /**
+     * 返回经 {@link GaarasonDataSourceContext#resolvePhysicalTableName(String)} 解析后的物理表名(含当前表路由表达式).
+     */
     @Override
     public String getTableName() {
+        return GaarasonDataSourceContext.resolvePhysicalTableName(getLogicalTableName());
+    }
+
+    /**
+     * 实体元数据中的逻辑表名(未做路由解析).
+     */
+    protected String getLogicalTableName() {
         return getModelMember().getEntityMember().getTableName();
     }
 

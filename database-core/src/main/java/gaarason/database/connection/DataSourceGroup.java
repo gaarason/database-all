@@ -13,12 +13,26 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class DataSourceGroup {
 
+    /**
+     * 主数据源列表
+     */
     private final List<DataSource> masterDataSourceList;
 
+    /**
+     * 从数据源列表
+     */
     private final List<DataSource> slaveDataSourceList;
 
+    /**
+     * 是否有从数据源
+     */
     private final boolean hasSlave;
 
+    /**
+     * 构造函数
+     * @param masterDataSourceList 主数据源列表
+     * @param slaveDataSourceList 从数据源列表
+     */
     public DataSourceGroup(List<DataSource> masterDataSourceList, List<DataSource> slaveDataSourceList) {
         if (ObjectUtils.isEmpty(masterDataSourceList)) {
             throw new IllegalArgumentException("Master datasource list must not be empty.");
@@ -30,6 +44,10 @@ public class DataSourceGroup {
         this.hasSlave = !this.slaveDataSourceList.isEmpty();
     }
 
+    /**
+     * 构造函数
+     * @param masterDataSourceList 主数据源列表
+     */
     public DataSourceGroup(List<DataSource> masterDataSourceList) {
         this(masterDataSourceList, Collections.emptyList());
     }
@@ -46,14 +64,26 @@ public class DataSourceGroup {
         return slaveDataSourceList.get(ThreadLocalRandom.current().nextInt(slaveDataSourceList.size()));
     }
 
+    /**
+     * 获取主数据源列表
+     * @return 主数据源列表
+     */
     public List<DataSource> getMasterDataSourceList() {
         return masterDataSourceList;
     }
 
+    /**
+     * 获取从数据源列表
+     * @return 从数据源列表
+     */
     public List<DataSource> getSlaveDataSourceList() {
         return slaveDataSourceList;
     }
 
+    /**
+     * 是否有从数据源
+     * @return 是否有从数据源
+     */
     public boolean hasSlave() {
         return hasSlave;
     }

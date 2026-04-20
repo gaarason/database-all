@@ -1,6 +1,7 @@
 HELP.md
 /target/
 target/
+/tmp/
 !.mvn/wrapper/maven-wrapper.jar
 
 ### MAC OS ###

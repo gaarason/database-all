@@ -3,6 +3,7 @@ package gaarason.database.query;
 import gaarason.database.appointment.AggregatesType;
 import gaarason.database.appointment.JoinType;
 import gaarason.database.appointment.SqlType;
+import gaarason.database.connection.GaarasonDataSourceContext;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.contract.function.BuilderAnyWrapper;
@@ -21,9 +22,10 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * 公用查询构造器
- * @param <T>
- * @param <K>
+ * 公用查询构造器；{@link #from(String)}、{@link #table(String)}、{@link #join} 等涉及表名处会按 {@link GaarasonDataSourceContext#resolvePhysicalTableName(String)} 解析物理表.
+ *
+ * @param <T> 实体类型
+ * @param <K> 主键类型
  * @author xt
  */
 public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends WhereBuilder<B, T, K> {
@@ -84,7 +86,8 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
 
     @Override
     public B table(String table) {
-        return tableRaw(supportBackQuote(table));
+        String realTable = resolveTableName(table);
+        return tableRaw(supportBackQuote(realTable));
     }
 
     @Override
@@ -105,8 +108,9 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
 
     @Override
     public B from(String table) {
-        table(table);
-        return fromRaw(tableAlias(table));
+        String realTable = resolveTableName(table);
+        tableRaw(supportBackQuote(realTable));
+        return fromRaw(tableAlias(realTable));
     }
 
     @Override
@@ -307,7 +311,8 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
 
     @Override
     public B join(JoinType joinType, String joinTable, String localColumn, String symbol, String joinTableColumn) {
-        return join(joinType, joinTable, builder -> builder.whereRaw(builder.columnAlias(localColumn) + symbol + joinTableColumn));
+        return join(joinType, resolveTableName(joinTable), builder -> builder.whereRaw(
+            builder.columnAlias(localColumn) + symbol + joinTableColumn));
     }
 
     @Override
@@ -330,10 +335,24 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
 
     @Override
     public B join(JoinType joinType, String joinTable, BuilderWrapper<B, T, K> joinConditions) {
+        joinTable = resolveTableName(joinTable);
         Grammar.SQLPartInfo conditions = generateSqlPart(joinConditions, Grammar.SQLPartType.WHERE);
         String sqlPart = supportSpaces(joinType.getOperation()) + "join " + joinTable + supportSpaces("on") +
             supportBracket(conditions.getSqlString());
         return joinRaw(sqlPart, conditions.getParameters());
+    }
+
+    /**
+     * 将用户或子查询传入的表名转为物理表名；当 {@link GaarasonDataSourceContext#shouldDynamicTableOverrideExplicit()} 为 {@code false} 时保持原样.
+     *
+     * @param tableName 逻辑表名或已带反引的片段
+     * @return 解析后的表名(用于拼接 SQL)
+     */
+    protected String resolveTableName(String tableName) {
+        if (!GaarasonDataSourceContext.shouldDynamicTableOverrideExplicit()) {
+            return tableName;
+        }
+        return GaarasonDataSourceContext.resolvePhysicalTableName(tableName);
     }
 
     @Override

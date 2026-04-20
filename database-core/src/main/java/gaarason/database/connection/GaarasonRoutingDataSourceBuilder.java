@@ -1,6 +1,11 @@
 package gaarason.database.connection;
 
 import gaarason.database.contract.connection.GaarasonDataSource;
+import gaarason.database.contract.routing.DynamicDatabaseRouting;
+import gaarason.database.contract.routing.DynamicDataSourceGroupRouting;
+import gaarason.database.contract.routing.DynamicExplicitTableRouting;
+import gaarason.database.contract.routing.DynamicJdbcCatalogRouting;
+import gaarason.database.contract.routing.DynamicTableRouting;
 import gaarason.database.core.Container;
 import gaarason.database.exception.TypeNotSupportedException;
 
@@ -28,6 +33,16 @@ public class GaarasonRoutingDataSourceBuilder {
     private String defaultGroupKey = "master";
 
     private final Map<String, DataSourceGroup> groupMap = new LinkedHashMap<>();
+
+    private DynamicDatabaseRouting dynamicDatabaseRouting;
+
+    private DynamicDataSourceGroupRouting dynamicDataSourceGroupRouting;
+
+    private DynamicTableRouting dynamicTableRouting;
+
+    private DynamicJdbcCatalogRouting dynamicJdbcCatalogRouting;
+
+    private DynamicExplicitTableRouting dynamicExplicitTableRouting;
 
     private GaarasonRoutingDataSourceBuilder() {
     }
@@ -86,6 +101,61 @@ public class GaarasonRoutingDataSourceBuilder {
     }
 
     /**
+     * 指定库键解析策略;构建时写入 {@link GaarasonDataSourceContext}.
+     *
+     * @param routing 库键路由,可 {@code null} 表示沿用上下文已有配置
+     * @return 当前构建器
+     */
+    public GaarasonRoutingDataSourceBuilder dynamicDatabaseRouting(DynamicDatabaseRouting routing) {
+        this.dynamicDatabaseRouting = routing;
+        return this;
+    }
+
+    /**
+     * 指定数据源组键解析策略.
+     *
+     * @param routing 组键路由
+     * @return 当前构建器
+     */
+    public GaarasonRoutingDataSourceBuilder dynamicDataSourceGroupRouting(DynamicDataSourceGroupRouting routing) {
+        this.dynamicDataSourceGroupRouting = routing;
+        return this;
+    }
+
+    /**
+     * 指定逻辑表名解析策略.
+     *
+     * @param routing 表路由
+     * @return 当前构建器
+     */
+    public GaarasonRoutingDataSourceBuilder dynamicTableRouting(DynamicTableRouting routing) {
+        this.dynamicTableRouting = routing;
+        return this;
+    }
+
+    /**
+     * 指定同连接切换 catalog/schema 的实现.
+     *
+     * @param routing JDBC catalog 路由
+     * @return 当前构建器
+     */
+    public GaarasonRoutingDataSourceBuilder dynamicJdbcCatalogRouting(DynamicJdbcCatalogRouting routing) {
+        this.dynamicJdbcCatalogRouting = routing;
+        return this;
+    }
+
+    /**
+     * 指定动态表是否覆盖显式 {@code from}/表名.
+     *
+     * @param routing 显式表覆盖策略
+     * @return 当前构建器
+     */
+    public GaarasonRoutingDataSourceBuilder dynamicExplicitTableRouting(DynamicExplicitTableRouting routing) {
+        this.dynamicExplicitTableRouting = routing;
+        return this;
+    }
+
+    /**
      * 构建路由数据源
      * @param container 容器
      * @return GaarasonDataSource
@@ -98,11 +168,33 @@ public class GaarasonRoutingDataSourceBuilder {
             throw new IllegalArgumentException(
                 "Default group [" + defaultGroupKey + "] not found in configured groups.");
         }
+        applyRoutingExtensions();
         return new RoutingDataSourceWrapper(groupMap, defaultGroupKey, container);
     }
 
     /**
-     * 路由数据源包装器(不依赖 Spring)
+     * 将构建器上可选的路由扩展写入 {@link GaarasonDataSourceContext} 全局静态配置.
+     */
+    private void applyRoutingExtensions() {
+        if (dynamicDatabaseRouting != null) {
+            GaarasonDataSourceContext.setDynamicDatabaseRouting(dynamicDatabaseRouting);
+        }
+        if (dynamicDataSourceGroupRouting != null) {
+            GaarasonDataSourceContext.setDynamicDataSourceGroupRouting(dynamicDataSourceGroupRouting);
+        }
+        if (dynamicTableRouting != null) {
+            GaarasonDataSourceContext.setDynamicTableRouting(dynamicTableRouting);
+        }
+        if (dynamicJdbcCatalogRouting != null) {
+            GaarasonDataSourceContext.setDynamicJdbcCatalogRouting(dynamicJdbcCatalogRouting);
+        }
+        if (dynamicExplicitTableRouting != null) {
+            GaarasonDataSourceContext.setDynamicExplicitTableRouting(dynamicExplicitTableRouting);
+        }
+    }
+
+    /**
+     * 非 Spring 环境下的多组路由数据源实现；事务内锁定组键与库键,避免嵌套执行期间路由漂移.
      */
     static class RoutingDataSourceWrapper extends GaarasonDataSourceWrapper {
 
@@ -115,6 +207,8 @@ public class GaarasonRoutingDataSourceBuilder {
          */
         private final ThreadLocal<String> transactionGroupKey = new ThreadLocal<>();
 
+        private final ThreadLocal<String> transactionDatabaseKey = new ThreadLocal<>();
+
         RoutingDataSourceWrapper(Map<String, DataSourceGroup> groupMap, String defaultGroupKey, Container container) {
             super(groupMap.get(defaultGroupKey).getMasterDataSourceList(), container);
             this.groupMap = groupMap;
@@ -124,7 +218,8 @@ public class GaarasonRoutingDataSourceBuilder {
         @Override
         public void begin() {
             if (!isLocalThreadInTransaction()) {
-                transactionGroupKey.set(resolveGroupKey());
+                transactionGroupKey.set(GaarasonDataSourceContext.resolvePhysicalGroupKey(defaultGroupKey));
+                transactionDatabaseKey.set(super.resolveDatabaseKeyForCurrentContext());
             }
             super.begin();
         }
@@ -135,7 +230,7 @@ public class GaarasonRoutingDataSourceBuilder {
             if (isLocalThreadInTransaction()) {
                 key = transactionGroupKey.get();
             } else {
-                key = resolveGroupKey();
+                key = GaarasonDataSourceContext.resolvePhysicalGroupKey(defaultGroupKey);
             }
             DataSourceGroup group = groupMap.get(key);
             if (group == null) {
@@ -147,24 +242,28 @@ public class GaarasonRoutingDataSourceBuilder {
         @Override
         protected void connectionClose(Connection connection) {
             transactionGroupKey.remove();
+            transactionDatabaseKey.remove();
             super.connectionClose(connection);
         }
 
         @Override
+        protected String resolveDatabaseKeyForCurrentContext() {
+            if (isLocalThreadInTransaction()) {
+                return transactionDatabaseKey.get();
+            }
+            return super.resolveDatabaseKeyForCurrentContext();
+        }
+
+        @Override
         public List<DataSource> getMasterDataSourceList() {
-            DataSourceGroup group = groupMap.get(resolveGroupKey());
+            DataSourceGroup group = groupMap.get(GaarasonDataSourceContext.resolvePhysicalGroupKey(defaultGroupKey));
             return group != null ? group.getMasterDataSourceList() : super.getMasterDataSourceList();
         }
 
         @Override
         public List<DataSource> getSlaveDataSourceList() {
-            DataSourceGroup group = groupMap.get(resolveGroupKey());
+            DataSourceGroup group = groupMap.get(GaarasonDataSourceContext.resolvePhysicalGroupKey(defaultGroupKey));
             return group != null ? group.getSlaveDataSourceList() : super.getSlaveDataSourceList();
-        }
-
-        private String resolveGroupKey() {
-            String key = GaarasonDataSourceContext.get();
-            return key != null ? key : defaultGroupKey;
         }
     }
 }

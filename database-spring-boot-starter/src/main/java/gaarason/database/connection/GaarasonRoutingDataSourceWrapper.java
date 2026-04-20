@@ -2,7 +2,6 @@ package gaarason.database.connection;
 
 import gaarason.database.core.Container;
 import gaarason.database.exception.TypeNotSupportedException;
-import gaarason.database.lang.Nullable;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -13,7 +12,8 @@ import java.util.Map;
  * 路由数据源包装器(Spring 环境)
  * <p>
  * 基于 {@link GaarasonDataSourceContext} 进行数据源组路由, 结合 {@link DataSourceGroup} 实现读写分离.
- * 事务开始后锁定数据源组, 保证事务期间不会因上下文切换而路由到其他组.
+ * 事务开始后锁定数据源组与解析后的库键, 保证事务期间不会因上下文切换而路由到其他组或其他库.
+ *
  * @author xt
  */
 public class GaarasonRoutingDataSourceWrapper extends GaarasonSmartDataSourceWrapper {
@@ -26,6 +26,8 @@ public class GaarasonRoutingDataSourceWrapper extends GaarasonSmartDataSourceWra
      * 事务中锁定的数据源组 key, 保证事务期间不会因上下文切换而切到其他组
      */
     private final ThreadLocal<String> transactionGroupKey = new ThreadLocal<>();
+
+    private final ThreadLocal<String> transactionDatabaseKey = new ThreadLocal<>();
 
     /**
      * 构造路由数据源包装器
@@ -43,7 +45,8 @@ public class GaarasonRoutingDataSourceWrapper extends GaarasonSmartDataSourceWra
     @Override
     public void begin() {
         if (!isLocalThreadInTransaction()) {
-            transactionGroupKey.set(resolveGroupKey());
+            transactionGroupKey.set(GaarasonDataSourceContext.resolvePhysicalGroupKey(defaultGroupKey));
+            transactionDatabaseKey.set(super.resolveDatabaseKeyForCurrentContext());
         }
         super.begin();
     }
@@ -54,7 +57,7 @@ public class GaarasonRoutingDataSourceWrapper extends GaarasonSmartDataSourceWra
         if (isLocalThreadInTransaction()) {
             key = transactionGroupKey.get();
         } else {
-            key = resolveGroupKey();
+            key = GaarasonDataSourceContext.resolvePhysicalGroupKey(defaultGroupKey);
         }
         DataSourceGroup group = groupMap.get(key);
         if (group == null) {
@@ -66,18 +69,27 @@ public class GaarasonRoutingDataSourceWrapper extends GaarasonSmartDataSourceWra
     @Override
     protected void connectionClose(Connection connection) {
         transactionGroupKey.remove();
+        transactionDatabaseKey.remove();
         super.connectionClose(connection);
     }
 
     @Override
+    protected String resolveDatabaseKeyForCurrentContext() {
+        if (isLocalThreadInTransaction()) {
+            return transactionDatabaseKey.get();
+        }
+        return super.resolveDatabaseKeyForCurrentContext();
+    }
+
+    @Override
     public List<DataSource> getMasterDataSourceList() {
-        DataSourceGroup group = groupMap.get(resolveGroupKey());
+        DataSourceGroup group = groupMap.get(GaarasonDataSourceContext.resolvePhysicalGroupKey(defaultGroupKey));
         return group != null ? group.getMasterDataSourceList() : super.getMasterDataSourceList();
     }
 
     @Override
     public List<DataSource> getSlaveDataSourceList() {
-        DataSourceGroup group = groupMap.get(resolveGroupKey());
+        DataSourceGroup group = groupMap.get(GaarasonDataSourceContext.resolvePhysicalGroupKey(defaultGroupKey));
         return group != null ? group.getSlaveDataSourceList() : super.getSlaveDataSourceList();
     }
 
@@ -95,11 +107,5 @@ public class GaarasonRoutingDataSourceWrapper extends GaarasonSmartDataSourceWra
      */
     public String getDefaultGroupKey() {
         return defaultGroupKey;
-    }
-
-    @Nullable
-    private String resolveGroupKey() {
-        String key = GaarasonDataSourceContext.get();
-        return key != null ? key : defaultGroupKey;
     }
 }

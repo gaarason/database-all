@@ -5,7 +5,13 @@ import gaarason.database.autoconfiguration.DefaultAutoconfiguration;
 import gaarason.database.bootstrap.ContainerBootstrap;
 import gaarason.database.config.GaarasonDatabaseProperties;
 import gaarason.database.connection.DataSourceGroup;
+import gaarason.database.connection.GaarasonDataSourceContext;
 import gaarason.database.connection.GaarasonRoutingDataSourceWrapper;
+import gaarason.database.contract.routing.DynamicDatabaseRouting;
+import gaarason.database.contract.routing.DynamicDataSourceGroupRouting;
+import gaarason.database.contract.routing.DynamicExplicitTableRouting;
+import gaarason.database.contract.routing.DynamicJdbcCatalogRouting;
+import gaarason.database.contract.routing.DynamicTableRouting;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.core.Container;
 import gaarason.database.lang.Nullable;
@@ -26,6 +32,7 @@ import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -178,13 +185,32 @@ public class GaarasonDatabaseAutoConfiguration {
          * <p>
          * 当配置了 gaarason.database.datasource.groups 时, 自动创建多组路由数据源;
          * 否则使用传统的单 Spring DataSource 包装.
-         * @return 数据源
+         * <p>
+         * 各 {@link ObjectProvider} 路由 Bean 若存在则注册到 {@link GaarasonDataSourceContext},供组/库/表与同连接切库使用.
+         *
+         * @param dataSourceProvider                    Spring 默认数据源
+         * @param container                             Gaarason 容器
+         * @param dsProperties                          多组 YAML 配置
+         * @param dynamicDatabaseRoutingProvider        可选:库键路由
+         * @param dynamicDataSourceGroupRoutingProvider 可选:组键路由
+         * @param dynamicTableRoutingProvider           可选:表名路由
+         * @param dynamicJdbcCatalogRoutingProvider     可选:JDBC catalog 切换
+         * @param dynamicExplicitTableRoutingProvider   可选:是否覆盖显式表名
+         * @return 主 {@link GaarasonDataSource} Bean
          */
         @Primary
         @Bean()
         @ConditionalOnMissingBean(GaarasonDataSource.class)
         public GaarasonDataSource gaarasonDataSource(ObjectProvider<DataSource> dataSourceProvider,
-            Container container, GaarasonDataSourceProperties dsProperties) {
+            Container container, GaarasonDataSourceProperties dsProperties,
+            ObjectProvider<DynamicDatabaseRouting> dynamicDatabaseRoutingProvider,
+            ObjectProvider<DynamicDataSourceGroupRouting> dynamicDataSourceGroupRoutingProvider,
+            ObjectProvider<DynamicTableRouting> dynamicTableRoutingProvider,
+            ObjectProvider<DynamicJdbcCatalogRouting> dynamicJdbcCatalogRoutingProvider,
+            ObjectProvider<DynamicExplicitTableRouting> dynamicExplicitTableRoutingProvider) {
+
+            applyRoutingExtensions(dynamicDatabaseRoutingProvider, dynamicDataSourceGroupRoutingProvider,
+                dynamicTableRoutingProvider, dynamicJdbcCatalogRoutingProvider, dynamicExplicitTableRoutingProvider);
 
             String defaultGroup = ObjectUtils.isEmpty(dsProperties.getDefaultGroup())
                 ? "master"
@@ -200,6 +226,40 @@ public class GaarasonDatabaseAutoConfiguration {
                     + ", default: " + defaultGroup);
             }
             return new GaarasonRoutingDataSourceWrapper(groupMap, defaultGroup, container);
+        }
+
+        /**
+         * 将 Spring 容器中可选的路由策略 Bean 同步到 {@link GaarasonDataSourceContext}(仅注册非空实例).
+         */
+        private static void applyRoutingExtensions(
+            ObjectProvider<DynamicDatabaseRouting> dynamicDatabaseRoutingProvider,
+            ObjectProvider<DynamicDataSourceGroupRouting> dynamicDataSourceGroupRoutingProvider,
+            ObjectProvider<DynamicTableRouting> dynamicTableRoutingProvider,
+            ObjectProvider<DynamicJdbcCatalogRouting> dynamicJdbcCatalogRoutingProvider,
+            ObjectProvider<DynamicExplicitTableRouting> dynamicExplicitTableRoutingProvider) {
+
+            DynamicDatabaseRouting dynamicDatabaseRouting = dynamicDatabaseRoutingProvider.getIfAvailable();
+            if (dynamicDatabaseRouting != null) {
+                GaarasonDataSourceContext.setDynamicDatabaseRouting(dynamicDatabaseRouting);
+            }
+            DynamicDataSourceGroupRouting dynamicDataSourceGroupRouting =
+                dynamicDataSourceGroupRoutingProvider.getIfAvailable();
+            if (dynamicDataSourceGroupRouting != null) {
+                GaarasonDataSourceContext.setDynamicDataSourceGroupRouting(dynamicDataSourceGroupRouting);
+            }
+            DynamicTableRouting dynamicTableRouting = dynamicTableRoutingProvider.getIfAvailable();
+            if (dynamicTableRouting != null) {
+                GaarasonDataSourceContext.setDynamicTableRouting(dynamicTableRouting);
+            }
+            DynamicJdbcCatalogRouting dynamicJdbcCatalogRouting = dynamicJdbcCatalogRoutingProvider.getIfAvailable();
+            if (dynamicJdbcCatalogRouting != null) {
+                GaarasonDataSourceContext.setDynamicJdbcCatalogRouting(dynamicJdbcCatalogRouting);
+            }
+            DynamicExplicitTableRouting dynamicExplicitTableRouting =
+                dynamicExplicitTableRoutingProvider.getIfAvailable();
+            if (dynamicExplicitTableRouting != null) {
+                GaarasonDataSourceContext.setDynamicExplicitTableRouting(dynamicExplicitTableRouting);
+            }
         }
 
         /**
@@ -220,9 +280,9 @@ public class GaarasonDatabaseAutoConfiguration {
         @Bean
         @ConditionalOnMissingBean
         @ConditionalOnClass(name = "org.aspectj.lang.annotation.Aspect")
-        public GaarasonDataSourceAspect gaarasonDataSourceAspect() {
+        public GaarasonDataSourceAspect gaarasonDataSourceAspect(ConfigurableListableBeanFactory beanFactory) {
             LOGGER.info("GaarasonDataSourceAspect init");
-            return new GaarasonDataSourceAspect();
+            return new GaarasonDataSourceAspect(beanFactory);
         }
 
         /**

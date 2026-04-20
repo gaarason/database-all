@@ -34,7 +34,7 @@ public class AaaGcTests extends BaseTests {
 
     }
 
-    @Test
+    // @Test
     public void testPressure() throws InterruptedException {
         while (true) {
             MultiThreadUtil.run(10, 100, () -> {

@@ -4,6 +4,7 @@ import gaarason.database.appointment.OrderBy;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
+import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.exception.RelationAttachException;
 import gaarason.database.exception.SQLRuntimeException;
 import gaarason.database.test.models.normal.StudentORMModel;
@@ -23,6 +24,11 @@ import org.junit.runners.MethodSorters;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
+/**
+ * ORM 与关系查询等集成测试基类；具体数据库用例由子类与 {@link gaarason.database.test.parent.base.BaseTests} 初始化脚本驱动.
+ *
+ * @author xt
+ */
 @Slf4j
 @FixMethodOrder(MethodSorters.JVM)
 abstract public class ORMTests extends BaseTests {
@@ -1853,19 +1859,22 @@ abstract public class ORMTests extends BaseTests {
         Assert.assertFalse(record.isDirty());
         Assert.assertFalse(record.isDirty(Teacher::getAge));
         Assert.assertFalse(record.isDirty(Teacher::getName));
-        Assert.assertFalse(record.isDirty(Arrays.asList(Teacher::getAge, Teacher::getName)));
+        Assert.assertFalse(record.isDirty(Arrays.<ColumnFunctionalInterface<Teacher, ?>>asList(
+            Teacher::getAge, Teacher::getName)));
 
         teacher1.setName("新老师的新名字");
 
         Assert.assertTrue(record.isDirty());
         Assert.assertFalse(record.isDirty(Teacher::getAge));
         Assert.assertTrue(record.isDirty(Teacher::getName));
-        Assert.assertTrue(record.isDirty(Arrays.asList(Teacher::getAge, Teacher::getName)));
+        Assert.assertTrue(record.isDirty(Arrays.<ColumnFunctionalInterface<Teacher, ?>>asList(
+            Teacher::getAge, Teacher::getName)));
 
         Assert.assertFalse(record.isClean());
         Assert.assertTrue(record.isClean(Teacher::getAge));
         Assert.assertFalse(record.isClean(Teacher::getName));
-        Assert.assertFalse(record.isClean(Arrays.asList(Teacher::getAge, Teacher::getName)));
+        Assert.assertFalse(record.isClean(Arrays.<ColumnFunctionalInterface<Teacher, ?>>asList(
+            Teacher::getAge, Teacher::getName)));
 
         record.save();
 
@@ -1886,7 +1895,8 @@ abstract public class ORMTests extends BaseTests {
         Assert.assertFalse(record.wasChanged());
         Assert.assertFalse(record.wasChanged(Teacher::getAge));
         Assert.assertFalse(record.wasChanged(Teacher::getName));
-        Assert.assertFalse(record.wasChanged(Arrays.asList(Teacher::getAge, Teacher::getName)));
+        Assert.assertFalse(record.wasChanged(Arrays.<ColumnFunctionalInterface<Teacher, ?>>asList(
+            Teacher::getAge, Teacher::getName)));
 
         // 仅设置, 未提交
         teacher1.setName("新老师的新名字");
@@ -1894,7 +1904,8 @@ abstract public class ORMTests extends BaseTests {
         Assert.assertFalse(record.wasChanged());
         Assert.assertFalse(record.wasChanged(Teacher::getAge));
         Assert.assertFalse(record.wasChanged(Teacher::getName));
-        Assert.assertFalse(record.wasChanged(Arrays.asList(Teacher::getAge, Teacher::getName)));
+        Assert.assertFalse(record.wasChanged(Arrays.<ColumnFunctionalInterface<Teacher, ?>>asList(
+            Teacher::getAge, Teacher::getName)));
 
         // 提交到数据库
         record.save();
@@ -1902,7 +1913,8 @@ abstract public class ORMTests extends BaseTests {
         Assert.assertTrue(record.wasChanged());
         Assert.assertFalse(record.wasChanged(Teacher::getAge));
         Assert.assertTrue(record.wasChanged(Teacher::getName));
-        Assert.assertTrue(record.wasChanged(Arrays.asList(Teacher::getAge, Teacher::getName)));
+        Assert.assertTrue(record.wasChanged(Arrays.<ColumnFunctionalInterface<Teacher, ?>>asList(
+            Teacher::getAge, Teacher::getName)));
     }
 
     @Test

@@ -11,7 +11,8 @@ Eloquent ORM for Java
             * [读写分离](#读写分离)
         * [多数据源分组](#多数据源分组)
             * [YAML 配置方式](#YAML-配置方式)
-            * [数据源组切换](#数据源组切换)
+            * [三维度路由与切换](#三维度路由与切换)
+            * [可扩展点](#可扩展点)
         * [使用GaarasonDataSource](#使用GaarasonDataSource)
     * [非spring boot](#非spring)
         * [编程式多数据源分组](#编程式多数据源分组)
@@ -63,8 +64,9 @@ spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 
 - 支持多个数据源组, 每组包含多个写库(一般为一个主库)和多个读库, 自动进行读写分离
 - 提供 YAML 配置和编程式两种构建方式
-- 提供 `@GaarasonDS` 注解和 [`GaarasonDataSourceContext`](/database-core/src/main/java/gaarason/database/connection/GaarasonDataSourceContext.java) 编码两种切换方式
+- 提供 `@GaarasonDataSourceGroup`、`@GaarasonDatabase`、`@GaarasonTable` 注解（可选 **SpEL**）与 [`GaarasonDataSourceContext`](/database-core/src/main/java/gaarason/database/connection/GaarasonDataSourceContext.java) 编码 API；三者在语义上并列，详见下文 [三维度路由与切换](#三维度路由与切换)
 - 事务开始后自动锁定数据源组, 保证事务期间不会因上下文切换而路由到其他组
+- 事务开始后自动锁定数据库键, 保证事务期间不会因上下文切换而跨库漂移
 - 未配置从库时, 读请求自动回退到主库
 
 #### YAML 配置方式
@@ -118,93 +120,362 @@ gaarason:
 
 > **迁移建议**: 历史项目可继续沿用单 `DataSource` Bean；新项目建议统一使用 `gaarason.database.datasource.groups`，即便只有一个组，也便于后续平滑扩展到多组。
 
-#### 数据源组切换
+#### 三维度路由与切换
 
-提供两种切换方式, 可混合使用:
+路由拆成三个**并列维度**：选哪一组连接池（**数据源组**）、在同一物理连接上切到哪套库名（**数据库**）、逻辑表名映射到哪张物理表（**表**）。可只用其一，也可在方法上**叠加多个注解**，或在代码里**嵌套 `executeDataSourceGroup` / `executeDatabase` / `executeTable`**（栈式进入与退出，自动恢复外层值）。
 
-**方式一: `@GaarasonDS` 注解 (依赖 Spring AOP)**
+**对比总览**
 
-可标注在方法或类上, 方法级别优先于类级别:
+| 维度 | 典型业务场景 | 注解 | 编码 API | 扩展 Bean（可选） |
+| --- | --- | --- | --- | --- |
+| 数据源组 | 多业务线多套池；读写分离主从组 | `@GaarasonDataSourceGroup` | `executeDataSourceGroup(key, runnable)` | `DynamicDataSourceGroupRouting` |
+| 数据库 | 同实例多库 / 多 schema；租户按库 | `@GaarasonDatabase` | `executeDatabase(key, runnable)` | `DynamicDatabaseRouting` |
+| 表 | 分表、按月表、逻辑表 → 物理表 | `@GaarasonTable` | `executeTable(key, runnable)` | `DynamicTableRouting` / `DynamicExplicitTableRouting` |
 
-```java
-@Service
-public class OrderService {
+- 详见 [`@GaarasonDataSourceGroup`](/database-spring-boot-starter/src/main/java/gaarason/database/spring/boot/starter/annotation/GaarasonDataSourceGroup.java)、[`@GaarasonDatabase`](/database-spring-boot-starter/src/main/java/gaarason/database/spring/boot/starter/annotation/GaarasonDatabase.java)、[`@GaarasonTable`](/database-spring-boot-starter/src/main/java/gaarason/database/spring/boot/starter/annotation/GaarasonTable.java)
+- 详见切面 [`GaarasonDataSourceAspect`](/database-spring-boot-starter/src/main/java/gaarason/database/spring/boot/starter/aop/GaarasonDataSourceAspect.java)、上下文 [`GaarasonDataSourceContext`](/database-core/src/main/java/gaarason/database/connection/GaarasonDataSourceContext.java)
 
-    @Resource
-    private OrderModel orderModel;
+**SpEL（三个注解通用，仅 Spring AOP 路径）**
 
-    @GaarasonDS("order")
-    public void processOrder(Long orderId) {
-        // 此方法内所有数据库操作将路由到 "order" 数据源组
-        orderModel.newQuery().where("id", orderId).first();
-    }
-}
-```
-
-类级别注解, 该类所有方法默认使用指定组:
-```java
-@GaarasonDS("order")
-@Service
-public class OrderService {
-
-    @Resource
-    private OrderModel orderModel;
-
-    public void processOrder(Long orderId) {
-        orderModel.newQuery().where("id", orderId).first();
-    }
-
-    @GaarasonDS("master")
-    public void syncToMaster() {
-        // 方法级别覆盖类级别, 使用 "master" 组
-    }
-}
-```
-
-- 详见 [`@GaarasonDS`](/database-spring-boot-starter/src/main/java/gaarason/database/spring/boot/starter/annotation/GaarasonDS.java)
-- 详见 [`GaarasonDataSourceAspect`](/database-spring-boot-starter/src/main/java/gaarason/database/spring/boot/starter/aop/GaarasonDataSourceAspect.java)
-
-**方式二: `GaarasonDataSourceContext` 编码 (不依赖 Spring)**
-
-适用于非 Spring 环境或需要细粒度控制的场景:
+`@GaarasonDataSourceGroup` / `@GaarasonDatabase` / `@GaarasonTable` 均支持 **`spel`**（默认 `false`）。为 `true` 时，`value` **整段**在切面内按 SpEL 求值后再写入对应路由上下文；为 `false` 时 `value` 为字面量。求值上下文含方法参数（如 `#p0`）、`@beanName.method()` 等；结果须为 `String` 或可转为字符串的标量（数字、布尔）。
 
 ```java
-// 方式 A: 手动 set / clear
-GaarasonDataSourceContext.set("order");
-try {
-    orderModel.newQuery().where("id", 1).first();
-} finally {
-    GaarasonDataSourceContext.clear();
-}
-
-// 方式 B: 自动管理 (推荐)
-GaarasonDataSourceContext.execute("order", () -> {
-    orderModel.newQuery().where("id", 1).first();
-});
-
-// 方式 C: 带返回值
-Order order = GaarasonDataSourceContext.execute("order", () -> {
-    return orderModel.newQuery().where("id", 1).first();
-});
-```
-
-支持嵌套调用, 基于栈式实现自动恢复前值:
-```java
-GaarasonDataSourceContext.execute("order", () -> {
-    // 此处使用 "order" 组
+@GaarasonDataSourceGroup(spel = true, value = "#p0")
+public void inGroupFromArg(String groupKey) {
     orderModel.newQuery().first();
+}
 
-    GaarasonDataSourceContext.execute("master", () -> {
-        // 此处使用 "master" 组
+@GaarasonDatabase(spel = true, value = "@tenantResolver.currentDatabase()")
+public void inDbFromBean() {
+    studentModel.newQuery().first();
+}
+
+@GaarasonTable(spel = true, value = "#p0")
+public void queryShard(int shardId) {
+    studentModel.newQuery().where("id", 1).first();
+}
+
+@GaarasonTable(spel = true, value = "@shardKeyProvider.current()")
+public void queryByProvider() {
+    studentModel.newQuery().first();
+}
+```
+
+---
+
+##### 维度一：数据源组（选哪一组 `DataSource`）
+
+**业务场景**：订单与用户各一套连接池；或主从读写分离，读走从组、写走主组，需要在**不同池**之间切换。
+
+**注解（字面量）**：可标在类或方法上，方法优先于类。
+
+```java
+@Service
+public class OrderService {
+
+    @Resource
+    private OrderModel orderModel;
+
+    @GaarasonDataSourceGroup("order")
+    public void processOrder(Long orderId) {
+        orderModel.newQuery().where("id", orderId).first();
+    }
+}
+```
+
+```java
+@GaarasonDataSourceGroup("order")
+@Service
+public class OrderService {
+
+    @Resource
+    private OrderModel orderModel;
+
+    public void processOrder(Long orderId) {
+        orderModel.newQuery().where("id", orderId).first();
+    }
+
+    @GaarasonDataSourceGroup("master")
+    public void syncToMaster() {
+        // 方法级覆盖类级
+    }
+}
+```
+
+**注解（SpEL）**：组名来自参数、租户解析器等。
+
+```java
+@GaarasonDataSourceGroup(spel = true, value = "#p0")
+public void routeByTenant(String groupKey, Long orderId) {
+    orderModel.newQuery().where("id", orderId).first();
+}
+```
+
+**编码（非注解）**：非 Spring 或需局部控制时使用；支持嵌套与返回值。
+
+```java
+GaarasonDataSourceContext.executeDataSourceGroup("order", () -> {
+    orderModel.newQuery().where("id", 1).first();
+});
+
+Order order = GaarasonDataSourceContext.executeDataSourceGroup("order", () ->
+    orderModel.newQuery().where("id", 1).first());
+
+GaarasonDataSourceContext.executeDataSourceGroup("order", () -> {
+    orderModel.newQuery().first();
+    GaarasonDataSourceContext.executeDataSourceGroup("master", () -> {
         userModel.newQuery().first();
     });
-
-    // 自动恢复到 "order" 组
     orderModel.newQuery().get();
 });
 ```
 
-- 详见 [`GaarasonDataSourceContext`](/database-core/src/main/java/gaarason/database/connection/GaarasonDataSourceContext.java)
+---
+
+##### 维度二：数据库（同链接上的 catalog / schema）
+
+**业务场景**：同一 MySQL 实例多业务库；连接串不变，仅切换目标库名；租户「一租户一库」仍复用同一池。
+
+**注解（字面量）**
+
+```java
+@Service
+public class StudentService {
+
+    @GaarasonDatabase("db001")
+    public void queryInDb001() {
+        studentModel.newQuery().first();
+    }
+}
+```
+
+**注解（SpEL）**
+
+```java
+@GaarasonDatabase(spel = true, value = "@tenantResolver.currentDatabase()")
+public void queryCurrentTenantDb() {
+    studentModel.newQuery().first();
+}
+```
+
+**编码（非注解）**
+
+```java
+GaarasonDataSourceContext.executeDatabase("db001", () -> {
+    studentModel.newQuery().first();
+});
+```
+
+> **事务语义**：事务内锁定**首次**数据库键，后续切换不生效，避免同事务跨库不一致。
+
+---
+
+##### 维度三：表（路由键 / 表达式 → 物理表名）
+
+**业务场景**：`student` 映射为 `student_001`；订单按月 `order_202504`；或查询构造里统一逻辑表名，运行时再解析物理表。
+
+注解 / 编码传入的是**表路由键或表达式**；最终物理表名由 Spring 中注册的 `DynamicTableRouting`（或非 Spring 的 Builder 配置）计算。
+
+**注解（字面量）**
+
+```java
+@Service
+public class StudentService {
+
+    @GaarasonTable("001")
+    public void queryShard001() {
+        // 例如逻辑表 student → student_001
+        studentModel.newQuery().first();
+    }
+}
+```
+
+**注解（SpEL）**：与章节开头 **SpEL** 说明一致；表维度常用参数、`@Bean` 或对象属性作为路由键。
+
+```java
+@GaarasonTable(spel = true, value = "#p0")
+public void queryByShardKey(String routeKey) {
+    studentModel.newQuery().first();
+}
+
+@GaarasonTable(spel = true, value = "#user.shardId")
+public void saveByEntityRoute(User user) {
+    studentModel.newQuery().insert(user);
+}
+```
+
+**编码（非注解）**
+
+```java
+GaarasonDataSourceContext.executeTable("001", () -> {
+    studentModel.newQuery().first();
+});
+```
+
+> **破坏性变更**：默认策略为「动态切表覆盖显式 from/table」；可用 `DynamicExplicitTableRouting` 调整优先级（见 [可扩展点](#可扩展点)）。
+
+**案例一：注解固定路由键（按月分表）**
+
+实体仍为 `@Table(name = "order")`。路由键使用账期 `202504`，由 `DynamicTableRouting` 映射为 `order_202504`：
+
+```java
+@Service
+public class OrderQueryService {
+
+    @Resource
+    private OrderModel orderModel;
+
+    @GaarasonTable("202504")
+    public void listAprilOrders() {
+        orderModel.newQuery().where("status", 1).get();
+    }
+}
+```
+
+```java
+@Configuration
+public class ShardingTableConfig {
+
+    @Bean
+    public gaarason.database.contract.routing.DynamicTableRouting dynamicTableRouting() {
+        return (logicalTableName, routeExpression) -> {
+            if (routeExpression == null || routeExpression.isEmpty()) {
+                return logicalTableName;
+            }
+            return logicalTableName + "_" + routeExpression;
+        };
+    }
+}
+```
+
+**案例二：运行时按主键取模（编码传入路由键）**
+
+`物理表 = 逻辑表 + "_" + String.format("%03d", userId % 32)` 时：
+
+```java
+public void queryByUserId(Long userId) {
+    int shard = (int) (Math.abs(userId) % 32);
+    String routeKey = String.format("%03d", shard);
+    GaarasonDataSourceContext.executeTable(routeKey, () -> {
+        orderModel.newQuery().where("user_id", userId).first();
+    });
+}
+```
+
+配合与案例一相同的解析器即可得到 `order_007` 等形式。
+
+**案例二补充：注解 + SpEL（按参数取模后拼接表后缀）**
+
+当希望继续使用注解方式，但分片键来自方法参数时，可把“取模 + 补零”放到 SpEL 中，解析器仍复用 `logical + "_" + routeExpression` 规则：
+
+```java
+@GaarasonTable(spel = true, value = "T(java.lang.String).format('%03d', #userId % 32)")
+public void queryByUserIdWithAnnotation(Long userId) {
+    orderModel.newQuery().where("user_id", userId).first();
+}
+```
+
+```java
+@Bean
+public gaarason.database.contract.routing.DynamicTableRouting dynamicTableRouting() {
+    return (logicalTableName, routeExpression) -> {
+        if (routeExpression == null || routeExpression.isEmpty()) {
+            return logicalTableName;
+        }
+        return logicalTableName + "_" + routeExpression;
+    };
+}
+```
+
+该写法在方法进入切面时先算出路由键（例如 `007`），最终命中 `order_007`。
+
+**案例三：路由表达式约定格式（解析器内解析）**
+
+注解里写 `mod:32:7` 等约定串，在 `DynamicTableRouting` 内解析：
+
+```java
+@GaarasonTable("mod:32:7")
+public void listShard7() {
+    orderModel.newQuery().limit(10).get();
+}
+```
+
+```java
+@Bean
+public gaarason.database.contract.routing.DynamicTableRouting dynamicTableRouting() {
+    return (logicalTableName, routeExpression) -> {
+        if (routeExpression == null || routeExpression.isEmpty()) {
+            return logicalTableName;
+        }
+        if (routeExpression.startsWith("mod:")) {
+            String[] parts = routeExpression.split(":");
+            int mod = Integer.parseInt(parts[1]);
+            int shard = Integer.parseInt(parts[2]);
+            return logicalTableName + "_" + String.format("%03d", shard % mod);
+        }
+        return logicalTableName + "_" + routeExpression;
+    };
+}
+```
+
+**案例四：多维度组合**
+
+（1）**同链接**：库 + 表（切面或编码嵌套顺序决定生效顺序；仍遵循栈式恢复）。
+
+```java
+@GaarasonDatabase("biz_db")
+@GaarasonTable("012")
+public void queryInDbAndShard() {
+    studentModel.newQuery().where("id", 1).first();
+}
+```
+
+等价编码：
+
+```java
+GaarasonDataSourceContext.executeDatabase("biz_db", () ->
+    GaarasonDataSourceContext.executeTable("012", () ->
+        studentModel.newQuery().first()
+    )
+);
+```
+
+（2）**三维度**：组 + 库 + 表（典型：独立订单池、订单业务库、按月分表）。
+
+```java
+@GaarasonDataSourceGroup("order")
+@GaarasonDatabase("db_order_001")
+@GaarasonTable("202504")
+public void listOrdersThreeDims() {
+    orderModel.newQuery().where("status", 1).get();
+}
+```
+
+```java
+GaarasonDataSourceContext.executeDataSourceGroup("order", () ->
+    GaarasonDataSourceContext.executeDatabase("db_order_001", () ->
+        GaarasonDataSourceContext.executeTable("202504", () ->
+            orderModel.newQuery().get())));
+```
+
+#### 可扩展点
+
+- `DynamicDatabaseRouting`: 根据数据库键解析最终 JDBC catalog/schema 键（可在此实现映射、trim、别名等逻辑）
+- `DynamicDataSourceGroupRouting`: 根据组键解析物理数据源组键
+- `DynamicTableRouting`: 根据逻辑表名 + **表**路由表达式解析物理表名（仅使用 `executeTable` / `getTable()` 栈）
+- `DynamicJdbcCatalogRouting`: 自定义连接切库（`switchTo`，默认 setCatalog -> setSchema）及失败处理（`handleFailure`，默认抛 `IllegalStateException`）；`switchTo` 第一个参数为本次取连接所用的 `DataSource`（池实例），默认实现据此做策略缓存
+- `DynamicExplicitTableRouting`: 配置动态切表与显式 from/table 的优先级
+
+Spring 环境可通过 `@Bean` 覆盖; 非 Spring 环境可通过 `GaarasonRoutingDataSourceBuilder` 注入:
+
+```java
+GaarasonRoutingDataSourceBuilder.create()
+    .defaultGroup("master")
+    .group("master", Collections.singletonList(masterDs))
+    .dynamicTableRouting((logical, expr) -> logical + "_" + expr)
+    .dynamicDatabaseRouting(databaseKey -> databaseKey == null ? null : databaseKey.trim())
+    .build(container);
+```
 
 
 
@@ -327,7 +598,7 @@ GaarasonDataSource gaarasonDataSource = GaarasonRoutingDataSourceBuilder.create(
 
 ```java
 // 在指定组内执行
-GaarasonDataSourceContext.execute("order", () -> {
+GaarasonDataSourceContext.executeDataSourceGroup("order", () -> {
     orderModel.newQuery().where("id", 1).first();
 });
 ```

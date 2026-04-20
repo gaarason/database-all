@@ -22,11 +22,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Spring Boot 集成样例: GeneralModel/Generator 与 Druid 数据源联调.
+ * <p>
+ * {@link #生成代码()}、{@link #run有参构造()} 仅用于向 {@code target/generated-code-export} 导出供他项拷贝的生成代码,非本模块编译源.
+ *
+ * @author xt
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @FixMethodOrder(MethodSorters.JVM)
@@ -51,10 +59,18 @@ public class DruidApplicationTests {
     @Resource
     StudentModel studentModel;
 
+    /**
+     * 生成供其它项目（如 Spring Boot 3 / Jakarta）拷贝的样例代码，勿写入 {@code src/test/java}，否则会参与本模块编译并与 Boot 2.7 冲突。
+     */
+    private static String codegenExportDir() {
+        String basedir = System.getProperty("basedir", ".");
+        return new File(basedir, "target/generated-code-export").getAbsolutePath();
+    }
+
     @Test
     public void 生成代码() {
         // set
-        generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
+        generator.setOutputDir(codegenExportDir());
         generator.setNamespace("data.generator.a");                 // 所有生成文件的所属命名空间
         generator.setCorePoolSize(20);                  // 所用的线程数
         generator.setSpringBoot(Generator.SpringBootVersion.THREE);    // 是否生成spring boot3相关注解
@@ -95,8 +111,7 @@ public class DruidApplicationTests {
         generator.setSwagger(true);                   // 是否生成swagger相关注解
         generator.setValidator(true);                 // 是否生成validator相关注解
         generator.setCorePoolSize(20);
-//        generator.setOutputDir("./src/test/java/");
-        generator.setOutputDir("./src/test/java/");
+        generator.setOutputDir(codegenExportDir());
         generator.setNamespace("data.generator.b");
 
         generator.run();

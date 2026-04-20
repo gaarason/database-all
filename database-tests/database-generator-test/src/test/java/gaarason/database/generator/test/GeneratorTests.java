@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import javax.sql.DataSource;
+import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,14 @@ import java.util.List;
 @FixMethodOrder(MethodSorters.JVM)
 public class GeneratorTests {
 
+    /**
+     * 生成供其它项目（如 Spring Boot 3 / Jakarta）拷贝的样例代码，勿写入 {@code src/test/java}，否则会参与本模块编译并导致依赖冲突。
+     */
+    private static String codegenExportDir() {
+        String basedir = System.getProperty("basedir", ".");
+        return new File(basedir, "target/generated-code-export").getAbsolutePath();
+    }
+
     @Test
     public void run有参构造() {
         String jdbcUrl = "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8" +
@@ -36,8 +45,7 @@ public class GeneratorTests {
 
         generator.setStyle(Style.ENTITY);
         // set
-        generator.setOutputDir("./src/test/java/");     // 所有生成文件的路径
-//        generator.setOutputDir("./src/test/java1/");     // 所有生成文件的路径
+        generator.setOutputDir(codegenExportDir());     // 所有生成文件的路径
         generator.setNamespace("gaarason.database.test.models.morph");                 // 所有生成文件的所属命名空间
         generator.setCorePoolSize(20);                  // 所用的线程数
         generator.setSpringBoot(Generator.SpringBootVersion.THREE);                // 是否生成spring boot相关注解
@@ -82,8 +90,7 @@ public class GeneratorTests {
         autoGenerator.setEntityStaticField(true);
         autoGenerator.setSpringBoot(Generator.SpringBootVersion.THREE);
         autoGenerator.setCorePoolSize(20);
-//        autoGenerator.setOutputDir("./src/test/java/");
-        autoGenerator.setOutputDir("./src/test/java1/");
+        autoGenerator.setOutputDir(codegenExportDir());
         autoGenerator.setNamespace("test.data");
 
         autoGenerator.run();
