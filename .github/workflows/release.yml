@@ -22,7 +22,11 @@ jobs:
 
       - name: Extract version from tag
         id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        run: |
+          # 先去掉refs/tags/前缀，再去掉开头的v，不管tag带不带v都能正确提取
+          VERSION=${GITHUB_REF#refs/tags/}
+          VERSION=${VERSION#v}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Update pom version
         run: mvn versions:set -DnewVersion=${{ steps.version.outputs.VERSION }} versions:commit
