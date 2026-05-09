@@ -70,6 +70,16 @@
                     <publishingServerId>central</publishingServerId>
                     <autoPublish>true</autoPublish>
                     <waitUntil>published</waitUntil>
+                    <!-- 发布的时候自动跳过这些测试模块，本地开发的时候还是正常构建，完全不影响！ -->
+                    <excludeArtifacts>
+                        <exclude>database-tests</exclude>
+                        <exclude>database-common-test</exclude>
+                        <exclude>database-core-test</exclude>
+                        <exclude>database-generator-test</exclude>
+                        <exclude>database-spring-boot-starter-test</exclude>
+                        <exclude>database-spring-boot-starter-hikari-test</exclude>
+                        <exclude>database-spring-boot-starter-mybatis-test</exclude>
+                    </excludeArtifacts>
                 </configuration>
             </plugin>
         </plugins>
