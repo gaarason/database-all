@@ -36,7 +36,7 @@ jobs:
 
       # 新的发布命令，用 Sonatype 新的插件
       - name: Publish to Central
-        run: mvn clean verify central:publish -DskipTests -B
+        run: mvn clean verify org.sonatype.central:central-publishing-maven-plugin:publish -DskipTests -B
         env:
           MAVEN_USERNAME: ${{ secrets.CENTRAL_USER }}
           MAVEN_PASSWORD: ${{ secrets.CENTRAL_PWD }}
