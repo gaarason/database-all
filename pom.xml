@@ -105,7 +105,12 @@
                             </execution>
                         </executions>
                         <configuration>
+                            <doclint>none</doclint>
+                            <failOnWarnings>false</failOnWarnings>
                             <failOnError>false</failOnError>
+                            <additionalJOptions>
+                                <additionalJOption>-Xdoclint:none</additionalJOption>
+                            </additionalJOptions>
                         </configuration>
                     </plugin>
 

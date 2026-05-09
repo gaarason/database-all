@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>database-spring-boot-starter</artifactId>
+    <name>database-spring-boot-starter</name>
 
     <properties>
         <java.version>1.8</java.version>

@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>database-generator-test</artifactId>
+    <name>database-generator-test</name>
 
     <properties>
         <java.version>1.8</java.version>

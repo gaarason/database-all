@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>database-spring-boot-starter-mybatis-test</artifactId>
+    <name>database-spring-boot-starter-mybatis-test</name>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
