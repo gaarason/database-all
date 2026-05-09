@@ -48,13 +48,6 @@
         <url>https://github.com/gaarason/database-all</url>
     </scm>
 
-    <distributionManagement>
-        <repository>
-            <id>central</id>
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
     <build>
         <plugins>
             <plugin>
@@ -118,6 +111,17 @@
                             <arg>--pinentry-mode</arg>
                             <arg>loopback</arg>
                         </gpgArguments>
+                    </configuration>
+                </plugin>
+
+                <!-- 新的 Sonatype 发布插件，替代旧的 deploy 插件 -->
+                <plugin>
+                    <groupId>org.sonatype.central</groupId>
+                    <artifactId>central-publishing-maven-plugin</artifactId>
+                    <version>0.7.0</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <serverId>central</serverId>
                     </configuration>
                 </plugin>
             </plugins>
