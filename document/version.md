@@ -28,7 +28,7 @@ Eloquent ORM for Java
 
 ### 7.0.15
 
-- 使用中央maven进行发布
+- 后续将使用中央maven进行发布, 因为更改了发布的仓库, 所以坐标与 7.0.0 之前的稍有不同, `groupId` 由 `com.github.gaarason.database-all` 调整为 `io.github.gaarason`
 
 ### 7.0.0
 

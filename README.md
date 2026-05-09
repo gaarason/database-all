@@ -95,6 +95,7 @@ studentModel.findOrFail(8).bind("teachers").attach( 1, 2, 3 );
     <version>{latest-version}</version>
 </dependency>
 ```
+**注:因为更改了发布的仓库, 所以坐标与 7.0.0 之前的稍有不同, `groupId` 由 `com.github.gaarason.database-all` 调整为 `io.github.gaarason`**
 
 2.配置连接 application.properties
 
