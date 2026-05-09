@@ -50,6 +50,6 @@ jobs:
           echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
 
       - name: Deploy
-        run: mvn clean deploy -DskipTests -B
+        run: mvn clean deploy -DskipTests -B -Prelease
         env:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
