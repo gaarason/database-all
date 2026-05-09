@@ -8,13 +8,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      # 适配你项目的 Java 1.8 版本，保证编译一致
       - name: Set up JDK 8
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '8'
           distribution: 'temurin'
@@ -23,7 +22,6 @@ jobs:
       - name: Extract version from tag
         id: version
         run: |
-          # 先去掉refs/tags/前缀，再去掉开头的v，不管tag带不带v都能正确提取
           VERSION=${GITHUB_REF#refs/tags/}
           VERSION=${VERSION#v}
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
@@ -36,7 +34,8 @@ jobs:
           echo "${{ secrets.GPG_SECRET_KEY }}" | gpg --batch --import
           echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
 
-      - name: Deploy to Central
+      # 新的发布命令，用 Sonatype 新的插件
+      - name: Publish to Central
         run: mvn clean deploy -DskipTests -B
         env:
           MAVEN_USERNAME: ${{ secrets.CENTRAL_USER }}
