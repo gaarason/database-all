@@ -1,0 +1,40 @@
+name: Release to Maven Central
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 适配你项目的 Java 1.8 版本，保证编译一致
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Update pom version
+        run: mvn versions:set -DnewVersion=${{ steps.version.outputs.VERSION }} versions:commit
+
+      - name: Import GPG private key
+        run: |
+          echo -n "${{ secrets.GPG_SECRET_KEY }}" | base64 -d | gpg --batch --import
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+
+      - name: Deploy to Central
+        run: mvn clean deploy -DskipTests -B
+        env:
+          MAVEN_USERNAME: ${{ secrets.CENTRAL_USER }}
+          MAVEN_PASSWORD: ${{ secrets.CENTRAL_PWD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
