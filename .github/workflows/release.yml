@@ -49,7 +49,33 @@ jobs:
           echo "${{ secrets.GPG_SECRET_KEY }}" | gpg --batch --import
           echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
 
+      - name: Resolve publish modules
+        id: publish_modules
+        run: |
+          python3 - << 'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          
+          ns = {"m": "http://maven.apache.org/POM/4.0.0"}
+          root = ET.parse("pom.xml").getroot()
+          modules = [
+              module.text.strip()
+              for module in root.findall("m:modules/m:module", ns)
+              if module.text and module.text.strip() and module.text.strip() != "database-tests"
+          ]
+          if not modules:
+              raise SystemExit("No publish modules resolved from pom.xml")
+          
+          module_csv = ",".join(modules)
+          print(f"Resolved publish modules: {module_csv}")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"modules={module_csv}\n")
+          PY
+
       - name: Deploy
-        run: mvn clean deploy -DskipTests -B -Prelease
+        run: >
+          mvn clean deploy -B -Prelease -DskipTests
+          -pl ${{ steps.publish_modules.outputs.modules }}
+          -am
         env:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
