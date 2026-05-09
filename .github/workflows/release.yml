@@ -5,7 +5,7 @@ on:
       - '*'
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -29,15 +29,12 @@ jobs:
       - name: Update pom version
         run: mvn versions:set -DnewVersion=${{ steps.version.outputs.VERSION }} versions:commit
 
-      - name: Import GPG private key
-        run: |
-          echo "${{ secrets.GPG_SECRET_KEY }}" | gpg --batch --import
-          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
-
-      # 新的发布命令，用 Sonatype 新的插件
-      - name: Publish to Central
-        run: mvn clean verify org.sonatype.central:central-publishing-maven-plugin:publish -DskipTests -B
-        env:
-          MAVEN_USERNAME: ${{ secrets.CENTRAL_USER }}
-          MAVEN_PASSWORD: ${{ secrets.CENTRAL_PWD }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+      # Sonatype 官方的发布 Action，所有步骤都帮你做好了！
+      - name: Publish to Maven Central
+        uses: sonatype/central-publish-action@v1
+        with:
+          username: ${{ secrets.CENTRAL_USER }}
+          password: ${{ secrets.CENTRAL_PWD }}
+          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          gpg-secret-key: ${{ secrets.GPG_SECRET_KEY }}
+          args: -DskipTests
