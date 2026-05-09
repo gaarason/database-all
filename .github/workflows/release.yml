@@ -5,7 +5,7 @@ on:
       - '*'
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -19,6 +19,21 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Create Maven settings
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml << EOF
+          <settings>
+            <servers>
+              <server>
+                <id>central</id>
+                <username>${{ secrets.CENTRAL_USER }}</username>
+                <password>${{ secrets.CENTRAL_PWD }}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+
       - name: Extract version from tag
         id: version
         run: |
@@ -29,12 +44,12 @@ jobs:
       - name: Update pom version
         run: mvn versions:set -DnewVersion=${{ steps.version.outputs.VERSION }} versions:commit
 
-      # Sonatype 官方的发布 Action，所有步骤都帮你做好了！
-      - name: Publish to Maven Central
-        uses: sonatype/central-publish-action@v1
-        with:
-          username: ${{ secrets.CENTRAL_USER }}
-          password: ${{ secrets.CENTRAL_PWD }}
-          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
-          gpg-secret-key: ${{ secrets.GPG_SECRET_KEY }}
-          args: -DskipTests
+      - name: Import GPG private key
+        run: |
+          echo "${{ secrets.GPG_SECRET_KEY }}" | gpg --batch --import
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+
+      - name: Deploy
+        run: mvn clean deploy -DskipTests -B
+        env:
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
