@@ -24,26 +24,17 @@ Eloquent ORM for Java
 
 ## 非spring
 
-1.引入仓库 pom.xml
-
-```$xslt
-<query>
-    <id>jitpack.io</id>
-    <url>https://jitpack.io</url>
-</query>
-```
-
-2.引入依赖 pom.xml
+1.引入依赖 pom.xml
 
 ```$xslt
 <dependency>
-    <groupId>com.github.gaarason.database-all</groupId>
+    <groupId>io.github.gaarason</groupId>
     <artifactId>database-generator</artifactId>
     <version>RELEASE</version>
 </dependency>
 ```
 
-3.编写单元测试
+2.编写单元测试
 
 ```java
 package gaarason.database.generator.test;
@@ -190,26 +181,17 @@ public class GeneratorTests {
 
 ## spring
 
-1.引入仓库 pom.xml
-
-```$xslt
-<query>
-    <id>jitpack.io</id>
-    <url>https://jitpack.io</url>
-</query>
-```
-
-2.引入依赖 pom.xml
+1.引入依赖 pom.xml
 
 ```$xslt
 <dependency>
-    <groupId>com.github.gaarason.database-all</groupId>
+    <groupId>io.github.gaarason</groupId>
     <artifactId>database-spring-boot-starter</artifactId>
     <version>RELEASE</version>
 </dependency>
 ```
 
-3.配置连接 application.properties
+2.配置连接 application.properties
 
 ```$xslt
 spring.datasource.druid.url=jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai
@@ -219,7 +201,7 @@ spring.datasource.druid.driver-class-name=com.mysql.cj.jdbc.Driver
 spring.datasource.druid.db-type=com.alibaba.druid.pool.DruidDataSource
 ```
 
-4.编写单元测试
+3.编写单元测试
 
 ```java
 package gaarason.database.spring.boot.starter.test;

@@ -1,6 +1,6 @@
 # database
 
-[![](https://jitpack.io/v/gaarason/database-all.svg)](https://jitpack.io/#gaarason/database-all)
+[![Maven Central](https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fio%2Fgithub%2Fgaarason%2Fdatabase-spring-boot-starter%2Fmaven-metadata.xml&query=%2F%2Fmetadata%2Fversioning%2Frelease&label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.gaarason/database-spring-boot-starter)
 [![](https://img.shields.io/github/stars/gaarason/database-all)](https://github.com/gaarason/database-all)
 
 [![](https://img.shields.io/badge/JDK-8-green.svg)]()
@@ -84,30 +84,19 @@ studentModel.findOrFail(8).bind("teachers").attach( 1, 2, 3 );
 
 ## Spring boot Quick start
 
-1.引入仓库 pom.xml
+1.引入依赖 pom.xml
 
-```xml
-<repositories>
-    <repository>
-        <id>jitpack.io</id>
-        <url>https://jitpack.io</url>
-    </repository>
-</repositories>
-```
-
-2.引入依赖 pom.xml
-
-**latest-version**：![](https://jitpack.io/v/gaarason/database-all.svg)
+**latest-version**：[![Maven Central](https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fio%2Fgithub%2Fgaarason%2Fdatabase-spring-boot-starter%2Fmaven-metadata.xml&query=%2F%2Fmetadata%2Fversioning%2Frelease&label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.gaarason/database-spring-boot-starter)
 
 ```xml
 <dependency>
-    <groupId>com.github.gaarason.database-all</groupId>
+    <groupId>io.github.gaarason</groupId>
     <artifactId>database-spring-boot-starter</artifactId>
     <version>{latest-version}</version>
 </dependency>
 ```
 
-3.配置连接 application.properties
+2.配置连接 application.properties
 
 ```properties
 spring.datasource.url=jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai
@@ -126,7 +115,7 @@ spring.datasource.type=com.alibaba.druid.pool.DruidDataSource
 # gaarason.database.scan.packages=you.package1,you.package2
 ```
 
-4.快速开始 quick start
+3.快速开始 quick start
 
 使用预置的 `GeneralModel` ，无需其他定义，即可进行查询。   
 Using the pre-built `GeneralModel`, no additional definitions are required to query.

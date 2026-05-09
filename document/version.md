@@ -26,6 +26,10 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 7.0.15
+
+- 使用中央maven进行发布
+
 ### 7.0.0
 
 - 新增 `QueryBuilder`全数据库通用查询构造器, 默认使用`DefaultQueryBuilderConfig`作为通用查询构造器 `QueryBuilder`的配置, 根据 `DbType` 自动创建对应方言的 `Grammar` 实例
