@@ -29,7 +29,7 @@ jobs:
 
       - name: Import GPG private key
         run: |
-          echo -n "${{ secrets.GPG_SECRET_KEY }}" | base64 -d | gpg --batch --import
+          echo "${{ secrets.GPG_SECRET_KEY }}" | gpg --batch --import
           echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
 
       - name: Deploy to Central
