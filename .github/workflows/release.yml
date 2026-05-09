@@ -2,7 +2,7 @@ name: Release to Maven Central
 on:
   push:
     tags:
-      - 'v*'
+      - '*'
 
 jobs:
   build:
