@@ -1,10 +1,12 @@
 package gaarason.database.query;
 
 import gaarason.database.appointment.AggregatesType;
+import gaarason.database.appointment.EntityUseType;
 import gaarason.database.appointment.JoinType;
 import gaarason.database.appointment.SqlType;
 import gaarason.database.connection.GaarasonDataSourceContext;
 import gaarason.database.contract.eloquent.Builder;
+import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.relation.RelationSubQuery;
 import gaarason.database.contract.function.BuilderAnyWrapper;
 import gaarason.database.contract.function.BuilderWrapper;
@@ -13,6 +15,7 @@ import gaarason.database.contract.query.Grammar;
 import gaarason.database.lang.Nullable;
 import gaarason.database.support.EntityMember;
 import gaarason.database.support.FieldRelationMember;
+import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
 
@@ -480,6 +483,187 @@ public abstract class AbstractBuilder<B extends Builder<B, T, K>, T, K> extends 
     public B limit(Object take) {
         grammar.formatLimit(take, new ArrayList<>(1));
         return getSelf();
+    }
+
+    @Override
+    public Record<T, K> findOrNew(T entity) {
+        // 查询是否存在满足条件的一条记录(当前构造器上已有的条件 + 实体中的非null属性)
+        Record<T, K> first = clone().where(entity).first();
+        if (first != null) {
+            return first;
+        }
+        // 构建结果集(数据仅来自于实体)
+        Record<T, K> theRecord = model.newRecord();
+        theRecord.getEntity(entity);
+        return theRecord;
+    }
+
+    @Override
+    public Record<T, K> findByPrimaryKeyOrNew(T entity) {
+        // 获取 entity 中的主键的值
+        Object primaryKeyValue = modelShadowProvider.getPrimaryKeyValue(entity, EntityUseType.CONDITION);
+        // 查询是否存在满足条件的一条记录(当前构造器上已有的条件 + 主键条件)
+        Record<T, K> first = clone().where(model.getPrimaryKeyColumnName(), primaryKeyValue).first();
+        if (first != null) {
+            return first;
+        }
+        // 构建结果集(数据仅来自于实体)
+        Record<T, K> theRecord = model.newRecord();
+        theRecord.getEntity(entity);
+        return theRecord;
+    }
+
+    @Override
+    public Record<T, K> findOrCreate(T entity) {
+        Record<T, K> theRecord = findOrNew(entity);
+        // 如果未持久化
+        if (!theRecord.isHasBind()) {
+            // 进行持久化
+            theRecord.save();
+        }
+        return theRecord;
+    }
+
+    @Override
+    public Record<T, K> findByPrimaryKeyOrCreate(T entity) {
+        Record<T, K> theRecord = findByPrimaryKeyOrNew(entity);
+        // 如果未持久化
+        if (!theRecord.isHasBind()) {
+            // 进行持久化
+            theRecord.save();
+        }
+        return theRecord;
+    }
+
+    @Override
+    public Record<T, K> findOrNew(T conditionEntity, T complementEntity) {
+        // 查询是否存在满足条件的一条记录(当前构造器上已有的条件 + conditionEntity 中的非null属性)
+        Record<T, K> first = clone().where(conditionEntity).first();
+        if (first != null) {
+            return first;
+        }
+        // 构建结果集(数据为两者的并集, complementEntity 优先)
+        Record<T, K> theRecord = model.newRecord();
+        theRecord.getEntity(mergeEntity(conditionEntity, complementEntity));
+        return theRecord;
+    }
+
+    @Override
+    public Record<T, K> findOrCreate(T conditionEntity, T complementEntity) {
+        Record<T, K> theRecord = findOrNew(conditionEntity, complementEntity);
+        // 如果未持久化
+        if (!theRecord.isHasBind()) {
+            // 进行持久化
+            theRecord.save();
+        }
+        return theRecord;
+    }
+
+    @Override
+    public Record<T, K> updateByPrimaryKeyOrCreate(T entity) {
+        // 获取 entity 中的主键的值
+        Object primaryKeyValue = modelShadowProvider.getPrimaryKeyValue(entity, EntityUseType.CONDITION);
+        // 查询是否存在满足条件的一条记录(当前构造器上已有的条件 + 主键条件)
+        Record<T, K> first = clone().where(model.getPrimaryKeyColumnName(), primaryKeyValue).first();
+        // 存在则更新, 否则构建新的结果集(新增)
+        Record<T, K> theRecord = first != null ? first : model.newRecord();
+        theRecord.fillEntity(entity);
+        theRecord.save();
+        return theRecord;
+    }
+
+    @Override
+    public Record<T, K> updateOrCreate(T conditionEntity, T complementEntity) {
+        // 查询是否存在满足条件的一条记录(当前构造器上已有的条件 + conditionEntity 中的非null属性)
+        Record<T, K> first = clone().where(conditionEntity).first();
+        // 数据为两者的并集(complementEntity 优先), 且不包含查询条件, 也不改变软删除状态
+        T mergedEntity = mergeEntity(conditionEntity, complementEntity);
+        if (first != null) {
+            // 更新
+            first.fillEntity(mergedEntity);
+            first.save();
+            return first;
+        }
+        // 新增(数据与构造器上的条件无关)
+        Record<T, K> theRecord = model.newRecord();
+        theRecord.getEntity(mergedEntity);
+        theRecord.save();
+        return theRecord;
+    }
+
+    @Override
+    public Record<T, K> updateByPrimaryKeyOrCreateAutoRestore(T entity) {
+        // 获取 entity 中的主键的值
+        Object primaryKeyValue = modelShadowProvider.getPrimaryKeyValue(entity, EntityUseType.CONDITION);
+        // 查询是否存在满足条件的一条记录(当前构造器上已有的条件 + 主键条件)
+        Record<T, K> first = clone().where(model.getPrimaryKeyColumnName(), primaryKeyValue).first();
+        if (first != null) {
+            // 更新(命中已软删除记录时, 恢复与更新在一条sql中完成)
+            return updateOrRestoreByPrimaryKey(first, entity);
+        }
+        // 构建新的结果集(新增)
+        Record<T, K> theRecord = model.newRecord();
+        theRecord.fillEntity(entity);
+        theRecord.save();
+        return theRecord;
+    }
+
+    @Override
+    public Record<T, K> updateOrCreateAutoRestore(T conditionEntity, T complementEntity) {
+        // 查询是否存在满足条件的一条记录(当前构造器上已有的条件 + conditionEntity 中的非null属性)
+        Record<T, K> first = clone().where(conditionEntity).first();
+        // 数据为两者的并集(complementEntity 优先), 且不包含查询条件
+        T mergedEntity = mergeEntity(conditionEntity, complementEntity);
+        if (first != null) {
+            // 更新(命中已软删除记录时, 恢复与更新在一条sql中完成)
+            return updateOrRestoreByPrimaryKey(first, mergedEntity);
+        }
+        // 新增(数据与构造器上的条件无关)
+        Record<T, K> theRecord = model.newRecord();
+        theRecord.getEntity(mergedEntity);
+        theRecord.save();
+        return theRecord;
+    }
+
+    /**
+     * 更新命中的记录; 当该记录处于已软删除状态时, 恢复与更新在一条sql中完成
+     * @param theRecord 命中的记录
+     * @param entity 更新所使用的数据
+     * @return 结果集
+     */
+    private Record<T, K> updateOrRestoreByPrimaryKey(Record<T, K> theRecord, T entity) {
+        // 命中记录的主键值
+        Object primaryKeyValue = theRecord.getOriginalPrimaryKeyValue();
+        // 是否处于已软删除状态(按需恢复): 为软删除模型 + 命中记录处于已删除状态
+        // 由模型自身的软删除实现判断(读取命中记录的软删除标记列, 不再额外查询)
+        boolean needRestore = model.isSoftDeleting() && model.isSoftDeleted(theRecord);
+        // 更新数据
+        Map<String, Object> dataMap = modelShadowProvider.entityToMap(entity, EntityUseType.UPDATE);
+        if (needRestore) {
+            // 软删除标记列的值由模型自身的恢复实现负责写入, 此处剔除以避免同列重复赋值
+            dataMap.remove(model.softDeletedColumnName());
+        }
+        B builder = clone().where(model.getPrimaryKeyColumnName(), primaryKeyValue).data(dataMap);
+        if (needRestore) {
+            // 一条sql完成恢复与更新; 事件: restoring -> updating -> updated -> restored
+            builder.restore();
+        } else {
+            // 一条sql完成更新; 事件: updating -> updated
+            builder.update();
+        }
+        // 重新装载, 使返回的结果集与数据库中的状态保持一致
+        return theRecord.refresh();
+    }
+
+    /**
+     * 合并条件实体与补充实体的数据; 补充实体为 null 时, 等价于对条件实体的深拷贝(complementEntity 优先)
+     * @param conditionEntity 条件实体
+     * @param complementEntity 补充实体, 可为 null
+     * @return 合并后的全新实体
+     */
+    private T mergeEntity(T conditionEntity, @Nullable T complementEntity) {
+        return complementEntity == null ? ObjectUtils.deepCopy(conditionEntity)
+            : EntityUtils.entityMerge(conditionEntity, complementEntity);
     }
 
 }

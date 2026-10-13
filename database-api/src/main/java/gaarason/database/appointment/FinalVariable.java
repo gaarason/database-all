@@ -66,6 +66,21 @@ public final class FinalVariable {
     public static final String SQL_NULL = "null";
 
     /**
+     * 软删除标记的列名
+     */
+    public static final String DEFAULT_SOFT_DELETED_COLUMN_NAME = "is_deleted";
+
+    /**
+     * 软删除标记的已删除值
+     */
+    public static final String DEFAULT_SOFT_DELETED_VALUE_YSE = "1";
+
+    /**
+     * 软删除标记的未删除值
+     */
+    public static final String DEFAULT_SOFT_DELETED_VALUE_NO = "0";
+
+    /**
      * 日期时间相关
      */
     public static final class Timestamp {

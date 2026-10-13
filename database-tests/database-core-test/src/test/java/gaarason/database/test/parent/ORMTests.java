@@ -7,6 +7,8 @@ import gaarason.database.contract.eloquent.RecordList;
 import gaarason.database.contract.function.ColumnFunctionalInterface;
 import gaarason.database.exception.RelationAttachException;
 import gaarason.database.exception.SQLRuntimeException;
+import gaarason.database.test.config.MySqlBuilderV2;
+import gaarason.database.test.models.normal.StudentAutoRestoreModel;
 import gaarason.database.test.models.normal.StudentORMModel;
 import gaarason.database.test.models.relation.model.RelationshipStudentTeacherModel;
 import gaarason.database.test.models.relation.model.StudentModel;
@@ -34,6 +36,8 @@ import java.util.concurrent.CountDownLatch;
 abstract public class ORMTests extends BaseTests {
 
     protected static StudentORMModel studentORMModel = new StudentORMModel();
+
+    protected static StudentAutoRestoreModel studentAutoRestoreModel = new StudentAutoRestoreModel();
 
     protected static StudentModel studentModel = new StudentModel();
 
@@ -486,6 +490,484 @@ abstract public class ORMTests extends BaseTests {
         // 更新后的数据就是 stu1 + stu3
         Assert.assertEquals(entity3.getName(), name);
         Assert.assertEquals(entity3.getAge(), age3);
+    }
+
+    @Test
+    public void Query新增_findOrNew() {
+        String name = "q_findOrNew";
+        final StudentORMModel.Entity stu = new StudentORMModel.Entity();
+        stu.setName(name);
+
+        final Long oldCount = studentORMModel.newQuery().count();
+
+        // 不存在,所以会构造一条, 但是尚未持久化到数据库
+        final Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.newQuery().findOrNew(stu);
+        Assert.assertFalse(theRecord.isHasBind());
+
+        final Long newCount = studentORMModel.newQuery().count();
+        Assert.assertEquals(oldCount, newCount);
+
+        // 手动持久化
+        theRecord.save();
+        final Long newCountOther = studentORMModel.newQuery().count();
+        Assert.assertEquals(oldCount + 1L, newCountOther.longValue());
+        Assert.assertEquals(name, theRecord.toObject().getName());
+
+        // -------------
+        // 已经存在,所以仅会查询
+        final Record<StudentORMModel.Entity, Integer> theRecord2 = studentORMModel.newQuery().findOrNew(stu);
+        Assert.assertTrue(theRecord2.isHasBind());
+        Assert.assertEquals(name, theRecord2.toObject().getName());
+        Assert.assertEquals(newCountOther.longValue(), studentORMModel.newQuery().count().longValue());
+    }
+
+    @Test
+    public void Query新增_findOrNew_链上条件() {
+        final StudentORMModel.Entity stu = new StudentORMModel.Entity();
+        // 数据库中存在( id=8, 金庸, 17 )
+        stu.setName("金庸");
+
+        // 链上条件 + 实体条件(并集)命中已有记录
+        final Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.newQuery().where("age", "17")
+            .findOrNew(stu);
+        Assert.assertTrue(theRecord.isHasBind());
+        Assert.assertEquals(Integer.valueOf(8), theRecord.toObject().getId());
+
+        // 链上条件不匹配时, 视为未命中, 构造新的结果集(数据仅来自实体, 链上条件不进入数据)
+        final Record<StudentORMModel.Entity, Integer> theRecord2 = studentORMModel.newQuery().where("age", "99")
+            .findOrNew(stu);
+        Assert.assertFalse(theRecord2.isHasBind());
+        Assert.assertEquals("金庸", theRecord2.getEntity().getName());
+        Assert.assertNull(theRecord2.getEntity().getAge());
+    }
+
+    @Test
+    public void Query新增_findByPrimaryKeyOrNew() {
+        String name = "q_findByPkOrNew";
+        Integer id = 456;
+        final StudentORMModel.Entity stu = new StudentORMModel.Entity();
+        stu.setId(id);
+        stu.setName(name);
+
+        final Long oldCount = studentORMModel.newQuery().count();
+
+        // 不存在,所以会构造一条, 但是尚未持久化到数据库
+        final Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.newQuery()
+            .findByPrimaryKeyOrNew(stu);
+        Assert.assertFalse(theRecord.isHasBind());
+        Assert.assertEquals(oldCount, studentORMModel.newQuery().count());
+
+        // 手动持久化
+        theRecord.save();
+        final Long newCount = studentORMModel.newQuery().count();
+        Assert.assertEquals(oldCount + 1L, newCount.longValue());
+        Assert.assertEquals(name, theRecord.toObject().getName());
+
+        // -------------
+        // 已经存在,所以仅会查询
+        final Record<StudentORMModel.Entity, Integer> theRecord2 = studentORMModel.newQuery()
+            .findByPrimaryKeyOrNew(stu);
+        Assert.assertTrue(theRecord2.isHasBind());
+        Assert.assertEquals(id, theRecord2.toObject().getId());
+        Assert.assertEquals(name, theRecord2.toObject().getName());
+        Assert.assertEquals(newCount.longValue(), studentORMModel.newQuery().count().longValue());
+    }
+
+    @Test
+    public void Query新增_findOrCreate() {
+        String name = "q_findOrCreate";
+        final StudentORMModel.Entity stu = new StudentORMModel.Entity();
+        stu.setName(name);
+
+        final Long oldCount = studentORMModel.newQuery().count();
+
+        // 不存在,所以会新增一条
+        final Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.newQuery().findOrCreate(stu);
+        Assert.assertTrue(theRecord.isHasBind());
+        Assert.assertEquals(name, theRecord.toObject().getName());
+
+        final Long newCount = studentORMModel.newQuery().count();
+        Assert.assertEquals(oldCount + 1L, newCount.longValue());
+
+        // -------------
+        // 已经存在,所以仅会查询
+        final Record<StudentORMModel.Entity, Integer> theRecord2 = studentORMModel.newQuery().findOrCreate(stu);
+        Assert.assertEquals(name, theRecord2.toObject().getName());
+        Assert.assertEquals(newCount.longValue(), studentORMModel.newQuery().count().longValue());
+    }
+
+    @Test
+    public void Query新增_findByPrimaryKeyOrCreate() {
+        String name = "q_findByPkOrCreate";
+        Integer id = 99;
+        final StudentORMModel.Entity stu = new StudentORMModel.Entity();
+        stu.setId(id);
+        stu.setName(name);
+
+        final Long oldCount = studentORMModel.newQuery().count();
+
+        // 不存在,所以会新增一条
+        final Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.newQuery()
+            .findByPrimaryKeyOrCreate(stu);
+        Assert.assertEquals(name, theRecord.toObject().getName());
+
+        final Long newCount = studentORMModel.newQuery().count();
+        Assert.assertEquals(oldCount + 1L, newCount.longValue());
+
+        // -------------
+        // 已经存在,所以仅会查询
+        final Record<StudentORMModel.Entity, Integer> theRecord2 = studentORMModel.newQuery()
+            .findByPrimaryKeyOrCreate(stu);
+        Assert.assertEquals(name, theRecord2.toObject().getName());
+        Assert.assertEquals(newCount.longValue(), studentORMModel.newQuery().count().longValue());
+
+        // ----------------
+        // 按id可以找到, 即使其他属性不一致
+        final StudentORMModel.Entity stu2 = new StudentORMModel.Entity();
+        stu2.setId(id);
+        stu2.setName("name");
+
+        final Record<StudentORMModel.Entity, Integer> theRecord3 = studentORMModel.newQuery()
+            .findByPrimaryKeyOrCreate(stu2);
+        // 等于数据库中的值
+        Assert.assertEquals(name, theRecord3.toObject().getName());
+        Assert.assertEquals(newCount.longValue(), studentORMModel.newQuery().count().longValue());
+    }
+
+    @Test
+    public void Query新增_findOrNew_2() {
+        String name = "q_findOrNew_2";
+        Byte age = Byte.valueOf("3");
+        Byte age3 = Byte.valueOf("33");
+
+        final StudentORMModel.Entity stu1 = new StudentORMModel.Entity();
+        stu1.setName(name);
+        final StudentORMModel.Entity stu2 = new StudentORMModel.Entity();
+        stu2.setAge(age);
+
+        // 原有的记录数
+        final Long oldCount = studentORMModel.newQuery().count();
+        // 因为没有存在满足条件的记录, 所以构造新的结果集(数据为两者的并集), 但尚未持久化
+        final Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.newQuery().findOrNew(stu1, stu2);
+        Assert.assertFalse(theRecord.isHasBind());
+        // 未持久化时, 结果集数据需通过 getEntity() 查看(toObject 中的元数据来自数据库)
+        Assert.assertEquals(name, theRecord.getEntity().getName());
+        Assert.assertEquals(age, theRecord.getEntity().getAge());
+        Assert.assertEquals(oldCount, studentORMModel.newQuery().count());
+
+        // 手动持久化
+        theRecord.save();
+        final Long newCount = studentORMModel.newQuery().count();
+        Assert.assertEquals(oldCount + 1L, newCount.longValue());
+
+        // 因为已经存在满足条件的, 所以只是查询, 且"插入补充信息的对象属性"不会使用
+        final StudentORMModel.Entity stu3 = new StudentORMModel.Entity();
+        stu3.setAge(age3);
+        final Record<StudentORMModel.Entity, Integer> theRecord2 = studentORMModel.newQuery().findOrNew(stu1, stu3);
+        Assert.assertTrue(theRecord2.isHasBind());
+        Assert.assertEquals(name, theRecord2.toObject().getName());
+        Assert.assertEquals(age, theRecord2.toObject().getAge());
+        Assert.assertNotEquals(age3, theRecord2.toObject().getAge());
+        Assert.assertEquals(newCount, studentORMModel.newQuery().count());
+    }
+
+    @Test
+    public void Query新增_findOrCreate_2() {
+        String name = "q_findOrCreate_2";
+        Byte age = Byte.valueOf("3");
+        Byte age3 = Byte.valueOf("33");
+
+        final StudentORMModel.Entity stu1 = new StudentORMModel.Entity();
+        stu1.setName(name);
+        final StudentORMModel.Entity stu2 = new StudentORMModel.Entity();
+        stu2.setAge(age);
+
+        // 原有的记录数
+        final Long oldCount = studentORMModel.newQuery().count();
+        // 因为没有存在满足条件的记录, 所以新增(数据为两者的并集)
+        final Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.newQuery().findOrCreate(stu1, stu2);
+        Assert.assertEquals(name, theRecord.toObject().getName());
+        Assert.assertEquals(age, theRecord.toObject().getAge());
+
+        final Long newCount = studentORMModel.newQuery().count();
+        Assert.assertEquals(oldCount + 1L, newCount.longValue());
+
+        // 因为已经存在满足条件的, 所以只是查询, 且"插入补充信息的对象属性"不会使用
+        final StudentORMModel.Entity stu3 = new StudentORMModel.Entity();
+        stu3.setAge(age3);
+        final Record<StudentORMModel.Entity, Integer> theRecord2 = studentORMModel.newQuery().findOrCreate(stu1,
+            stu3);
+        Assert.assertEquals(name, theRecord2.toObject().getName());
+        Assert.assertEquals(age, theRecord2.toObject().getAge());
+        Assert.assertNotEquals(age3, theRecord2.toObject().getAge());
+        Assert.assertEquals(newCount, studentORMModel.newQuery().count());
+    }
+
+    @Test
+    public void Query新增_updateByPrimaryKeyOrCreate() {
+        String name = "q_updByPkOrCreate";
+        Byte age = Byte.valueOf("3");
+        Integer id = 7892;
+        final StudentORMModel.Entity stu1 = new StudentORMModel.Entity();
+        stu1.setId(id);
+        stu1.setName(name);
+        stu1.setAge(age);
+
+        // 原有的记录数
+        final Long oldCount = studentORMModel.newQuery().count();
+        // 因为没有记录满足, 所以新增
+        final Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.newQuery()
+            .updateByPrimaryKeyOrCreate(stu1);
+        final StudentORMModel.Entity entity = theRecord.toObject();
+        // 新的的记录数
+        final Long newCount = studentORMModel.newQuery().count();
+        Assert.assertEquals(oldCount + 1L, newCount.longValue());
+        // 新增后的数据就是 stu1
+        Assert.assertEquals(name, entity.getName());
+        Assert.assertEquals(age, entity.getAge());
+
+        // ----------------
+        Byte age2 = Byte.valueOf("33");
+        final StudentORMModel.Entity stu2 = new StudentORMModel.Entity();
+        stu2.setId(id);
+        stu2.setAge(age2);
+
+        // 因为存在记录满足, 所以更新(未携带的属性保持数据库中的值)
+        final StudentORMModel.Entity entity2 = studentORMModel.newQuery().updateByPrimaryKeyOrCreate(stu2).toObject();
+        Assert.assertEquals(newCount.longValue(), studentORMModel.newQuery().count().longValue());
+        Assert.assertEquals(name, entity2.getName());
+        Assert.assertEquals(age2, entity2.getAge());
+    }
+
+    @Test
+    public void Query新增_updateOrCreate() {
+        String name = "q_updateOrCreate";
+        final StudentORMModel.Entity stu1 = new StudentORMModel.Entity();
+        stu1.setName(name);
+        stu1.setAge(Byte.valueOf("41"));
+        final StudentORMModel.Entity stu2 = new StudentORMModel.Entity();
+        stu2.setTeacherId(7);
+
+        final MySqlBuilderV2<StudentORMModel.Entity, Integer> builder = studentORMModel.newQuery().where("sex", "2");
+        final Long oldCount = studentORMModel.newQuery().count();
+
+        // 因为没有记录满足(链上条件 + stu1), 所以新增(数据为 stu1 + stu2 的并集)
+        final Record<StudentORMModel.Entity, Integer> theRecord = builder.updateOrCreate(stu1, stu2);
+        final StudentORMModel.Entity entity = theRecord.toObject();
+        Assert.assertEquals(name, entity.getName());
+        Assert.assertEquals(Byte.valueOf("41"), entity.getAge());
+        Assert.assertEquals(Integer.valueOf(7), entity.getTeacherId());
+
+        // 链上条件只参与查询, 不进入新增数据(sex 未在实体中给出 => 数据库默认 1, 而非查询的 2)
+        final StudentORMModel.Entity dbEntity = studentORMModel.newQuery().where("name", name).firstOrFail()
+            .toObject();
+        Assert.assertEquals(Byte.valueOf("1"), dbEntity.getSex());
+
+        // 终结操作后, 原 builder 可继续使用(内部使用 clone(), 不污染自身)
+        Assert.assertEquals(oldCount.longValue() + 1L, studentORMModel.newQuery().count().longValue());
+        // sex=2 的行数未变(新增行的 sex 为数据库默认值 1)
+        Assert.assertEquals(4L, builder.count().longValue());
+
+        // ----------------
+        // 命中 -> 更新(数据为 stu3 + stu4 的并集, stu4 优先; 未携带的属性保持数据库中的值)
+        final StudentORMModel.Entity stu3 = new StudentORMModel.Entity();
+        stu3.setName("小明");
+        stu3.setSex(Byte.valueOf("2"));
+        final StudentORMModel.Entity stu4 = new StudentORMModel.Entity();
+        stu4.setAge(Byte.valueOf("66"));
+
+        final StudentORMModel.Entity entity2 = studentORMModel.newQuery().where("id", "1")
+            .updateOrCreate(stu3, stu4).toObject();
+        Assert.assertEquals(Integer.valueOf(1), entity2.getId());
+        Assert.assertEquals("小明", entity2.getName());
+        Assert.assertEquals(Byte.valueOf("66"), entity2.getAge());
+        Assert.assertEquals(Integer.valueOf(6), entity2.getTeacherId());
+        Assert.assertEquals(oldCount.longValue() + 1L, studentORMModel.newQuery().count().longValue());
+    }
+
+    @Test
+    public void Query新增_updateOrCreate_软删除() {
+        // 软删除 id=5 (小卡卡, 11)
+        final int deleted = studentORMModel.newQuery().where("id", "5").delete();
+        Assert.assertEquals(1, deleted);
+
+        // withTrashed 命中已删除行: 不会自动恢复, 也不会实际更新已删除行(更新依然只作用于未删除的行)
+        final StudentORMModel.Entity stu1 = new StudentORMModel.Entity();
+        stu1.setName("小卡卡");
+        final StudentORMModel.Entity stu2 = new StudentORMModel.Entity();
+        stu2.setAge(Byte.valueOf("88"));
+
+        final Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.withTrashed().where("id", "5")
+            .updateOrCreate(stu1, stu2);
+        Assert.assertEquals(Integer.valueOf(5), theRecord.toObject().getId());
+
+        // 软删除状态保持, 数据未实际变化
+        final StudentORMModel.Entity after = studentORMModel.withTrashed().where("id", "5").firstOrFail().toObject();
+        Assert.assertTrue(after.getIsDeleted());
+        Assert.assertEquals(Byte.valueOf("11"), after.getAge());
+
+        // ----------------
+        // newQuery 无法查到已删除行 => 新建(新行新id, 不影响已删除行)
+        final StudentORMModel.Entity stu3 = new StudentORMModel.Entity();
+        stu3.setName("q_updateOrCreate_sd");
+        final StudentORMModel.Entity stu4 = new StudentORMModel.Entity();
+        stu4.setAge(Byte.valueOf("99"));
+
+        final Record<StudentORMModel.Entity, Integer> theRecord2 = studentORMModel.newQuery().where("id", "5")
+            .updateOrCreate(stu3, stu4);
+        Assert.assertNotEquals(Integer.valueOf(5), theRecord2.toObject().getId());
+        Assert.assertEquals("q_updateOrCreate_sd", theRecord2.toObject().getName());
+
+        // 新行未删除(实体中未给出 is_deleted => 用数据库默认值 0)
+        final StudentORMModel.Entity newDbEntity = studentORMModel.newQuery().where("name", "q_updateOrCreate_sd")
+            .firstOrFail().toObject();
+        Assert.assertFalse(newDbEntity.getIsDeleted());
+        Assert.assertNotEquals(Integer.valueOf(5), newDbEntity.getId());
+
+        // 原 id=5 行依然为软删除状态
+        Assert.assertTrue(studentORMModel.withTrashed().where("id", "5").firstOrFail().toObject().getIsDeleted());
+    }
+
+    @Test
+    public void Query新增_updateOrCreateAutoRestore_软删除() {
+        // 软删除 id=5 (小卡卡, 11)
+        final int deleted = studentAutoRestoreModel.newQuery().where("id", "5").delete();
+        Assert.assertEquals(1, deleted);
+
+        // ---------------- 命中已软删除的行 => 恢复 + 更新(一条sql完成)
+        StudentAutoRestoreModel.clear();
+        final StudentAutoRestoreModel.Entity stu1 = new StudentAutoRestoreModel.Entity();
+        stu1.setName("小卡卡");
+        final StudentAutoRestoreModel.Entity stu2 = new StudentAutoRestoreModel.Entity();
+        stu2.setAge(Byte.valueOf("88"));
+
+        final Record<StudentAutoRestoreModel.Entity, Integer> theRecord = studentAutoRestoreModel.withTrashed()
+            .where("id", "5").updateOrCreateAutoRestore(stu1, stu2);
+        Assert.assertEquals(Integer.valueOf(5), theRecord.toObject().getId());
+
+        // 软删除语义均走模型自身的可重写实现: 已删除的判断/恢复动作/软删除列名;
+        // 且不再额外查询(已删除的判断直接读取命中记录, 不通过 onlyTrashed)
+        Assert.assertTrue(StudentAutoRestoreModel.SOFT_DELETED_CALLED);
+        Assert.assertTrue(StudentAutoRestoreModel.SOFT_DELETE_RESTORE_CALLED);
+        Assert.assertTrue(StudentAutoRestoreModel.SOFT_DELETED_COLUMN_NAME_CALLED);
+        Assert.assertFalse(StudentAutoRestoreModel.ONLY_TRASHED_SCOPE_CALLED);
+        // 事件序列(此时不含后续数据校验的查询): 命中查询 -> 恢复 -> (恢复实现内的)更新 -> 重新装载
+        Assert.assertEquals(
+            Arrays.asList("retrieving", "retrieved", "restoring", "updating", "updated", "restored", "retrieving",
+                "retrieved"), StudentAutoRestoreModel.QUERY_EVENT_LIST);
+
+        // 恢复成功, 数据已更新(未携带的属性保持数据库中的值)
+        final StudentAutoRestoreModel.Entity after = studentAutoRestoreModel.newQuery().where("id", "5").firstOrFail()
+            .toObject();
+        Assert.assertFalse(after.getIsDeleted());
+        Assert.assertEquals(Byte.valueOf("88"), after.getAge());
+        Assert.assertEquals("小卡卡", after.getName());
+
+        // ---------------- 命中未软删除的行 => 仅更新
+        StudentAutoRestoreModel.clear();
+        final StudentAutoRestoreModel.Entity stu3 = new StudentAutoRestoreModel.Entity();
+        stu3.setName("小卡卡");
+        final StudentAutoRestoreModel.Entity stu4 = new StudentAutoRestoreModel.Entity();
+        stu4.setAge(Byte.valueOf("77"));
+
+        final Record<StudentAutoRestoreModel.Entity, Integer> theRecord2 = studentAutoRestoreModel.withTrashed()
+            .where("id", "5").updateOrCreateAutoRestore(stu3, stu4);
+        Assert.assertEquals(Integer.valueOf(5), theRecord2.toObject().getId());
+
+        // 未触发恢复动作; 软删除列名因'是否已删除的判断'而被读取; 且不再额外查询(不通过 onlyTrashed)
+        Assert.assertTrue(StudentAutoRestoreModel.SOFT_DELETED_CALLED);
+        Assert.assertFalse(StudentAutoRestoreModel.SOFT_DELETE_RESTORE_CALLED);
+        Assert.assertTrue(StudentAutoRestoreModel.SOFT_DELETED_COLUMN_NAME_CALLED);
+        Assert.assertFalse(StudentAutoRestoreModel.ONLY_TRASHED_SCOPE_CALLED);
+        // 事件序列(此时不含后续数据校验的查询): 命中查询 -> 更新 -> 重新装载
+        Assert.assertEquals(
+            Arrays.asList("retrieving", "retrieved", "updating", "updated", "retrieving", "retrieved"),
+            StudentAutoRestoreModel.QUERY_EVENT_LIST);
+
+        // 数据已更新
+        Assert.assertEquals(Byte.valueOf("77"),
+            studentAutoRestoreModel.newQuery().where("id", "5").firstOrFail().toObject().getAge());
+
+        // ---------------- 未命中 => 新增(newQuery 带软删除过滤, 无法命中已删除行)
+        final int deleted2 = studentAutoRestoreModel.newQuery().where("id", "5").delete();
+        Assert.assertEquals(1, deleted2);
+        StudentAutoRestoreModel.clear();
+        final StudentAutoRestoreModel.Entity stu5 = new StudentAutoRestoreModel.Entity();
+        stu5.setName("q_updOrCreateAuto");
+        final StudentAutoRestoreModel.Entity stu6 = new StudentAutoRestoreModel.Entity();
+        stu6.setAge(Byte.valueOf("99"));
+
+        final Record<StudentAutoRestoreModel.Entity, Integer> theRecord3 = studentAutoRestoreModel.newQuery()
+            .where("id", "5").updateOrCreateAutoRestore(stu5, stu6);
+        Assert.assertNotEquals(Integer.valueOf(5), theRecord3.toObject().getId());
+        Assert.assertEquals("q_updOrCreateAuto", theRecord3.toObject().getName());
+        Assert.assertEquals(Byte.valueOf("99"), theRecord3.toObject().getAge());
+
+        // 未触发已删除的判断与恢复
+        Assert.assertFalse(StudentAutoRestoreModel.SOFT_DELETED_CALLED);
+        Assert.assertFalse(StudentAutoRestoreModel.ONLY_TRASHED_SCOPE_CALLED);
+        Assert.assertFalse(StudentAutoRestoreModel.SOFT_DELETE_RESTORE_CALLED);
+        Assert.assertFalse(StudentAutoRestoreModel.SOFT_DELETED_COLUMN_NAME_CALLED);
+        // 事件序列: 命中查询(未命中, 无retrieved) -> 新增
+        Assert.assertEquals(Arrays.asList("retrieving", "creating", "created"),
+            StudentAutoRestoreModel.QUERY_EVENT_LIST);
+
+        // 原 id=5 行依然为软删除状态
+        Assert.assertTrue(studentAutoRestoreModel.withTrashed().where("id", "5").firstOrFail().toObject().getIsDeleted());
+    }
+
+    @Test
+    public void Query新增_updateByPrimaryKeyOrCreateAutoRestore_软删除() {
+        // 软删除 id=5 (小卡卡, 11)
+        final int deleted = studentAutoRestoreModel.newQuery().where("id", "5").delete();
+        Assert.assertEquals(1, deleted);
+
+        // ---------------- 主键命中已软删除的行 => 恢复 + 更新(一条sql完成)
+        StudentAutoRestoreModel.clear();
+        final StudentAutoRestoreModel.Entity stu1 = new StudentAutoRestoreModel.Entity();
+        stu1.setId(5);
+        stu1.setAge(Byte.valueOf("66"));
+
+        final Record<StudentAutoRestoreModel.Entity, Integer> theRecord =
+            studentAutoRestoreModel.updateByPrimaryKeyOrCreateAutoRestore(stu1);
+        Assert.assertEquals(Integer.valueOf(5), theRecord.toObject().getId());
+
+        // 软删除语义均走模型自身的可重写实现; 且不再额外查询(已删除的判断直接读取命中记录, 不通过 onlyTrashed)
+        Assert.assertTrue(StudentAutoRestoreModel.SOFT_DELETED_CALLED);
+        Assert.assertTrue(StudentAutoRestoreModel.SOFT_DELETE_RESTORE_CALLED);
+        Assert.assertTrue(StudentAutoRestoreModel.SOFT_DELETED_COLUMN_NAME_CALLED);
+        Assert.assertFalse(StudentAutoRestoreModel.ONLY_TRASHED_SCOPE_CALLED);
+        Assert.assertEquals(
+            Arrays.asList("retrieving", "retrieved", "restoring", "updating", "updated", "restored", "retrieving",
+                "retrieved"), StudentAutoRestoreModel.QUERY_EVENT_LIST);
+
+        // 恢复成功, 数据已更新(未携带的属性保持数据库中的值)
+        final StudentAutoRestoreModel.Entity after = studentAutoRestoreModel.newQuery().where("id", "5").firstOrFail()
+            .toObject();
+        Assert.assertFalse(after.getIsDeleted());
+        Assert.assertEquals(Byte.valueOf("66"), after.getAge());
+        Assert.assertEquals("小卡卡", after.getName());
+
+        // ---------------- 主键未命中 => 新增
+        StudentAutoRestoreModel.clear();
+        final StudentAutoRestoreModel.Entity stu2 = new StudentAutoRestoreModel.Entity();
+        stu2.setId(7891);
+        stu2.setName("q_updByPkOrCreateAR");
+        stu2.setAge(Byte.valueOf("3"));
+
+        final Record<StudentAutoRestoreModel.Entity, Integer> theRecord2 =
+            studentAutoRestoreModel.updateByPrimaryKeyOrCreateAutoRestore(stu2);
+        Assert.assertEquals("q_updByPkOrCreateAR", theRecord2.toObject().getName());
+        Assert.assertEquals(Byte.valueOf("3"), theRecord2.toObject().getAge());
+
+        // 未触发已删除的判断与恢复
+        Assert.assertFalse(StudentAutoRestoreModel.SOFT_DELETED_CALLED);
+        Assert.assertFalse(StudentAutoRestoreModel.ONLY_TRASHED_SCOPE_CALLED);
+        Assert.assertFalse(StudentAutoRestoreModel.SOFT_DELETE_RESTORE_CALLED);
+        Assert.assertFalse(StudentAutoRestoreModel.SOFT_DELETED_COLUMN_NAME_CALLED);
+        // 事件序列: 命中查询(未命中, 无retrieved) -> 新增
+        Assert.assertEquals(Arrays.asList("retrieving", "creating", "created"),
+            StudentAutoRestoreModel.QUERY_EVENT_LIST);
     }
 
     @Test

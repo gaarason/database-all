@@ -1,5 +1,6 @@
 package gaarason.database.contract.model;
 
+import gaarason.database.contract.builder.ModelOp;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.eloquent.RecordList;
@@ -16,7 +17,7 @@ import java.util.Collection;
  * @param <K> 主键类型
  * @author xt
  */
-public interface Query<B extends Builder<B, T, K>, T, K> {
+public interface Query<B extends Builder<B, T, K>, T, K> extends ModelOp<B, T, K> {
 
     /**
      * 新查询构造器
@@ -117,53 +118,6 @@ public interface Query<B extends Builder<B, T, K>, T, K> {
     Record<T, K> find(@Nullable Object id);
 
     /**
-     * 单个查询, 当查询不到数据时 构建结果集
-     * 实例并没有持久化到数据库中，你还需要调用 save 方法手动持久化
-     * @param entity 实体对象
-     * @return 结果集
-     */
-    Record<T, K> findOrNew(T entity);
-
-    /**
-     * 使用主键进行单个查询, 当查询不到数据时 构建结果集
-     * 实例并没有持久化到数据库中，你还需要调用 save 方法手动持久化
-     * @param entity 实体对象
-     * @return 结果集
-     */
-    Record<T, K> findByPrimaryKeyOrNew(T entity);
-
-    /**
-     * 单个查询, 当查询不到数据时使用ORM insert本条数据
-     * @param entity 实体对象
-     * @return 结果集
-     */
-    Record<T, K> findOrCreate(T entity);
-
-    /**
-     * 使用主键进行单个查询, 当查询不到数据时使用ORM insert本条数据
-     * @param entity 实体对象
-     * @return 结果集
-     */
-    Record<T, K> findByPrimaryKeyOrCreate(T entity);
-
-    /**
-     * 单个查询, 当查询不到数据时 构建结果集
-     * 实例并没有持久化到数据库中，你还需要调用 save 方法手动持久化
-     * @param conditionEntity 实体对象(用作查询条件)
-     * @param complementEntity 实体对象(用作插入时的补充)
-     * @return 结果集
-     */
-    Record<T, K> findOrNew(T conditionEntity, T complementEntity);
-
-    /**
-     * 单个查询, 当查询不到数据时使用ORM insert本条数据
-     * @param conditionEntity 实体对象(用作查询条件)
-     * @param complementEntity 实体对象(用作插入时的补充)
-     * @return 结果集
-     */
-    Record<T, K> findOrCreate(T conditionEntity, T complementEntity);
-
-    /**
      * ORM insert 本条数据
      * @param entity 实体对象
      * @return 结果集
@@ -176,22 +130,5 @@ public interface Query<B extends Builder<B, T, K>, T, K> {
      * @return 结果集
      */
     Record<T, K> update(T entity);
-
-    /**
-     * 使用主键进行单个更新, 当查询不到数据时使用ORM insert本条数据
-     * (已存在则更新，否则创建新模型)
-     * @param entity 实体对象
-     * @return 结果集
-     */
-    Record<T, K> updateByPrimaryKeyOrCreate(T entity);
-
-    /**
-     * 单个更新, 当查询不到数据时使用ORM insert本条数据
-     * (已存在则更新，否则创建新模型)
-     * @param conditionEntity 实体对象(用作查询条件)
-     * @param complementEntity 实体对象(用作插入时的补充)
-     * @return 结果集
-     */
-    Record<T, K> updateOrCreate(T conditionEntity, T complementEntity);
 
 }

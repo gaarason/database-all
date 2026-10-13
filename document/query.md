@@ -23,6 +23,7 @@ Eloquent ORM for Java
     * [插入](#插入)
     * [更新](#更新)
     * [插入or更新](#插入or更新)
+    * [拓展操作](#拓展操作)
     * [删除](#删除)
         * [默认删除](#默认删除)
         * [强力删除](#强力删除)
@@ -450,6 +451,32 @@ istudentModel.newQuery().column("id", "name")
 
 ```
 
+
+## 拓展操作
+
+在查询构造器上执行`查询或创建/更新`操作, 查询条件为`链上已有条件`与`实体(列/值对)`条件的并集; 新增/更新的数据为`实体`(双实体时为两者的并集, complementEntity 优先), 均不包含`查询条件`, 也不会改变软删除状态。以`AutoRestore`为后缀的方法除外: 其命中已软删除的记录时, 会依模型自身的软删除实现自动恢复(恢复与更新在一条 sql 中完成), 并依需触发恢复与更新的相关事件(命中判断基于命中记录本身, 不产生额外查询)。详细说明请看 [查询结果集 Record](/document/record.md#拓展操作)
+
+```java
+// 查询条件 = 链上条件 + stu1(列/值对)
+// select * from student where ... and ... limit 1
+// 如果上面查询存在数据 则执行 update `student` set ...
+// 如果上面查询没有数据 则执行 insert into `student`(...) values(...)
+Record<StudentORMModel.Entity, Integer> theRecord = studentModel.newQuery().where("sex", "2").updateOrCreate(stu1, stu2);
+
+// findOrNew / findOrCreate
+Record<StudentORMModel.Entity, Integer> theRecord1 = studentModel.newQuery().where("sex", "2").findOrNew(entity);
+Record<StudentORMModel.Entity, Integer> theRecord2 = studentModel.newQuery().where("sex", "2").findOrCreate(entity);
+
+// 主键系列
+Record<StudentORMModel.Entity, Integer> theRecord3 = studentModel.newQuery().findByPrimaryKeyOrNew(entity);
+Record<StudentORMModel.Entity, Integer> theRecord4 = studentModel.newQuery().findByPrimaryKeyOrCreate(entity);
+Record<StudentORMModel.Entity, Integer> theRecord5 = studentModel.newQuery().updateByPrimaryKeyOrCreate(entity);
+
+// AutoRestore 系列, 命中已软删除的记录时会自动恢复(恢复与更新在一条 sql 中完成)
+Record<StudentORMModel.Entity, Integer> theRecord6 = studentModel.withTrashed().where("sex", "2").updateOrCreateAutoRestore(stu1, stu2);
+Record<StudentORMModel.Entity, Integer> theRecord7 = studentModel.withTrashed().updateByPrimaryKeyOrCreateAutoRestore(entity);
+
+```
 
 ## 删除
 

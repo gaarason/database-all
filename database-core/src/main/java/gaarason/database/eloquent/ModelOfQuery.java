@@ -1,6 +1,5 @@
 package gaarason.database.eloquent;
 
-import gaarason.database.appointment.EntityUseType;
 import gaarason.database.appointment.JDBCValueWrapper;
 import gaarason.database.config.ConversionConfig;
 import gaarason.database.connection.GaarasonDataSourceContext;
@@ -19,7 +18,6 @@ import gaarason.database.lang.Nullable;
 import gaarason.database.support.FieldMember;
 import gaarason.database.support.PrimaryKeyMember;
 import gaarason.database.support.RecordFactory;
-import gaarason.database.util.EntityUtils;
 import gaarason.database.util.ObjectUtils;
 import gaarason.database.util.StringUtils;
 
@@ -148,83 +146,32 @@ abstract class ModelOfQuery<B extends Builder<B, T, K>, T, K> extends ModelOfSof
 
     @Override
     public Record<T, K> findOrNew(T entity) {
-        // 查询是否存在满足条件的一条记录
-        final Record<T, K> first = newQuery().select(getEntityClass()).where(entity).first();
-        if (first != null) {
-            return first;
-        }
-        // 新增此记录
-        final Record<T, K> tkRecord = this.newRecord();
-        tkRecord.getEntity(entity);
-        return tkRecord;
+        return newQuery().findOrNew(entity);
     }
 
     @Override
     public Record<T, K> findByPrimaryKeyOrNew(T entity) {
-        // 获取 entity 中的主键的值
-
-        final Object primaryKeyValue = getModelShadow().parseAnyEntityWithCache(entity.getClass())
-            .getPrimaryKeyMemberOrFail()
-            .getFieldMember()
-            .fieldFillGetOrFail(entity, EntityUseType.CONDITION);
-
-        // 查询是否存在满足条件的一条记录
-        final Record<T, K> first = find(primaryKeyValue);
-        if (first != null) {
-            return first;
-        }
-        // 新增此记录
-        final Record<T, K> tkRecord = this.newRecord();
-        tkRecord.getEntity(entity);
-        return tkRecord;
+        return newQuery().findByPrimaryKeyOrNew(entity);
     }
 
     @Override
     public Record<T, K> findOrCreate(T entity) {
-        final Record<T, K> theRecord = findOrNew(entity);
-        // 如果未持久化
-        if (!theRecord.isHasBind()) {
-            // 进行持久化
-            theRecord.save();
-        }
-        return theRecord;
+        return newQuery().findOrCreate(entity);
     }
 
     @Override
     public Record<T, K> findByPrimaryKeyOrCreate(T entity) {
-        final Record<T, K> theRecord = findByPrimaryKeyOrNew(entity);
-        // 如果未持久化
-        if (!theRecord.isHasBind()) {
-            // 进行持久化
-            theRecord.save();
-        }
-        return theRecord;
+        return newQuery().findByPrimaryKeyOrCreate(entity);
     }
 
     @Override
     public Record<T, K> findOrNew(T conditionEntity, T complementEntity) {
-        // 查询是否存在满足条件的一条记录
-        final Record<T, K> first = newQuery().select(getEntityClass()).where(conditionEntity).first();
-        if (first != null) {
-            return first;
-        }
-        // 新增此记录
-        final Record<T, K> tkRecord = this.newRecord();
-        // 合并属性
-        final T entityMerge = EntityUtils.entityMerge(conditionEntity, complementEntity);
-        tkRecord.getEntity(entityMerge);
-        return tkRecord;
+        return newQuery().findOrNew(conditionEntity, complementEntity);
     }
 
     @Override
     public Record<T, K> findOrCreate(T conditionEntity, T complementEntity) {
-        final Record<T, K> theRecord = findOrNew(conditionEntity, complementEntity);
-        // 如果未持久化
-        if (!theRecord.isHasBind()) {
-            // 进行持久化
-            theRecord.save();
-        }
-        return theRecord;
+        return newQuery().findOrCreate(conditionEntity, complementEntity);
     }
 
     @Override
@@ -244,32 +191,22 @@ abstract class ModelOfQuery<B extends Builder<B, T, K>, T, K> extends ModelOfSof
 
     @Override
     public Record<T, K> updateByPrimaryKeyOrCreate(T entity) {
-        // 获取 entity 中的主键的值
-        final Object primaryKeyValue = getModelShadow().getPrimaryKeyValue(entity, EntityUseType.CONDITION);
-        final Record<T, K> first = find(primaryKeyValue);
-        final Record<T, K> theRecord = first != null ? first : this.newRecord();
-        theRecord.fillEntity(entity);
-        theRecord.save();
-        return theRecord;
+        return newQuery().updateByPrimaryKeyOrCreate(entity);
     }
 
     @Override
     public Record<T, K> updateOrCreate(T conditionEntity, T complementEntity) {
-        // 查询是否存在满足条件的一条记录
-        final Record<T, K> first = newQuery().select(getEntityClass()).where(conditionEntity).first();
-        if (first != null) {
-            // 更新
-            first.fillEntity(complementEntity);
-            first.save();
-            return first;
-        } else {
-            // 新增
-            final Record<T, K> tkRecord = this.newRecord();
-            tkRecord.getEntity(conditionEntity);
-            tkRecord.fillEntity(complementEntity);
-            tkRecord.save();
-            return tkRecord;
-        }
+        return newQuery().updateOrCreate(conditionEntity, complementEntity);
+    }
+
+    @Override
+    public Record<T, K> updateByPrimaryKeyOrCreateAutoRestore(T entity) {
+        return withTrashed().updateByPrimaryKeyOrCreateAutoRestore(entity);
+    }
+
+    @Override
+    public Record<T, K> updateOrCreateAutoRestore(T conditionEntity, T complementEntity) {
+        return withTrashed().updateOrCreateAutoRestore(conditionEntity, complementEntity);
     }
 
     @Override

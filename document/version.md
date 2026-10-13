@@ -26,6 +26,16 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 待发布 (下版本引入)
+
+- 在`Aggregates`中, 修复聚合函数在不同数据库驱动下的返回值类型差异导致的问题: 部分驱动(如 SQLite JDBC)的`COUNT()`返回`Integer`而非`Long`, `AVG()`/`SUM()`返回`Double`而非`BigDecimal`, 导致使用`paginate`/`cursorPaginate`等分页查询时出现`ClassCastException`(Long 不能转为 Int)
+- 现在`count()`始终返回`Long`, `avg()`/`sum()`始终返回`BigDecimal`, 兼容各驱动的数值返回类型, 且空结果返回`null`的行为保持不变
+- 在`Builder`中, 增加了`findOrNew`/`findOrCreate`/`findByPrimaryKeyOrNew`/`findByPrimaryKeyOrCreate`/`updateOrCreate`/`updateByPrimaryKeyOrCreate`方法(包含双实体重载), 用于在查询构造器上执行`查询或创建/更新`操作: 查询条件为链上已有条件与实体非null属性条件的并集; 新增/更新的数据为实体(双实体时为两者的并集, complementEntity优先), 均不包含`查询条件`, 也不会改变软删除状态
+- `Model`中的同名方法重构为对查询构造器的委托, 行为保持不变, 其契约声明迁移至`gaarason.database.contract.builder.ModelOp`
+- 版本升级指引: 如在自定义查询构造器中直接实现`Builder`接口(而非继承`AbstractBuilder`), 需要同时实现新增的`ModelOp`契约
+- 在`Builder`/`Model`中, 增加了`updateOrCreateAutoRestore`/`updateByPrimaryKeyOrCreateAutoRestore`方法, 用于在`查询或创建/更新`时: 命中已软删除的记录时, 会依模型自身的软删除实现自动恢复(恢复与更新在一条sql中完成, 且命中判断基于命中记录本身, 不产生额外查询), 并依需触发恢复与更新的相关事件
+- 在`SoftDelete`中, 增加了`isSoftDeleting`/`softDeletedColumnName`/`isSoftDeleted`方法(默认实现), 作为软删除语义的扩展点: `AutoRestore`系列方法的`是否已删除的判断/恢复动作/软删除列名的剔除`均走模型自身的可重写实现
+
 ### 7.0.15
 
 - 后续将使用中央maven进行发布, 因为更改了发布的仓库, 所以坐标与 7.0.0 之前的稍有不同, `groupId` 由 `com.github.gaarason.database-all` 调整为 `io.github.gaarason`

@@ -34,6 +34,9 @@ target/
 .vscode/
 .cursor/
 
+### Qoder ###
+.qoder/
+
 # Compiled class file
 *.class
 
@@ -64,3 +67,4 @@ hs_err_pid*
 
 # other
 /*.xml
+AGENTS.md

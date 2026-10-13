@@ -28,6 +28,9 @@ Eloquent ORM for Java
             * [findByPrimaryKeyOrNew](#findByPrimaryKeyOrNew)
             * [updateOrCreate](#updateOrCreate)
             * [updateByPrimaryKeyOrCreate](#updateByPrimaryKeyOrCreate)
+            * [updateOrCreateAutoRestore](#updateOrCreateAutoRestore)
+            * [updateByPrimaryKeyOrCreateAutoRestore](#updateByPrimaryKeyOrCreateAutoRestore)
+            * [在查询构造器上调用](#在查询构造器上调用)
         * [检查属性变化](#检查属性变化)
             * [isDirty与isClean](#isDirty与isClean)
             * [wasChanged](#wasChanged)
@@ -217,6 +220,8 @@ record.delete();
 
 ### 拓展操作
 
+- 本节方法在`数据模型 Model`与`查询构造器`上均可调用, 在查询构造器上调用时等价于`Model方法 + 链上已有的查询条件`, 详细可见[在查询构造器上调用](#在查询构造器上调用)
+
 #### findOrCreate
 
 ##### findOrCreate(entity)
@@ -352,6 +357,57 @@ Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.updateOrCrea
 // 如果上面查询没有数据 则执行 insert into `student`(...) values(...)
 // 如果上面查询存在数据 则执行 update `student` set ...
 Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.updateByPrimaryKeyOrCreate(stu);
+
+```
+
+#### updateOrCreateAutoRestore
+
+- updateOrCreateAutoRestore(T conditionEntity, T complementEntity) 方法行为与 updateOrCreate 一致; 区别在于: 当命中的记录处于`已软删除`状态时, 会依模型自身的软删除实现将其自动恢复(恢复与更新在一条 sql 中完成), 并依需触发恢复与更新的相关事件。其`是否处于已软删除状态`的判断同样采用模型自身的实现(默认读取命中记录的软删除标记列的值, 不产生额外查询; 可通过重写`isSoftDeleted(Record)`自定义, 例如以时间戳作为标记的软删除实现)。
+
+```java
+// 按照 conditionEntity 中的非null属性作为查询条件 select * from student where ... limit 1 (实体定义时, 对于基本数据结构要使用包装类型)
+// 如果上面查询没有数据 则执行 insert into `student`(...) values(...)
+// 如果上面查询存在数据 且记录未被软删除 则执行 update `student` set ...
+// 如果上面查询存在数据 且记录已被软删除 则执行 update `student` set ... (同时恢复软删除)
+Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.updateOrCreateAutoRestore(stu1, stu2);
+
+```
+
+#### updateByPrimaryKeyOrCreateAutoRestore
+
+- updateByPrimaryKeyOrCreateAutoRestore(entity) 方法行为与 updateByPrimaryKeyOrCreate 一致; 区别在于: 当命中的记录处于`已软删除`状态时, 会依模型自身的软删除实现将其自动恢复(恢复与更新在一条 sql 中完成), 并依需触发恢复与更新的相关事件。其`是否处于已软删除状态`的判断同样采用模型自身的实现(默认读取命中记录的软删除标记列的值, 不产生额外查询; 可通过重写`isSoftDeleted(Record)`自定义, 例如以时间戳作为标记的软删除实现)。
+
+```java
+// 按照 entity 中的主键属性作为查询条件 select * from student where ... limit 1
+// 如果上面查询没有数据 则执行 insert into `student`(...) values(...)
+// 如果上面查询存在数据 且记录未被软删除 则执行 update `student` set ...
+// 如果上面查询存在数据 且记录已被软删除 则执行 update `student` set ... (同时恢复软删除)
+Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.updateByPrimaryKeyOrCreateAutoRestore(stu);
+
+```
+
+#### 在查询构造器上调用
+
+- 上述方法在`Model`与查询构造器上均可调用, 查询构造器上的调用为`Model方法 + 链上已有的查询条件`。
+- 查询条件为`构造器链上已有条件`与`实体(列/值对)`条件的并集; 新增/更新的数据为`实体`(双实体时为两者的并集, complementEntity 优先), 均不包含`查询条件`, 也不会改变软删除状态。
+- 以`AutoRestore`为后缀的方法, 命中已软删除的记录时, 会依模型自身的软删除实现自动恢复(恢复与更新在一条 sql 中完成), 此时记录不再保持软删除状态; 在`Model`上调用时可以直接命中已软删除的记录, 在查询构造器上调用时, 需要`withTrashed()`才能查询到已软删除的记录。
+
+```java
+// 查询条件 = 链上条件 + conditionEntity(列/值对)
+// select * from student where ... and ... limit 1
+// 如果上面查询存在数据 则执行 update `student` set ...
+// 如果上面查询没有数据 则执行 insert into `student`(...) values(...)
+Record<StudentORMModel.Entity, Integer> theRecord = studentORMModel.newQuery().where("sex", "2").updateOrCreate(stu1, stu2);
+
+// 其余方法同理, 例如
+Record<StudentORMModel.Entity, Integer> theRecord1 = studentORMModel.newQuery().where("sex", "2").findOrNew(stu1, stu2);
+
+// 主键系列方法, 会以实体中的主键值作为查询条件(同样叠加链上已有条件)
+Record<StudentORMModel.Entity, Integer> theRecord2 = studentORMModel.newQuery().findByPrimaryKeyOrCreate(stu);
+
+// AutoRestore 系列方法, 需要 withTrashed() 才能查询到已软删除的记录, 命中会自动恢复(恢复与更新在一条 sql 中完成)
+Record<StudentORMModel.Entity, Integer> theRecord3 = studentORMModel.withTrashed().where("sex", "2").updateOrCreateAutoRestore(stu1, stu2);
+Record<StudentORMModel.Entity, Integer> theRecord4 = studentORMModel.withTrashed().updateByPrimaryKeyOrCreateAutoRestore(stu);
 
 ```
 

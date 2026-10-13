@@ -370,8 +370,9 @@ public class StudentModel extends BaseModel<Student, Long> {
 
 ### 软删除
 
-- 软删除相关实现, 重写 `gaarason.database.eloquent.query.BaseSoftDeleting`的相关方法
+- 软删除相关实现, 重写以下方法(契约声明见 `gaarason.database.contract.model.SoftDelete`)
 - 开启软删除, 重写`softDeleting`方法结果为`true`
+- 以`AutoRestore`为后缀的方法(如`updateOrCreateAutoRestore`), 命中已软删除的记录时, 会依模型自身的软删除实现自动恢复(恢复与更新在一条 sql 中完成); 其`是否已删除的判断/恢复动作/软删除列名的剔除`均走模型自身的可重写实现
 
 ```java
 package temp.model;
@@ -388,6 +389,15 @@ public class StudentModel extends BaseModel<Student, Long> {
      */
     protected boolean softDeleting() {
         return false;
+    }
+
+    /**
+     * 是否启用软删除
+     * 供框架读取(桥接`softDeleting`), 一般无需重写
+     * @return 是否启用软删除
+     */
+    public boolean isSoftDeleting() {
+        return softDeleting();
     }
 
     /**
@@ -449,6 +459,27 @@ public class StudentModel extends BaseModel<Student, Long> {
      */
     protected int softDeleteRestore(Builder<Student, Long> builder) {
         return builder.data("is_deleted", "0").update();
+    }
+
+    /**
+     * 软删除标记的列名
+     * 在以`AutoRestore`为后缀的方法中, 命中已软删除记录时会从更新数据里剔除该列, 以避免与恢复数据的同列重复赋值
+     * @return 软删除标记的列名
+     */
+    public String softDeletedColumnName() {
+        return "is_deleted";
+    }
+
+    /**
+     * 记录是否处于已软删除状态
+     * 默认实现: 读取记录(查询结果)中软删除标记列的值; 若自定义了软删除语义(如以时间戳作为标记), 可重写
+     * 以`AutoRestore`为后缀的方法以其判断命中记录是否需要恢复, 不产生额外查询
+     * @param record 记录(其查询结果中需包含软删除标记列)
+     * @return 记录是否处于已软删除状态
+     */
+    public boolean isSoftDeleted(Record<Student, Long> record) {
+        Object value = record.getMetadataMap().get(softDeletedColumnName());
+        return Boolean.TRUE.equals(value) || "1".equals(String.valueOf(value));
     }
 }
 ```

@@ -65,6 +65,94 @@ abstract public class ScopeTests extends BaseTests {
     }
 
     @Test
+    public void 软删除_updateOrCreate() {
+        // 软删除 id=5 (小卡卡, 11)
+        int deleted = studentModel.newQuery().where("id", "5").delete();
+        Assert.assertEquals(deleted, 1);
+
+        // 链上 withTrashed(), 且实体中显式给出 isDeleted=true 作为条件 => 命中已删除行
+        // 但不会自动恢复(更新依然只作用于未删除的行), 也不会实际更新已删除行的数据
+        StudentSoftDeleteModel.Entity condition1 = new StudentSoftDeleteModel.Entity();
+        condition1.setDeleted(true);
+        StudentSoftDeleteModel.Entity complement1 = new StudentSoftDeleteModel.Entity();
+        complement1.setAge(Byte.valueOf("88"));
+
+        Record<StudentSoftDeleteModel.Entity, Integer> theRecord = studentModel.withTrashed().where("id", "5")
+            .updateOrCreate(condition1, complement1);
+        Assert.assertEquals(Integer.valueOf(5), theRecord.toObject().getId());
+
+        // 软删除状态保持, 数据未实际变化
+        StudentSoftDeleteModel.Entity after1 = studentModel.withTrashed().where("id", "5").firstOrFail().toObject();
+        Assert.assertTrue(after1.isDeleted());
+        Assert.assertEquals(Byte.valueOf("11"), after1.getAge());
+
+        // ----------------
+        // 未显式给出 isDeleted 时, 基础类型的 false 同样会进入查询条件(is_deleted=0)
+        // => 即使 withTrashed() 也无法查到已删除行, 所以走新建(新行新id, 不影响已删除行)
+        StudentSoftDeleteModel.Entity condition2 = new StudentSoftDeleteModel.Entity();
+        StudentSoftDeleteModel.Entity complement2 = new StudentSoftDeleteModel.Entity();
+        complement2.setAge(Byte.valueOf("99"));
+
+        Record<StudentSoftDeleteModel.Entity, Integer> theRecord2 = studentModel.withTrashed().where("id", "5")
+            .updateOrCreate(condition2, complement2);
+        Assert.assertNotEquals(Integer.valueOf(5), theRecord2.toObject().getId());
+        Assert.assertEquals(Byte.valueOf("99"), theRecord2.toObject().getAge());
+
+        // 原 id=5 行依然为软删除状态
+        Assert.assertTrue(studentModel.withTrashed().where("id", "5").firstOrFail().toObject().isDeleted());
+    }
+
+    @Test
+    public void 软删除_updateOrCreateAutoRestore() {
+        // 软删除 id=5 (小卡卡, 11)
+        int deleted = studentModel.newQuery().where("id", "5").delete();
+        Assert.assertEquals(deleted, 1);
+
+        // ---------------- 以 isDeleted=true 作为条件, 命中已软删除的行 => 恢复 + 更新(一条sql完成)
+        StudentSoftDeleteModel.Entity condition1 = new StudentSoftDeleteModel.Entity();
+        condition1.setDeleted(true);
+        StudentSoftDeleteModel.Entity complement1 = new StudentSoftDeleteModel.Entity();
+        complement1.setAge(Byte.valueOf("88"));
+
+        Record<StudentSoftDeleteModel.Entity, Integer> theRecord = studentModel.withTrashed().where("id", "5")
+            .updateOrCreateAutoRestore(condition1, complement1);
+        Assert.assertEquals(Integer.valueOf(5), theRecord.toObject().getId());
+
+        // 恢复成功, 数据已更新(未携带的属性保持数据库中的值)
+        StudentSoftDeleteModel.Entity after1 = studentModel.newQuery().where("id", "5").firstOrFail().toObject();
+        Assert.assertFalse(after1.isDeleted());
+        Assert.assertEquals(Byte.valueOf("88"), after1.getAge());
+        Assert.assertEquals("小卡卡", after1.getName());
+
+        // ---------------- 未显式给出 isDeleted 时, 基础类型的 false 同样会进入条件(is_deleted=0)
+        // 当前行未被软删除, 所以能命中 => 仅更新
+        StudentSoftDeleteModel.Entity condition2 = new StudentSoftDeleteModel.Entity();
+        StudentSoftDeleteModel.Entity complement2 = new StudentSoftDeleteModel.Entity();
+        complement2.setAge(Byte.valueOf("55"));
+
+        Record<StudentSoftDeleteModel.Entity, Integer> theRecord2 = studentModel.withTrashed().where("id", "5")
+            .updateOrCreateAutoRestore(condition2, complement2);
+        Assert.assertEquals(Integer.valueOf(5), theRecord2.toObject().getId());
+        Assert.assertEquals(Byte.valueOf("55"),
+            studentModel.newQuery().where("id", "5").firstOrFail().toObject().getAge());
+
+        // ---------------- 行已被软删除时, 基础类型的 false 无法命中 => 新增(新行新id, 不影响已删除行)
+        int deleted2 = studentModel.newQuery().where("id", "5").delete();
+        Assert.assertEquals(deleted2, 1);
+        StudentSoftDeleteModel.Entity condition3 = new StudentSoftDeleteModel.Entity();
+        StudentSoftDeleteModel.Entity complement3 = new StudentSoftDeleteModel.Entity();
+        complement3.setAge(Byte.valueOf("99"));
+
+        Record<StudentSoftDeleteModel.Entity, Integer> theRecord3 = studentModel.withTrashed().where("id", "5")
+            .updateOrCreateAutoRestore(condition3, complement3);
+        Assert.assertNotEquals(Integer.valueOf(5), theRecord3.toObject().getId());
+        Assert.assertEquals(Byte.valueOf("99"), theRecord3.toObject().getAge());
+
+        // 原 id=5 行依然为软删除状态
+        Assert.assertTrue(studentModel.withTrashed().where("id", "5").firstOrFail().toObject().isDeleted());
+    }
+
+    @Test
     public void 硬删除() {
         int id = studentModel.newQuery().where("id", "5").forceDelete();
         Assert.assertEquals(id, 1);

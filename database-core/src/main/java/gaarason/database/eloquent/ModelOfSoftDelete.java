@@ -1,5 +1,6 @@
 package gaarason.database.eloquent;
 
+import gaarason.database.appointment.FinalVariable;
 import gaarason.database.contract.eloquent.Builder;
 
 /**
@@ -8,11 +9,11 @@ import gaarason.database.contract.eloquent.Builder;
  */
 abstract class ModelOfSoftDelete<B extends Builder<B, T, K>, T, K> extends ModelBase<B, T, K> {
 
-    protected static final String DEFAULT_SOFT_DELETED_COLUMN_NAME = "is_deleted";
+    protected static final String DEFAULT_SOFT_DELETED_COLUMN_NAME = FinalVariable.DEFAULT_SOFT_DELETED_COLUMN_NAME;
 
-    protected static final String DEFAULT_SOFT_DELETED_VALUE_YSE = "1";
+    protected static final String DEFAULT_SOFT_DELETED_VALUE_YSE = FinalVariable.DEFAULT_SOFT_DELETED_VALUE_YSE;
 
-    protected static final String DEFAULT_SOFT_DELETED_VALUE_NO = "0";
+    protected static final String DEFAULT_SOFT_DELETED_VALUE_NO = FinalVariable.DEFAULT_SOFT_DELETED_VALUE_NO;
 
     @Override
     public int delete(Builder<?, T, K> builder) {
@@ -29,6 +30,16 @@ abstract class ModelOfSoftDelete<B extends Builder<B, T, K>, T, K> extends Model
      */
     protected boolean softDeleting() {
         return false;
+    }
+
+    @Override
+    public boolean isSoftDeleting() {
+        return softDeleting();
+    }
+
+    @Override
+    public String softDeletedColumnName() {
+        return DEFAULT_SOFT_DELETED_COLUMN_NAME;
     }
 
     /**
