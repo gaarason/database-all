@@ -150,7 +150,8 @@ public class SoftCache<K, V> extends AbstractMap<K, V> {
      */
     @Override
     public boolean containsKey(Object key) {
-        return ValueCell.strip(hash.get(key), false) != null;
+        ValueCell<V> v = hash.get(key);
+        return ValueCell.strip(v, false) != null;
     }
 
     @Override

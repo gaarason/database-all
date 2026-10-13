@@ -326,7 +326,7 @@ public class Generator {
         // 生成 baseModel
         processBaseModel();
         // 生成 baseEntity
-        processBaseEntity(tables.get(0).entrySet().stream().findFirst().get().getValue().toString());
+        processBaseEntity(tables.get(0).entrySet().stream().findFirst().orElseThrow(RuntimeException::new).getValue().toString());
 
         ThreadPoolExecutor threadPool = new ThreadPoolExecutor(corePoolSize, corePoolSize + 1, 1,
                 TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(65535));

@@ -64,22 +64,6 @@ abstract public class IncrementTypeTests extends BaseTests {
     }
 
     @Test
-    public void ss() {
-        GaarasonDataSource gaarasonDataSource = peopleModel.getGaarasonDataSource();
-        Map<String, DBColumn> student = DatabaseShadowProvider.getTable(gaarasonDataSource, "data_type");
-
-        Set<String> strings = student.keySet();
-
-        for (String string : strings) {
-            System.out.println(string);
-            System.out.println(student.get(string));
-            System.out.println();
-
-        }
-
-    }
-
-    @Test
     public void 新增_返回自增id() {
         PeopleModel.Entity entity = new PeopleModel.Entity();
         entity.setName("姓名");
