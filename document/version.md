@@ -26,7 +26,7 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
-### 7.1.1
+### 7.1.2
 
 - 在`Aggregates`中, 修复聚合函数在不同数据库驱动下的返回值类型差异导致的问题: 部分驱动(如 SQLite JDBC)的`COUNT()`返回`Integer`而非`Long`, `AVG()`/`SUM()`返回`Double`而非`BigDecimal`, 导致使用`paginate`/`cursorPaginate`等分页查询时出现`ClassCastException`(Long 不能转为 Int)
 - 现在`count()`始终返回`Long`, `avg()`/`sum()`始终返回`BigDecimal`, 兼容各驱动的数值返回类型, 且空结果返回`null`的行为保持不变
