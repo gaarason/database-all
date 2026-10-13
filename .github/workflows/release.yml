@@ -19,6 +19,14 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      # 固定使用 Maven 3.9.16: runner 预装的 Maven 3.10.0 会导致 central-publishing-maven-plugin
+      # 上传的 bundle 缺失 .pom 文件而发布失败 (https://github.com/apache/maven/issues/13388)
+      - name: Pin Maven 3.9.16
+        run: |
+          curl -fsSL "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.16/apache-maven-3.9.16-bin.tar.gz" \
+            | tar -xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-3.9.16/bin" >> "$GITHUB_PATH"
+
       - name: Create Maven settings
         run: |
           mkdir -p ~/.m2
