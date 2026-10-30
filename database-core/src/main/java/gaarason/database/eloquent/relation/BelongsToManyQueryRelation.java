@@ -134,7 +134,7 @@ public class BelongsToManyQueryRelation extends BaseRelationSubQuery {
             List<Object> v = entry.getValue();
 
             Builder<?, ?, ?> subBuilder = opBuilder.clone()
-                .selectCustom(RELATION_KEY, k.toString())
+                .selectCustom(RELATION_KEY, k)
                 .from("a", tableBuilder -> tableBuilder.setAnyBuilder(targetBuilder)
                     .whereIn(belongsToManyTemplate.targetModelLocalKey, v));
 

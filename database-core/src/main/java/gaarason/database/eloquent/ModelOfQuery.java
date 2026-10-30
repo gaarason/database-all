@@ -378,9 +378,10 @@ abstract class ModelOfQuery<B extends Builder<B, T, K>, T, K> extends ModelOfSof
         // 获取连接
         Connection connection = gaarasonDataSource.getLocalConnection(isWrite);
 
+        PreparedStatement preparedStatement = null;
         try {
             // 参数准备
-            PreparedStatement preparedStatement = executeSql(connection, sql, localParameters);
+            preparedStatement = executeSql(connection, sql, localParameters);
             // 执行
             return closure.execute(preparedStatement);
         } catch (EntityNotFoundException e) {
@@ -390,8 +391,25 @@ abstract class ModelOfQuery<B extends Builder<B, T, K>, T, K> extends ModelOfSof
             throw new SQLRuntimeException(sql, localParameters, e.getMessage(),
                 gaarasonDataSource.getQueryBuilder().getValueSymbol(), e);
         } finally {
+            // 关闭语句, 不能依赖连接关闭(连接归还连接池后并不会立刻销毁, 服务端语句会随之累积)
+            closeQuietly(preparedStatement);
             // 关闭连接
             gaarasonDataSource.localConnectionClose(connection);
+        }
+    }
+
+    /**
+     * 静默关闭预执行语句
+     * @param preparedStatement 预执行语句, 可能为空
+     */
+    private static void closeQuietly(@Nullable PreparedStatement preparedStatement) {
+        if (preparedStatement == null) {
+            return;
+        }
+        try {
+            preparedStatement.close();
+        } catch (SQLException ignored) {
+            // 关闭失败不影响主流程
         }
     }
 
@@ -419,9 +437,11 @@ abstract class ModelOfQuery<B extends Builder<B, T, K>, T, K> extends ModelOfSof
             U value = doSomethingInConnection(closure, sql, parameters, isWrite);
             return CompletableFuture.completedFuture(value);
         } else {
-            // 非事务中使用异步执行
-            return CompletableFuture.supplyAsync(() -> doSomethingInConnection(closure, sql, parameters, isWrite),
-                getExecutorService());
+            // 非事务中使用异步执行; 取连接发生在线程池线程, 需把调用线程的路由上下文带过去
+            GaarasonDataSourceContext.ContextSnapshot snapshot = GaarasonDataSourceContext.captureContextSnapshot();
+            return CompletableFuture.supplyAsync(
+                () -> GaarasonDataSourceContext.executeWithSnapshot(snapshot,
+                    () -> doSomethingInConnection(closure, sql, parameters, isWrite)), getExecutorService());
         }
     }
 

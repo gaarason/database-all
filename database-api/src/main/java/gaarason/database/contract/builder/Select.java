@@ -100,9 +100,10 @@ public interface Select<B extends Builder<B, T, K>, T, K> {
 
     /**
      * 自定义查询字段
+     * 值以占位符下发, 不会被拼进SQL
      * @param columnName 列名
-     * @param value 值  // todo support Object type
+     * @param value 值
      * @return 查询构造器
      */
-    B selectCustom(String columnName, String value);
+    B selectCustom(String columnName, Object value);
 }

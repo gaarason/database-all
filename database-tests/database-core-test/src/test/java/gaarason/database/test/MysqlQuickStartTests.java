@@ -24,6 +24,20 @@ import java.util.*;
 @FixMethodOrder(MethodSorters.JVM)
 public class MysqlQuickStartTests {
 
+    /**
+     * 本类不继承 BaseTests, 单独运行时需自行保证包扫描覆盖默认自动配置包,
+     * 否则构建配置会回退到实例化接口 QueryBuilderConfig 而失败.
+     */
+    private static void ensureScanPackages() {
+        String key = "gaarason.database.scan.packages";
+        String current = System.getProperty(key);
+        if (current == null || current.trim().isEmpty()) {
+            System.setProperty(key, "gaarason.database");
+        } else if (!current.contains("gaarason.database")) {
+            System.setProperty(key, current + ",gaarason.database");
+        }
+    }
+
     @Test
     public void testSelect() {
         TestModel testModel = new TestModel();
@@ -62,6 +76,7 @@ public class MysqlQuickStartTests {
         private final static GaarasonDataSource gaarasonDataSourceWrapper;
 
         static {
+            ensureScanPackages();
             DruidDataSource druidDataSource = new DruidDataSource();
             druidDataSource.setUrl(
                 "jdbc:mysql://mysql.local/test_master_0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true&autoReconnect=true&serverTimezone=Asia/Shanghai");

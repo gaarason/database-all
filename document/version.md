@@ -26,6 +26,27 @@ Eloquent ORM for Java
 
 ## 版本升级指引
 
+### 7.1.3
+
+- 在`database-query`的`InformixGrammar`中, 修复了分页`FIRST`/`SKIP`的取值被丢弃的问题: 取值随 SQL 内联为`select first n skip m`, 不再出现占位符数量与绑定参数数量不一致
+- 在`database-query`的`OracleGrammar`中, 修复了 Oracle 11g 的`ROWNUM`分页: 改为子查询包裹使`ROWNUM`在排序之后生效, 带偏移的分页不再抛出`TypeNotSupportedException`
+- 在`database-query`的`MsSqlGrammar`中, 修复了 SQL Server 分页: 仅限制条数时改用`select top n`; 带偏移而缺少排序时自动补`order by (select null)`, 避免`OFFSET/FETCH`语法错误
+- 在`database-query`的`FirebirdGrammar`中, 修复了`ROWS`子句写法: 改为1-based的常量区间`rows a to b`, 不再输出`rows ? + 1 to ? + ?`这类表达式
+- 在`database-query`的`BaseGrammar`中, 增加了分页取值校验, 用于将内联为字面量的取值限定为非负整数, 否则快速失败(`AbnormalParameterException`)
+- 在`database-query`的`WhereBuilder`中, 修复了`whereIn`/`whereNotIn`传入空集合时生成`in ()`/`not in ()`语法错误的问题: 分别退化为恒假条件`1 = 0`/恒真条件`1 = 1`
+- 在`@HasOneOrMany`中, 修复了未显式声明`localModelLocalKey`时缺省取子表主键列的问题: 现在取本表(父表)主键列, 用于主键列名不同的表之间可正常渴求式加载
+- 在`@BelongsTo`中, 修复了解除/建立关系时本模型主键被字符串化后绑定的问题: 现在以原始类型下发绑定参数
+- 在`@BelongsTo`中, 修复了外键为`null`时`detach()`抛出`NullPointerException`的问题: 关系本就不存在, 现在直接返回 0
+- 在`Model`中, 修复了每次 SQL 执行后`PreparedStatement`未关闭的问题: 现在在连接归还之前统一关闭语句, 用于避免服务端预处理语句随查询次数累积
+- 在`ConverterUtils`中, 修复了字段缺省值的类型错误: `short`的缺省值由`Byte`改为`Short`; `Year`/`YearMonth`/`Month`/`MonthDay`的缺省值改由日期(而非时间)推导
+- 在`Select`中, `selectCustom`的值参数由`String`放宽为`Object`: 值改由`Grammar`生成占位符并同步登记绑定参数(与`where`/`value`同一扩展点), 不再拼进SQL, 用于修复`@BelongsToMany`的关系键值被当作列名拼接导致的语法错误与注入风险
+- 在`BaseGrammar`中, 修复了空SQL片段污染片段判定: `merger`不再写入空片段(避免输出`force index ()`这类非法片段), `get`读取片段时不再凭空创建条目(避免`isEmpty`被误判为非空)
+- 在`BaseGrammar`中, 修复了`deepCopy`序列化失败后自身关系映射被永久清空的问题: 恢复`relationMap`的动作移入`finally`
+- 在`ContainerProvider`中, 修复了实例/工厂列表以内部可变`LinkedList`存放并外泄的问题: 注册与获取都以不可变快照整体替换, 用于避免读取方污染容器状态, 以及与注册方并发修改抛出`ConcurrentModificationException`
+- 在`GaarasonDataSourceContext`中, 增加了路由上下文的跨线程快照(`captureContextSnapshot`/`executeWithSnapshot`), 用于让异步查询与`transactionAsync`异步事务继承提交线程的组/库/表路由上下文, 不再退化到默认库与逻辑表名
+- 在`ContainerBootstrap`中, 增加了`shutdown()`方法, 用于关闭容器持有的异步线程池; Spring 环境下作为 Bean 由上下文关闭时自动调用
+- 在`database-spring-boot-starter`中, 修复了自动配置自建的连接池从不释放的问题: 路由数据源包装器登记这些连接池并在`close()`中逐个关闭, 仅关闭自建的而不越权关闭 Spring 托管的`DataSource`, 重复关闭幂等, 单个关闭失败不影响其余连接池
+
 ### 7.1.2
 
 - 在`Aggregates`中, 修复聚合函数在不同数据库驱动下的返回值类型差异导致的问题: 部分驱动(如 SQLite JDBC)的`COUNT()`返回`Integer`而非`Long`, `AVG()`/`SUM()`返回`Double`而非`BigDecimal`, 导致使用`paginate`/`cursorPaginate`等分页查询时出现`ClassCastException`(Long 不能转为 Int)

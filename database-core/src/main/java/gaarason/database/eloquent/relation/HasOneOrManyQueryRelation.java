@@ -353,7 +353,8 @@ public class HasOneOrManyQueryRelation extends BaseRelationSubQuery {
             HasOneOrMany hasOneOrMany = field.getAnnotation(HasOneOrMany.class);
             sonModel = getModelInstance(field);
             sonModelForeignKey = hasOneOrMany.sonModelForeignKey();
-            localModelLocalKey = hasOneOrMany.localModelLocalKey().isEmpty() ? getPrimaryKeyColumnName(sonModel) :
+            // 缺省的关系键取本表(父表)主键列, 而不是子表主键列
+            localModelLocalKey = hasOneOrMany.localModelLocalKey().isEmpty() ? getPrimaryKeyColumnName(localModel) :
                 hasOneOrMany.localModelLocalKey();
             sonModelMorphKey = hasOneOrMany.sonModelMorphKey();
             sonModelMorphValue = hasOneOrMany.sonModelMorphValue().isEmpty() ? localModel.getTableName() :

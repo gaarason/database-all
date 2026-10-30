@@ -392,6 +392,10 @@ abstract class WhereBuilder<B extends Builder<B, T, K>, T, K> extends SelectBuil
 
     @Override
     public B whereIn(String column, Collection<?> valueList) {
+        // 空集合无法构成 `in ()`(语法错误), 退化为恒假条件, 保持 "无匹配" 的语义
+        if (ObjectUtils.isEmpty(valueList)) {
+            return whereGrammar("1 = 0", null, " and ");
+        }
         Collection<Object> parameters = new ArrayList<>();
         String valueStr = grammar.replaceValuesAndFillParameters(ObjectUtils.typeCast(valueList), parameters, ",");
         String sqlPart = columnAlias(column) + "in" + supportBracket(valueStr);
@@ -400,6 +404,10 @@ abstract class WhereBuilder<B extends Builder<B, T, K>, T, K> extends SelectBuil
 
     @Override
     public B whereNotIn(String column, Collection<?> valueList) {
+        // 空集合无法构成 `not in ()`(语法错误), 退化为恒真条件, 保持 "不排除任何数据" 的语义
+        if (ObjectUtils.isEmpty(valueList)) {
+            return whereGrammar("1 = 1", null, " and ");
+        }
         Collection<Object> parameters = new ArrayList<>();
         String valueStr = grammar.replaceValuesAndFillParameters(ObjectUtils.typeCast(valueList), parameters, ",");
         String sqlPart = columnAlias(column) + "not in" + supportBracket(valueStr);

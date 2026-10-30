@@ -7,6 +7,7 @@ import gaarason.database.lang.Nullable;
 import gaarason.database.support.EntityMember;
 import gaarason.database.util.ObjectUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -109,7 +110,11 @@ abstract class SelectBuilder<B extends Builder<B, T, K>, T, K> extends OrderBuil
     }
 
     @Override
-    public B selectCustom(String columnName, String value) {
-        return selectRaw(value + " as " + supportBackQuote(columnName));
+    public B selectCustom(String columnName, Object value) {
+        // 占位符由 Grammar 生成并同步登记绑定参数, 避免拼SQL 带来的语法错误与注入风险(eg: 字符串值会被当成列名)
+        ArrayList<Object> parameters = new ArrayList<>();
+        String sqlPart =
+            grammar.replaceValueAndFillParameters(value, parameters) + "as " + supportBackQuote(columnName);
+        return selectGrammar(sqlPart, parameters);
     }
 }

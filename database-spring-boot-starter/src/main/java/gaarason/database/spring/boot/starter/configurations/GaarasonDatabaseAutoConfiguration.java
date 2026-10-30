@@ -86,6 +86,9 @@ public class GaarasonDatabaseAutoConfiguration {
 
     /**
      * 容器初始化
+     * <p>
+     * 上下文关闭时 Spring 会推断并调用 {@link ContainerBootstrap#shutdown()}, 停掉容器创建的异步线程池.
+     *
      * @param applicationContext 应用上下文
      * @param gaarasonDatabaseProperties 配置
      * @see gaarason.database.spring.boot.starter.annotation.GaarasonDatabaseScan
@@ -187,6 +190,8 @@ public class GaarasonDatabaseAutoConfiguration {
          * 否则使用传统的单 Spring DataSource 包装.
          * <p>
          * 各 {@link ObjectProvider} 路由 Bean 若存在则注册到 {@link GaarasonDataSourceContext},供组/库/表与同连接切库使用.
+         * <p>
+         * 由 YAML 自建(而非 Spring 托管)的连接池会登记在返回的包装器上, 上下文关闭时随之释放.
          *
          * @param dataSourceProvider                    Spring 默认数据源
          * @param container                             Gaarason 容器
@@ -215,17 +220,19 @@ public class GaarasonDatabaseAutoConfiguration {
             String defaultGroup = ObjectUtils.isEmpty(dsProperties.getDefaultGroup())
                 ? "master"
                 : dsProperties.getDefaultGroup();
+            // 本配置自建的连接池不在 Spring 容器内, 登记下来随主数据源一起关闭
+            List<DataSource> createdDataSources = new ArrayList<>();
             Map<String, DataSourceGroup> groupMap;
             if (dsProperties.getGroups().isEmpty()) {
                 groupMap = buildSingleGroupMap(dataSourceProvider, defaultGroup);
                 LOGGER.info("GaarasonDataSource init with single-group routing mode, groups: " + groupMap.keySet()
                     + ", default: " + defaultGroup);
             } else {
-                groupMap = buildGroupMap(dsProperties, defaultGroup);
+                groupMap = buildGroupMap(dsProperties, defaultGroup, createdDataSources);
                 LOGGER.info("GaarasonDataSource init with multi-group routing mode, groups: " + groupMap.keySet()
                     + ", default: " + defaultGroup);
             }
-            return new GaarasonRoutingDataSourceWrapper(groupMap, defaultGroup, container);
+            return new GaarasonRoutingDataSourceWrapper(groupMap, defaultGroup, container, createdDataSources);
         }
 
         /**
@@ -307,17 +314,20 @@ public class GaarasonDatabaseAutoConfiguration {
          * 根据 YAML 配置构建数据源组映射
          * @param dsProperties 数据源配置
          * @param defaultGroup 默认组名
+         * @param createdDataSources 输出参数: 收集本配置自建的连接池, 用于随上下文关闭
          * @return 数据源组映射
          */
         private static Map<String, DataSourceGroup> buildGroupMap(GaarasonDataSourceProperties dsProperties,
-            String defaultGroup) {
+            String defaultGroup, List<DataSource> createdDataSources) {
             Map<String, DataSourceGroup> groupMap = new LinkedHashMap<>();
             for (Map.Entry<String, DataSourceGroupProperties> entry : dsProperties.getGroups().entrySet()) {
                 String groupKey = entry.getKey();
                 DataSourceGroupProperties groupProps = entry.getValue();
 
-                List<DataSource> masters = createDataSources(groupProps.getMaster(), groupProps.getType());
-                List<DataSource> slaves = createDataSources(groupProps.getSlave(), groupProps.getType());
+                List<DataSource> masters = createDataSources(groupProps.getMaster(), groupProps.getType(),
+                    createdDataSources);
+                List<DataSource> slaves = createDataSources(groupProps.getSlave(), groupProps.getType(),
+                    createdDataSources);
 
                 if (masters.isEmpty()) {
                     throw new IllegalArgumentException(
@@ -338,11 +348,12 @@ public class GaarasonDatabaseAutoConfiguration {
          * 从节点配置列表创建 DataSource 实例
          * @param nodes 节点配置列表
          * @param dsType 数据源类型
+         * @param createdDataSources 输出参数: 收集新建的连接池
          * @return DataSource 实例列表
          */
         @SuppressWarnings("unchecked")
         private static List<DataSource> createDataSources(List<DataSourceNodeProperties> nodes,
-            @Nullable String dsType) {
+            @Nullable String dsType, List<DataSource> createdDataSources) {
             if (ObjectUtils.isEmpty(nodes)) {
                 return Collections.emptyList();
             }
@@ -368,7 +379,9 @@ public class GaarasonDatabaseAutoConfiguration {
                         throw new IllegalArgumentException("DataSource type class not found: " + dsType, e);
                     }
                 }
-                result.add(builder.build());
+                DataSource dataSource = builder.build();
+                createdDataSources.add(dataSource);
+                result.add(dataSource);
             }
             return result;
         }

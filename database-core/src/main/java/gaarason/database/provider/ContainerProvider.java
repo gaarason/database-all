@@ -12,8 +12,9 @@ import gaarason.database.logging.LogFactory;
 import gaarason.database.util.ClassUtils;
 import gaarason.database.util.ObjectUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -28,13 +29,15 @@ public class ContainerProvider implements Container {
 
     /**
      * 实例化工厂 MAP
+     * 值以快照形式整体替换, 注册与读取可以并发, 且不会把内部列表泄露给读取方
      */
-    protected final ConcurrentHashMap<Class<?>, LinkedList<InstanceCreatorFunctionalInterface<?>>> INSTANCE_CREATOR_MAP = new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<Class<?>, List<InstanceCreatorFunctionalInterface<?>>> INSTANCE_CREATOR_MAP = new ConcurrentHashMap<>();
 
     /**
      * 实例对象 MAP
+     * 值以快照形式整体替换, 获取实例时可以安全地迭代
      */
-    protected final ConcurrentHashMap<Class<?>, LinkedList<Object>> INSTANCE_MAP = new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<Class<?>, List<Object>> INSTANCE_MAP = new ConcurrentHashMap<>();
 
     /**
      * 唯一标识
@@ -69,11 +72,12 @@ public class ContainerProvider implements Container {
         if (INSTANCE_MAP.get(interfaceClass) != null) {
             throw new InvalidConfigException(interfaceClass + " should be registered before get bean.");
         }
-        // 添加到头部
-        LinkedList<InstanceCreatorFunctionalInterface<?>> instanceCreators = INSTANCE_CREATOR_MAP.computeIfAbsent(
-            interfaceClass, k -> new LinkedList<>());
-        instanceCreators.push(closure);
+        // 添加到头部, 并以全新快照替换, 避免与读取方并发修改导致 ConcurrentModificationException
+        List<InstanceCreatorFunctionalInterface<?>> instanceCreators = new ArrayList<>(
+            INSTANCE_CREATOR_MAP.getOrDefault(interfaceClass, Collections.emptyList()));
+        instanceCreators.add(0, closure);
         instanceCreators.sort(Comparator.comparing(InstanceCreatorFunctionalInterface::getOrder));
+        INSTANCE_CREATOR_MAP.put(interfaceClass, Collections.unmodifiableList(instanceCreators));
     }
 
     /**
@@ -104,41 +108,43 @@ public class ContainerProvider implements Container {
      * @return 对象
      */
     protected <T> List<T> getBeansInside(Class<T> interfaceClass, boolean fastReturn) {
-        LinkedList<Object> objects = INSTANCE_MAP.getOrDefault(interfaceClass, new LinkedList<>());
+        List<Object> objects = INSTANCE_MAP.getOrDefault(interfaceClass, Collections.emptyList());
         List<InstanceCreatorFunctionalInterface<?>> instanceCreators = INSTANCE_CREATOR_MAP.getOrDefault(interfaceClass,
-            new LinkedList<>());
+            Collections.emptyList());
         /*
          * 对象列表没有值 || 在非快速返回的情况下, 对象列表没有足够的对象
          * 以上的2种情况, 都需要进行实例化 ( 不重复的进行实例化 )
          */
         if (objects.isEmpty() || (!fastReturn && objects.size() < instanceCreators.size())) {
             synchronized (interfaceClass.getName()) {
-                objects = INSTANCE_MAP.getOrDefault(interfaceClass, new LinkedList<>());
-                instanceCreators = INSTANCE_CREATOR_MAP.getOrDefault(interfaceClass, new LinkedList<>());
+                objects = INSTANCE_MAP.getOrDefault(interfaceClass, Collections.emptyList());
+                instanceCreators = INSTANCE_CREATOR_MAP.getOrDefault(interfaceClass, Collections.emptyList());
                 // 串行检查
                 if (objects.isEmpty() || (!fastReturn && objects.size() < instanceCreators.size())) {
                     /*
                      * 优先 使用注册的方式
                      * 保底 使用默认的方式
-                     * 仅仅改变局部变量
+                     * 仅仅使用局部变量, 不得修改 MAP 中的快照
                      */
-                    if (instanceCreators.isEmpty()) {
-                        instanceCreators.add(defaultNewInstance(interfaceClass));
-                    }
+                    List<InstanceCreatorFunctionalInterface<?>> creators = instanceCreators.isEmpty() ?
+                        Collections.singletonList(defaultNewInstance(interfaceClass)) : instanceCreators;
 
                     try {
-                        int numberOfObjectsAlreadyExist = objects.size();
-                        for (InstanceCreatorFunctionalInterface<?> instanceCreator : instanceCreators) {
+                        // 已有的实例 + 新实例 构成全新快照, 不改动已发布的列表
+                        List<Object> instances = new ArrayList<>(objects);
+                        int numberOfObjectsAlreadyExist = instances.size();
+                        for (InstanceCreatorFunctionalInterface<?> instanceCreator : creators) {
                             // 略过已经实例化过的对象.
                             if (numberOfObjectsAlreadyExist-- > 0) {
                                 continue;
                             }
-                            objects.add(instanceCreator.execute(ObjectUtils.typeCast(interfaceClass)));
+                            instances.add(instanceCreator.execute(ObjectUtils.typeCast(interfaceClass)));
                             if (fastReturn) {
                                 break;
                             }
                         }
 
+                        objects = Collections.unmodifiableList(instances);
                         INSTANCE_MAP.put(interfaceClass, objects);
                     } catch (Throwable e) {
                         throw new ObjectNewInstanceException(interfaceClass, e.getMessage(), e);

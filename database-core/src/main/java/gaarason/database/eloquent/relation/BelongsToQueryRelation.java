@@ -171,8 +171,12 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
 
     @Override
     public int detach(Record<?, ?> theRecord) {
-        return detach(theRecord, Collections.singletonList(
-            Objects.requireNonNull(theRecord.getMetadataMap().get(belongsToTemplate.localModelForeignKey)).toString()));
+        Object localModelForeignKeyValue = theRecord.getMetadataMap().get(belongsToTemplate.localModelForeignKey);
+        // 外键为空, 表示关系本就不存在, 无事可做
+        if (localModelForeignKeyValue == null) {
+            return 0;
+        }
+        return detach(theRecord, Collections.singletonList(localModelForeignKeyValue));
     }
 
     @Override
@@ -198,8 +202,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
         // 解除可以多个
         int successNum = theRecord.getModel()
             .newQuery()
-            .where(theRecord.getModel().getPrimaryKeyColumnName(),
-                String.valueOf(theRecord.getOriginalPrimaryKeyValue()))
+            .where(theRecord.getModel().getPrimaryKeyColumnName(), theRecord.getOriginalPrimaryKeyValue())
             .whereIn(belongsToTemplate.localModelForeignKey,
                 (builder -> builder.select(belongsToTemplate.parentModelLocalKey)
                     .from(belongsToTemplate.parentModel.getTableName())
@@ -328,8 +331,7 @@ public class BelongsToQueryRelation extends BaseRelationSubQuery {
         // 执行更新, 自我更新需要手动刷新属性
         int successNum = theRecord.getModel()
             .newQuery()
-            .where(theRecord.getModel().getPrimaryKeyColumnName(),
-                String.valueOf(theRecord.getOriginalPrimaryKeyValue()))
+            .where(theRecord.getModel().getPrimaryKeyColumnName(), theRecord.getOriginalPrimaryKeyValue())
             .andWhere(builder -> builder.where(belongsToTemplate.localModelForeignKey, "!=", localModelForeignKeyValue)
                 .when(enableMorph, builder1 -> builder1.orWhere(
                     builder2 -> builder2.where(belongsToTemplate.localModelMorphKey, "!=",

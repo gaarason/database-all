@@ -29,18 +29,15 @@ public class FirebirdGrammar extends BaseGrammar {
 
     @Override
     public void formatLimit(Object offset, Object take, Collection<Object> parameters) {
-        // ROWS (offset+1) TO (offset+take)
-        // Firebird ROWS 是 1-based: ROWS startRow TO endRow
-        String sqlPart = "rows " + replaceValueAndFillParameters(offset, parameters) +
-            " + 1 to " + replaceValueAndFillParameters(offset, parameters) +
-            " + " + replaceValueAndFillParameters(take, parameters);
-        set(SQLPartType.LIMIT, sqlPart, parameters);
+        // ROWS 是 1-based 闭区间, 且只接受常量(不接受算术表达式)
+        long numericOffset = limitNumberToLong(offset, "Firebird");
+        long numericTake = limitNumberToLong(take, "Firebird");
+        set(SQLPartType.LIMIT, "rows " + (numericOffset + 1) + " to " + (numericOffset + numericTake), null);
     }
 
     @Override
     public void formatLimit(Object take, Collection<Object> parameters) {
-        String sqlPart = "rows " + replaceValueAndFillParameters(take, parameters);
-        set(SQLPartType.LIMIT, sqlPart, parameters);
+        set(SQLPartType.LIMIT, "rows 1 to " + limitNumberToLong(take, "Firebird"), null);
     }
 
     @Override

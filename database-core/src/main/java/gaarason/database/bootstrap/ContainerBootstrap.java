@@ -22,6 +22,7 @@ import gaarason.database.util.StringUtils;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -173,6 +174,25 @@ public class ContainerBootstrap extends ContainerProvider {
     public ContainerBootstrap initialization() {
         initModelShadow();
         return this;
+    }
+
+    /**
+     * 关闭容器持有的可回收资源, 目前为异步线程池.
+     * <p>
+     * Spring 环境下容器作为 Bean 注册, 上下文关闭时会通过推断的 destroy 方法自动调用; 非 Spring 环境需在退出前手动调用.
+     * 线程池尚未创建时什么都不做, 避免关闭时反而将其创建.
+     */
+    public void shutdown() {
+        List<Object> executors = INSTANCE_MAP.get(ExecutorService.class);
+        if (executors == null) {
+            return;
+        }
+        for (Object executor : executors) {
+            if (executor instanceof ExecutorService) {
+                LOGGER.info("Async executor is shutting down.");
+                ((ExecutorService) executor).shutdown();
+            }
+        }
     }
 
     /**

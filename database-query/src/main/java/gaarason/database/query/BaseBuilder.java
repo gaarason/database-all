@@ -3,6 +3,7 @@ package gaarason.database.query;
 import gaarason.database.appointment.AggregatesType;
 import gaarason.database.appointment.FinalVariable;
 import gaarason.database.config.ConversionConfig;
+import gaarason.database.connection.GaarasonDataSourceContext;
 import gaarason.database.contract.connection.GaarasonDataSource;
 import gaarason.database.contract.eloquent.Builder;
 import gaarason.database.contract.eloquent.Model;
@@ -321,7 +322,11 @@ abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements Builder<
 
     @Override
     public <V> CompletableFuture<V> transactionAsync(Supplier<V> closure, int maxAttempts) {
-        return CompletableFuture.supplyAsync(() -> transaction(closure, maxAttempts), model.getExecutorService());
+        // 事务在线程池线程开启并执行, 需把调用线程的路由上下文带过去, 否则组/库/表会落到错误的默认值
+        GaarasonDataSourceContext.ContextSnapshot snapshot = GaarasonDataSourceContext.captureContextSnapshot();
+        return CompletableFuture.supplyAsync(
+            () -> GaarasonDataSourceContext.executeWithSnapshot(snapshot, () -> transaction(closure, maxAttempts)),
+            model.getExecutorService());
     }
 
     @Override
@@ -354,10 +359,11 @@ abstract class BaseBuilder<B extends Builder<B, T, K>, T, K> implements Builder<
 
     @Override
     public CompletableFuture<Boolean> transactionAsync(Runnable closure, int maxAttempts) {
-        return CompletableFuture.supplyAsync(() -> {
+        GaarasonDataSourceContext.ContextSnapshot snapshot = GaarasonDataSourceContext.captureContextSnapshot();
+        return CompletableFuture.supplyAsync(() -> GaarasonDataSourceContext.executeWithSnapshot(snapshot, () -> {
             transaction(closure, maxAttempts);
             return true;
-        }, model.getExecutorService());
+        }), model.getExecutorService());
     }
 
     @Override

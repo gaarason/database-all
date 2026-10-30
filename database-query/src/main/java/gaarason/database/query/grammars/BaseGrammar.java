@@ -4,6 +4,7 @@ import gaarason.database.appointment.SqlType;
 import gaarason.database.contract.eloquent.Record;
 import gaarason.database.contract.query.Alias;
 import gaarason.database.contract.query.Grammar;
+import gaarason.database.exception.AbnormalParameterException;
 import gaarason.database.exception.CloneNotSupportedRuntimeException;
 import gaarason.database.exception.InvalidSqlTypeException;
 import gaarason.database.lang.Nullable;
@@ -100,6 +101,38 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         }).collect(Collectors.joining(separator));
     }
 
+    /**
+     * 分页取值转换为非负整数
+     * <p>
+     * 部分方言的分片子句位置特殊(子查询包裹/TOP/ROWS 区间), 其取值无法与 WHERE 参数保持同一顺序,
+     * 因此这些方言将取值内联为字面量, 内联之前统一在此校验.
+     * @param value 取值
+     * @param dialect 方言名称, 仅用于异常信息
+     * @return 非负整数
+     * @throws AbnormalParameterException 取值不是整数或为负数
+     */
+    protected static long limitNumberToLong(@Nullable Object value, String dialect) {
+        long number;
+        if (value instanceof Number) {
+            number = ((Number) value).longValue();
+            if (((Number) value).doubleValue() != (double) number) {
+                throw new AbnormalParameterException(dialect + " limit value[" + value + "] is not an integer");
+            }
+        } else if (value instanceof String) {
+            try {
+                number = Long.parseLong(((String) value).trim());
+            } catch (NumberFormatException e) {
+                throw new AbnormalParameterException(dialect + " limit value[" + value + "] is not an integer");
+            }
+        } else {
+            throw new AbnormalParameterException(dialect + " limit value[" + value + "] is not an integer");
+        }
+        if (number < 0) {
+            throw new AbnormalParameterException(dialect + " limit value[" + value + "] should not be negative");
+        }
+        return number;
+    }
+
     @Override
     public void addSmartSeparator(SQLPartType sqlPartType, String sqlPartString,
         @Nullable Collection<Object> parameters, String separator) {
@@ -175,7 +208,11 @@ public abstract class BaseGrammar implements Grammar, Serializable {
         StringBuilder sqlBuilder = new StringBuilder();
         Collection<Object> allParameters = new LinkedList<>();
 
-        List<SQLPartInfo> sqlParts = SQLPartMap.computeIfAbsent(sqlPartType, k -> new ArrayList<>());
+        // 读取片段不得创建空条目, 否则会污染 isEmpty 判定
+        List<SQLPartInfo> sqlParts = SQLPartMap.get(sqlPartType);
+        if (sqlParts == null) {
+            sqlParts = Collections.emptyList();
+        }
         // sql part
         for (SQLPartInfo sqlPart : sqlParts) {
             sqlBuilder.append(sqlPart.getSqlString());
@@ -341,15 +378,18 @@ public abstract class BaseGrammar implements Grammar, Serializable {
     public Grammar deepCopy() throws CloneNotSupportedRuntimeException {
         // 浅拷贝 relationMap
         HashMap<String, Record.Relation> copy = new HashMap<>(relationMap);
-        // 清空自身 relationMap
+        // 清空自身 relationMap, 序列化不处理它(关系信息持有构造器引用, 不可序列化)
         relationMap.clear();
-        // 一个全新的 grammar
-        BaseGrammar grammar = ObjectUtils.deepCopy(this);
-        // 恢复自身 relationMap
-        relationMap.putAll(copy);
-        // grammar 也赋值相同的 relationMap
-        grammar.relationMap.putAll(copy);
-        return grammar;
+        try {
+            // 一个全新的 grammar
+            BaseGrammar grammar = ObjectUtils.deepCopy(this);
+            // grammar 也赋值相同的 relationMap
+            grammar.relationMap.putAll(copy);
+            return grammar;
+        } finally {
+            // 无论序列化成功与否, 都恢复自身 relationMap, 避免深度复制失败时永久丢失关系映射
+            relationMap.putAll(copy);
+        }
     }
 
     @Override
@@ -358,6 +398,10 @@ public abstract class BaseGrammar implements Grammar, Serializable {
 
         for (SQLPartType type : SQLPartType.values()) {
             SQLPartInfo partInfo = grammar.get(type);
+            // 空片段不写入: 写入后会污染 isEmpty 判定, 进而输出 `force index ()` 之类非法片段
+            if (ObjectUtils.isEmpty(partInfo.getSqlString()) && ObjectUtils.isEmpty(partInfo.getParameters())) {
+                continue;
+            }
             add(type, partInfo.getSqlString(), partInfo.getParameters());
         }
     }

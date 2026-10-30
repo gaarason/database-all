@@ -4,14 +4,13 @@ import gaarason.database.appointment.SqlType;
 import gaarason.database.exception.TypeNotSupportedException;
 
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.function.Function;
 
 /**
  * Informix 方言语法分析
  * <p>
  * 适用于: Informix, GBase 8s, 星瑞格(SinoDB)
- * 分页使用 SKIP m FIRST n 语法(置于 SELECT 关键字之后)
+ * 分页使用 FIRST n SKIP m 语法(置于 SELECT 关键字之后)
  * @author xt
  */
 public class InformixGrammar extends BaseGrammar {
@@ -19,10 +18,9 @@ public class InformixGrammar extends BaseGrammar {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 暂存 SKIP/FIRST 子句, 在 generateSql 时插入 SELECT 之后
+     * 暂存 FIRST/SKIP 子句(以空格结尾), 在 generateSql 时插入 SELECT 之后
      */
-    private String skipFirstClause = "";
-    private Collection<Object> skipFirstParameters = new LinkedList<>();
+    private String firstSkipClause = "";
 
     public InformixGrammar(String tableName) {
         super(tableName, "\"");
@@ -38,27 +36,24 @@ public class InformixGrammar extends BaseGrammar {
 
     @Override
     public void formatLimit(Object offset, Object take, Collection<Object> parameters) {
-        skipFirstParameters = new LinkedList<>();
-        skipFirstClause = "skip " + replaceValueAndFillParameters(offset, skipFirstParameters) +
-            " first " + replaceValueAndFillParameters(take, skipFirstParameters);
-        parameters.addAll(skipFirstParameters);
+        // 取值已经过 limitNumberToLong 校验, 内联可以避免子句前置带来的占位符顺序错乱
+        firstSkipClause = "first " + limitNumberToLong(take, "Informix") + " skip " +
+            limitNumberToLong(offset, "Informix") + " ";
     }
 
     @Override
     public void formatLimit(Object take, Collection<Object> parameters) {
-        skipFirstParameters = new LinkedList<>();
-        skipFirstClause = "first " + replaceValueAndFillParameters(take, skipFirstParameters);
-        parameters.addAll(skipFirstParameters);
+        firstSkipClause = "first " + limitNumberToLong(take, "Informix") + " ";
     }
 
     @Override
     public SQLPartInfo generateSql(SqlType sqlType) {
         SQLPartInfo result = super.generateSql(sqlType);
-        if (!skipFirstClause.isEmpty() && sqlType == SqlType.SELECT) {
+        if (!firstSkipClause.isEmpty() && sqlType == SqlType.SELECT) {
             String sql = result.getSqlString();
-            // 将 SKIP/FIRST 插入 SELECT 关键字之后
+            // 将 FIRST/SKIP 插入 SELECT 关键字之后
             if (sql.startsWith("select ")) {
-                sql = "select " + skipFirstClause + " " + sql.substring(7);
+                sql = "select " + firstSkipClause + sql.substring("select ".length());
             }
             return new SQLPartInfo(sql, result.getParameters());
         }

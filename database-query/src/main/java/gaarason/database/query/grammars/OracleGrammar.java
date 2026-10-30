@@ -1,6 +1,8 @@
 package gaarason.database.query.grammars;
 
+import gaarason.database.appointment.SqlType;
 import gaarason.database.exception.TypeNotSupportedException;
+import gaarason.database.lang.Nullable;
 
 import java.util.Collection;
 import java.util.function.Function;
@@ -14,6 +16,18 @@ import java.util.function.Function;
 public class OracleGrammar extends BaseGrammar {
 
     private static final long serialVersionUID = 1L;
+
+    /**
+     * ROWNUM 上界, 取前 N 条时为 N, 分页时为 offset + take
+     */
+    @Nullable
+    private String rownumUpper;
+
+    /**
+     * ROWNUM 下界, 仅分页(offset 大于 0)时有值
+     */
+    @Nullable
+    private String rownumLower;
 
     public OracleGrammar(String tableName) {
         super(tableName, "\"");
@@ -29,19 +43,33 @@ public class OracleGrammar extends BaseGrammar {
 
     @Override
     public void formatLimit(Object offset, Object take, Collection<Object> parameters) {
-        // Oracle 11g ROWNUM 方式: 通过 WHERE 嵌套实现
-        // 生成: ) WHERE ROWNUM <= (offset + take)) WHERE rn_ > offset
-        // 需要在 generateSql 中配合子查询包裹, 此处仅存储参数
-        throw new TypeNotSupportedException(
-            "Oracle 11g ROWNUM-based pagination requires subquery wrapping. " +
-            "Consider upgrading to Oracle 12c or using raw SQL for complex pagination.");
+        // ROWNUM 在排序之前分配, 因此需要双层子查询: 内层排序, 外层过滤行号区间
+        long numericOffset = limitNumberToLong(offset, "Oracle");
+        long numericTake = limitNumberToLong(take, "Oracle");
+        rownumUpper = String.valueOf(numericOffset + numericTake);
+        rownumLower = numericOffset > 0 ? String.valueOf(numericOffset) : null;
     }
 
     @Override
     public void formatLimit(Object take, Collection<Object> parameters) {
-        // Oracle 11g: WHERE ROWNUM <= take
-        String sqlPart = "ROWNUM <= " + replaceValueAndFillParameters(take, parameters);
-        set(SQLPartType.LIMIT, sqlPart, parameters);
+        rownumUpper = String.valueOf(limitNumberToLong(take, "Oracle"));
+        rownumLower = null;
+    }
+
+    @Override
+    public SQLPartInfo generateSql(SqlType sqlType) {
+        SQLPartInfo result = super.generateSql(sqlType);
+        if (sqlType != SqlType.SELECT || rownumUpper == null) {
+            return result;
+        }
+        // 取值已经过 limitNumberToLong 校验, 内联可以避免包裹后的占位符顺序错乱
+        if (rownumLower == null) {
+            return new SQLPartInfo("select * from (" + result.getSqlString() + ") where rownum <= " + rownumUpper,
+                result.getParameters());
+        }
+        return new SQLPartInfo(
+            "select * from ( select row_.*, rownum rownum_ from (" + result.getSqlString() + ") row_ where rownum <= "
+                + rownumUpper + " ) where rownum_ > " + rownumLower, result.getParameters());
     }
 
     @Override

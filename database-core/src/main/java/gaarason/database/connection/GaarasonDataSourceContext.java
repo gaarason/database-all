@@ -21,6 +21,8 @@ import java.util.function.Supplier;
  *   <li>边界：各维度均为 {@code execute*} 入栈、执行业务、再出栈</li>
  *   <li>物理解析：显式逻辑入参为 {@code resolvePhysical*FromLogical(...)}（private）；结合栈顶对外的统一入口为
  *   {@link #resolvePhysicalGroupKey(String)}、{@link #resolvePhysicalDatabaseKey()}、{@link #resolvePhysicalTableName(String)}</li>
+ *   <li>跨线程传递：{@link #captureContextSnapshot()} 捕获调用线程上下文，
+ *   {@link #executeWithSnapshot(ContextSnapshot, Supplier)} 在目标线程应用，结束后复原该线程原有上下文</li>
  * </ul>
  *
  * @author xt
@@ -142,6 +144,54 @@ public final class GaarasonDataSourceContext {
             runnable.run();
             return null;
         });
+    }
+
+    /**
+     * 捕获当前线程的路由上下文快照(组/库/表三栈的副本), 供异步任务提交到其他线程时传递上下文.
+     * <p>
+     * 快照与捕获线程后续的入栈出栈互不影响, 可被多个线程重复使用.
+     *
+     * @return 上下文快照
+     */
+    public static ContextSnapshot captureContextSnapshot() {
+        return new ContextSnapshot(GROUP_CONTEXT.get(), DATABASE_CONTEXT.get(), TABLE_CONTEXT.get());
+    }
+
+    /**
+     * 在给定快照的上下文中执行代码, 结束后复原执行线程原有的上下文.
+     * <p>
+     * 用于线程池/异步回调场景: 每个线程使用快照的独立副本, 任务之间不会相互残留路由上下文.
+     *
+     * @param snapshot 上下文快照, 为 {@code null} 时按无上下文执行
+     * @param supplier 业务逻辑
+     * @param <T>      返回值类型
+     * @return {@code supplier} 的返回值
+     */
+    public static <T> T executeWithSnapshot(@Nullable ContextSnapshot snapshot, Supplier<T> supplier) {
+        Deque<String> previousGroup = GROUP_CONTEXT.get();
+        Deque<String> previousDatabase = DATABASE_CONTEXT.get();
+        Deque<String> previousTable = TABLE_CONTEXT.get();
+        GROUP_CONTEXT.set(snapshot == null ? new ArrayDeque<>() : snapshot.copyGroup());
+        DATABASE_CONTEXT.set(snapshot == null ? new ArrayDeque<>() : snapshot.copyDatabase());
+        TABLE_CONTEXT.set(snapshot == null ? new ArrayDeque<>() : snapshot.copyTable());
+        try {
+            return supplier.get();
+        } finally {
+            restore(GROUP_CONTEXT, previousGroup);
+            restore(DATABASE_CONTEXT, previousDatabase);
+            restore(TABLE_CONTEXT, previousTable);
+        }
+    }
+
+    /**
+     * 复原线程上下文: 原本无上下文则移除, 避免线程池线程持有闲置 ThreadLocal.
+     */
+    private static void restore(ThreadLocal<Deque<String>> context, Deque<String> previous) {
+        if (previous.isEmpty()) {
+            context.remove();
+        } else {
+            context.set(previous);
+        }
     }
 
     /**
@@ -317,5 +367,36 @@ public final class GaarasonDataSourceContext {
     private static String resolvePhysicalTableNameFromLogical(String logicalTableName, @Nullable String routeExpression) {
         String tableName = dynamicTableRouting.resolvePhysical(logicalTableName, routeExpression);
         return ObjectUtils.isEmpty(tableName) ? logicalTableName : tableName;
+    }
+
+    /**
+     * 路由上下文快照: 组/库/表三栈的副本, 不可变且可跨线程重复使用.
+     */
+    public static final class ContextSnapshot {
+
+        private final Deque<String> groupStack;
+
+        private final Deque<String> databaseStack;
+
+        private final Deque<String> tableStack;
+
+        private ContextSnapshot(Deque<String> groupStack, Deque<String> databaseStack, Deque<String> tableStack) {
+            // ArrayDeque 的迭代顺序为栈顶到栈底, 逐个 addLast 后栈顶仍然是栈顶
+            this.groupStack = new ArrayDeque<>(groupStack);
+            this.databaseStack = new ArrayDeque<>(databaseStack);
+            this.tableStack = new ArrayDeque<>(tableStack);
+        }
+
+        private Deque<String> copyGroup() {
+            return new ArrayDeque<>(groupStack);
+        }
+
+        private Deque<String> copyDatabase() {
+            return new ArrayDeque<>(databaseStack);
+        }
+
+        private Deque<String> copyTable() {
+            return new ArrayDeque<>(tableStack);
+        }
     }
 }

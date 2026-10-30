@@ -355,7 +355,7 @@ public final class ConverterUtils {
         } else if (Character.class.equals(clz) || char.class.equals(clz)) {
             result = ' ';
         } else if (Short.class.equals(clz) || short.class.equals(clz)) {
-            result = Byte.valueOf("0");
+            result = Short.valueOf("0");
         } else if (Integer.class.equals(clz) || int.class.equals(clz)) {
             result = Integer.valueOf("0");
         } else if (Long.class.equals(clz) || long.class.equals(clz)) {
@@ -375,13 +375,13 @@ public final class ConverterUtils {
         } else if (Time.class.equals(clz)) {
             result = Time.valueOf(LocalDateUtils.MIN_LOCAL_DATE_TIME.toLocalTime());
         } else if (Year.class.equals(clz)) {
-            result = Year.from(LocalDateUtils.MIN_LOCAL_DATE_TIME.toLocalTime());
+            result = Year.from(LocalDateUtils.MIN_LOCAL_DATE_TIME.toLocalDate());
         } else if (YearMonth.class.equals(clz)) {
-            result = YearMonth.from(LocalDateUtils.MIN_LOCAL_DATE_TIME.toLocalTime());
+            result = YearMonth.from(LocalDateUtils.MIN_LOCAL_DATE_TIME.toLocalDate());
         } else if (Month.class.equals(clz)) {
-            result = Month.from(LocalDateUtils.MIN_LOCAL_DATE_TIME.toLocalTime());
+            result = Month.from(LocalDateUtils.MIN_LOCAL_DATE_TIME.toLocalDate());
         } else if (MonthDay.class.equals(clz)) {
-            result = MonthDay.from(LocalDateUtils.MIN_LOCAL_DATE_TIME.toLocalTime());
+            result = MonthDay.from(LocalDateUtils.MIN_LOCAL_DATE_TIME.toLocalDate());
         } else if (Timestamp.class.equals(clz)) {
             result = Timestamp.valueOf(LocalDateUtils.MIN_LOCAL_DATE_TIME);
         } else if (Date.class.isAssignableFrom(clz)) {
